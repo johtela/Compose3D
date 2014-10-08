@@ -1,11 +1,47 @@
-﻿// Learn more about F# at http://fsharp.net
+﻿// Disable warning about non-verifiable code
+#nowarn "9"
+
 open System
 open System.Drawing
 open System.Windows.Forms
+open System.Reflection
+open System.Runtime.InteropServices
 open OpenTK
 open OpenTK.Graphics.OpenGL
 
-type SimpleExample() = 
+[<AttributeUsage (AttributeTargets.Field)>]
+type VertexAttrAttribute (index) = 
+    inherit Attribute ()
+    member this.Index = index
+
+[<StructLayout(LayoutKind.Sequential)>]
+type Vertex = {
+    [<VertexAttr (0)>]
+    position : Vector3;
+    [<VertexAttr (1)>]
+    color : Vector3
+}
+
+let getVertexAttrs (vertex : 'a) =
+    let t = typeof<'a>
+    let vat = typeof<VertexAttrAttribute>
+    let getResPair (f : FieldInfo) =
+        let vattr = Seq.exactlyOne (f.GetCustomAttributes (vat, false)) :?> VertexAttrAttribute
+        (vattr.Index, Marshal.SizeOf (f.FieldType))
+    t.GetFields (BindingFlags.Public) |>
+        Seq.filter (fun f -> f.IsDefined (vat, false)) |>
+        Seq.map getResPair
+        
+
+let initVertexBuffer (vertices : seq<'a>) (buffer : int) =
+    let vbo = GL.GenBuffer ()
+    let varr = Seq.toArray vertices
+    let size = sizeof<'a> * varr.Length |> nativeint
+    GL.BufferData (BufferTarget.ArrayBuffer, size, varr, BufferUsageHint.StaticDraw)
+    GL.BindBuffer (BufferTarget.ArrayBuffer, buffer)
+    vbo
+
+type SimpleExample () = 
     inherit GameWindow (600, 600)
     
     let mutable frames = 0

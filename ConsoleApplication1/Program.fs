@@ -9,29 +9,21 @@ open System.Runtime.InteropServices
 open OpenTK
 open OpenTK.Graphics.OpenGL
 
-[<AttributeUsage (AttributeTargets.Field)>]
-type VertexAttrAttribute (index) = 
-    inherit Attribute ()
-    member this.Index = index
-
 [<StructLayout(LayoutKind.Sequential)>]
 type Vertex = {
-    [<VertexAttr (0)>]
     position : Vector3;
-    [<VertexAttr (1)>]
     color : Vector3
 }
 
-let getVertexAttrs (vertex : 'a) =
+let getVertexAttrs<'a> () =
     let t = typeof<'a>
-    let vat = typeof<VertexAttrAttribute>
-    let getResPair (f : FieldInfo) =
-        let vattr = Seq.exactlyOne (f.GetCustomAttributes (vat, false)) :?> VertexAttrAttribute
-        (vattr.Index, Marshal.SizeOf (f.FieldType))
-    t.GetFields (BindingFlags.Public) |>
-        Seq.filter (fun f -> f.IsDefined (vat, false)) |>
-        Seq.map getResPair
-        
+    let getFieldSizes (f : FieldInfo) =
+        let ft = f.FieldType
+        let s = Marshal.SizeOf (f.FieldType)
+        if ft = typeof<Vector3> then (s, 3, VertexAttribPointerType.Float)
+        else if ft = typeof<Vector4> then (s, 4, VertexAttribPointerType.Float)
+        else raise  <| new ArgumentException ("Incompatible vertex attribute type " + ft.Name)
+    t.GetFields (BindingFlags.Public) |> Seq.map getFieldSizes
 
 let initVertexBuffer (vertices : seq<'a>) (buffer : int) =
     let vbo = GL.GenBuffer ()
@@ -39,8 +31,20 @@ let initVertexBuffer (vertices : seq<'a>) (buffer : int) =
     let size = sizeof<'a> * varr.Length |> nativeint
     GL.BufferData (BufferTarget.ArrayBuffer, size, varr, BufferUsageHint.StaticDraw)
     GL.BindBuffer (BufferTarget.ArrayBuffer, buffer)
-    vbo
-
+    (vbo, varr.Length)
+    
+let drawVertexBuffer<'a> (vbo : int, vertexCount : int) = 
+    let recSize = sizeof<'a>
+    let setupAttr (index : int, offset : int) (size : int, count : int, ftype : VertexAttribPointerType) =
+        GL.EnableVertexAttribArray (index)
+        GL.VertexAttribPointer (index, count, ftype, false, recSize, offset)
+        (index + 1, offset + size)        
+    GL.BindBuffer (BufferTarget.ArrayBuffer, vbo)
+    let (attrCount, _) = Seq.fold setupAttr (0, 0) <| getVertexAttrs<'a> ()
+    GL.DrawArrays (PrimitiveType.Triangles, 0, vertexCount)
+    for i = 0 to attrCount - 1 do
+        GL.DisableVertexAttribArray (i)
+        
 type SimpleExample () = 
     inherit GameWindow (600, 600)
     

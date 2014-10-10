@@ -1,8 +1,12 @@
-﻿varying vec2 texCoord;
-varying float scale;
-void main() {
-    gl_Position = ftransform();
-    texCoord = gl_Vertex.xy;
-    scale = gl_ModelViewMatrix[2][2]/4000;
-}
+﻿#version 330
 
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec4 color;
+
+smooth out vec4 theColor;
+
+void main()
+{
+    gl_Position = position;
+    theColor = color;
+}

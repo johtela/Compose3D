@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Testbench", "ConsoleApplication1\Testbench.fsproj", "{E2BCC618-4164-49B0-A83A-EF82D991477C}"
+Project("{4925A630-B079-445d-BCD4-3A9C94FE9307}") = "Testbench", "ConsoleApplication1\Testbench.fsproj", "{E2BCC618-4164-49B0-A83A-EF82D991477C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +23,9 @@ Global
 		{E2BCC618-4164-49B0-A83A-EF82D991477C}.Release|Mixed Platforms.Build.0 = Release|x86
 		{E2BCC618-4164-49B0-A83A-EF82D991477C}.Release|x86.ActiveCfg = Release|x86
 		{E2BCC618-4164-49B0-A83A-EF82D991477C}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = ConsoleApplication1\Testbench.fsproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

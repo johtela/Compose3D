@@ -15,9 +15,9 @@ open GLUtils
 [<StructLayout(LayoutKind.Sequential)>]
 type Vertex =
     struct
-        val Position : Vector4
-        val Color : Vector4
-        new (pos, col) = { Position = pos; Color = col }
+        val position : Vector4
+        val color : Vector4
+        new (pos, col) = { position = pos; color = col }
     end
 
 let vertices = [ 
@@ -29,8 +29,10 @@ let vertices = [
 type SimpleExample () = 
     inherit GameWindow (600, 600)
     
+    let mutable program = 0;
+
     member this.init () =
-        GLUtils.loadProgram [ 
+        program <- GLUtils.loadProgram [ 
             (ShaderType.FragmentShader, "Fragment.glsl")
             (ShaderType.VertexShader, "Vertex.glsl")
         ]
@@ -38,9 +40,9 @@ type SimpleExample () =
     override this.OnRenderFrame args =
         base.OnRenderFrame args
         GL.Viewport (0, 0, 600, 600)
-        
-        let vbo = GLUtils.initVertexBuffer (List.toSeq vertices) 
-        GLUtils.drawVertexBuffer<Vertex> vbo
+
+        let (vbo, count) = GLUtils.initVertexBuffer (List.toSeq vertices) 
+        GLUtils.drawVertexBuffer<Vertex> program vbo count
         this.SwapBuffers ()
 
 [<EntryPoint>]

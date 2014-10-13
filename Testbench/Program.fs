@@ -32,12 +32,12 @@ let vertices = [
 type SimpleExample () = 
     inherit GameWindow (600, 600)
     
-    let program = GLUtils.loadProgram [ 
+    let program = loadProgram [ 
                     (ShaderType.FragmentShader, "Fragment.glsl")
                     (ShaderType.VertexShader, "Vertex.glsl")
                 ]
-    let time = GLUtils.getUniform program "time"
-    let loopDuration = GLUtils.getUniform program "lopDuration"
+    let time = getUniform program "time"
+    let loopDuration = getUniform program "loopDuration"
     let mutable elapsedTime = 0.0f
 
     override this.OnRenderFrame args =
@@ -45,10 +45,10 @@ type SimpleExample () =
         elapsedTime <- elapsedTime + float32 (args.Time)
         GL.Clear (ClearBufferMask.ColorBufferBit)
         GL.Viewport (0, 0, 600, 600)
-        GL.Uniform1 (loopDuration, 5.0f)
-        GL.Uniform1 (time, elapsedTime)
-        let (vbo, count) = GLUtils.initVertexBuffer (List.toSeq vertices) 
-        GLUtils.drawVertexBuffer<Vertex> program vbo count
+        loopDuration &= 5.0f
+        time &= elapsedTime
+        let vbo = initVertexBuffer (List.toSeq vertices) 
+        drawVertexBuffer<Vertex> program vbo
         this.SwapBuffers ()
 
 [<EntryPoint>]

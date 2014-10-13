@@ -1,9 +1,5 @@
 module GLUtils
 
-#if INTERACTIVE
-#r "../packages/OpenTK.1.1.1589.5942/lib/NET40/OpenTK.dll"
-#endif
-
 open System
 open System.IO
 open System.Reflection
@@ -14,6 +10,19 @@ open OpenTK.Graphics.OpenGL
 /// Exception type for OpenGL errors
 type OpenGLError (msg) = 
     inherit Exception (msg)
+
+/// Wrap OpenGL program (int) to an union type.
+type Program = Program of int 
+
+/// Wrap OpenGL shader (int) to an union type.
+type Shader = Shader of int
+
+/// Wrap OpenGL vertex buffer object (int) to an union type. 
+/// Second value contains the number of items in the buffer.
+type VBO = VBO of int * int
+
+/// Wrap OpenGL uniform (int) to an union type.
+type Uniform = Uniform of int
 
 /// Get the last error occurred, or null if there was no error.
 let getError =
@@ -77,47 +86,59 @@ let getVertexAttrs<'a when 'a : struct> () : VertexAttr seq =
     t.GetFields (BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public) |>
         Seq.map mapToVertexAttr
 
-let getVertexAttrIndex (program : int) (name : string) = 
-    let index = GL.GetAttribLocation (program, name)
+let getVertexAttrIndex (Program glprog) (name : string) = 
+    let index = GL.GetAttribLocation (glprog, name)
     if index < 0 then 
         raise <| OpenGLError (sprintf "Attribute '%s' was not found in program" name)
     index
 
-let getUniform (program : int) (name : string) =
-    let uniform = GL.GetUniformLocation (program, name)
-    if uniform < 0 then 
+let getUniform (Program glprog) (name : string) : Uniform =
+    let glunif = GL.GetUniformLocation (glprog, name)
+    if glunif < 0 then 
         raise <| OpenGLError (sprintf "Uniform '%s' was not found in program" name)
-    uniform
+    Uniform glunif
+
+let (&=) (Uniform glunif) (value : obj) =
+    match value with
+    | :? int as i -> GL.Uniform1 (glunif, i)
+    | :? uint32 as i -> GL.Uniform1 (glunif, i)
+    | :? float32 as f -> GL.Uniform1 (glunif, f)
+    | :? float as f -> GL.Uniform1 (glunif, f)
+    | :? (int []) as a -> GL.Uniform1 (glunif, a.Length, a)
+    | :? (uint32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
+    | :? (float32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
+    | :? (float []) as a -> GL.Uniform1 (glunif, a.Length, a)
+    | _ -> raise <| OpenGLError "Unsupported uniform type"
 
 /// Initalize a vertex buffer with sequence of vertices. Get the number of buffer as parameter.
 /// Returns the handle to the vbo and the length of the sequence as a tuple.
-let initVertexBuffer (vertices : seq<'a>) =
-    let vbo = GL.GenBuffer ()
+let initVertexBuffer (vertices : seq<'a>) : VBO =
+    let glvbo = GL.GenBuffer ()
     let varr = Seq.toArray vertices
     let size = sizeof<'a> * varr.Length |> nativeint
 
-    checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, vbo)
+    checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, glvbo)
     checkError <| GL.BufferData (BufferTarget.ArrayBuffer, size, varr, BufferUsageHint.StaticDraw)
-    (vbo, varr.Length)
+    VBO (glvbo, varr.Length)
 
 /// Draw the vertex buffer referred by the vbo. 
 /// The program, vbo and number of is given as parameter.
-let drawVertexBuffer<'a when 'a : struct> (program : int) (vbo : int) (vertexCount : int) = 
+let drawVertexBuffer<'a when 'a : struct> prog (VBO (glvbo, cnt)) = 
     let recSize = sizeof<'a>
 
     // Setup an attribute
     let setupAttr (offset : int) (attr : VertexAttr) =
-        let index = getVertexAttrIndex program attr.name
+        let index = getVertexAttrIndex prog attr.name
         checkError <| GL.EnableVertexAttribArray (index)
         checkError <| GL.VertexAttribPointer (index, attr.count, attr.ptype, false, recSize, offset)
         offset + attr.size        
     
-    checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, vbo)
+    checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, glvbo)
     Seq.fold setupAttr 0 (getVertexAttrs<'a> ()) |> ignore
-    checkError <| GL.DrawArrays (PrimitiveType.TriangleStrip, 0, vertexCount)
+    checkError <| GL.DrawArrays (PrimitiveType.TriangleStrip, 0, cnt)
 
 /// Create a shader of specific type given the file path to the source.
-let createShader program (stype, path) =
+let createShader (Program glprog) (stype, path) =
     let shader = GL.CreateShader stype
     let src = File.ReadAllText path
 
@@ -126,19 +147,20 @@ let createShader program (stype, path) =
     let log = checkError <| GL.GetShaderInfoLog (shader)
     if log.Contains("ERROR") then
         raise <| OpenGLError (sprintf "Shader compilation error in '%s':\n%s" path log)
-    checkError <| GL.AttachShader (program, shader)
+    checkError <| GL.AttachShader (glprog, shader)
     printf "%s" log
 
 /// Load a program consisting of a give set of shaders
-let loadProgram shaders = 
-    let program = GL.CreateProgram ()
-    let createShader = createShader program
+let loadProgram shaders : Program = 
+    let glprog = GL.CreateProgram ()
+    let prog = Program glprog
+    let createShader = createShader prog
 
     shaders |> List.iter createShader
-    checkError <| GL.LinkProgram program
-    let log = checkError <| GL.GetProgramInfoLog program
+    checkError <| GL.LinkProgram glprog
+    let log = checkError <| GL.GetProgramInfoLog glprog
     if log.Contains("ERROR") then
         raise <| OpenGLError (sprintf "Program linking error:\n%s" log)
-    checkError <| GL.UseProgram program
+    checkError <| GL.UseProgram glprog
     printf "%s" <| log
-    program
+    prog

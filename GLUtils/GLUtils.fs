@@ -86,18 +86,26 @@ let getVertexAttrs<'a when 'a : struct> () : VertexAttr seq =
     t.GetFields (BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public) |>
         Seq.map mapToVertexAttr
 
+/// Initialize the vertex array object.
+let initVertexArrayObject () =
+    let vao = GL.GenVertexArray()
+    GL.BindVertexArray vao
+
+/// Get the index of a vertex attribute.
 let getVertexAttrIndex (Program glprog) (name : string) = 
     let index = GL.GetAttribLocation (glprog, name)
     if index < 0 then 
         raise <| OpenGLError (sprintf "Attribute '%s' was not found in program" name)
     index
 
+/// Get the uniform with given name in a given program.
 let getUniform (Program glprog) (name : string) : Uniform =
     let glunif = GL.GetUniformLocation (glprog, name)
     if glunif < 0 then 
         raise <| OpenGLError (sprintf "Uniform '%s' was not found in program" name)
     Uniform glunif
 
+/// Assign a value to the uniform.
 let (&=) (Uniform glunif) (value : obj) =
     match value with
     | :? int as i -> GL.Uniform1 (glunif, i)
@@ -108,22 +116,22 @@ let (&=) (Uniform glunif) (value : obj) =
     | :? (uint32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
     | :? (float32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
     | :? (float []) as a -> GL.Uniform1 (glunif, a.Length, a)
-    | _ -> raise <| OpenGLError "Unsupported uniform type"
+    | _ -> raise <| OpenGLError "Unsupported uniform value type"
 
 /// Initalize a vertex buffer with sequence of vertices. Get the number of buffer as parameter.
 /// Returns the handle to the vbo and the length of the sequence as a tuple.
-let initVertexBuffer (vertices : seq<'a>) : VBO =
+let initVertexBuffer (vertices : seq<'a>) (bufferType : BufferTarget) : VBO =
     let glvbo = GL.GenBuffer ()
     let varr = Seq.toArray vertices
     let size = sizeof<'a> * varr.Length |> nativeint
 
-    checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, glvbo)
-    checkError <| GL.BufferData (BufferTarget.ArrayBuffer, size, varr, BufferUsageHint.StaticDraw)
+    checkError <| GL.BindBuffer (bufferType, glvbo)
+    checkError <| GL.BufferData (bufferType, size, varr, BufferUsageHint.StaticDraw)
     VBO (glvbo, varr.Length)
 
 /// Draw the vertex buffer referred by the vbo. 
 /// The program, vbo and number of is given as parameter.
-let drawVertexBuffer<'a when 'a : struct> prog (VBO (glvbo, cnt)) = 
+let drawVertexBuffer<'a when 'a : struct> prog (VBO (glvbo, vcnt)) (VBO (glibo, icnt))  = 
     let recSize = sizeof<'a>
 
     // Setup an attribute
@@ -135,7 +143,8 @@ let drawVertexBuffer<'a when 'a : struct> prog (VBO (glvbo, cnt)) =
     
     checkError <| GL.BindBuffer (BufferTarget.ArrayBuffer, glvbo)
     Seq.fold setupAttr 0 (getVertexAttrs<'a> ()) |> ignore
-    checkError <| GL.DrawArrays (PrimitiveType.TriangleStrip, 0, cnt)
+    checkError <| GL.BindBuffer (BufferTarget.ElementArrayBuffer, glibo)
+    checkError <| GL.DrawElements (PrimitiveType.Triangles, icnt, DrawElementsType.UnsignedInt, 0)
 
 /// Create a shader of specific type given the file path to the source.
 let createShader (Program glprog) (stype, path) =

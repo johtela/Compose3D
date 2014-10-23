@@ -43,5 +43,27 @@
 		{
 			return new Transform<V> (geometry, matrix);
 		}
+
+		public static Geometry<V> Cube<V> (float width, float height, float depth, Vector4 color) where V : struct, IVertex
+		{
+			var right = width / 2.0f;
+			var left = -right;
+			var top = height / 2.0f;
+			var bottom = -top;
+			var front = depth / 2.0f;
+			var back = -front;
+			var a180 = (float)Math.PI;
+			var a90 = a180 / 2.0f;
+			Func<Geometry<V>> rect = () => Rectangle<V> (width, height, color);
+			
+			return Composite<V> (
+					rect ().Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
+					rect ().Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
+					rect ().Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
+					rect ().Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
+					rect ().Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
+					rect ().Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
+				);
+		}
 	}
 }

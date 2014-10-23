@@ -36,15 +36,15 @@
 			return index;
 		}
 
-		public Uniform GetUniform (string name)
+		public Uniform<T> GetUniform<T> (string name) where T : struct
 		{
 			var loc = GL.GetUniformLocation (_glProgram, name);
 			if (loc < 0)
 				throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
-			return new Uniform (loc);
+			return new Uniform<T> (loc);
 		}
 
-		public void DrawVertexBuffer<V> (VBO vertices, VBO indices) where V : struct, IVertex
+		public void DrawVertexBuffer<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex
 		{
 			var recSize = Marshal.SizeOf (typeof(V));
 			var offset = 0;

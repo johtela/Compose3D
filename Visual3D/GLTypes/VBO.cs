@@ -7,7 +7,7 @@
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
 
-	public class VBO
+	public class VBO<T> where T : struct
 	{
 		internal int _glvbo;
 		internal int _count;
@@ -18,15 +18,15 @@
 			_count = count;
 		}
 
-		public static VBO Init<V> (IEnumerable<V> vertices, BufferTarget buffertType) where V : struct
+		public VBO (IEnumerable<T> elements, BufferTarget bufferType)
 		{
-			var glvbo = GL.GenBuffer ();
-			var varr = vertices.ToArray ();
-			var size = new IntPtr (Marshal.SizeOf (typeof (V)) * varr.Length);
+			_glvbo = GL.GenBuffer ();
+			var varr = elements.ToArray ();
+			var size = new IntPtr (Marshal.SizeOf (typeof (T)) * varr.Length);
 
-			GL.BindBuffer (buffertType, glvbo);
-			GL.BufferData (buffertType, size, varr, BufferUsageHint.StaticDraw);
-			return new VBO (glvbo, varr.Length);
+			GL.BindBuffer (bufferType, _glvbo);
+			GL.BufferData (bufferType, size, varr, BufferUsageHint.StaticDraw);
+			_count = varr.Length;
 		}
 	}
 }

@@ -1,10 +1,6 @@
 ﻿namespace VisualTester
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Drawing;
-	using System.Linq;
-	using System.Windows.Forms;
 	using System.Runtime.InteropServices;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
@@ -33,29 +29,30 @@
 	public class TestWindow : GameWindow
 	{
 		private Program _program;
-		private VBO _vbo;
-		private VBO _ibo;
-		private Uniform _time;
-		private Uniform _loopDuration;
-		private Uniform _perspectiveMatrix;
+		private VBO<Vertex> _vbo;
+		private VBO<int> _ibo;
+		private Uniform<float> _time;
+		private Uniform<float> _loopDuration;
+		private Uniform<Matrix4> _perspectiveMatrix;
 		float _elapsedTime;
 
-		public TestWindow () : base (600, 600)
+		public TestWindow ()
+			: base (600, 600)
 		{
-			var color = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
-			var matrix = Matrix4.CreateTranslation(0.0f, 0.0f, -2.0f);
-			var geometry = Geometry.Rectangle<Vertex> (1.0f, 1.0f, color).Transform (matrix);
+			var color = new Vector4 (1.0f, 0.0f, 0.0f, 0.0f);
+			var matrix = Matrix4.CreateTranslation (0.0f, 0.0f, -3.0f);
+			var geometry = Geometry.Cube<Vertex> (1.0f, 1.0f, 1.0f, color).Transform (matrix);
 
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders\Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders\Vertex.glsl"));
 
-			_vbo = VBO.Init<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
-			_ibo = VBO.Init<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
+			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
+			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
 
-			_time = _program.GetUniform ("time");
-			_loopDuration = _program.GetUniform ("loopDuration");
-			_perspectiveMatrix = _program.GetUniform ("perspectiveMatrix") & 
+			_time = _program.GetUniform<float> ("time");
+			_loopDuration = _program.GetUniform<float> ("loopDuration");
+			_perspectiveMatrix = _program.GetUniform<Matrix4> ("perspectiveMatrix") &
 				Matrix4.CreatePerspectiveOffCenter (-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 100.0f);
 		}
 
@@ -74,7 +71,7 @@
 			_elapsedTime = _elapsedTime + (float)e.Time;
 			_loopDuration &= 5.0f;
 			_time &= _elapsedTime;
-			_program.DrawVertexBuffer<Vertex>(_vbo, _ibo);
+			_program.DrawVertexBuffer<Vertex> (_vbo, _ibo);
 			SwapBuffers ();
 		}
 

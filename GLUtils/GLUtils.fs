@@ -116,18 +116,18 @@ let (&=) (Uniform glunif) (value : obj) =
     | :? (uint32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
     | :? (float32 []) as a -> GL.Uniform1 (glunif, a.Length, a)
     | :? (float []) as a -> GL.Uniform1 (glunif, a.Length, a)
+    | :? Matrix4 as m -> GL.UniformMatrix4 (glunif, false, ref m)
     | _ -> raise <| OpenGLError "Unsupported uniform value type"
 
 /// Initalize a vertex buffer with sequence of vertices. Get the number of buffer as parameter.
 /// Returns the handle to the vbo and the length of the sequence as a tuple.
-let initVertexBuffer (vertices : seq<'a>) (bufferType : BufferTarget) : VBO =
+let initVertexBuffer (vertices : 'a array) (bufferType : BufferTarget) : VBO =
     let glvbo = GL.GenBuffer ()
-    let varr = Seq.toArray vertices
-    let size = sizeof<'a> * varr.Length |> nativeint
+    let size = sizeof<'a> * vertices.Length |> nativeint
 
     checkError <| GL.BindBuffer (bufferType, glvbo)
-    checkError <| GL.BufferData (bufferType, size, varr, BufferUsageHint.StaticDraw)
-    VBO (glvbo, varr.Length)
+    checkError <| GL.BufferData (bufferType, size, vertices, BufferUsageHint.StaticDraw)
+    VBO (glvbo, vertices.Length)
 
 /// Draw the vertex buffer referred by the vbo. 
 /// The program, vbo and number of is given as parameter.

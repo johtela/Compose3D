@@ -11,30 +11,7 @@ open System.Runtime.InteropServices
 open OpenTK
 open OpenTK.Graphics.OpenGL
 open GLUtils
-
-[<StructLayout(LayoutKind.Sequential)>]
-type Vertex =
-    struct
-        val position : Vector3
-        val color : Vector3
-        new (pos, col) = { position = pos; color = col }
-    end
-
-let vertices = [ 
-    Vertex (Vector3 (0.5f, 0.5f, 0.0f), Vector3 (1.0f, 0.0f, 0.0f))
-    Vertex (Vector3 (0.5f, -0.5f, 0.0f), Vector3 (1.0f, 0.0f, 0.0f))
-    Vertex (Vector3 (-0.5f, -0.5f, 0.0f), Vector3 (1.0f, 0.0f, 0.0f))
-    Vertex (Vector3 (-0.5f, 0.5f, 0.0f), Vector3 (1.0f, 0.0f, 0.0f))
-    Vertex (Vector3 (1.0f, 1.0f, 1.0f), Vector3 (0.0f, 1.0f, 0.0f))
-    Vertex (Vector3 (1.0f, 0.0f, 1.0f), Vector3 (0.0f, 1.0f, 0.0f))
-    Vertex (Vector3 (0.0f, 0.0f, 1.0f), Vector3 (0.0f, 1.0f, 0.0f))
-    Vertex (Vector3 (0.0f, 1.0f, 1.0f), Vector3 (0.0f, 1.0f, 0.0f))
-]
-
-let indices = [ 
-    0; 1; 2; 2; 3; 0;
-    6; 5; 4; 4; 7; 6;
-]
+open Geometry
 
 type SimpleExample () = 
     inherit GameWindow (600, 600)
@@ -43,11 +20,15 @@ type SimpleExample () =
                     (ShaderType.FragmentShader, "Fragment.glsl")
                     (ShaderType.VertexShader, "Vertex.glsl")
                 ]
-    let vbo = initVertexBuffer (List.toSeq vertices) BufferTarget.ArrayBuffer
-    let ibo = initVertexBuffer (List.toSeq indices) BufferTarget.ElementArrayBuffer
+    let matrix = Matrix4.CreateTranslation (0.0f, 0.0f, -2.0f)
+    let vertices = Geometry.rectVertices 1.0f 1.0f (Vector3 (1.0f, 0.0f, 0.0f)) matrix
+    let vbo = initVertexBuffer vertices BufferTarget.ArrayBuffer
+    let ibo = initVertexBuffer Geometry.rectIndices BufferTarget.ElementArrayBuffer
     let time = getUniform program "time"
     let loopDuration = getUniform program "loopDuration"
+    let perspectiveMatrix = getUniform program "perspectiveMatrix"
     let mutable elapsedTime = 0.0f
+    do perspectiveMatrix &= Matrix4.CreatePerspectiveOffCenter (-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 100.0f)
 
     member this.Init () =
         initVertexArrayObject ()

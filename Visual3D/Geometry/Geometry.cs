@@ -54,15 +54,14 @@
 			var back = -front;
 			var a180 = (float)Math.PI;
 			var a90 = a180 / 2.0f;
-			Func<Geometry<V>> rect = () => Rectangle<V> (width, height, color);
 			
 			return Composite<V> (
-					rect ().Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
-					rect ().Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
-					rect ().Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
-					rect ().Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
-					rect ().Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
-					rect ().Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
+					Rectangle<V> (width, height, color).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
+					Rectangle<V> (width, height, color).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
+					Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
+					Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
+					Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
+					Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
 				);
 		}
 	}

@@ -1,4 +1,4 @@
-﻿module Main
+﻿    module Main
 
 // Disable warning about non-verifiable code
 #nowarn "9"

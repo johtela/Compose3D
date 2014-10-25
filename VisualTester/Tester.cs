@@ -45,8 +45,8 @@
 			var geometry = Geometry.Cube<Vertex> (1.0f, 1.5f, 2.0f, color).Transform (matrix);
 
 			_program = new Program (
-				new Shader (ShaderType.FragmentShader, @"Shaders\Fragment.glsl"),
-				new Shader (ShaderType.VertexShader, @"Shaders\Vertex.glsl"));
+				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
+				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));
 
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);

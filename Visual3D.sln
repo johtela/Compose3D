@@ -36,10 +36,10 @@ Global
 		{CC2FF028-74C5-42E8-8577-7E99117B2F06}.Release|x86.ActiveCfg = Release|x86
 		{CC2FF028-74C5-42E8-8577-7E99117B2F06}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = VisualTester\VisualTester.csproj
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = ConsoleApplication1\Testbench.fsproj
 	EndGlobalSection
 EndGlobal

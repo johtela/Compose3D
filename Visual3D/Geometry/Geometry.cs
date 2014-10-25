@@ -6,18 +6,52 @@
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
 
+	/// <summary>
+	/// Interface that is used to access mandatory vertex attributes.
+	/// </summary>
+	/// <description>
+	/// All Vertex structures need to implement this interface. Through it
+	/// geometry generators can set vertex attributes.
+	/// </description>
 	public interface IVertex
 	{
+		/// <summary>
+		/// Position of the vertex.
+		/// </summary>
 		Vector4 Position { get; set; }
+
+		/// <summary>
+		/// Color of the vertex.
+		/// </summary>
 		Vector4 Color { get; set; }
 	}
 
+	/// <summary>
+	/// Abstraction for geometrical shapes that can be rendered with OpenGL.
+	/// </summary>
+	/// <description>
+	/// Complex geometries are created by composing simple primitives together.
+	/// </description>
 	public abstract class Geometry<V> where V : struct, IVertex
 	{
+		/// <summary>
+		/// Gets the number of vertices in this geometry.
+		/// </summary>
 		public abstract int VertexCount { get; }
+
+		/// <summary>
+		/// Enumerates the vertices of the geometry.
+		/// </summary>
 		public abstract IEnumerable<V> Vertices { get; }
+
+		/// <summary>
+		/// Enumerates the indices used to draw triangles of the geometry.
+		/// </summary>
 		public abstract IEnumerable<int> Indices { get; }
 
+		/// <summary>
+		/// Helper function that creates a vertex and sets its position and color.
+		/// </summary>
 		public static V Vertex (Vector4 pos, Vector4 col)
 		{
 			var vertex = new V ();
@@ -27,6 +61,9 @@
 		}
 	}
 
+	/// <summary>
+	/// Contains static and extension methods that can be used compose geometries.
+	/// </summary>
 	public static class Geometry
 	{
 		public static Geometry<V> Rectangle<V> (float width, float height, Vector4 color) where V : struct, IVertex
@@ -56,13 +93,13 @@
 			var a90 = a180 / 2.0f;
 			
 			return Composite<V> (
-					Rectangle<V> (width, height, color).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
-					Rectangle<V> (width, height, color).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
-					Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
-					Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
-					Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
-					Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
-				);
+				Rectangle<V> (width, height, color).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
+				Rectangle<V> (width, height, color).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
+				Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
+				Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
+				Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
+				Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
+			);
 		}
 	}
 }

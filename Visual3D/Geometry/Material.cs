@@ -40,24 +40,15 @@ namespace Visual3D
 		public class RepeatColorsMaterial : IMaterial
 		{
 			private Vector4[] _colors;
-			private int _index;
 
 			public RepeatColorsMaterial (params Vector4[] colors)
 			{
 				_colors = colors;
-				_index = -1;
 			}
 
 			public IEnumerable<Vector4> Colors
 			{
-				get
-				{
-					while (true)
-					{
-						_index = (_index + 1) % _colors.Length;
-						yield return _colors[_index];
-					}
-				}
+				get { return _colors.Repeat (); }
 			}
 		}
 

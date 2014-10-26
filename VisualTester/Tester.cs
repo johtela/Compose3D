@@ -42,7 +42,7 @@
 		{
 			var matrix = Matrix4.CreateTranslation (0.0f, 0.0f, -3.0f);
 			var geometry = Geometry.Cube<Vertex> (1.0f, 1.5f, 2.0f).Transform (matrix)
-				.Material (Material.RepeatColors (Color.White, Color.White, Color.Blue, Color.White));
+				.Material (Material.RepeatColors (Color.White, Color.Blue, Color.White, Color.White));
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));

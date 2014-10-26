@@ -51,8 +51,8 @@
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Geometry\Material.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="Geometry\Color.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -43,5 +43,16 @@
 				}
 			}
 		}
+
+		public override IMaterial Material
+		{
+			get { return base.Material; }
+			set
+			{
+				foreach (var geometry in _geometries)
+					geometry.Material = value;
+				base.Material = value;
+			}
+		}
 	}
 }

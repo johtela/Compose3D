@@ -6,6 +6,11 @@
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
 
+	public class GeometryError : Exception
+	{
+		public GeometryError (string msg) : base (msg) { }
+	}
+
 	/// <summary>
 	/// Interface that is used to access mandatory vertex attributes.
 	/// </summary>
@@ -34,6 +39,8 @@
 	/// </description>
 	public abstract class Geometry<V> where V : struct, IVertex
 	{
+		private IMaterial _material;
+
 		/// <summary>
 		/// Gets the number of vertices in this geometry.
 		/// </summary>
@@ -48,6 +55,19 @@
 		/// Enumerates the indices used to draw triangles of the geometry.
 		/// </summary>
 		public abstract IEnumerable<int> Indices { get; }
+
+		/// <summary>
+		/// Gets the material used for the geometry.
+		/// </summary>
+		virtual public IMaterial Material 
+		{ 
+			get 
+			{ 
+				if (_material == null) throw new GeometryError("Material not set for this geometry");
+				return _material;
+			}
+			set { _material = value; }
+		}
 
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
@@ -66,9 +86,9 @@
 	/// </summary>
 	public static class Geometry
 	{
-		public static Geometry<V> Rectangle<V> (float width, float height, Vector4 color) where V : struct, IVertex
+		public static Geometry<V> Rectangle<V> (float width, float height) where V : struct, IVertex
 		{
-			return new Rectangle<V> (width, height, color);
+			return new Rectangle<V> (width, height);
 		}
 
 		public static Geometry<V> Composite<V> (params Geometry<V>[] geometries) where V : struct, IVertex
@@ -81,7 +101,7 @@
 			return new Transform<V> (geometry, matrix);
 		}
 
-		public static Geometry<V> Cube<V> (float width, float height, float depth, Vector4 color) where V : struct, IVertex
+		public static Geometry<V> Cube<V> (float width, float height, float depth) where V : struct, IVertex
 		{
 			var right = width / 2.0f;
 			var left = -right;
@@ -93,13 +113,19 @@
 			var a90 = a180 / 2.0f;
 			
 			return Composite<V> (
-				Rectangle<V> (width, height, color).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
-				Rectangle<V> (width, height, color).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
-				Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
-				Rectangle<V> (width, depth, color).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
-				Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
-				Rectangle<V> (depth, height, color).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
+				Rectangle<V> (width, height).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
+				Rectangle<V> (width, height).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
+				Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
+				Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
+				Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
+				Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
 			);
+		}
+
+		public static Geometry<V> Material<V> (this Geometry<V> geometry, IMaterial material) where V : struct, IVertex
+		{
+			geometry.Material = material;
+			return geometry;
 		}
 	}
 }

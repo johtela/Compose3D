@@ -34,5 +34,15 @@
 		{
 			get { return _geometry.Indices; }
 		}
+
+		public override IMaterial Material
+		{
+			get { return base.Material; }
+			set
+			{
+				_geometry.Material = value;
+				base.Material = value;
+			}
+		}
 	}
 }

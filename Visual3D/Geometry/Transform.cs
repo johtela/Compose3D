@@ -40,7 +40,8 @@
 			get { return base.Material; }
 			set
 			{
-				_geometry.Material = value;
+				if (!_geometry.HasMaterial)
+					_geometry.Material = value;
 				base.Material = value;
 			}
 		}

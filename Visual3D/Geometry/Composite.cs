@@ -1,4 +1,4 @@
-﻿namespace Visual3D
+﻿namespace Visual3D.Geometry
 {
 	using System;
 	using System.Collections.Generic;
@@ -14,6 +14,11 @@
 		public Composite (params Geometry<V>[] geometries)
 		{
 			_geometries = geometries;
+		}
+
+		public Composite (IEnumerable<Geometry<V>> geometries)
+		{
+			_geometries = geometries.ToArray ();
 		}
 
 		public override int VertexCount

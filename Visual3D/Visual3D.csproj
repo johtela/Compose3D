@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Geometry\Composite.cs" />
+    <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\GLError.cs" />

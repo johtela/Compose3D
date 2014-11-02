@@ -6,6 +6,7 @@
 	using System.Runtime.InteropServices;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+	using Visual3D.Geometry;
 
 	public class Program
 	{

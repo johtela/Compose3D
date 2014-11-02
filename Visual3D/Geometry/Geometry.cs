@@ -1,4 +1,4 @@
-﻿namespace Visual3D
+﻿namespace Visual3D.Geometry
 {
 	using System;
 	using System.Collections.Generic;
@@ -104,30 +104,14 @@
 			return new Composite<V> (geometries);
 		}
 
+		public static Geometry<V> Composite<V> (IEnumerable<Geometry<V>> geometries) where V : struct, IVertex
+		{
+			return new Composite<V> (geometries);
+		}
+
 		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Matrix4 matrix) where V : struct, IVertex
 		{
 			return new Transform<V> (geometry, matrix);
-		}
-
-		public static Geometry<V> Cube<V> (float width, float height, float depth) where V : struct, IVertex
-		{
-			var right = width / 2.0f;
-			var left = -right;
-			var top = height / 2.0f;
-			var bottom = -top;
-			var front = depth / 2.0f;
-			var back = -front;
-			var a180 = (float)Math.PI;
-			var a90 = a180 / 2.0f;
-			
-			return Composite<V> (
-				Rectangle<V> (width, height).Transform (Matrix4.CreateTranslation (0.0f, 0.0f, front)),
-				Rectangle<V> (width, height).Transform (Matrix4.CreateRotationX (a180) * Matrix4.CreateTranslation (0.0f, 0.0f, back)),
-				Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (-a90) * Matrix4.CreateTranslation (0.0f, top, 0.0f)),
-				Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (a90) * Matrix4.CreateTranslation (0.0f, bottom, 0.0f)),
-				Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (-a90) * Matrix4.CreateTranslation (left, 0.0f, 0.0f)),
-				Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (a90) * Matrix4.CreateTranslation (right, 0.0f, 0.0f))
-			);
 		}
 
 		public static Geometry<V> Material<V> (this Geometry<V> geometry, IMaterial material) where V : struct, IVertex

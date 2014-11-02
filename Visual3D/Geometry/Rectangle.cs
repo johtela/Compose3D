@@ -1,4 +1,4 @@
-﻿namespace Visual3D
+﻿namespace Visual3D.Geometry
 {
 	using System;
 	using System.Collections.Generic;

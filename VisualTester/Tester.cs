@@ -8,6 +8,7 @@
 	using OpenTK.Input;
 	using Visual3D;
 	using Visual3D.GLTypes;
+	using Visual3D.Geometry;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex
@@ -36,13 +37,12 @@
 		private Vector3 _orientation;
 		private Uniform<Matrix4> _worldMatrix;
 		private Uniform<Matrix4> _perspectiveMatrix;
-		float _elapsedTime;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Visual3D")
 		{
-			var geometry = Geometry.Cube<Vertex> (1.0f, 1.5f, 2.0f)
-				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random));
+			var geometry = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f)
+				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));
@@ -75,7 +75,6 @@
 		{
 			base.OnRenderFrame (e);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			_elapsedTime = _elapsedTime + (float)e.Time;
 			_program.DrawVertexBuffer<Vertex> (_vbo, _ibo);
 			SwapBuffers ();
 		}
@@ -94,8 +93,8 @@
 			base.OnMouseMove (e);
 			if (e.Mouse.IsButtonDown (MouseButton.Left))
 			{
-				var rotX = ((float)e.YDelta / 200.0f) * MathHelper.Pi;
-				var rotY = ((float)e.XDelta / 200.0f) * MathHelper.Pi;
+				var rotX = ((float)e.YDelta / 500.0f) * MathHelper.Pi;
+				var rotY = ((float)e.XDelta / 500.0f) * MathHelper.Pi;
 				_orientation += new Vector3 (rotX, rotY, 0.0f);
 				UpdateWorldMatrix ();
 			}
@@ -104,12 +103,9 @@
 		protected override void OnMouseWheel (MouseWheelEventArgs e)
 		{
 			base.OnMouseWheel (e);
-			var newCamera = _orientation + (_orientation * (e.DeltaPrecise * -0.1f));
-			if (newCamera.Length >= 2.0f)
-			{
-				_orientation = newCamera;
-				UpdateWorldMatrix ();
-			}
+			_orientation.Z += e.DeltaPrecise * -0.1f;
+			_orientation.Z = Math.Max (_orientation.Z, 2.0f);
+			UpdateWorldMatrix ();
 		}
 
 		[STAThread]

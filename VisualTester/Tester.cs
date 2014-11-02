@@ -33,7 +33,7 @@
 		private Program _program;
 		private VBO<Vertex> _vbo;
 		private VBO<int> _ibo;
-		private Vector3 _camera;
+		private Vector3 _orientation;
 		private Uniform<Matrix4> _worldMatrix;
 		private Uniform<Matrix4> _perspectiveMatrix;
 		float _elapsedTime;
@@ -50,7 +50,7 @@
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
 
-			_camera = new Vector3 (0.0f, 0.0f, 3.0f);
+			_orientation = new Vector3 (0.0f, 0.0f, 3.0f);
 			_worldMatrix = _program.GetUniform<Matrix4> ("worldMatrix");
 			_perspectiveMatrix = _program.GetUniform<Matrix4> ("perspectiveMatrix");
 		}
@@ -67,7 +67,8 @@
 
 		private void UpdateWorldMatrix ()
 		{
-			_worldMatrix &= Matrix4.LookAt (_camera, Vector3.Zero, Vector3.UnitY);			
+			_worldMatrix &= Matrix4.CreateRotationY (_orientation.Y) * Matrix4.CreateRotationX (_orientation.X)
+				* Matrix4.CreateTranslation (0.0f, 0.0f, -_orientation.Z);
 		}
 
 		protected override void OnRenderFrame (FrameEventArgs e)
@@ -93,10 +94,9 @@
 			base.OnMouseMove (e);
 			if (e.Mouse.IsButtonDown (MouseButton.Left))
 			{
-				var rotX = ((float)e.YDelta / -200.0f) * MathHelper.Pi;
-				var rotY = ((float)e.XDelta / -200.0f) * MathHelper.Pi;
-				var matrix = Matrix4.CreateRotationX (rotX) * Matrix4.CreateRotationY (rotY);
-				_camera =  Vector4.Transform (new Vector4(_camera), matrix).Xyz;
+				var rotX = ((float)e.YDelta / 200.0f) * MathHelper.Pi;
+				var rotY = ((float)e.XDelta / 200.0f) * MathHelper.Pi;
+				_orientation += new Vector3 (rotX, rotY, 0.0f);
 				UpdateWorldMatrix ();
 			}
 		}
@@ -104,10 +104,10 @@
 		protected override void OnMouseWheel (MouseWheelEventArgs e)
 		{
 			base.OnMouseWheel (e);
-			var newCamera = _camera + (_camera * (e.DeltaPrecise * -0.1f));
+			var newCamera = _orientation + (_orientation * (e.DeltaPrecise * -0.1f));
 			if (newCamera.Length >= 2.0f)
 			{
-				_camera = newCamera;
+				_orientation = newCamera;
 				UpdateWorldMatrix ();
 			}
 		}

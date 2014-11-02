@@ -42,7 +42,7 @@
 			: base (800, 600, GraphicsMode.Default, "Visual3D")
 		{
 			var geometry = Geometry.Cube<Vertex> (1.0f, 1.5f, 2.0f)
-				.Material (Material.RepeatColors (Color.White, Color.Blue, Color.White));
+				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random));
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));

@@ -59,7 +59,7 @@
 		/// <summary>
 		/// Gets the material used for the geometry.
 		/// </summary>
-		virtual public IMaterial Material 
+		public virtual IMaterial Material 
 		{ 
 			get 
 			{ 
@@ -67,6 +67,14 @@
 				return _material;
 			}
 			set { _material = value; }
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether this geometry has material set.
+		/// </summary>
+		public bool HasMaterial
+		{
+			get { return _material != null; }
 		}
 
 		/// <summary>

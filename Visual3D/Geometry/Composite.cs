@@ -50,7 +50,8 @@
 			set
 			{
 				foreach (var geometry in _geometries)
-					geometry.Material = value;
+					if (!geometry.HasMaterial)
+						geometry.Material = value;
 				base.Material = value;
 			}
 		}

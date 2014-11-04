@@ -57,6 +57,23 @@
 		public abstract IEnumerable<int> Indices { get; }
 
 		/// <summary>
+		/// Return the bounding box of this geometry.
+		/// </summary>
+		public  virtual BBox BoundingBox 
+		{
+			get
+			{
+				var e = Vertices.GetEnumerator ();
+				if (!e.MoveNext ())
+					throw new GeometryError ("Geometry must contain at least one vertex");
+				var result = new BBox (e.Current.Position.Xyz);
+				while (e.MoveNext ())
+					result += e.Current.Position.Xyz;
+				return result;
+			}
+		}
+
+		/// <summary>
 		/// Gets the material used for the geometry.
 		/// </summary>
 		public virtual IMaterial Material 
@@ -97,16 +114,6 @@
 		public static Geometry<V> Rectangle<V> (float width, float height) where V : struct, IVertex
 		{
 			return new Rectangle<V> (width, height);
-		}
-
-		public static Geometry<V> Composite<V> (params Geometry<V>[] geometries) where V : struct, IVertex
-		{
-			return new Composite<V> (geometries);
-		}
-
-		public static Geometry<V> Composite<V> (IEnumerable<Geometry<V>> geometries) where V : struct, IVertex
-		{
-			return new Composite<V> (geometries);
 		}
 
 		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Matrix4 matrix) where V : struct, IVertex

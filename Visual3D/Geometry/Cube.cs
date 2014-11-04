@@ -40,7 +40,7 @@
 
 		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFace faces) where V : struct, IVertex
 		{
-			return Geometry.Composite<V> (GetFaces<V> (width, height, depth, faces));
+			return Composite.Create<V> (GetFaces<V> (width, height, depth, faces));
 		}
 
 		public static Geometry<V> Create<V> (float width, float height, float depth) where V : struct, IVertex

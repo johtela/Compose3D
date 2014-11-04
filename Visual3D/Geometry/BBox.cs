@@ -11,6 +11,7 @@ namespace Visual3D.Geometry
 	/// </summary>
 	public enum Align
 	{
+		None,		/// No alignment
 		Negative,	/// Align along faces with the smaller coordinates.
 		Center, 	/// Align along the center of the bounding boxes.
 		Positive	/// Align along the faces with greater coordinates.
@@ -116,7 +117,8 @@ namespace Visual3D.Geometry
 			{
 				case Align.Negative: return Left - other.Left;
 				case Align.Positive: return Right - other.Right;
-				default: return Center.X - other.Center.X;
+				case Align.Center: return Center.X - other.Center.X;
+				default: return 0.0f;
 			}
 		}
 
@@ -129,7 +131,8 @@ namespace Visual3D.Geometry
 			{
 				case Align.Negative: return Bottom - other.Bottom;
 				case Align.Positive: return Top - other.Top;
-				default: return Center.Y - other.Center.Y;
+				case Align.Center: return Center.Y - other.Center.Y;
+				default: return 0.0f;
 			}
 		}
 
@@ -142,7 +145,8 @@ namespace Visual3D.Geometry
 			{
 				case Align.Negative: return Back - other.Back;
 				case Align.Positive: return Front - other.Front;
-				default: return Center.Z - other.Center.Z;
+				case Align.Center: return Center.Z - other.Center.Z;
+				default: return 0.0f;
 			}
 		}
 

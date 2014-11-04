@@ -54,6 +54,7 @@
     <Compile Include="Geometry\Material.cs" />
     <Compile Include="Geometry\Color.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="Geometry\BBox.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

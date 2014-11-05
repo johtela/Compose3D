@@ -1,4 +1,4 @@
-﻿namespace CompositeTester
+﻿namespace ComposeTester
 {
 	using System;
 	using System.Runtime.InteropServices;
@@ -41,11 +41,13 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			var cube1 = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f).Transform (Matrix4.CreateRotationY (MathHelper.PiOver2))
-				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));
-			var cube2 = Cube.Create<Vertex> (1.0f, 1.0f, 1.0f)
-				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));
-			var geometry = Composite.StackForward (Align.Negative, Align.Center, cube1, cube2);
+			var cube1 = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f).Rotate (0.0f, MathHelper.PiOver2, 0.0f)
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+			var cube2 = Cube.Create<Vertex> (1.0f, 1.0f, 1.0f).Scale (0.8f, 0.8f, 0.8f)
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+			var cube3 = Cube.Create<Vertex> (1.0f, 1.0f, 2.0f)
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+			var geometry = Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));

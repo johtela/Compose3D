@@ -38,7 +38,8 @@
 			if (faces.HasFlag (CubeFace.Right)) yield return RightFace<V> (depth, height, right);
 		}
 
-		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFace faces) where V : struct, IVertex
+		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFace faces) 
+			where V : struct, IVertex
 		{
 			return Composite.Create<V> (GetFaces<V> (width, height, depth, faces));
 		}

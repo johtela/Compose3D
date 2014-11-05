@@ -40,6 +40,7 @@
 	public abstract class Geometry<V> where V : struct, IVertex
 	{
 		private IMaterial _material;
+		private BBox _boundingBox;
 
 		/// <summary>
 		/// Gets the number of vertices in this geometry.
@@ -63,13 +64,16 @@
 		{
 			get
 			{
-				var e = Vertices.GetEnumerator ();
-				if (!e.MoveNext ())
-					throw new GeometryError ("Geometry must contain at least one vertex");
-				var result = new BBox (e.Current.Position.Xyz);
-				while (e.MoveNext ())
-					result += e.Current.Position.Xyz;
-				return result;
+				if (_boundingBox == null)
+				{
+					var e = Vertices.GetEnumerator ();
+					if (!e.MoveNext ())
+						throw new GeometryError ("Geometry must contain at least one vertex");
+					_boundingBox = new BBox (e.Current.Position.Xyz);
+					while (e.MoveNext ())
+						_boundingBox += e.Current.Position.Xyz;
+				}
+				return _boundingBox;
 			}
 		}
 
@@ -119,6 +123,35 @@
 		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Matrix4 matrix) where V : struct, IVertex
 		{
 			return new Transform<V> (geometry, matrix);
+		}
+
+		public static Geometry<V> Translate<V> (this Geometry<V> geometry, float offsetX, float offsetY, float offsetZ)
+			where V : struct, IVertex
+		{
+			var matrix = Matrix4.CreateTranslation (offsetX, offsetY, offsetZ);
+			return Transform (geometry, matrix);
+		}
+
+		public static Geometry<V> Scale<V> (this Geometry<V> geometry, float factorX, float factorY, float factorZ)
+			where V : struct, IVertex
+		{
+			var matrix = Matrix4.CreateScale (factorX, factorY, factorZ);
+			return Transform (geometry, matrix);
+		}
+
+		public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
+			where V : struct, IVertex
+		{
+			var matrix = Matrix4.CreateRotationZ (angleZ);
+			if (angleX != 0.0f) matrix *= Matrix4.CreateRotationX (angleX);
+			if (angleY != 0.0f) matrix *= Matrix4.CreateRotationY (angleY);
+			return Transform (geometry, matrix);
+		}
+
+		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex
+		{
+			var center = geometry.BoundingBox.Center;
+			return Translate (geometry, -center.X, -center.Y, -center.Z);
 		}
 
 		public static Geometry<V> Material<V> (this Geometry<V> geometry, IMaterial material) where V : struct, IVertex

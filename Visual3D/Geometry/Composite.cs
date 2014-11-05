@@ -14,7 +14,11 @@
 	/// <summary>
 	/// Direction of the stack; towards negative or positive values.
 	/// </summary>
-	public enum StackDirection { Negative, Positive }
+	public enum StackDirection : int
+	{ 
+		Negative = -1, 
+		Positive = 1
+	}
 
 	/// <summary>
 	/// Basic building block for composite geometries.
@@ -95,23 +99,16 @@
 			switch (axis)
 			{
 				case StackAxis.X: 
-					return direction == StackDirection.Negative ? 
-						Matrix4.CreateTranslation (previous.Left - current.Right, 0.0f, 0.0f) :
-						Matrix4.CreateTranslation (previous.Right - current.Left, 0.0f, 0.0f);
+					return Matrix4.CreateTranslation ((previous.Right - current.Left) * (float)direction, 0.0f, 0.0f);
 				case StackAxis.Y: 
-					return direction == StackDirection.Negative ? 
-						Matrix4.CreateTranslation (0.0f, previous.Bottom - current.Top, 0.0f) :
-						Matrix4.CreateTranslation (0.0f, previous.Top - current.Bottom, 0.0f);
+					return Matrix4.CreateTranslation (0.0f, (previous.Top - current.Bottom) * (float)direction, 0.0f);
 				default: 
-					return direction == StackDirection.Negative ? 
-						Matrix4.CreateTranslation (0.0f, 0.0f, previous.Back - current.Front) :
-						Matrix4.CreateTranslation (0.0f, 0.0f, previous.Front - current.Back);
+					return Matrix4.CreateTranslation (0.0f, 0.0f, (previous.Front - current.Back) * (float)direction);
 			}
 		}
 
 		private static Matrix4 GetStackingMatrix (StackAxis axis, StackDirection direction, 
-		                                          Align xalign, Align yalign, Align zalign,
-		                                          BBox previous, BBox current)
+      		Align xalign, Align yalign, Align zalign, BBox previous, BBox current)
 		{
 			var alignMatrix = Matrix4.CreateTranslation (previous.GetXOffset (current, xalign),
 			                                             previous.GetYOffset (current, yalign),
@@ -120,8 +117,7 @@
 		}
 
 		public static Geometry<V> Stack<V> (StackAxis axis, StackDirection direction,
-		                                    Align xalign, Align yalign, Align zalign,
-		                                    IEnumerable<Geometry<V>> geometries) where V : struct, IVertex
+            Align xalign, Align yalign, Align zalign, IEnumerable<Geometry<V>> geometries) where V : struct, IVertex
 		{
 			var previous = geometries.First ().BoundingBox;
 			var stackedGeometries = geometries.Skip (1).Select (geom => 
@@ -135,10 +131,87 @@
 		}
 
 		public static Geometry<V> Stack<V> (StackAxis axis, StackDirection direction,
-		                                    Align xalign, Align yalign, Align zalign,
-		                                    params Geometry<V>[] geometries) where V : struct, IVertex
+            Align xalign, Align yalign, Align zalign, params Geometry<V>[] geometries) where V : struct, IVertex
 		{
 			return Stack (axis, direction, xalign, yalign, zalign, geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackLeft<V> (Align yalign, Align zalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.X, StackDirection.Negative, Align.None, yalign, zalign, geometries);
+		}
+
+		public static Geometry<V> StackLeft<V> (Align yalign, Align zalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.X, StackDirection.Negative, Align.None, yalign, zalign, 
+			              geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackRight<V> (Align yalign, Align zalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.X, StackDirection.Positive, Align.None, yalign, zalign, geometries);
+		}
+
+		public static Geometry<V> StackRight<V> (Align yalign, Align zalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.X, StackDirection.Positive, Align.None, yalign, zalign, 
+			              geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackDown<V> (Align xalign, Align zalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Y, StackDirection.Negative, xalign, Align.None, zalign, geometries);
+		}
+
+		public static Geometry<V> StackDown<V> (Align xalign, Align zalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Y, StackDirection.Negative, xalign, Align.None, zalign, 
+			              geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackUp<V> (Align xalign, Align zalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Y, StackDirection.Positive, xalign, Align.None, zalign, geometries);
+		}
+
+		public static Geometry<V> StackUp<V> (Align xalign, Align zalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Y, StackDirection.Positive, xalign, Align.None, zalign, 
+			              geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackBackward<V> (Align xalign, Align yalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Z, StackDirection.Negative, xalign, yalign, Align.None, geometries);
+		}
+
+		public static Geometry<V> StackBackward<V> (Align xalign, Align yalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Z, StackDirection.Negative, xalign, yalign, Align.None, 
+			              geometries as IEnumerable<Geometry<V>>);
+		}
+
+		public static Geometry<V> StackForward<V> (Align xalign, Align yalign, IEnumerable<Geometry<V>> geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Z, StackDirection.Positive, xalign, yalign, Align.None, geometries);
+		}
+
+		public static Geometry<V> StackForward<V> (Align xalign, Align yalign, params Geometry<V>[] geometries)
+			where V : struct, IVertex
+		{
+			return Stack (StackAxis.Z, StackDirection.Positive, xalign, yalign, Align.None, 
+			              geometries as IEnumerable<Geometry<V>>);
 		}
 	}
 }

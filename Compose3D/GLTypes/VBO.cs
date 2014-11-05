@@ -1,4 +1,4 @@
-﻿namespace Visual3D.GLTypes
+﻿namespace Compose3D.GLTypes
 {
 	using System;
 	using System.Collections.Generic;

@@ -1,4 +1,4 @@
-namespace Visual3D
+namespace Compose3D
 {
 	using System;
 	using System.Collections.Generic;

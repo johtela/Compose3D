@@ -1,4 +1,4 @@
-﻿namespace VisualTester
+﻿namespace CompositeTester
 {
 	using System;
 	using System.Runtime.InteropServices;
@@ -6,9 +6,9 @@
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
-	using Visual3D;
-	using Visual3D.GLTypes;
-	using Visual3D.Geometry;
+	using Compose3D;
+	using Compose3D.GLTypes;
+	using Compose3D.Geometry;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex
@@ -39,7 +39,7 @@
 		private Uniform<Matrix4> _perspectiveMatrix;
 
 		public TestWindow ()
-			: base (800, 600, GraphicsMode.Default, "Visual3D")
+			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			var geometry = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f)
 				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));

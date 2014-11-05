@@ -1,4 +1,4 @@
-namespace Visual3D.Geometry
+namespace Compose3D.Geometry
 {
 	using System;
 	using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Visual3D.GLTypes
+﻿namespace Compose3D.GLTypes
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,7 +6,7 @@
 	using System.Runtime.InteropServices;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-	using Visual3D.Geometry;
+	using Compose3D.Geometry;
 
 	public class Program
 	{

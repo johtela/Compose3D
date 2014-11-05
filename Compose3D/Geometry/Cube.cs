@@ -61,25 +61,25 @@
 
 		public static Geometry<V> TopFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (MathHelper.Pi / -2.0f) *
+			return Geometry.Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (-MathHelper.PiOver2) *
 				Matrix4.CreateTranslation (0.0f, offset, 0.0f));
 		}
 
 		public static Geometry<V> BottomFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (MathHelper.Pi / 2.0f) *
+			return Geometry.Rectangle<V> (width, depth).Transform (Matrix4.CreateRotationX (MathHelper.PiOver2) *
 				Matrix4.CreateTranslation (0.0f, offset, 0.0f));
 		}
 
 		public static Geometry<V> LeftFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (MathHelper.Pi / -2.0f) *
+			return Geometry.Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (-MathHelper.PiOver2) *
 				Matrix4.CreateTranslation (offset, 0.0f, 0.0f));
 		}
 		
 		public static Geometry<V> RightFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (MathHelper.Pi / 2.0f) *
+			return Geometry.Rectangle<V> (depth, height).Transform (Matrix4.CreateRotationY (MathHelper.PiOver2) *
 				Matrix4.CreateTranslation (offset, 0.0f, 0.0f));
 		}
 	}

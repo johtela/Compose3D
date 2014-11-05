@@ -127,7 +127,7 @@
 				previous = new BBox (Vector3.Transform (current.Position, matrix), current.Size);
 				return Geometry.Transform (geom, matrix);
 			});
-			return Create (stackedGeometries);
+			return Create (geometries.Take (1).Concat (stackedGeometries));
 		}
 
 		public static Geometry<V> Stack<V> (StackAxis axis, StackDirection direction,

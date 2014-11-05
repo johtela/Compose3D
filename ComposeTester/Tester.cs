@@ -41,8 +41,11 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			var geometry = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f)
+			var cube1 = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f).Transform (Matrix4.CreateRotationY (MathHelper.PiOver2))
 				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));
+			var cube2 = Cube.Create<Vertex> (1.0f, 1.0f, 1.0f)
+				.Material (Material.RepeatColors (Color.Random, Color.Random, Color.Random, Color.Random));
+			var geometry = Composite.StackForward (Align.Negative, Align.Center, cube1, cube2);
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
 				new Shader (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));

@@ -31,11 +31,12 @@
 					var colors = Material.Colors.GetEnumerator ();
 					var right = _size.X / 2.0f;
 					var top = _size.Y / 2.0f;
+                    var normal = new Vector3 (0.0f, 0.0f, 1.0f);
 					_vertices = new V[] {
-						Vertex (new Vector4 (right, top, 0.0f, 1.0f), colors.Next ()),
-						Vertex (new Vector4 (right, -top, 0.0f, 1.0f), colors.Next ()),
-						Vertex (new Vector4 (-right, -top, 0.0f, 1.0f), colors.Next ()),
-						Vertex (new Vector4 (-right, top, 0.0f, 1.0f), colors.Next ())
+						Vertex (new Vector3 (right, top, 0.0f), colors.Next (), normal),
+						Vertex (new Vector3 (right, -top, 0.0f), colors.Next (), normal),
+						Vertex (new Vector3 (-right, -top, 0.0f), colors.Next (), normal),
+						Vertex (new Vector3 (-right, top, 0.0f), colors.Next (), normal)
 					};
 				}
 				return _vertices;

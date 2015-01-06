@@ -23,12 +23,17 @@
 		/// <summary>
 		/// Position of the vertex.
 		/// </summary>
-		Vector4 Position { get; set; }
+		Vector3 Position { get; set; }
 
 		/// <summary>
 		/// Color of the vertex.
 		/// </summary>
 		Vector4 Color { get; set; }
+
+        /// <summary>
+        /// The normal of the vertex.
+        /// </summary>
+        Vector3 Normal { get; set; }
 	}
 
 	/// <summary>
@@ -69,9 +74,9 @@
 					var e = Vertices.GetEnumerator ();
 					if (!e.MoveNext ())
 						throw new GeometryError ("Geometry must contain at least one vertex");
-					_boundingBox = new BBox (e.Current.Position.Xyz);
+					_boundingBox = new BBox (e.Current.Position);
 					while (e.MoveNext ())
-						_boundingBox += e.Current.Position.Xyz;
+						_boundingBox += e.Current.Position;
 				}
 				return _boundingBox;
 			}
@@ -101,11 +106,12 @@
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
-		public static V Vertex (Vector4 pos, Vector4 col)
+		public static V Vertex (Vector3 position, Vector4 color, Vector3 normal)
 		{
 			var vertex = new V ();
-			vertex.Position = pos;
-			vertex.Color = col;
+			vertex.Position = position;
+			vertex.Color = color;
+            vertex.Normal = normal;
 			return vertex;
 		}
 	}

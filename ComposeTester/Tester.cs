@@ -13,10 +13,11 @@
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex
 	{
-		private Vector4 position;
+		private Vector3 position;
 		private Vector4 color;
+        private Vector3 normal;
 
-		public Vector4 Position
+		public Vector3 Position
 		{
 			get { return position; }
 			set { position = value; }
@@ -27,6 +28,12 @@
 			get { return color; }
 			set { color = value; }
 		}
+
+        public Vector3 Normal
+        {
+            get { return normal; }
+            set { normal = value; }
+        }
 	}
 
 	public class TestWindow : GameWindow
@@ -37,6 +44,8 @@
 		private Vector3 _orientation;
 		private Uniform<Matrix4> _worldMatrix;
 		private Uniform<Matrix4> _perspectiveMatrix;
+        private Uniform<Matrix3> _normalMatrix;
+        private Uniform<Vector3> _dirToLight;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
@@ -58,6 +67,8 @@
 			_orientation = new Vector3 (0.0f, 0.0f, 3.0f);
 			_worldMatrix = _program.GetUniform<Matrix4> ("worldMatrix");
 			_perspectiveMatrix = _program.GetUniform<Matrix4> ("perspectiveMatrix");
+            _normalMatrix = _program.GetUniform<Matrix3> ("normalMatrix");
+            _dirToLight = _program.GetUniform<Vector3> ("dirToLight");
 		}
 
 		public void Init ()
@@ -72,8 +83,14 @@
 
 		private void UpdateWorldMatrix ()
 		{
-			_worldMatrix &= Matrix4.CreateRotationY (_orientation.Y) * Matrix4.CreateRotationX (_orientation.X)
-				* Matrix4.CreateTranslation (0.0f, 0.0f, -_orientation.Z);
+            var worm = Matrix4.CreateRotationY (_orientation.Y) * Matrix4.CreateRotationX (_orientation.X)
+				* Matrix4.CreateTranslation (0f, 0f, -_orientation.Z);
+			_worldMatrix &= worm;
+            var norm = new Matrix3 (worm);
+            norm.Invert ();
+            norm.Transpose ();
+            _normalMatrix &= norm;
+            _dirToLight &= new Vector3 (0f, 0f, 1f);
 		}
 
 		protected override void OnRenderFrame (FrameEventArgs e)

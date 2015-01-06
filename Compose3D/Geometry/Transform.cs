@@ -8,13 +8,17 @@
 
 	internal class Transform<V> : Geometry<V> where V : struct, IVertex
 	{
-		private Matrix4 _matrix;
-		private Geometry<V> _geometry;
+        private Geometry<V> _geometry;
+        private Matrix4 _matrix;
+        private Matrix3 _normalMatrix;
 
 		public Transform (Geometry<V> geometry, Matrix4 matrix)
 		{
 			_geometry = geometry;
 			_matrix = matrix;
+            _normalMatrix = new Matrix3 (matrix);
+            //_normalMatrix.Invert ();
+            //_normalMatrix.Transpose ();
 		}
 
 		public override int VertexCount
@@ -26,7 +30,10 @@
 		{
 			get
 			{
-				return _geometry.Vertices.Select (v => Vertex (Vector4.Transform (v.Position, _matrix), v.Color));
+				return _geometry.Vertices.Select (v => 
+                    Vertex (Vector3.Transform (v.Position, _matrix), 
+                        v.Color,
+                        v.Normal.Transform (_normalMatrix).Normalized ()));
 			}
 		}
 

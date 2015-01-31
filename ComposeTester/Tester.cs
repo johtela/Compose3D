@@ -7,7 +7,8 @@
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using Compose3D;
-	using Compose3D.GLTypes;
+    using Compose3D.GLSL;
+    using Compose3D.GLTypes;
 	using Compose3D.Geometry;
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -51,11 +52,11 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			var cube1 = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f).Rotate (0.0f, MathHelper.PiOver2, 0.0f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
 			var cube2 = Cube.Create<Vertex> (1.0f, 1.0f, 1.0f).Scale (0.8f, 0.8f, 0.8f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
 			var cube3 = Cube.Create<Vertex> (1.0f, 1.0f, 2.0f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Black, Color.Random));
+				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
 			var geometry = Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
 			_program = new Program (
 				new Shader (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
@@ -136,6 +137,10 @@
 			var wnd = new TestWindow ();
 			wnd.Init ();
 			wnd.Run ();
+
+            var v1 = new Vec2f (1f, 2f);
+            var v2 = -v1;
+            var r = v1 + v2;
 		}
 	}
 }

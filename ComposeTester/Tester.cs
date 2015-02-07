@@ -138,7 +138,7 @@
 			wnd.Init ();
 			wnd.Run ();
 
-            var v1 = new Vec2f (1f, 2f);
+            var v1 = new Vec2 (1f, 2f);
             var v2 = -v1;
             var r = v1 + v2;
 		}

@@ -6,177 +6,158 @@ using OpenTK;
 
 namespace Compose3D.GLSL
 {
-    public abstract class Vec3<TComp, TImpl> : Vec2<TComp, TImpl>
-        where TImpl : IEquatable<TImpl>
+    public class Vec3
     {
-        public abstract TComp Z { get; set; }
+        private Vector3 _vector;
 
-        public Vec2<TComp, TImpl> XY
+        public Vec3 () { }
+
+        public Vec3 (float x, float y, float z)
         {
-            get { return (Vec2<TComp, TImpl>)Clone (); }
+            _vector = new Vector3 (x, y, z);
+        }
+
+        private Vec3 (Vector3 vector)
+        {
+            _vector = vector;
+        }
+
+        public static Vec3 operator - (Vec3 vec)
+        {
+            return new Vec3 (-vec._vector);
+        }
+
+        public static Vec3 operator - (Vec3 left, Vec3 right)
+        {
+            var result = new Vec3 ();
+            Vector3.Subtract (ref left._vector, ref right._vector, out result._vector);
+            return result;
+        }
+
+        public static bool operator != (Vec3 left, Vec3 right)
+        {
+            return !left.Equals (right);
+        }
+
+        public static Vec3 operator * (float scalar, Vec3 vec)
+        {
+            var result = new Vec3 ();
+            Vector3.Multiply (ref vec._vector, scalar, out result._vector);
+            return result;
+        }
+
+        public static Vec3 operator * (Vec3 vec, float scalar)
+        {
+            return scalar * vec;
+        }
+
+        public static Vec3 operator * (Vec3 vec, Vec3 scale)
+        {
+            var result = new Vec3 ();
+            Vector3.Multiply (ref vec._vector, ref scale._vector, out result._vector);
+            return result;
+        }
+
+        public static Vec3 operator / (Vec3 vec, float scalar)
+        {
+            var result = new Vec3 ();
+            Vector3.Divide (ref vec._vector, scalar, out result._vector);
+            return result;
+        }
+
+        public static Vec3 operator + (Vec3 left, Vec3 right)
+        {
+            var result = new Vec3 ();
+            Vector3.Add (ref left._vector, ref right._vector, out result._vector);
+            return result;
+        }
+
+        public static bool operator == (Vec3 left, Vec3 right)
+        {
+            return left.Equals (right);
+        }
+
+        public bool Equals (Vec3 other)
+        {
+            return _vector.Equals (other._vector);
+        }
+
+        public override bool Equals (object obj)
+        {
+            return Equals ((Vec3)obj);
+        }
+
+        public override int GetHashCode ()
+        {
+            return _vector.GetHashCode ();
+        }
+
+        public float Dot (Vec3 other)
+        {
+            float result;
+            Vector3.Dot (ref _vector, ref other._vector, out result);
+            return result;
+        }
+
+        public float Length ()
+        {
+            return _vector.Length;
+        }
+
+        public float Distance (Vec3 other)
+        {
+            return (this - other).Length ();
+        }
+
+        public Vec3 Normalize ()
+        {
+            var result = new Vec3(_vector);
+            result._vector.Normalize ();
+            return result;
+        }
+
+        public float X 
+        {
+            get { return _vector.X; }
+            set { _vector.X = value; }
+        }
+
+        public float Y
+        {
+            get { return _vector.Y; }
+            set { _vector.Y = value; }
+        }
+
+        public float Z
+        {
+            get { return _vector.Z; }
+            set { _vector.Z = value; }
+        }
+
+        public float this[int index]
+        {
+            get { return _vector[index]; }
+            set { _vector[index] = value; }
+        }
+
+        public Vec2 this[Coord x, Coord y]
+        {
+            get { return new Vec2 (this[(int)x], this[(int)y]); }
             set
             {
-                X = value.X;
-                Y = value.Y;
+                this[(int)x] = value.X;
+                this[(int)y] = value.Y;
             }
         }
 
-        public Vec2<TComp, TImpl> XZ
+        public Vec3 this[Coord x, Coord y, Coord z]
         {
-            get 
-            {
-                var result = (Vec2<TComp, TImpl>)Clone ();
-                result.Y = Z;
-                return result;
-            }
+            get { return new Vec3 (this[(int)x], this[(int)y], this[(int)z]); }
             set
             {
-                X = value.X;
-                Z = value.Y;
-            }
-        }
-
-        public Vec2<TComp, TImpl> YZ
-        {
-            get
-            {
-                var result = (Vec2<TComp, TImpl>)Clone ();
-                result.X = Y;
-                result.Y = Z;
-                return result;
-            }
-            set
-            {
-                Y = value.X;
-                Z = value.Y;
-            }
-        }
-
-        public Vec2<TComp, TImpl> ZX
-        {
-            get
-            {
-                var result = (Vec2<TComp, TImpl>)Clone ();
-                result.X = Z;
-                result.Y = X;
-                return result;
-            }
-            set
-            {
-                Z = value.X;
-                X = value.Y;
-            }
-        }
-
-        public Vec2<TComp, TImpl> ZY
-        {
-            get
-            {
-                var result = (Vec2<TComp, TImpl>)Clone ();
-                result.X = Z;
-                return result;
-            }
-            set
-            {
-                Z = value.X;
-                Y = value.Y;
-            }
-        }
-
-        public Vec3<TComp, TImpl> XZY
-        {
-            get
-            {
-                var result = (Vec3<TComp, TImpl>)Clone ();
-                result.Y = Z;
-                result.Z = Y;
-                return result;
-            }
-            set
-            {
-                X = value.X;
-                Z = value.Y;
-                Y = value.Z;
-            }
-        }
-
-        public Vec3<TComp, TImpl> YXZ
-        {
-            get
-            {
-                var result = (Vec3<TComp, TImpl>)Clone ();
-                result.X = Y;
-                result.Y = X;
-                return result;
-            }
-            set
-            {
-                Y = value.X;
-                X = value.Y;
-                Z = value.Z;
-            }
-        }
-
-        public Vec3<TComp, TImpl> YZX
-        {
-            get
-            {
-                var result = (Vec3<TComp, TImpl>)Clone ();
-                result.X = Y;
-                result.Y = Z;
-                result.Z = X;
-                return result;
-            }
-            set
-            {
-                Y = value.X;
-                Z = value.Y;
-                X = value.Z;
-            }
-        }
-
-        public Vec3<TComp, TImpl> ZXY
-        {
-            get
-            {
-                var result = (Vec3<TComp, TImpl>)Clone ();
-                result.X = Z;
-                result.Y = X;
-                result.Z = Y;
-                return result;
-            }
-            set
-            {
-                Z = value.X;
-                X = value.Y;
-                Y = value.Z;
-            }
-        }
-
-        public Vec3<TComp, TImpl> ZYX
-        {
-            get
-            {
-                var result = (Vec3<TComp, TImpl>)Clone ();
-                result.X = Z;
-                result.Z = X;
-                return result;
-            }
-            set
-            {
-                Z = value.X;
-                Y = value.Y;
-                X = value.Z;
-            }
-        }
-
-        public override TComp this[int index]
-        {
-            get { return index == 2 ? Z : base[index]; }
-            set 
-            { 
-                if (index == 2) Z = value;
-                else base[index] = value; 
+                this[(int)x] = value.X;
+                this[(int)y] = value.Y;
+                this[(int)z] = value.Z;
             }
         }
     }

@@ -43,6 +43,7 @@
     <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
     <Compile Include="Geometry\Transform.cs" />
+    <Compile Include="GLSL\Coord.cs" />
     <Compile Include="GLSL\Vec3.cs" />
     <Compile Include="GLSL\Vec4.cs" />
     <Compile Include="GLTypes\GLError.cs" />
@@ -50,9 +51,7 @@
     <Compile Include="GLTypes\Shader.cs" />
     <Compile Include="GLTypes\Uniform.cs" />
     <Compile Include="GLTypes\VBO.cs" />
-    <Compile Include="GLSL\Vec.cs" />
     <Compile Include="GLSL\Vec2.cs" />
-    <Compile Include="GLSL\Vec2f.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

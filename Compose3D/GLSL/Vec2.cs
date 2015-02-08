@@ -8,7 +8,7 @@ namespace Compose3D.GLSL
 {
     public class Vec2
     {
-        private Vector2 _vector;
+        internal Vector2 _vector;
 
         public Vec2 () { }
 
@@ -17,7 +17,7 @@ namespace Compose3D.GLSL
             _vector = new Vector2 (x, y);
         }
 
-        private Vec2 (Vector2 vector)
+        public Vec2 (Vector2 vector)
         {
             _vector = vector;
         }

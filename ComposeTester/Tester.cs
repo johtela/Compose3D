@@ -141,6 +141,12 @@
             var v1 = new Vec2 (1f, 2f);
             var v2 = -v1;
             var r = v1 + v2;
+            var r2 = v1.Normalize ();
+
+            var v3 = new Vec3 (2f, 3f, 4f);
+            var r3 = v3.Normalize ();
+
+            var m = new Mat2 ();
 		}
 	}
 }

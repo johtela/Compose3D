@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OpenTK;
-
-namespace Compose3D.GLSL
+﻿namespace Compose3D.GLSL
 {
     public class Mat2 : Mat<float>
     {

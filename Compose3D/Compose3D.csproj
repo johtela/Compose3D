@@ -36,7 +36,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Geometry\Composite.cs" />
@@ -46,6 +45,8 @@
     <Compile Include="GLSL\Coord.cs" />
     <Compile Include="GLSL\Mat.cs" />
     <Compile Include="GLSL\Mat2.cs" />
+    <Compile Include="GLSL\Mat3.cs" />
+    <Compile Include="GLSL\Mat4.cs" />
     <Compile Include="GLSL\Matd.cs" />
     <Compile Include="GLSL\Matf.cs" />
     <Compile Include="GLSL\Vec.cs" />

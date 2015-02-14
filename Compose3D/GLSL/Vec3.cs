@@ -8,7 +8,7 @@ namespace Compose3D.GLSL
 
         public Vec3 (float x, float y, float z) : base (new float[] { x, y, z }) { }
 
-        protected Vec3 (float[] vector) : base (vector) { }
+        internal Vec3 (float[] vector) : base (vector) { }
 
         public static Vec3 operator - (Vec3 vec)
         {

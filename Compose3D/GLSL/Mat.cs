@@ -1,0 +1,130 @@
+﻿using System;
+using System.Text;
+
+namespace Compose3D.GLSL
+{
+    public class Mat<T> : IEquatable<Mat<T>> where T : struct, IEquatable<T>
+    {
+        private T[,] _matrix;
+
+        protected Mat (T[,] matrix)
+        {
+            _matrix = matrix;
+        }
+
+        public T[,] Matrix
+        {
+            get { return _matrix; }
+        }
+
+        public int Columns
+        {
+            get { return _matrix.GetLength (0); }
+        }
+
+        public int Rows
+        {
+            get { return _matrix.GetLength (1); }
+        }
+
+        public T this[int col, int row]
+        {
+            get { return _matrix[col, row]; }
+            set { _matrix[col, row] = value; }
+        }
+
+        public bool Equals (Mat<T> other)
+        {
+            for (int i = 0; i < _matrix.Length; i++)
+                if (!_matrix.GetValue(i).Equals (other._matrix.GetValue(i))) return false;
+            return true;
+        }
+
+        public override bool Equals (object obj)
+        {
+            var other = obj as Mat<T>;
+            return !ReferenceEquals (other, null) && _matrix.Equals (other._matrix);
+        }
+
+        public override int GetHashCode ()
+        {
+            return _matrix.GetHashCode ();
+        }
+
+        public override string ToString ()
+        {
+            var sb = new StringBuilder ();
+            for (int r = 0; r < Rows; r++)
+            {
+                sb.Append ("[");
+                for (int c = 0; c < Columns; c++)
+                    sb.AppendFormat (" {0}", _matrix[c, r]);
+                sb.AppendLine (" ]");
+            }
+            return sb.ToString ();
+        }
+
+        public static bool operator == (Mat<T> left, Mat<T> right)
+        {
+            return left.Equals (right);
+        }
+
+        public static bool operator != (Mat<T> left, Mat<T> right)
+        {
+            return !left.Equals (right);
+        }
+    }
+
+    public static class Mat
+    {
+        public static void Transpose<M, R, T> (this M mat, R res) 
+            where M : Mat<T>
+            where R : Mat<T>
+            where T : struct, IEquatable<T>
+        {
+            if (mat.Rows != res.Columns || mat.Columns != res.Rows)
+                throw new ArgumentException (
+                    string.Format ("{0}x{1} matrix cannot be transposed to {2}x{3} matrix",
+                        mat.Columns, mat.Rows, res.Columns, res.Rows));
+            for (int c = 0; c < mat.Columns; c++)
+                for (int r = 0; r < mat.Rows; r++)
+                    res[r, c] = mat[c, r];
+        }
+
+        public static M Transpose<M, T> (this M mat)
+            where M : Mat<T>, new()
+            where T : struct, IEquatable<T>
+        {
+            var res = new M ();
+            Transpose<M, M, T> (mat, res);
+            return res;
+        }
+
+        public static M Map<M, T> (this M mat, Func<T, T> func)
+            where M : Mat<T>, new()
+            where T : struct, IEquatable<T>
+        {
+            var res = new M ();
+            mat.Matrix.Map (res.Matrix, func);
+            return res;
+        }
+
+        public static M MapWith<M, T> (this M mat, M other, Func<T, T, T> func)
+            where M : Mat<T>, new ()
+            where T : struct, IEquatable<T>
+        {
+            var res = new M ();
+            mat.Matrix.MapWith (other.Matrix, res.Matrix, func);
+            return res;
+        }
+
+        public static M Multiply<M, T> (this M mat, M other, Func<T, T, T, T> func)
+            where M : Mat<T>, new()
+            where T : struct, IEquatable<T>
+        {
+            var res = new M ();
+            mat.Matrix.Multiply (other.Matrix, res.Matrix, func);
+            return res;
+        }
+    }
+}

@@ -5,8 +5,9 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
-	public class Uniform<T> where T : struct
+	public class Uniform<T>
 	{
 		private static Dictionary<Type, Action<int, object>> _setters = new Dictionary<Type, Action<int, object>> ()
 		{
@@ -18,10 +19,10 @@
 			{ typeof(uint[]), (u, o) => { var a = (uint[])o; GL.Uniform1 (u, a.Length, a); }},
 			{ typeof(float[]), (u, o) => { var a = (float[])o; GL.Uniform1 (u, a.Length, a); }},
 			{ typeof(double[]), (u, o) => { var a = (double[])o; GL.Uniform1 (u, a.Length, a); }},
-			{ typeof(Vector3), (u, o) => { var v = (Vector3)o; GL.Uniform3 (u, ref v); }},
-			{ typeof(Vector4), (u, o) => { var v = (Vector4)o; GL.Uniform4 (u, ref v); }},
-			{ typeof(Matrix3), (u, o) => { var m = (Matrix3)o; GL.UniformMatrix3 (u, false, ref m); }},
-			{ typeof(Matrix4), (u, o) => { var m = (Matrix4)o; GL.UniformMatrix4 (u, false, ref m); }},
+			{ typeof(Vec3), (u, o) => GL.Uniform3 (u, 3, ((Vec3)o).Vector) },
+			{ typeof(Vec4), (u, o) => GL.Uniform4 (u, 4, ((Vec4)o).Vector) },
+			{ typeof(Mat3), (u, o) => GL.UniformMatrix3 (u, 9, false, ((Mat3)o).ToArray ()) },
+			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 16, false, ((Mat4)o).ToArray ()) }
 		};
 
 		internal int _glUniform;

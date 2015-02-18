@@ -5,18 +5,19 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
 	internal class Transform<V> : Geometry<V> where V : struct, IVertex
 	{
         private Geometry<V> _geometry;
-        private Matrix4 _matrix;
-        private Matrix3 _normalMatrix;
+        private Mat4 _matrix;
+        private Mat3 _normalMatrix;
 
-		public Transform (Geometry<V> geometry, Matrix4 matrix)
+		public Transform (Geometry<V> geometry, Mat4 matrix)
 		{
 			_geometry = geometry;
 			_matrix = matrix;
-            _normalMatrix = new Matrix3 (matrix);
+            _normalMatrix = _matrix.ConvertTo<Mat3> ();
             //_normalMatrix.Invert ();
             //_normalMatrix.Transpose ();
 		}
@@ -31,9 +32,9 @@
 			get
 			{
 				return _geometry.Vertices.Select (v => 
-                    Vertex (Vector3.Transform (v.Position, _matrix), 
+                    Vertex (new Vec3 (_matrix * new Vec4(v.Position, 1f)), 
                         v.Color,
-                        v.Normal.Transform (_normalMatrix).Normalized ()));
+                        (_normalMatrix * v.Normal).Normalize ()));
 			}
 		}
 

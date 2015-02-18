@@ -1,48 +1,65 @@
-﻿using System;
-
-namespace Compose3D.GLSL
+﻿namespace Compose3D.GLSL
 {
+    using System;
+    using OpenTK;
+
     public class Vec4 : Vec<float>
     {
         public Vec4 () : base (new float[4]) { }
 
         public Vec4 (float x, float y, float z, float w) : base (new float[] { x, y, z, w }) { }
 
+        public Vec4 (Vec2 vec, float z, float w) : this (vec.X, vec.Y, z, w) { }
+
+        public Vec4 (Vec3 vec, float w) : this (vec.X, vec.Y, vec.Z, w) { }
+
+        public Vec4 (Vec<float> vec) : this (vec[0], vec[1], vec[2], vec[4]) { }
+
         internal Vec4 (float[] vector) : base (vector) { }
 
         public static Vec4 operator - (Vec4 vec)
         {
-            return new Vec4 (vec.Vector.Map (a => -a));
+            return vec.Negate ();
         }
 
         public static Vec4 operator - (Vec4 left, Vec4 right)
         {
-            return new Vec4 (left.Vector.MapWith (right.Vector, (a, b) => a - b));
+            return left.Subtract (right);
         }
 
         public static Vec4 operator * (float scalar, Vec4 vec)
         {
-            return new Vec4 (vec.Vector.Map (a => a * scalar));
+            return vec.Multiply (scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, float scalar)
         {
-            return scalar * vec;
+            return vec.Multiply (scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, Vec4 scale)
         {
-            return new Vec4 (vec.Vector.MapWith (scale.Vector, (a, b) => a * b));
+            return vec.Multiply (scale);
         }
 
         public static Vec4 operator / (Vec4 vec, float scalar)
         {
-            return new Vec4 (vec.Vector.Map (a => a / scalar));
+            return vec.Divide (scalar);
         }
 
         public static Vec4 operator + (Vec4 left, Vec4 right)
         {
-            return new Vec4 (left.Vector.MapWith (right.Vector, (a, b) => a + b));
+            return left.Add (right);
+        }
+
+        public static implicit operator Vector4 (Vec4 vec)
+        {
+            return new Vector4 (vec.X, vec.Y, vec.Z, vec.W);
+        }
+
+        public static implicit operator Vec4 (Vector4 vec)
+        {
+            return new Vec4 (vec.X, vec.Y, vec.Z, vec.W);
         }
 
         public float X

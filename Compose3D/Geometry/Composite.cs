@@ -5,6 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
 	/// <summary>
 	/// Axis along which the geometries are stacked.
@@ -94,25 +95,25 @@
 			return new Composite<V> (geometries);
 		}
 
-		private static  Matrix4 GetOffsetMatrix (StackAxis axis, StackDirection direction, BBox previous, BBox current)
+		private static Mat4 GetOffsetMatrix (StackAxis axis, StackDirection direction, BBox previous, BBox current)
 		{
 			switch (axis)
 			{
 				case StackAxis.X: 
-					return Matrix4.CreateTranslation ((previous.Right - current.Left) * (float)direction, 0.0f, 0.0f);
+					return Matf.Translation<Mat4> ((previous.Right - current.Left) * (float)direction, 0f, 0f);
 				case StackAxis.Y: 
-					return Matrix4.CreateTranslation (0.0f, (previous.Top - current.Bottom) * (float)direction, 0.0f);
+					return Matf.Translation<Mat4> (0f, (previous.Top - current.Bottom) * (float)direction, 0f);
 				default: 
-					return Matrix4.CreateTranslation (0.0f, 0.0f, (previous.Front - current.Back) * (float)direction);
+					return Matf.Translation<Mat4> (0f, 0f, (previous.Front - current.Back) * (float)direction);
 			}
 		}
 
-		private static Matrix4 GetStackingMatrix (StackAxis axis, StackDirection direction, 
+		private static Mat4 GetStackingMatrix (StackAxis axis, StackDirection direction, 
       		Align xalign, Align yalign, Align zalign, BBox previous, BBox current)
 		{
-			var alignMatrix = Matrix4.CreateTranslation (previous.GetXOffset (current, xalign),
-			                                             previous.GetYOffset (current, yalign),
-			                                             previous.GetZOffset (current, zalign));
+			var alignMatrix = Matf.Translation<Mat4> (previous.GetXOffset (current, xalign),
+			                                          previous.GetYOffset (current, yalign),
+			                                          previous.GetZOffset (current, zalign));
 			return alignMatrix * GetOffsetMatrix (axis, direction, previous, current);
 		}
 
@@ -124,7 +125,7 @@
 			{
 				var current = geom.BoundingBox;
 				var matrix = GetStackingMatrix (axis, direction, xalign, yalign, zalign, previous, current);
-				previous = new BBox (Vector3.Transform (current.Position, matrix), current.Size);
+				previous = new BBox (new Vec3 (matrix * new Vec4 (current.Position, 1f)), current.Size);
 				return Geometry.Transform (geom, matrix);
 			});
 			return Create (geometries.Take (1).Concat (stackedGeometries));

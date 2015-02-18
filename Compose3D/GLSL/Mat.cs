@@ -64,6 +64,24 @@ namespace Compose3D.GLSL
             return sb.ToString ();
         }
 
+        public T[] ToArray ()
+        {
+            var res = new T[Rows * Columns];
+            for (int i = 0, c = 0; c < Columns; c++)
+                for (int r = 0; r < Rows; r++)
+                    res[i++] = _matrix[c, r];
+            return res;
+        }
+
+        public M ConvertTo<M> () where M : Mat<T>, new()
+        {
+            var res = new M ();
+            for (int c = 0; c < Math.Min (Columns, res.Columns); c++)
+                for (int r = 0; r < Math.Min (Rows, res.Rows); r++)
+                    res[c, r] = this[c, r];
+            return res;
+        }
+
         public static bool operator == (Mat<T> left, Mat<T> right)
         {
             return left.Equals (right);

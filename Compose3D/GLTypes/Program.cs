@@ -37,7 +37,7 @@
 			return index;
 		}
 
-		public Uniform<T> GetUniform<T> (string name) where T : struct
+		public Uniform<T> GetUniform<T> (string name)
 		{
 			var loc = GL.GetUniformLocation (_glProgram, name);
 			if (loc < 0)

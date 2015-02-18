@@ -1,48 +1,61 @@
-﻿using System;
-
-namespace Compose3D.GLSL
+﻿namespace Compose3D.GLSL
 {
+    using System;
+    using OpenTK;
+
     public class Vec2 : Vec<float>
     {
         public Vec2 () : base (new float[2]) { }
 
         public Vec2 (float x, float y) : base (new float[] { x, y }) { }
 
+        public Vec2 (Vec<float> vec) : this (vec[0], vec[1]) { }
+
         internal Vec2 (float[] vector) : base (vector) { }
 
         public static Vec2 operator - (Vec2 vec)
         {
-            return new Vec2 (vec.Vector.Map (a => -a));
+            return vec.Negate ();
         }
 
         public static Vec2 operator - (Vec2 left, Vec2 right)
         {
-            return new Vec2 (left.Vector.MapWith (right.Vector, (a, b) => a - b));
+            return left.Subtract (right);
         }
 
         public static Vec2 operator * (float scalar, Vec2 vec)
         {
-            return new Vec2 (vec.Vector.Map (a => a * scalar));
+            return vec.Multiply (scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, float scalar)
         {
-            return scalar * vec;
+            return vec.Multiply (scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, Vec2 scale)
         {
-            return new Vec2 (vec.Vector.MapWith (scale.Vector, (a, b) => a * b));
+            return vec.Multiply (scale);
         }
 
         public static Vec2 operator / (Vec2 vec, float scalar)
         {
-            return new Vec2 (vec.Vector.Map (a => a / scalar));
+            return vec.Divide (scalar);
         }
 
         public static Vec2 operator + (Vec2 left, Vec2 right)
         {
-            return new Vec2 (left.Vector.MapWith (right.Vector, (a, b) => a + b));
+            return left.Add (right);
+        }
+
+        public static implicit operator Vector2 (Vec2 vec)
+        {
+            return new Vector2 (vec.X, vec.Y);
+        }
+
+        public static implicit operator Vec2 (Vector2 vec)
+        {
+            return new Vec2 (vec.X, vec.Y);
         }
 
         public float X 

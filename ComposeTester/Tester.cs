@@ -18,19 +18,19 @@
 		private Vector4 color;
         private Vector3 normal;
 
-		public Vector3 Position
+		public Vec3 Position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		public Vector4 Color
+		public Vec4 Color
 		{
 			get { return color; }
 			set { color = value; }
 		}
 
-        public Vector3 Normal
+        public Vec3 Normal
         {
             get { return normal; }
             set { normal = value; }
@@ -43,19 +43,19 @@
 		private VBO<Vertex> _vbo;
 		private VBO<int> _ibo;
 		private Vector3 _orientation;
-		private Uniform<Matrix4> _worldMatrix;
-		private Uniform<Matrix4> _perspectiveMatrix;
-        private Uniform<Matrix3> _normalMatrix;
-        private Uniform<Vector3> _dirToLight;
+		private Uniform<Mat4> _worldMatrix;
+		private Uniform<Mat4> _perspectiveMatrix;
+        private Uniform<Mat3> _normalMatrix;
+        private Uniform<Vec3> _dirToLight;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			var cube1 = Cube.Create<Vertex> (1.0f, 1.5f, 2.0f).Rotate (0.0f, MathHelper.PiOver2, 0.0f)
+			var cube1 = Cube.Create<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f)
 				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
-			var cube2 = Cube.Create<Vertex> (1.0f, 1.0f, 1.0f).Scale (0.8f, 0.8f, 0.8f)
+			var cube2 = Cube.Create<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f)
 				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
-			var cube3 = Cube.Create<Vertex> (1.0f, 1.0f, 2.0f)
+			var cube3 = Cube.Create<Vertex> (1f, 1f, 2f)
 				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
 			var geometry = Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
 			_program = new Program (
@@ -65,11 +65,11 @@
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
 
-			_orientation = new Vector3 (0.0f, 0.0f, 3.0f);
-			_worldMatrix = _program.GetUniform<Matrix4> ("worldMatrix");
-			_perspectiveMatrix = _program.GetUniform<Matrix4> ("perspectiveMatrix");
-            _normalMatrix = _program.GetUniform<Matrix3> ("normalMatrix");
-            _dirToLight = _program.GetUniform<Vector3> ("dirToLight");
+			_orientation = new Vector3 (0f, 0f, 3f);
+			_worldMatrix = _program.GetUniform<Mat4> ("worldMatrix");
+			_perspectiveMatrix = _program.GetUniform<Mat4> ("perspectiveMatrix");
+            _normalMatrix = _program.GetUniform<Mat3> ("normalMatrix");
+            _dirToLight = _program.GetUniform<Vec3> ("dirToLight");
 		}
 
 		public void Init ()
@@ -84,14 +84,12 @@
 
 		private void UpdateWorldMatrix ()
 		{
-            var worm = Matrix4.CreateRotationY (_orientation.Y) * Matrix4.CreateRotationX (_orientation.X)
-				* Matrix4.CreateTranslation (0f, 0f, -_orientation.Z);
+            var worm = Matf.RotationY<Mat4> (_orientation.Y) * Matf.RotationX<Mat4> (_orientation.X)
+				* Matf.Translation<Mat4> (0f, 0f, -_orientation.Z);
 			_worldMatrix &= worm;
-            var norm = new Matrix3 (worm);
-            norm.Invert ();
-            norm.Transpose ();
+            var norm = worm.ConvertTo<Mat3> ().Transpose<Mat3, float> ();
             _normalMatrix &= norm;
-            _dirToLight &= new Vector3 (0f, 0f, 1f);
+            _dirToLight &= new Vec3 (0f, 0f, 1f);
 		}
 
 		protected override void OnRenderFrame (FrameEventArgs e)
@@ -106,8 +104,8 @@
 		{
 			base.OnResize (e);
 			UpdateWorldMatrix ();
-			_perspectiveMatrix &= Matrix4.CreateScale ((float)ClientSize.Height / (float)ClientSize.Width, 1.0f, 1.0f) *
-				Matrix4.CreatePerspectiveOffCenter (-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 100.0f);
+			_perspectiveMatrix &= Matf.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
+				Mat4.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
 			GL.Viewport (ClientSize);
 		}
 
@@ -116,9 +114,9 @@
 			base.OnMouseMove (e);
 			if (e.Mouse.IsButtonDown (MouseButton.Left))
 			{
-				var rotX = ((float)e.YDelta / 500.0f) * MathHelper.Pi;
-				var rotY = ((float)e.XDelta / 500.0f) * MathHelper.Pi;
-				_orientation += new Vector3 (rotX, rotY, 0.0f);
+				var rotX = ((float)e.YDelta / 500f) * MathHelper.Pi;
+				var rotY = ((float)e.XDelta / 500f) * MathHelper.Pi;
+				_orientation += new Vector3 (rotX, rotY, 0f);
 				UpdateWorldMatrix ();
 			}
 		}
@@ -127,7 +125,7 @@
 		{
 			base.OnMouseWheel (e);
 			_orientation.Z += e.DeltaPrecise * -0.1f;
-			_orientation.Z = Math.Max (_orientation.Z, 2.0f);
+			_orientation.Z = Math.Max (_orientation.Z, 2f);
 			UpdateWorldMatrix ();
 		}
 
@@ -137,16 +135,6 @@
 			var wnd = new TestWindow ();
 			wnd.Init ();
 			wnd.Run ();
-
-            var v1 = new Vec2 (1f, 2f);
-            var v2 = -v1;
-            var r = v1 + v2;
-            var r2 = v1.Normalize ();
-
-            var v3 = new Vec3 (2f, 3f, 4f);
-            var r3 = v3.Normalize ();
-
-            var m = new Mat2 ();
 		}
 	}
 }

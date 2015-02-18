@@ -5,6 +5,7 @@ namespace Compose3D.Geometry
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
 	/// <summary>
 	/// Interface that returns the material attributes of the vertices.
@@ -14,7 +15,7 @@ namespace Compose3D.Geometry
 		/// <summary>
 		/// Get the vertex colors.
 		/// </summary>
-		IEnumerable<Vector4> Colors { get; }
+		IEnumerable<Vec4> Colors { get; }
 	}
 
 	/// <summary>
@@ -24,14 +25,14 @@ namespace Compose3D.Geometry
 	{
 		private class UniformColorMaterial : IMaterial
 		{
-			private Vector4 _color;
+			private Vec4 _color;
 
-			public UniformColorMaterial (Vector4 color)
+			public UniformColorMaterial (Vec4 color)
 			{
 				_color = color;
 			}
 
-			public IEnumerable<Vector4> Colors
+			public IEnumerable<Vec4> Colors
 			{
 				get { while (true) yield return _color; }
 			}
@@ -39,14 +40,14 @@ namespace Compose3D.Geometry
 
 		public class RepeatColorsMaterial : IMaterial
 		{
-			private Vector4[] _colors;
+			private Vec4[] _colors;
 
-			public RepeatColorsMaterial (params Vector4[] colors)
+			public RepeatColorsMaterial (params Vec4[] colors)
 			{
 				_colors = colors;
 			}
 
-			public IEnumerable<Vector4> Colors
+			public IEnumerable<Vec4> Colors
 			{
 				get { return _colors.Repeat (); }
 			}
@@ -63,7 +64,7 @@ namespace Compose3D.Geometry
 				_index = -1;
 			}
 
-			public IEnumerable<Vector4> Colors
+			public IEnumerable<Vec4> Colors
 			{
 				get
 				{
@@ -73,12 +74,12 @@ namespace Compose3D.Geometry
 			}
 		}
 
-		public static IMaterial UniformColor (Vector4 color)
+		public static IMaterial UniformColor (Vec4 color)
 		{
 			return new UniformColorMaterial (color);
 		}
 
-		public static IMaterial RepeatColors (params Vector4[] colors)
+		public static IMaterial RepeatColors (params Vec4[] colors)
 		{
 			return new RepeatColorsMaterial (colors);
 		}

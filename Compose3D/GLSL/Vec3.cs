@@ -1,48 +1,63 @@
-﻿using System;
-
-namespace Compose3D.GLSL
+﻿namespace Compose3D.GLSL
 {
+    using System;
+    using OpenTK;
+
     public class Vec3 : Vec<float>
     {
         public Vec3 () : base (new float[3]) { }
 
         public Vec3 (float x, float y, float z) : base (new float[] { x, y, z }) { }
 
+        public Vec3 (Vec2 vec, float z) : this (vec.X, vec.Y, z) { }
+
+        public Vec3 (Vec<float> vec) : this (vec[0], vec[1], vec[2]) { }
+
         internal Vec3 (float[] vector) : base (vector) { }
 
         public static Vec3 operator - (Vec3 vec)
         {
-            return new Vec3 (vec.Vector.Map (a => -a));
+            return vec.Negate ();
         }
 
         public static Vec3 operator - (Vec3 left, Vec3 right)
         {
-            return new Vec3 (left.Vector.MapWith (right.Vector, (a, b) => a - b));
+            return left.Subtract (right);
         }
 
         public static Vec3 operator * (float scalar, Vec3 vec)
         {
-            return new Vec3 (vec.Vector.Map (a => a * scalar));
+            return vec.Multiply (scalar);
         }
 
         public static Vec3 operator * (Vec3 vec, float scalar)
         {
-            return scalar * vec;
+            return vec.Multiply (scalar);
         }
 
         public static Vec3 operator * (Vec3 vec, Vec3 scale)
         {
-            return new Vec3 (vec.Vector.MapWith (scale.Vector, (a, b) => a * b));
+            return vec.Multiply (scale);
         }
 
         public static Vec3 operator / (Vec3 vec, float scalar)
         {
-            return new Vec3 (vec.Vector.Map (a => a / scalar));
+            return vec.Divide (scalar);
         }
 
         public static Vec3 operator + (Vec3 left, Vec3 right)
         {
-            return new Vec3 (left.Vector.MapWith (right.Vector, (a, b) => a + b));
+            return left.Add (right);
+        }
+
+        public static implicit operator Vector3 (Vec3 vec)
+        {
+            return new Vector3 (vec.X, vec.Y, vec.Z);
+        }
+
+        public static implicit operator Vec3 (Vector3 vec)
+        {
+            return new Vec3 (vec.X, vec.Y, vec.Z);
         }
 
         public float X 

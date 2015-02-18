@@ -5,6 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
 	public class GeometryError : Exception
 	{
@@ -23,17 +24,17 @@
 		/// <summary>
 		/// Position of the vertex.
 		/// </summary>
-		Vector3 Position { get; set; }
+		Vec3 Position { get; set; }
 
 		/// <summary>
 		/// Color of the vertex.
 		/// </summary>
-		Vector4 Color { get; set; }
+		Vec4 Color { get; set; }
 
         /// <summary>
         /// The normal of the vertex.
         /// </summary>
-        Vector3 Normal { get; set; }
+        Vec3 Normal { get; set; }
 	}
 
 	/// <summary>
@@ -106,7 +107,7 @@
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
-		public static V Vertex (Vector3 position, Vector4 color, Vector3 normal)
+		public static V Vertex (Vec3 position, Vec4 color, Vec3 normal)
 		{
 			var vertex = new V ();
 			vertex.Position = position;
@@ -126,7 +127,7 @@
 			return new Rectangle<V> (width, height);
 		}
 
-		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Matrix4 matrix) where V : struct, IVertex
+		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Mat4 matrix) where V : struct, IVertex
 		{
 			return new Transform<V> (geometry, matrix);
 		}
@@ -134,23 +135,23 @@
 		public static Geometry<V> Translate<V> (this Geometry<V> geometry, float offsetX, float offsetY, float offsetZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matrix4.CreateTranslation (offsetX, offsetY, offsetZ);
+			var matrix = Matf.Translation<Mat4> (offsetX, offsetY, offsetZ);
 			return Transform (geometry, matrix);
 		}
 
 		public static Geometry<V> Scale<V> (this Geometry<V> geometry, float factorX, float factorY, float factorZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matrix4.CreateScale (factorX, factorY, factorZ);
+			var matrix = Matf.Scaling<Mat4> (factorX, factorY, factorZ);
 			return Transform (geometry, matrix);
 		}
 
 		public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matrix4.CreateRotationZ (angleZ);
-			if (angleX != 0.0f) matrix *= Matrix4.CreateRotationX (angleX);
-			if (angleY != 0.0f) matrix *= Matrix4.CreateRotationY (angleY);
+			var matrix = Matf.RotationZ<Mat4> (angleZ);
+			if (angleX != 0.0f) matrix *= Matf.RotationX<Mat4> (angleX);
+			if (angleY != 0.0f) matrix *= Matf.RotationY<Mat4> (angleY);
 			return Transform (geometry, matrix);
 		}
 

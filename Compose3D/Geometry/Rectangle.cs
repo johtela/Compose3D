@@ -5,16 +5,17 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using GLSL;
 
 	internal class Rectangle<V> : Geometry<V> where V : struct, IVertex
 	{
-		private Vector2 _size;
+		private Vec2 _size;
 		private V[] _vertices;
 		private int[] _indices;
 
 		public Rectangle (float width, float height)
 		{
-			_size = new Vector2 (width, height);
+			_size = new Vec2 (width, height);
 		}
 
 		public override int VertexCount
@@ -29,14 +30,14 @@
 				if (_vertices == null)
 				{
 					var colors = Material.Colors.GetEnumerator ();
-					var right = _size.X / 2.0f;
-					var top = _size.Y / 2.0f;
-                    var normal = new Vector3 (0.0f, 0.0f, 1.0f);
+					var right = _size.X / 2f;
+					var top = _size.Y / 2f;
+                    var normal = new Vec3 (0f, 0f, 1f);
 					_vertices = new V[] {
-						Vertex (new Vector3 (right, top, 0.0f), colors.Next (), normal),
-						Vertex (new Vector3 (right, -top, 0.0f), colors.Next (), normal),
-						Vertex (new Vector3 (-right, -top, 0.0f), colors.Next (), normal),
-						Vertex (new Vector3 (-right, top, 0.0f), colors.Next (), normal)
+						Vertex (new Vec3 (right, top, 0f), colors.Next (), normal),
+						Vertex (new Vec3 (right, -top, 0f), colors.Next (), normal),
+						Vertex (new Vec3 (-right, -top, 0f), colors.Next (), normal),
+						Vertex (new Vec3 (-right, top, 0f), colors.Next (), normal)
 					};
 				}
 				return _vertices;

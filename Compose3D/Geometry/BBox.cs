@@ -45,6 +45,7 @@ namespace Compose3D.Geometry
         public BBox (Vec3 position)
         {
             Position = position;
+            Size = new Vec3 ();
         }
 
         /// <summary>

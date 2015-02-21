@@ -16,34 +16,32 @@
 
         public static Mat3 operator - (Mat3 left, Mat3 right)
         {
-            return left.MapWith<Mat3, float> (right, (a, b) => a - b);
+            return Matf.Subtract (left, right);
         }
 
         public static Mat3 operator * (float scalar, Mat3 mat)
         {
-            return mat.Map<Mat3, float> (a => a * scalar);
+            return Matf.Multiply (mat, scalar);
         }
 
-        public static Mat3 operator * (Mat3 vec, float scalar)
+        public static Mat3 operator * (Mat3 mat, float scalar)
         {
-            return scalar * vec;
+            return Matf.Multiply (mat, scalar);
         }
 
         public static Mat3 operator * (Mat3 left, Mat3 right)
         {
-            return left.Multiply<Mat3, float> (right, (s, a, b) => s + a * b);
+            return Matf.Multiply<Mat3> (left, right);
         }
 
         public static Vec3 operator * (Mat3 mat, Vec3 vec)
         {
-            var result = new Vec3 ();
-            mat.Matrix.Multiply (vec.Vector, result.Vector, (s, a, b) => s + a * b);
-            return result;
+            return Matf.Multiply (mat, vec);
         }
 
         public static Mat3 operator + (Mat3 left, Mat3 right)
         {
-            return left.MapWith<Mat3, float> (right, (a, b) => a + b);
+            return Matf.Add (left, right);
         }
 
         public Vec3 this[int col]

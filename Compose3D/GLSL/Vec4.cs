@@ -19,37 +19,37 @@
 
         public static Vec4 operator - (Vec4 vec)
         {
-            return vec.Negate ();
+            return Vecf.Negate (vec);
         }
 
         public static Vec4 operator - (Vec4 left, Vec4 right)
         {
-            return left.Subtract (right);
+            return Vecf.Subtract (left, right);
         }
 
         public static Vec4 operator * (float scalar, Vec4 vec)
         {
-            return vec.Multiply (scalar);
+            return Vecf.Multiply (vec, scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, float scalar)
         {
-            return vec.Multiply (scalar);
+            return Vecf.Multiply (vec, scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, Vec4 scale)
         {
-            return vec.Multiply (scale);
+            return Vecf.Multiply (vec, scale);
         }
 
         public static Vec4 operator / (Vec4 vec, float scalar)
         {
-            return vec.Divide (scalar);
+            return Vecf.Divide (vec, scalar);
         }
 
         public static Vec4 operator + (Vec4 left, Vec4 right)
         {
-            return left.Add (right);
+            return Vecf.Add (left, right);
         }
 
         public static implicit operator Vector4 (Vec4 vec)

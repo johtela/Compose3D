@@ -14,34 +14,32 @@
 
         public static Mat2 operator - (Mat2 left, Mat2 right)
         {
-            return left.MapWith<Mat2, float> (right, (a, b) => a - b);
+            return Matf.Subtract (left, right);
         }
 
         public static Mat2 operator * (float scalar, Mat2 mat)
         {
-            return mat.Map<Mat2, float> (a => a * scalar);
+            return Matf.Multiply (mat, scalar);
         }
 
-        public static Mat2 operator * (Mat2 vec, float scalar)
+        public static Mat2 operator * (Mat2 mat, float scalar)
         {
-            return scalar * vec;
+            return Matf.Multiply (mat, scalar);
         }
 
         public static Mat2 operator * (Mat2 left, Mat2 right)
         {
-            return left.Multiply<Mat2, float> (right, (s, a, b) => s + a * b);
+            return Matf.Multiply<Mat2> (left, right);
         }
 
         public static Vec2 operator * (Mat2 mat, Vec2 vec)
         {
-            var result = new Vec2 ();
-            mat.Matrix.Multiply (vec.Vector, result.Vector, (s, a, b) => s + a * b);
-            return result;
+            return Matf.Multiply (mat, vec);
         }
 
         public static Mat2 operator + (Mat2 left, Mat2 right)
         {
-            return left.MapWith<Mat2, float> (right, (a, b) => a + b);
+            return Matf.Add (left, right);
         }
 
         public Vec2 this[int col]

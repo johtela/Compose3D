@@ -183,6 +183,25 @@ namespace Compose3D
             }
         }
 
+        private static IEnumerable<T[]> EnumerateCombinations<T> (this IEnumerable<T>[] values, T[] result,
+            int index)
+        {
+            foreach (var x in values[index])
+            {
+                result[index] = x;
+                if (index == values.Length - 1)
+                    yield return result;
+                else
+                    foreach (var v in values.EnumerateCombinations (result, index + 1))
+                        yield return v;
+            }
+        }
+
+        public static IEnumerable<T[]> Combinations<T> (this T[] vector, Func<T, IEnumerable<T>> project)
+        {
+            return EnumerateCombinations (vector.Map (project), new T[vector.Length], 0);
+        }
+
         public static Vector3 Transform (this Vector3 vec, Matrix3 mat)
         {
             return new Vector3 (

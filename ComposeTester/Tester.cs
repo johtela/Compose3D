@@ -10,6 +10,8 @@
     using Compose3D.GLSL;
     using Compose3D.GLTypes;
 	using Compose3D.Geometry;
+    using System.Threading.Tasks;
+    using LinqCheck;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex
@@ -132,9 +134,12 @@
 		[STAThread]
 		static void Main (string[] args)
 		{
-			var wnd = new TestWindow ();
-			wnd.Init ();
-			wnd.Run ();
+            //var wnd = new TestWindow ();
+            //wnd.Init ();
+            //wnd.Run ();
+            Tester.RunTestsTimed (
+                new VecTests ());
+            Console.ReadLine ();
 		}
 	}
 }

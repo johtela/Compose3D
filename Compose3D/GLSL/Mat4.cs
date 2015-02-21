@@ -26,34 +26,32 @@ namespace Compose3D.GLSL
 
         public static Mat4 operator - (Mat4 left, Mat4 right)
         {
-            return left.MapWith<Mat4, float> (right, (a, b) => a - b);
+            return Matf.Subtract (left, right);
         }
 
         public static Mat4 operator * (float scalar, Mat4 mat)
         {
-            return mat.Map<Mat4, float> (a => a * scalar);
+            return Matf.Multiply (mat, scalar);
         }
 
-        public static Mat4 operator * (Mat4 vec, float scalar)
+        public static Mat4 operator * (Mat4 mat, float scalar)
         {
-            return scalar * vec;
+            return Matf.Multiply (mat, scalar);
         }
 
         public static Mat4 operator * (Mat4 left, Mat4 right)
         {
-            return left.Multiply<Mat4, float> (right, (s, a, b) => s + a * b);
+            return Matf.Multiply<Mat4> (left, right);
         }
 
         public static Vec4 operator * (Mat4 mat, Vec4 vec)
         {
-            var result = new Vec4 ();
-            mat.Matrix.Multiply (vec.Vector, result.Vector, (s, a, b) => s + a * b);
-            return result;
+            return Matf.Multiply (mat, vec);
         }
 
         public static Mat4 operator + (Mat4 left, Mat4 right)
         {
-            return left.MapWith<Mat4, float> (right, (a, b) => a + b);
+            return Matf.Add (left, right);
         }
 
         public Vec4 this[int col]

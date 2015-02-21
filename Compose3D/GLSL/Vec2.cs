@@ -15,37 +15,37 @@
 
         public static Vec2 operator - (Vec2 vec)
         {
-            return vec.Negate ();
+            return Vecf.Negate (vec);
         }
 
         public static Vec2 operator - (Vec2 left, Vec2 right)
         {
-            return left.Subtract (right);
+            return Vecf.Subtract (left, right);
         }
 
         public static Vec2 operator * (float scalar, Vec2 vec)
         {
-            return vec.Multiply (scalar);
+            return Vecf.Multiply (vec, scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, float scalar)
         {
-            return vec.Multiply (scalar);
+            return Vecf.Multiply (vec, scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, Vec2 scale)
         {
-            return vec.Multiply (scale);
+            return Vecf.Multiply (vec, scale);
         }
 
         public static Vec2 operator / (Vec2 vec, float scalar)
         {
-            return vec.Divide (scalar);
+            return Vecf.Divide (vec, scalar);
         }
 
         public static Vec2 operator + (Vec2 left, Vec2 right)
         {
-            return left.Add (right);
+            return Vecf.Add (left, right);
         }
 
         public static implicit operator Vector2 (Vec2 vec)

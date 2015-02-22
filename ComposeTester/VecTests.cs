@@ -17,7 +17,7 @@
             Arbitrary.Register (ArbitraryVec<Vec4, float> (4));
         }
 
-        private static Arbitrary<V> ArbitraryVec<V, T> (int size) 
+        public static Arbitrary<V> ArbitraryVec<V, T> (int size) 
             where V : Vec<T>, new ()
             where T : struct, IEquatable<T>
         {

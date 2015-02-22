@@ -14,6 +14,11 @@
         public Mat3 (Vec3 col1, Vec3 col2, Vec3 col3) :
             this (col1[0], col1[1], col1[2], col2[0], col2[1], col2[2], col3[0], col3[1], col3[2]) { }
 
+        public static Mat3 operator - (Mat3 mat)
+        {
+            return Matf.Negate (mat);
+        }
+
         public static Mat3 operator - (Mat3 left, Mat3 right)
         {
             return Matf.Subtract (left, right);

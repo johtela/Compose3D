@@ -8,8 +8,8 @@
     <ProjectGuid>{CC2FF028-74C5-42E8-8577-7E99117B2F06}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VisualTester</RootNamespace>
-    <AssemblyName>VisualTester</AssemblyName>
+    <RootNamespace>ComposeTester</RootNamespace>
+    <AssemblyName>ComposeTester</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -44,6 +44,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MatTests.cs" />
     <Compile Include="Tester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VecTests.cs" />

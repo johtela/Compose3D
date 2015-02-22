@@ -138,7 +138,8 @@
             //wnd.Init ();
             //wnd.Run ();
             Tester.RunTestsTimed (
-                new VecTests ());
+                new VecTests (),
+                new MatTests ());
             Console.ReadLine ();
 		}
 	}

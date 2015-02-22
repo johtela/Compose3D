@@ -35,8 +35,9 @@ namespace Compose3D.GLSL
 
         public bool Equals (Mat<T> other)
         {
-            for (int i = 0; i < _matrix.Length; i++)
-                if (!_matrix.GetValue(i).Equals (other._matrix.GetValue(i))) return false;
+            for (int c = 0; c < Columns; c++)
+                for (int r = 0; r < Rows; r++)
+                    if (!_matrix[c, r].Equals (other._matrix[c, r])) return false;
             return true;
         }
 
@@ -90,6 +91,26 @@ namespace Compose3D.GLSL
         public static bool operator != (Mat<T> left, Mat<T> right)
         {
             return !left.Equals (right);
+        }
+
+        public static M Create<M> (T[,] values) where M : Mat<T>, new ()
+        {
+            var res = new M ();
+            res._matrix = values;
+            return res;
+        }
+
+        public static M Create<M> (params T[] values) where M : Mat<T>, new ()
+        {
+            var res = new M ();
+            var len = values.Length;
+            for (int i = 0, c = 0; c < res.Columns; c++)
+                for (int r = 0; r < res.Rows; r++)
+                {
+                    res._matrix[c, r] = values[i];
+                    i = (i + 1) % len;
+                }
+            return res;
         }
     }
 

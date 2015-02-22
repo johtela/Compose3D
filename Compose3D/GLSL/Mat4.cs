@@ -24,6 +24,11 @@ namespace Compose3D.GLSL
 
         protected Mat4 (float[,] matrix) : base (matrix) { }
 
+        public static Mat4 operator - (Mat4 mat)
+        {
+            return Matf.Negate (mat);
+        }
+
         public static Mat4 operator - (Mat4 left, Mat4 right)
         {
             return Matf.Subtract (left, right);

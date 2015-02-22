@@ -64,8 +64,10 @@ namespace Compose3D.GLSL
         public static V Create<V> (params T[] values) where V : Vec<T>, new ()
         {
             var res = new V ();
-            for (int i = 0; i < res.Vector.Length; i += values.Length)
-                values.CopyTo (res.Vector, i);
+            var size = res.Vector.Length;
+            var len = values.Length;
+            for (int i = 0; i < size; i += len)
+                Array.Copy (values, 0, res._vector, i, Math.Min (len, size - i));
             return res;
         }
     }

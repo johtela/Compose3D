@@ -4,7 +4,7 @@ namespace Compose3D.GLSL
 {
     public static class Matf
     {
-        public static M Add<M> ( M left, M right) where M : Mat<float>, new ()
+        public static M Add<M> (M left, M right) where M : Mat<float>, new ()
         {
             return left.MapWith<M, float> (right, (a, b) => a + b);
         }
@@ -23,13 +23,14 @@ namespace Compose3D.GLSL
             where M : Mat<float>
             where V : Vec<float>, new ()    
         {
-            if (mat.Rows != vec.Vector.Length)
-                throw new ArgumentException (string.Format (
-                    "Cannot multiply {0}x{1} matrix with {2}-component vector", 
-                    mat.Columns, mat.Rows, vec.Vector.Length));
             var result = new V ();
             mat.Matrix.Multiply (vec.Vector, result.Vector, (s, a, b) => s + a * b);
             return result;
+        }
+
+        public static M Negate<M> (M mat) where M : Mat<float>, new ()
+        {
+            return mat.Map<M, float> (a => -a);
         }
 
         public static M Subtract<M> (M left, M right) where M : Mat<float>, new ()

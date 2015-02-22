@@ -12,6 +12,11 @@
         public Mat2 (Vec2 col1, Vec2 col2) :
             this (col1[0], col1[1], col2[0], col2[1]) { }
 
+        public static Mat2 operator - (Mat2 mat)
+        {
+            return Matf.Negate (mat);
+        }
+
         public static Mat2 operator - (Mat2 left, Mat2 right)
         {
             return Matf.Subtract (left, right);

@@ -274,5 +274,5 @@ namespace LinqCheck
 		}
 
 		#endregion
-	}
+    }
 }

@@ -68,5 +68,12 @@ namespace Compose3D.GLSL
             vec.Vector.Map (res.Vector, a => a / len);
             return res;
         }
+        
+        public static bool ApproxEquals (this Vec<float> vec, Vec<float> other)
+        {
+            for (int i = 0; i < vec.Vector.Length; i++)
+                if (!vec.Vector[i].ApproxEquals (other.Vector[i])) return false;
+            return true;
+        }
     }
 }

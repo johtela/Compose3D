@@ -7,6 +7,32 @@ namespace Compose3D
 
 	public static class Ext
 	{
+        #region float extensions
+
+        public static bool ApproxEquals (this float x, float y, float epsilon)
+        {
+            if (x == y)
+                return true;
+
+            float absX = Math.Abs (x);
+            float absY = Math.Abs (y);
+            float diff = Math.Abs (x - y);
+
+            if (x * y == 0)
+                return diff < (epsilon * epsilon);
+            else
+                return diff / (absX + absY) < epsilon;
+        }
+
+        public static bool ApproxEquals (this float x, float y)
+        {
+            return x.ApproxEquals (y, 0.000001f);
+        }
+
+        #endregion
+
+        #region Extensions for 2-dimensional arrays
+        
         public static int Columns<T> (this T[,] matrix)
         {
             return matrix.GetLength (0);
@@ -47,6 +73,10 @@ namespace Compose3D
                 matrix[c, row] = vector[c];
         }
 
+        #endregion
+        
+        #region IEnumerable extensions
+		        
         public static T Next<T> (this IEnumerator<T> enumerator)
 		{
 			enumerator.MoveNext ();
@@ -63,6 +93,29 @@ namespace Compose3D
 			}
 		}
 
+        private static IEnumerable<T[]> EnumerateCombinations<T> (this IEnumerable<T>[] values, T[] result,
+            int index)
+        {
+            foreach (var x in values[index])
+            {
+                result[index] = x;
+                if (index == values.Length - 1)
+                    yield return result;
+                else
+                    foreach (var v in values.EnumerateCombinations (result, index + 1))
+                        yield return v;
+            }
+        }
+
+        public static IEnumerable<T[]> Combinations<T> (this T[] vector, Func<T, IEnumerable<T>> project)
+        {
+            return EnumerateCombinations (vector.Map (project), new T[vector.Length], 0);
+        }
+
+        #endregion        
+        
+        #region Map & Fold
+        
         public static U[] Map<T, U> (this T[] vector, Func<T, U> func)
         {
             var result = new U[vector.Length];
@@ -134,6 +187,10 @@ namespace Compose3D
             return value;
         }
 
+        #endregion
+
+        #region Matrix operations
+        
         public static void Transpose<T> (this T[,] matrix, T[,] result)
         {
             if (matrix.Rows () != result.Columns () || matrix.Columns () != result.Rows ())
@@ -183,25 +240,8 @@ namespace Compose3D
             }
         }
 
-        private static IEnumerable<T[]> EnumerateCombinations<T> (this IEnumerable<T>[] values, T[] result,
-            int index)
-        {
-            foreach (var x in values[index])
-            {
-                result[index] = x;
-                if (index == values.Length - 1)
-                    yield return result;
-                else
-                    foreach (var v in values.EnumerateCombinations (result, index + 1))
-                        yield return v;
-            }
-        }
-
-        public static IEnumerable<T[]> Combinations<T> (this T[] vector, Func<T, IEnumerable<T>> project)
-        {
-            return EnumerateCombinations (vector.Map (project), new T[vector.Length], 0);
-        }
-
+        #endregion
+        
         public static Vector3 Transform (this Vector3 vec, Matrix3 mat)
         {
             return new Vector3 (

@@ -61,10 +61,11 @@ namespace Compose3D.GLSL
             return !left.Equals (right);
         }
 
-        public static V Create<V> (T[] values) where V : Vec<T>, new ()
+        public static V Create<V> (params T[] values) where V : Vec<T>, new ()
         {
             var res = new V ();
-            values.CopyTo (res.Vector, 0);
+            for (int i = 0; i < res.Vector.Length; i += values.Length)
+                values.CopyTo (res.Vector, i);
             return res;
         }
     }

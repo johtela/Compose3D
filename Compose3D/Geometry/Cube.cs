@@ -57,32 +57,32 @@
 
 		public static Geometry<V> BackFace<V> (float width, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, height).Transform (Matf.RotationX<Mat4> (MathHelper.Pi) *
-				Matf.Translation<Mat4> (0f, 0f, offset));
+            return Geometry.Rectangle<V> (width, height).Transform (Matf.Translation<Mat4> (0f, 0f, offset) *
+				Matf.RotationX<Mat4> (MathHelper.Pi));
 		}
 
 		public static Geometry<V> TopFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matf.RotationX<Mat4> (-MathHelper.PiOver2) *
-				Matf.Translation<Mat4> (0f, offset, 0f));
+			return Geometry.Rectangle<V> (width, depth).Transform (Matf.Translation<Mat4> (0f, offset, 0f) *
+                Matf.RotationX<Mat4> (-MathHelper.PiOver2));
 		}
 
 		public static Geometry<V> BottomFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matf.RotationX<Mat4> (MathHelper.PiOver2) *
-				Matf.Translation<Mat4> (0f, offset, 0f));
+			return Geometry.Rectangle<V> (width, depth).Transform (Matf.Translation<Mat4> (0f, offset, 0f) *
+                Matf.RotationX<Mat4> (MathHelper.PiOver2));
 		}
 
 		public static Geometry<V> LeftFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matf.RotationY<Mat4> (-MathHelper.PiOver2) *
-				Matf.Translation<Mat4> (offset, 0f, 0f));
+			return Geometry.Rectangle<V> (depth, height).Transform (Matf.Translation<Mat4> (offset, 0f, 0f) *
+                Matf.RotationY<Mat4> (-MathHelper.PiOver2));
 		}
 		
 		public static Geometry<V> RightFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matf.RotationY<Mat4> (MathHelper.PiOver2) *
-				Matf.Translation<Mat4> (offset, 0f, 0f));
+			return Geometry.Rectangle<V> (depth, height).Transform (Matf.Translation<Mat4> (offset, 0f, 0f) *
+                Matf.RotationY<Mat4> (MathHelper.PiOver2));
 		}
 	}
 }

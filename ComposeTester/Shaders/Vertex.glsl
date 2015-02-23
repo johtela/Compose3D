@@ -13,7 +13,7 @@ uniform vec3 dirToLight;
 
 void main()
 {
-    gl_Position = perspectiveMatrix * (worldMatrix * vec4(position, 1.0));
+    gl_Position = perspectiveMatrix * worldMatrix * vec4(position, 1.0);
 	vec3 norm = normalize(normalMatrix * normal);
 	float angle = dot(norm, dirToLight);
     theColor = vec4(color, 1.0) * angle;

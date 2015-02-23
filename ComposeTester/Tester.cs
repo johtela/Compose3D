@@ -86,8 +86,8 @@
 
 		private void UpdateWorldMatrix ()
 		{
-            var worm = Matf.RotationY<Mat4> (_orientation.Y) * Matf.RotationX<Mat4> (_orientation.X)
-				* Matf.Translation<Mat4> (0f, 0f, -_orientation.Z);
+            var worm = Matf.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
+                Matf.RotationY<Mat4> (_orientation.Y) * Matf.RotationX<Mat4> (_orientation.X);
 			_worldMatrix &= worm;
             var norm = worm.ConvertTo<Mat3> ().Transpose<Mat3, float> ();
             _normalMatrix &= norm;
@@ -108,7 +108,7 @@
 			UpdateWorldMatrix ();
 			_perspectiveMatrix &= Matf.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
 				Mat4.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
-			GL.Viewport (ClientSize);
+            GL.Viewport (ClientSize);
 		}
 
 		protected override void OnMouseMove (MouseMoveEventArgs e)
@@ -134,9 +134,9 @@
 		[STAThread]
 		static void Main (string[] args)
 		{
-            //var wnd = new TestWindow ();
-            //wnd.Init ();
-            //wnd.Run ();
+            var wnd = new TestWindow ();
+            wnd.Init ();
+            wnd.Run ();
             Tester.RunTestsTimed (
                 new VecTests (),
                 new MatTests ());

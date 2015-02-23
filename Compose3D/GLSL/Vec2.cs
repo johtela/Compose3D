@@ -25,12 +25,12 @@
 
         public static Vec2 operator * (float scalar, Vec2 vec)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, float scalar)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec2 operator * (Vec2 vec, Vec2 scale)

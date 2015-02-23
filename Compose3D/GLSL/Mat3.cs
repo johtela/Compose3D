@@ -26,12 +26,12 @@
 
         public static Mat3 operator * (float scalar, Mat3 mat)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat3 operator * (Mat3 mat, float scalar)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat3 operator * (Mat3 left, Mat3 right)
@@ -41,7 +41,7 @@
 
         public static Vec3 operator * (Mat3 mat, Vec3 vec)
         {
-            return Matf.Multiply (mat, vec);
+            return Matf.MultiplyVector (mat, vec);
         }
 
         public static Mat3 operator + (Mat3 left, Mat3 right)

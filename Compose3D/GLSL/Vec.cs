@@ -50,7 +50,7 @@ namespace Compose3D.GLSL
             sb.Append (" ]");
             return sb.ToString ();
         }
-         
+
         public static bool operator == (Vec<T> left, Vec<T> right)
         {
             return left.Equals (right);
@@ -71,4 +71,18 @@ namespace Compose3D.GLSL
             return res;
         }
     }
+
+    public static class Vec
+    {
+        public static V With<V, T> (this V vec, int i, T value)
+            where V : Vec<T>, new ()
+            where T : struct, IEquatable<T>
+        {
+            var res = new V ();
+            Array.Copy (vec.Vector, res.Vector, vec.Vector.Length);
+            res[i] = value;
+            return res;
+        }
+    }
+
 }

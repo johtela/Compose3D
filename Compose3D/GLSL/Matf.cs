@@ -9,7 +9,7 @@ namespace Compose3D.GLSL
             return left.MapWith<M, float> (right, (a, b) => a + b);
         }
 
-        public static M Multiply<M> (M mat, float scalar) where M : Mat<float>, new ()
+        public static M MultiplyScalar<M> (M mat, float scalar) where M : Mat<float>, new ()
         {
             return mat.Map<M, float> (a => a * scalar);
         }
@@ -19,7 +19,7 @@ namespace Compose3D.GLSL
             return left.Multiply<M, float> (right, (s, a, b) => s + a * b);
         }
 
-        public static V Multiply<M, V> (M mat, V vec)
+        public static V MultiplyVector<M, V> (M mat, V vec)
             where M : Mat<float>
             where V : Vec<float>, new ()    
         {
@@ -46,18 +46,30 @@ namespace Compose3D.GLSL
             return res;
         }
 
+        public static bool ApproxEquals (this Mat<float> mat, Mat<float> other)
+        {
+            for (int c = 0; c < mat.Columns; c++)
+                for (int r = 0; r < mat.Rows; r++)
+                    if (!mat.Matrix[c, r].ApproxEquals (other.Matrix[c, r])) return false;
+            return true;
+        }
+        
         public static M Translation<M> (params float[] offsets) where M : Mat<float>, new ()
         {
             var res = Identity<M> ();
-            var lastrow = res.Rows - 1;
+            if (res.Rows <= offsets.Length)
+                throw new ArgumentOutOfRangeException ("offsets", "Too many offsets.");
+            var lastcol = res.Columns - 1;
             for (int i = 0; i < offsets.Length; i++)
-                res[i, lastrow] = offsets[i];
+                res[lastcol, i] = offsets[i];
             return res;
         }
 
         public static M Scaling<M> (params float[] factors) where M : Mat<float>, new ()
         {
             var res = Identity<M> ();
+            if (factors.Length > res.Columns || factors.Length > res.Rows)
+                throw new ArgumentOutOfRangeException ("factors", "Too many factors.");
             for (int i = 0; i < factors.Length; i++)
                 res[i, i] = factors[i];
             return res;

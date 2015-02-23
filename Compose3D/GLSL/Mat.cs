@@ -55,6 +55,7 @@ namespace Compose3D.GLSL
         public override string ToString ()
         {
             var sb = new StringBuilder ();
+            sb.AppendLine ();
             for (int r = 0; r < Rows; r++)
             {
                 sb.Append ("[");

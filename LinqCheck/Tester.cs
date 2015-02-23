@@ -157,9 +157,9 @@ namespace LinqCheck
 			{
 				Console.ForegroundColor = ConsoleColor.Green;
 				if (timed)
-					System.Console.WriteLine ("All tests succeeded. {0} tests run in {1}.", run, stopWatch.Elapsed);
+					System.Console.WriteLine ("All tests passed. {0} tests run in {1}.", run, stopWatch.Elapsed);
 				else
-					System.Console.WriteLine ("All tests succeeded. {0} tests run.", run);
+					System.Console.WriteLine ("All tests passed. {0} tests run.", run);
 			}
 			Console.ResetColor ();
 			GC.Collect ();

@@ -25,7 +25,7 @@ namespace Compose3D.GLSL
             return res;
         }
 
-        public static V Multiply<V> (V vec, float scalar) where V : Vec<float>, new ()
+        public static V MultiplyScalar<V> (V vec, float scalar) where V : Vec<float>, new ()
         {
             var res = new V ();
             vec.Vector.Map (res.Vector, a => a * scalar);

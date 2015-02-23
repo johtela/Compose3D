@@ -36,12 +36,12 @@ namespace Compose3D.GLSL
 
         public static Mat4 operator * (float scalar, Mat4 mat)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat4 operator * (Mat4 mat, float scalar)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat4 operator * (Mat4 left, Mat4 right)
@@ -51,7 +51,7 @@ namespace Compose3D.GLSL
 
         public static Vec4 operator * (Mat4 mat, Vec4 vec)
         {
-            return Matf.Multiply (mat, vec);
+            return Matf.MultiplyVector (mat, vec);
         }
 
         public static Mat4 operator + (Mat4 left, Mat4 right)

@@ -29,12 +29,12 @@
 
         public static Vec4 operator * (float scalar, Vec4 vec)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, float scalar)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec4 operator * (Vec4 vec, Vec4 scale)

@@ -27,12 +27,12 @@
 
         public static Vec3 operator * (float scalar, Vec3 vec)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec3 operator * (Vec3 vec, float scalar)
         {
-            return Vecf.Multiply (vec, scalar);
+            return Vecf.MultiplyScalar (vec, scalar);
         }
 
         public static Vec3 operator * (Vec3 vec, Vec3 scale)

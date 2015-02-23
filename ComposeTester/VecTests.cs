@@ -49,7 +49,7 @@
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
                        let len = vec.Length ()
-                       let scaled = Vecf.Multiply (vec, scalar)
+                       let scaled = Vecf.MultiplyScalar (vec, scalar)
                        let len_scaled = scaled.Length ()
                        let scalar_x_len = scalar * len
                        select new { vec, scalar, len, scaled, len_scaled, scalar_x_len };
@@ -78,7 +78,7 @@
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
                        let divided = Vecf.Divide (vec, scalar)
-                       let multiplied = Vecf.Multiply (vec, 1f / scalar)
+                       let multiplied = Vecf.MultiplyScalar (vec, 1f / scalar)
                        select new { vec, scalar, divided, multiplied };
 
             prop.Label ("{0}: vec / scalar = vec * (1 / scalar)", typeof (V).Name)

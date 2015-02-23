@@ -24,12 +24,12 @@
 
         public static Mat2 operator * (float scalar, Mat2 mat)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat2 operator * (Mat2 mat, float scalar)
         {
-            return Matf.Multiply (mat, scalar);
+            return Matf.MultiplyScalar (mat, scalar);
         }
 
         public static Mat2 operator * (Mat2 left, Mat2 right)
@@ -39,7 +39,7 @@
 
         public static Vec2 operator * (Mat2 mat, Vec2 vec)
         {
-            return Matf.Multiply (mat, vec);
+            return Matf.MultiplyVector (mat, vec);
         }
 
         public static Mat2 operator + (Mat2 left, Mat2 right)

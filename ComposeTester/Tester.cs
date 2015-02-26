@@ -134,12 +134,13 @@
 		[STAThread]
 		static void Main (string[] args)
 		{
-            var wnd = new TestWindow ();
-            wnd.Init ();
-            wnd.Run ();
+            //var wnd = new TestWindow ();
+            //wnd.Init ();
+            //wnd.Run ();
             Tester.RunTestsTimed (
-                new VecTests (),
-                new MatTests ());
+                //new VecTests (),
+                //new MatTests (),
+                new PerformanceTests ());
             Console.ReadLine ();
 		}
 	}

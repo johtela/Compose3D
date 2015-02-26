@@ -38,6 +38,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arithmetics\IVec.cs" />
+    <Compile Include="Arithmetics\Vec3.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Vec3.tt</DependentUpon>
+    </Compile>
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
@@ -61,6 +67,16 @@
     <Compile Include="GLSL\Vec2.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
     <Compile Include="Geometry\Geometry.cs" />
+    <Compile Include="Arithmetics\Vec2.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Vec2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arithmetics\VecTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>VecTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Geometry\Material.cs" />
     <Compile Include="Geometry\Color.cs" />
@@ -68,7 +84,22 @@
     <Compile Include="Geometry\BBox.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Arithmetics\Vec2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\Vec3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\VecTemplate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>VecTemplate.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

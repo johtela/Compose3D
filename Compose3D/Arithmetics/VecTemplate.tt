@@ -1,0 +1,203 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+ void Vec(int dim, string type, string suffix) { 
+	
+	var vecType = "Vec" + dim.ToString()+suffix;
+#>
+namespace Compose3D.Arithmetics
+{
+    using System;
+    using System.Linq;
+    using System.Text;
+
+    public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>, IEquatable<<#= vecType #>>
+    { 
+<#+		ComponentFields(dim, type);
+		Constructors (dim, type); 
+		Unary (dim, vecType, "Negate", "-", ", ");
+		Binary (dim, vecType, "Add", "+", ", ");
+		Binary (dim, vecType, "Subtract", "-", ", ");
+		Binary (dim, vecType, "Multiply", "*", ", ");
+		Scalar (dim, vecType, type, "Multiply", "*", ", ");
+		Scalar (dim, vecType, type, "Divide", "/", ", ");
+		BinaryScalar (dim, vecType, type, "Dot", "*", " + ");
+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
+		Indexer(dim, type); 
+#>
+		public <#= type #> LengthSquared
+		{
+			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }
+		}
+
+		public <#= type #> Length
+		{
+			get { return (<#= type #>)Math.Sqrt (LengthSquared); }
+		}
+
+		public <#= vecType #> Normalized
+		{
+			get { return Divide (Length); }
+		}
+
+		public override bool Equals (object obj)
+		{
+            return obj is <#= vecType #> && Equals ((<#= vecType #>)obj);
+		}
+
+        public override int GetHashCode ()
+        {
+			return <#= ComponentList(dim, " ^ ", comp => comp + ".GetHashCode ()") #>;
+        }
+
+        public override string ToString ()
+        {
+            var sb = new StringBuilder ("[");
+            for (int i = 0; i < <#= dim #>; i++)
+                sb.AppendFormat (" {0}", this[i].ToString ());
+            sb.Append (" ]");
+            return sb.ToString ();
+        }
+
+        public static <#= vecType #> operator - (<#= vecType #> vec)
+        {
+            return vec.Negate ();
+        }
+
+        public static <#= vecType #> operator - (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Subtract (right);
+        }
+
+        public static <#= vecType #> operator * (<#= type #> scalar, <#= vecType #> vec)
+        {
+            return vec.Multiply (scalar);
+        }
+
+        public static <#= vecType #> operator * (<#= vecType #> vec, <#= type #> scalar)
+        {
+            return vec.Multiply (scalar);
+        }
+
+        public static <#= vecType #> operator * (<#= vecType #> vec, <#= vecType #> scale)
+        {
+            return vec.Multiply (scale);
+        }
+
+        public static <#= vecType #> operator / (<#= vecType #> vec, <#= type #> scalar)
+        {
+            return vec.Divide (scalar);
+        }
+
+        public static <#= vecType #> operator + (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Add (right);
+        }
+    }
+} <#+ 
+} 
+
+string Component(int i) {
+    switch (i)
+    {
+        case 0 : return "X";
+        case 1 : return "Y";
+        case 2 : return "Z";
+        case 3 : return "W";
+        default : throw new ArgumentOutOfRangeException("i");
+    }
+}
+
+IEnumerable<string> Components(int dim) {
+	return from i in Enumerable.Range(0, dim)
+		   select Component(i);
+}
+
+string ComponentList(int dim, string delimiter, Func<string, string> map) {
+	return Components(dim).Select(map).Aggregate((s1, s2) => s1 + delimiter + s2);
+}
+
+string ArgumentList(int dim, string type) {
+	return ComponentList(dim, ", ", comp => type + " " + comp.ToLower());
+}
+
+void ComponentStatements(int dim, Func<string, string> map) {
+	foreach (var comp in Components(dim)) {  
+#>			<#= map(comp) #>; 
+<#+ }
+}
+
+void ComponentFields(int dim, string type) { 
+	foreach (var comp in Components(dim)) {  
+#>		public <#= type #> <#= comp #>; 
+<#+ }
+	WriteLine("");
+}
+ 
+void Constructors(int dim, string type) { #>
+		public Vec<#= dim #> (<#= ArgumentList(dim, type) #>)
+		{	<#+ foreach (var comp in Components(dim)) { #>         
+			<#= comp #> = <#= comp.ToLower() #>; <#+ } #>        
+		}
+
+ <#+ } 
+ 
+ void Indexer(int dim, string type) { #>
+		public <#= type #> this[int index]
+		{
+			get
+			{
+				switch (index)
+				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
+					case <#= i.ToString() #>: return <#= Component(i) #>; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("index");
+				}
+			} 
+			set
+			{
+				switch (index)
+				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
+					case <#= i.ToString() #>: <#= Component(i) #> = value; break; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("index");
+				}
+			} 
+		}
+					
+<#+ } 
+
+void Unary(int dim, string vecType, string name, string oper, string delim) { #>
+		public <#= vecType #> <#= name #> ()
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0}{1}", oper, comp)) #>);
+		}
+
+<#+ } 
+
+void Binary(int dim, string vecType, string name, string oper, string delim) { #>
+		public <#= vecType #> <#= name #> (<#= vecType #> other)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>);
+		}
+
+<#+ } 
+
+void Scalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { #>
+		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} scalar", comp, oper)) #>);
+		}
+
+<#+ } 
+
+void BinaryScalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { #>
+		public <#= scalarType #> <#= name #> (<#= vecType #> other)
+		{
+			return <#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>;
+		}
+
+<#+ } 
+
+#>

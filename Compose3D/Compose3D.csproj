@@ -38,7 +38,35 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arithmetics\Coord.cs" />
+    <Compile Include="Arithmetics\IMat.cs" />
+    <Compile Include="Arithmetics\ISquareMat.cs" />
     <Compile Include="Arithmetics\IVec.cs" />
+    <Compile Include="Arithmetics\Mat2.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mat2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arithmetics\Mat3.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mat3.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arithmetics\Mat4.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mat4.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arithmetics\MatTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arithmetics\Vec4.cs">
+      <DependentUpon>Vec4.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Arithmetics\Vec3.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -84,9 +112,29 @@
     <Compile Include="Geometry\BBox.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Arithmetics\Mat2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat2.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\Mat3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat3.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\Mat4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat4.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\MatTemplate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MatTemplate.cs</LastGenOutput>
+    </None>
     <None Include="Arithmetics\Vec2.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Vec2.cs</LastGenOutput>
+    </None>
+    <None Include="Arithmetics\Vec4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4.cs</LastGenOutput>
     </None>
     <None Include="Arithmetics\Vec3.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

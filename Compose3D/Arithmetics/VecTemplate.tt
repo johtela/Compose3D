@@ -4,18 +4,20 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#+ void Vec(int dim, string type, string suffix) { 
 	
-	var vecType = "Vec" + dim.ToString()+suffix;
+	var vecType = "Vec" + dim + suffix;
 #>
 namespace Compose3D.Arithmetics
 {
     using System;
-    using System.Linq;
     using System.Text;
 
     public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>, IEquatable<<#= vecType #>>
     { 
-<#+		ComponentFields(dim, type);
-		Constructors (dim, type); 
+<#+		ComponentFields (dim, type);
+		BasicConstructor (dim, type, suffix);
+		SingleValueConstructor (dim, type, suffix);
+		for (int i = 2; i <= 4; i++)
+			CopyConstructor (dim, type, suffix, i);
 		Unary (dim, vecType, "Negate", "-", ", ");
 		Binary (dim, vecType, "Add", "+", ", ");
 		Binary (dim, vecType, "Subtract", "-", ", ");
@@ -25,6 +27,8 @@ namespace Compose3D.Arithmetics
 		BinaryScalar (dim, vecType, type, "Dot", "*", " + ");
 		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
 		Indexer(dim, type); 
+	    for (int i = dim; i > 1; i--)
+			Swizzler(i, type, suffix);
 #>
 		public <#= type #> LengthSquared
 		{
@@ -94,6 +98,16 @@ namespace Compose3D.Arithmetics
         {
             return left.Add (right);
         }
+
+        public static bool operator == (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Equals (right);
+        }
+
+        public static bool operator != (<#= vecType #> left, <#= vecType #> right)
+        {
+            return !left.Equals (right);
+        }
     }
 } <#+ 
 } 
@@ -122,9 +136,14 @@ string ArgumentList(int dim, string type) {
 	return ComponentList(dim, ", ", comp => type + " " + comp.ToLower());
 }
 
+string PartialArgumentList(int start, int dim, string type) {
+	return Components(dim).Skip(start).Select(comp => type + " " + comp.ToLower())
+		.Aggregate((s1, s2) => s1 + ", " + s2);
+}
+
 void ComponentStatements(int dim, Func<string, string> map) {
 	foreach (var comp in Components(dim)) {  
-#>			<#= map(comp) #>; 
+#><#= map(comp) #>; 
 <#+ }
 }
 
@@ -135,15 +154,47 @@ void ComponentFields(int dim, string type) {
 	WriteLine("");
 }
  
-void Constructors(int dim, string type) { #>
-		public Vec<#= dim #> (<#= ArgumentList(dim, type) #>)
-		{	<#+ foreach (var comp in Components(dim)) { #>         
-			<#= comp #> = <#= comp.ToLower() #>; <#+ } #>        
+void BasicConstructor(int dim, string type, string suffix) { #>
+		public Vec<#= dim #><#= suffix #> (<#= ArgumentList(dim, type) #>)
+		{	
+<#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); #>
+		}
+
+ <#+ }
+
+void SingleValueConstructor(int dim, string type, string suffix) { #>
+		public Vec<#= dim #><#= suffix #> (<#= type #> value)
+		{	
+<#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); #>
+		}
+
+ <#+ }
+ 
+void CopyConstructor(int dim, string type, string suffix, int otherDim) { 
+	if (dim > otherDim) { #>
+		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec, <#= PartialArgumentList(otherDim, dim, type) #>)
+		{	
+<#+ }
+	else { #>
+		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec)
+		{	
+<#+ 
+    }
+	var currDim = 0;
+	ComponentStatements(dim, s => 
+		++currDim <= otherDim ?
+			 string.Format("			{0} = vec.{0}", s) : 
+			 string.Format("			{0} = {1}", s, s.ToLower())); #>
 		}
 
  <#+ } 
- 
- void Indexer(int dim, string type) { #>
+
+void Indexer(int dim, string type) { #>
+		public int Dimensions
+		{
+			get { return <#= dim #>; }
+		}
+
 		public <#= type #> this[int index]
 		{
 			get
@@ -166,6 +217,20 @@ void Constructors(int dim, string type) { #>
 			} 
 		}
 					
+<#+ } 
+
+void Swizzler(int dim, string type, string suffix) { 
+	var vecType = "Vec" + dim.ToString() + suffix;
+#>
+		public <#= vecType #> this[<#= ArgumentList(dim, "Coord") #>]
+		{
+			get { return new <#= vecType #> (<#= ComponentList(dim, ", ", s => string.Format("this[(int){0}]", s.ToLower())) #>); }
+			set
+			{
+<#+ ComponentStatements(dim, s => string.Format("				this[(int){0}] = value.{1}", s.ToLower(), s)); #>
+			}
+		}
+
 <#+ } 
 
 void Unary(int dim, string vecType, string name, string oper, string delim) { #>

@@ -1,7 +1,6 @@
 ﻿namespace Compose3D.Arithmetics
 {
     using System;
-    using System.Linq;
     using System.Text;
 
     public struct Vec2 : IVec<Vec2, float>, IEquatable<Vec2>
@@ -10,9 +9,33 @@
 		public float Y; 
 
 		public Vec2 (float x, float y)
-		{	         
-			X = x;          
-			Y = y;         
+		{	
+			X = x; 
+			Y = y; 
+		}
+
+ 		public Vec2 (float value)
+		{	
+			X = value; 
+			Y = value; 
+		}
+
+ 		public Vec2 (Vec2 vec)
+		{	
+			X = vec.X; 
+			Y = vec.Y; 
+		}
+
+ 		public Vec2 (Vec3 vec)
+		{	
+			X = vec.X; 
+			Y = vec.Y; 
+		}
+
+ 		public Vec2 (Vec4 vec)
+		{	
+			X = vec.X; 
+			Y = vec.Y; 
 		}
 
  		public Vec2 Negate ()
@@ -55,6 +78,11 @@
 			return X == other.X && Y == other.Y;
 		}
 
+		public int Dimensions
+		{
+			get { return 2; }
+		}
+
 		public float this[int index]
 		{
 			get
@@ -77,6 +105,16 @@
 			} 
 		}
 					
+		public Vec2 this[Coord x, Coord y]
+		{
+			get { return new Vec2 (this[(int)x], this[(int)y]); }
+			set
+			{
+				this[(int)x] = value.X; 
+				this[(int)y] = value.Y; 
+			}
+		}
+
 		public float LengthSquared
 		{
 			get { return X * X + Y * Y; }
@@ -144,6 +182,16 @@
         public static Vec2 operator + (Vec2 left, Vec2 right)
         {
             return left.Add (right);
+        }
+
+        public static bool operator == (Vec2 left, Vec2 right)
+        {
+            return left.Equals (right);
+        }
+
+        public static bool operator != (Vec2 left, Vec2 right)
+        {
+            return !left.Equals (right);
         }
     }
 }  

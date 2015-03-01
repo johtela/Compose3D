@@ -4,7 +4,7 @@
 
     public interface IVec<V, T>
         where V : struct, IVec<V, T>, IEquatable<V>
-        where T : struct
+        where T : struct, IEquatable<T>
     {
         V Negate ();
         V Add (V other);
@@ -14,6 +14,7 @@
         V Divide (T scalar);
         T Dot (V other);
 
+        int Dimensions { get; }
         T this[int index] { get; set; }
         T Length { get; }
         T LengthSquared { get; }

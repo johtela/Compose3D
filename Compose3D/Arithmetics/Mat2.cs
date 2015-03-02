@@ -3,7 +3,7 @@
     using System;
     using System.Text;
 
-    public struct Mat2 : IMat<Mat2, float>, IEquatable<Mat2>
+    public struct Mat2 : ISquareMat<Mat2, float>, IEquatable<Mat2>
     { 
 		public Vec2 Column0; 
 		public Vec2 Column1; 
@@ -106,6 +106,26 @@
 			return Column0 == other.Column0 && Column1 == other.Column1;
 		}
 
+        public Mat2 Multiply (Mat2 mat)
+        {
+            return this * mat;
+        }
+
+        public Mat2 Transposed
+        {
+            get { return Mat.Transpose<Mat2, float> (this); }
+        }
+
+        public float Determinant
+        {
+            get { return Mat.Determinant (this); }
+        }
+
+        public Mat2 Inverse
+        {
+            get { return Mat.Inverse (this); }
+        }
+
 		public override bool Equals (object obj)
 		{
             return obj is Mat2 && Equals ((Mat2)obj);
@@ -130,7 +150,7 @@
             return sb.ToString ();
         }
 
-        public static Mat2 operator - (Mat2 left, Mat2 right)
+       public static Mat2 operator - (Mat2 left, Mat2 right)
         {
             return left.Subtract (right);
         }

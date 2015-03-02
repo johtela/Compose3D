@@ -13,7 +13,7 @@ namespace Compose3D.Arithmetics
     using System;
     using System.Text;
 
-    public struct <#= matType #> : I<#= !square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>, IEquatable<<#= matType #>>
+    public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>, IEquatable<<#= matType #>>
     { 
 <#+		ColumnFields (cols, vecType);
 		BasicConstructor (cols, matType, vecType);
@@ -40,7 +40,28 @@ namespace Compose3D.Arithmetics
         }
 
 <#+		BinaryScalar (cols, matType, "bool", "Equals", "==", " && "); 
-#>
+		if (square) { #>
+        public <#= matType #> Multiply (<#= matType #> mat)
+        {
+            return this * mat;
+        }
+
+        public <#= matType #> Transposed
+        {
+            get { return Mat.Transpose<<#= matType #>, <#= type #>> (this); }
+        }
+
+        public <#= type #> Determinant
+        {
+            get { return Mat.Determinant (this); }
+        }
+
+        public <#= matType #> Inverse
+        {
+            get { return Mat.Inverse (this); }
+        }
+<#+		} #>
+
 		public override bool Equals (object obj)
 		{
             return obj is <#= matType #> && Equals ((<#= matType #>)obj);
@@ -65,7 +86,7 @@ namespace Compose3D.Arithmetics
             return sb.ToString ();
         }
 
-        public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
+       public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
         {
             return left.Subtract (right);
         }

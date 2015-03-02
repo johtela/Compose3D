@@ -32,7 +32,19 @@ namespace Compose3D
         #endregion
 
         #region Extensions for 2-dimensional arrays
-        
+
+        public static T[][] Duplicate<T> (this T[][] matrix)
+        {
+            var res = new T[matrix.Length][];
+            for (int i = 0; i < matrix.Length; i++)
+            {
+                var len = matrix[i].Length;
+                var copy = new T[len];
+                Array.Copy (matrix[i], copy, len);
+            }
+            return res;
+        }
+
         public static int Columns<T> (this T[,] matrix)
         {
             return matrix.GetLength (0);

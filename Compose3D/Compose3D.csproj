@@ -57,6 +57,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Mat4.tt</DependentUpon>
     </Compile>
+    <Compile Include="Arithmetics\Mat.cs" />
     <Compile Include="Arithmetics\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

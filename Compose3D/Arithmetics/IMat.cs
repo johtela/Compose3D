@@ -2,7 +2,7 @@
 {
     using System;
 
-    interface IMat<M, T>
+    public interface IMat<M, T>
         where M : struct, IMat<M, T>, IEquatable<M>
         where T : struct, IEquatable<T>
     {

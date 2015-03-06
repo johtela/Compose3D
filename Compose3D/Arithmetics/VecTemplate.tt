@@ -11,7 +11,7 @@ namespace Compose3D.Arithmetics
     using System;
     using System.Text;
 
-    public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>, IEquatable<<#= vecType #>>
+    public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
     { 
 <#+		ComponentFields (dim, type);
 		BasicConstructor (dim, type, suffix);

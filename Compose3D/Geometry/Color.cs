@@ -5,7 +5,7 @@ namespace Compose3D.Geometry
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	public static class Color
 	{

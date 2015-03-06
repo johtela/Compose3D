@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Compose3D</RootNamespace>
-    <AssemblyName>Visual3D</AssemblyName>
+    <AssemblyName>Compose3D</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -63,6 +63,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Arithmetics\Vec.cs" />
     <Compile Include="Arithmetics\Vec4.cs">
       <DependentUpon>Vec4.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -77,23 +78,11 @@
     <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
     <Compile Include="Geometry\Transform.cs" />
-    <Compile Include="GLSL\Coord.cs" />
-    <Compile Include="GLSL\Mat.cs" />
-    <Compile Include="GLSL\Mat2.cs" />
-    <Compile Include="GLSL\Mat3.cs" />
-    <Compile Include="GLSL\Mat4.cs" />
-    <Compile Include="GLSL\Matd.cs" />
-    <Compile Include="GLSL\Matf.cs" />
-    <Compile Include="GLSL\Vec.cs" />
-    <Compile Include="GLSL\Vec3.cs" />
-    <Compile Include="GLSL\Vec4.cs" />
-    <Compile Include="GLSL\Vecf.cs" />
     <Compile Include="GLTypes\GLError.cs" />
     <Compile Include="GLTypes\Program.cs" />
     <Compile Include="GLTypes\Shader.cs" />
     <Compile Include="GLTypes\Uniform.cs" />
     <Compile Include="GLTypes\VBO.cs" />
-    <Compile Include="GLSL\Vec2.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Arithmetics\Vec2.cs">

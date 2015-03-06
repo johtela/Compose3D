@@ -5,7 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	/// <summary>
 	/// Axis along which the geometries are stacked.
@@ -100,20 +100,20 @@
 			switch (axis)
 			{
 				case StackAxis.X: 
-					return Matf.Translation<Mat4> ((previous.Right - current.Left) * (float)direction, 0f, 0f);
+					return Mat.Translation<Mat4> ((previous.Right - current.Left) * (float)direction, 0f, 0f);
 				case StackAxis.Y: 
-					return Matf.Translation<Mat4> (0f, (previous.Top - current.Bottom) * (float)direction, 0f);
+					return Mat.Translation<Mat4> (0f, (previous.Top - current.Bottom) * (float)direction, 0f);
 				default: 
-					return Matf.Translation<Mat4> (0f, 0f, (previous.Front - current.Back) * (float)direction);
+					return Mat.Translation<Mat4> (0f, 0f, (previous.Front - current.Back) * (float)direction);
 			}
 		}
 
 		private static Mat4 GetStackingMatrix (StackAxis axis, StackDirection direction, 
       		Align xalign, Align yalign, Align zalign, BBox previous, BBox current)
 		{
-			var alignMatrix = Matf.Translation<Mat4> (previous.GetXOffset (current, xalign),
-			                                          previous.GetYOffset (current, yalign),
-			                                          previous.GetZOffset (current, zalign));
+			var alignMatrix = Mat.Translation<Mat4> (previous.GetXOffset (current, xalign),
+			                                         previous.GetYOffset (current, yalign),
+			                                         previous.GetZOffset (current, zalign));
 			return alignMatrix * GetOffsetMatrix (axis, direction, previous, current);
 		}
 

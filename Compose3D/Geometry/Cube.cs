@@ -5,7 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	[Flags]
 	public enum CubeFace
@@ -52,37 +52,37 @@
 
 		public static Geometry<V> FrontFace<V> (float width, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, height).Transform (Matf.Translation<Mat4> (0f, 0f, offset));
+			return Geometry.Rectangle<V> (width, height).Transform (Mat.Translation<Mat4> (0f, 0f, offset));
 		}
 
 		public static Geometry<V> BackFace<V> (float width, float height, float offset) where V : struct, IVertex
 		{
-            return Geometry.Rectangle<V> (width, height).Transform (Matf.Translation<Mat4> (0f, 0f, offset) *
-				Matf.RotationX<Mat4> (MathHelper.Pi));
+            return Geometry.Rectangle<V> (width, height).Transform (Mat.Translation<Mat4> (0f, 0f, offset) *
+				Mat.RotationX<Mat4> (MathHelper.Pi));
 		}
 
 		public static Geometry<V> TopFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matf.Translation<Mat4> (0f, offset, 0f) *
-                Matf.RotationX<Mat4> (-MathHelper.PiOver2));
+			return Geometry.Rectangle<V> (width, depth).Transform (Mat.Translation<Mat4> (0f, offset, 0f) *
+                Mat.RotationX<Mat4> (-MathHelper.PiOver2));
 		}
 
 		public static Geometry<V> BottomFace<V> (float width, float depth, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (width, depth).Transform (Matf.Translation<Mat4> (0f, offset, 0f) *
-                Matf.RotationX<Mat4> (MathHelper.PiOver2));
+			return Geometry.Rectangle<V> (width, depth).Transform (Mat.Translation<Mat4> (0f, offset, 0f) *
+                Mat.RotationX<Mat4> (MathHelper.PiOver2));
 		}
 
 		public static Geometry<V> LeftFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matf.Translation<Mat4> (offset, 0f, 0f) *
-                Matf.RotationY<Mat4> (-MathHelper.PiOver2));
+			return Geometry.Rectangle<V> (depth, height).Transform (Mat.Translation<Mat4> (offset, 0f, 0f) *
+                Mat.RotationY<Mat4> (-MathHelper.PiOver2));
 		}
 		
 		public static Geometry<V> RightFace<V> (float depth, float height, float offset) where V : struct, IVertex
 		{
-			return Geometry.Rectangle<V> (depth, height).Transform (Matf.Translation<Mat4> (offset, 0f, 0f) *
-                Matf.RotationY<Mat4> (MathHelper.PiOver2));
+			return Geometry.Rectangle<V> (depth, height).Transform (Mat.Translation<Mat4> (offset, 0f, 0f) *
+                Mat.RotationY<Mat4> (MathHelper.PiOver2));
 		}
 	}
 }

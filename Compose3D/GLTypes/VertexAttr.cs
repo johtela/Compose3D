@@ -7,6 +7,7 @@
 	using System.Runtime.InteropServices;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
+    using Arithmetics;
 
 	public class VertexAttr
 	{
@@ -33,9 +34,9 @@
 			var s = Marshal.SizeOf (ft);
 			var name = fi.Name;
 
-			if (ft == typeof (Vector3))
+			if (ft == typeof (Vec3))
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 3);
-			else if (ft == typeof (Vector4))
+			else if (ft == typeof (Vec4))
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 4);
 			else throw new ArgumentException ("Incompatible vertex attribute type " + name);
 		}

@@ -31,6 +31,18 @@ namespace Compose3D
 
         #endregion
 
+        #region Extensions for 1-dimensional arrays
+
+        public static T[] Repeat<T> (this T value, int times)
+        {
+            var result = new T[times];
+            for (int i = 0; i < times; i++)
+                result[i] = value;
+            return result;
+        }
+
+        #endregion
+
         #region Extensions for 2-dimensional arrays
 
         public static T[][] Duplicate<T> (this T[][] matrix)
@@ -253,13 +265,5 @@ namespace Compose3D
         }
 
         #endregion
-        
-        public static Vector3 Transform (this Vector3 vec, Matrix3 mat)
-        {
-            return new Vector3 (
-                vec.X * mat.Row0.X + vec.Y * mat.Row1.X + vec.Z * mat.Row2.X, 
-                vec.X * mat.Row0.Y + vec.Y * mat.Row1.Y + vec.Z * mat.Row2.Y, 
-                vec.X * mat.Row0.Z + vec.Y * mat.Row1.Z + vec.Z * mat.Row2.Z);
-        }
 	}
 }

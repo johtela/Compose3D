@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using Compose3D;
-    using Compose3D.GLSL;
+    using Compose3D.Arithmetics;
     using LinqCheck;
 
     public class VecTests
@@ -18,39 +18,39 @@
         }
 
         public static Arbitrary<V> ArbitraryVec<V, T> (int size) 
-            where V : Vec<T>, new ()
+            where V : struct, IVec<V, T>
             where T : struct, IEquatable<T>
         {
             var arb = Arbitrary.Get<T> (); 
             return new Arbitrary<V> ( 
                 from a in arb.Generate.FixedArrayOf (size)
-                select Vec<T>.Create<V> (a),
-                v => from a in v.Vector.Combinations (arb.Shrink)
-                     select Vec<T>.Create<V> (a));
+                select Vec.FromArray<V, T> (a),
+                v => from a in v.ToArray<V, T> ().Combinations (arb.Shrink)
+                     select Vec.FromArray<V, T> (a));
         }
 
-        public void CheckAddSubtract<V> () where V : Vec<float>, new ()
+        public void CheckAddSubtract<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec1 in Prop.Choose<V> ()
                        from vec2 in Prop.Choose<V> ()
-                       let neg = Vecf.Negate (vec2)
+                       let neg = vec2.Negate ()
                        select new { vec1, vec2, neg };
 
             prop.Label ("{0}: vec1 - vec1 = [ 0 ... ]", typeof(V).Name)
-                .Check (p => Vecf.Subtract (p.vec1, p.vec1) == new V ());
+                .Check (p => p.vec1.Subtract (p.vec1).Equals (new V ()));
             prop.Label ("{0}: vec1 - vec2 = vec1 + (-vec2)", typeof (V).Name)
-                .Check (p => Vecf.Subtract (p.vec1, p.vec2) == Vecf.Add (p.vec1, p.neg));
+                .Check (p => p.vec1.Subtract (p.vec2).Equals (p.vec1.Add (p.neg)));
             prop.Label ("{0}: | vec1 + vec1 | = 2 * | vec1 |", typeof (V).Name)
-                .Check (p => Vecf.Add (p.vec1, p.vec1).Length () == p.vec1.Length () * 2f);
+                .Check (p => p.vec1.Add (p.vec1).Length == p.vec1.Length * 2f);
         }
 
-        public void CheckMultiplyWithScalar<V> () where V : Vec<float>, new ()
+        public void CheckMultiplyWithScalar<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
-                       let len = vec.Length ()
-                       let scaled = Vecf.MultiplyScalar (vec, scalar)
-                       let len_scaled = scaled.Length ()
+                       let len = vec.Length
+                       let scaled = vec.Multiply (scalar)
+                       let len_scaled = scaled.Length
                        let scalar_x_len = scalar * len
                        select new { vec, scalar, len, scaled, len_scaled, scalar_x_len };
 
@@ -58,14 +58,14 @@
                 .Check (p => p.len_scaled.ApproxEquals (p.scalar_x_len));
         }
 
-        public void CheckMultiplyWithVector<V> () where V : Vec<float>, new ()
+        public void CheckMultiplyWithVector<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
-                       let len = vec.Length ()
-                       let scaleVec = Vec<float>.Create<V> (scalar)
-                       let scaled = Vecf.Multiply (vec, scaleVec)
-                       let len_scaled = scaled.Length ()
+                       let len = vec.Length
+                       let scaleVec = Vec.FromArray<V, float> (scalar.Repeat (vec.Dimensions))
+                       let scaled = vec.Multiply (scaleVec)
+                       let len_scaled = scaled.Length
                        let scalar_x_len = scaleVec[0] * len
                        select new { vec, scaleVec, len, scaled, len_scaled, scalar_x_len };
 
@@ -73,41 +73,41 @@
                 .Check (p => p.len_scaled.ApproxEquals (p.scalar_x_len));
         }
 
-        public void CheckDivide<V> () where V : Vec<float>, new ()
+        public void CheckDivide<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
-                       let divided = Vecf.Divide (vec, scalar)
-                       let multiplied = Vecf.MultiplyScalar (vec, 1f / scalar)
+                       let divided = vec.Divide (scalar)
+                       let multiplied = vec.Multiply (1f / scalar)
                        select new { vec, scalar, divided, multiplied };
 
             prop.Label ("{0}: vec / scalar = vec * (1 / scalar)", typeof (V).Name)
-                .Check (p => p.divided.ApproxEquals (p.multiplied));
+                .Check (p => Vec.ApproxEquals (p.divided, p.multiplied));
         }
 
-        public void CheckNormalize<V> () where V : Vec<float>, new ()
+        public void CheckNormalize<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec in Prop.Choose<V> ()
-                       let vec_n = vec.Normalize ()
-                       let len = vec_n.Length ()
+                       let vec_n = vec.Normalized
+                       let len = vec_n.Length
                        select new { vec, vec_n, len };
 
             prop.Label ("{0}: | vec_n | = 1", typeof (V).Name)
                 .Check (p => p.len.ApproxEquals (1f));
         }
 
-        public void CheckDotProduct<V> () where V : Vec<float>, new ()
+        public void CheckDotProduct<V> () where V : struct, IVec<V, float>
         {
             var prop = from vec1 in Prop.Choose<V> ()
                        from vec2 in Prop.Choose<V> ()
-                       let len_vec1 = vec1.Length ()
-                       let len_vec2 = vec2.Length ()
-                       let vec1n = vec1.Normalize ()
-                       let vec2n = vec2.Normalize ()
-                       let dot_vec1_vec2 = Vecf.Dot (vec1, vec2)
-                       let dot_vec1n_vec2n = Vecf.Dot (vec1n, vec2n)
-                       let dot_vec1_vec2n = Vecf.Dot (vec1, vec2n)
-                       let dot_vec2_vec1n = Vecf.Dot (vec2, vec1n)
+                       let len_vec1 = vec1.Length
+                       let len_vec2 = vec2.Length
+                       let vec1n = vec1.Normalized
+                       let vec2n = vec2.Normalized
+                       let dot_vec1_vec2 = vec1.Dot (vec2)
+                       let dot_vec1n_vec2n = vec1n.Dot (vec2n)
+                       let dot_vec1_vec2n = vec1.Dot (vec2n)
+                       let dot_vec2_vec1n = vec2.Dot (vec1n)
                        select new { vec1, vec2, len_vec1, len_vec2, vec1n, vec2n, 
                            dot_vec1_vec2, dot_vec1n_vec2n, dot_vec1_vec2n, dot_vec2_vec1n };
 

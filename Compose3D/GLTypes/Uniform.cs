@@ -5,7 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	public class Uniform<T>
 	{
@@ -19,10 +19,10 @@
 			{ typeof(uint[]), (u, o) => { var a = (uint[])o; GL.Uniform1 (u, a.Length, a); }},
 			{ typeof(float[]), (u, o) => { var a = (float[])o; GL.Uniform1 (u, a.Length, a); }},
 			{ typeof(double[]), (u, o) => { var a = (double[])o; GL.Uniform1 (u, a.Length, a); }},
-			{ typeof(Vec3), (u, o) => GL.Uniform3 (u, 1, ((Vec3)o).Vector) },
-			{ typeof(Vec4), (u, o) => GL.Uniform4 (u, 1, ((Vec4)o).Vector) },
-			{ typeof(Mat3), (u, o) => GL.UniformMatrix3 (u, 1, false, ((Mat3)o).ToArray ()) },
-			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, ((Mat4)o).ToArray ()) }
+			{ typeof(Vec3), (u, o) => GL.Uniform3 (u, 1, Vec.ToArray<Vec3, float> ((Vec3)o)) },
+			{ typeof(Vec4), (u, o) => GL.Uniform4 (u, 1, Vec.ToArray<Vec4, float> ((Vec4)o)) },
+			{ typeof(Mat3), (u, o) => GL.UniformMatrix3 (u, 1, false, Mat.ToArray<Mat3, float> ((Mat3)o)) },
+			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) }
 		};
 
 		internal int _glUniform;

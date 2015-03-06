@@ -7,8 +7,28 @@
 
     public static class Mat
     {
-        public static T[][] ToArray<M, T> (M mat) 
-            where M : struct, IMat<M, T>, IEquatable<M>
+        public static bool ApproxEquals<M> (M mat, M other)
+            where M : struct, IMat<M, float>
+        {
+            for (int c = 0; c < mat.Columns; c++)
+                for (int r = 0; r < mat.Rows; r++)
+                    if (!mat[c, r].ApproxEquals (other[c, r])) return false;
+            return true;
+        }
+
+        public static T[] ToArray<M, T> (M mat)
+            where M : struct, IMat<M, T>
+            where T : struct, IEquatable<T>
+        {
+            var result = new T[mat.Rows * mat.Columns];
+            for (int i = 0, c = 0; c < mat.Columns; c++)
+                for (int r = 0; r < mat.Rows; r++)
+                    result[i++] = mat[c, r];
+            return result;
+        }
+
+        public static T[][] ToJaggedArray<M, T> (M mat) 
+            where M : struct, IMat<M, T>
             where T : struct, IEquatable<T>
         {
             var result = new T[mat.Rows][];
@@ -21,8 +41,19 @@
             return result;
         }
 
-        public static M FromArray<M, T> (T[][] array)
-            where M : struct, IMat<M, T>, IEquatable<M>
+        public static M FromArray<M, T> (T[] array)
+            where M : struct, IMat<M, T>
+            where T : struct, IEquatable<T>
+        {
+            var result = default (M);
+            for (int i = 0, c = 0; c < result.Columns; c++)
+                for (int r = 0; r < result.Rows; r++, i = (i + 1) % array.Length)
+                    result[c, r] = array[i];
+            return result;
+        }
+
+        public static M FromJaggedArray<M, T> (T[][] array)
+            where M : struct, IMat<M, T>
             where T : struct, IEquatable<T>
         {
             var result = default (M);
@@ -32,8 +63,20 @@
             return result;
         }
 
+        public static N ConvertTo<M, N, T> (this M mat)
+            where M : struct, IMat<M, T>
+            where N : struct, IMat<N, T>
+            where T : struct, IEquatable<T>
+        {
+            var res = default (N);
+            for (int c = 0; c < Math.Min (mat.Columns, res.Columns); c++)
+                for (int r = 0; r < Math.Min (mat.Rows, res.Rows); r++)
+                    res[c, r] = mat[c, r];
+            return res;
+        }
+
         public static M Transpose<M, T> (M mat)
-            where M : struct, ISquareMat<M, T>, IEquatable<M>
+            where M : struct, ISquareMat<M, T>
             where T : struct, IEquatable<T>
         {
             var result = default (M);
@@ -44,7 +87,7 @@
         }
 
         public static M Identity<M> ()
-            where M : struct, ISquareMat<M, float>, IEquatable<M>
+            where M : struct, ISquareMat<M, float>
         {
             var result = default (M);
             for (int c = 0; c < result.Columns; c++)
@@ -52,16 +95,94 @@
             return result;
         }
 
-        public static float Determinant<M> (M mat)
-            where M : struct, ISquareMat<M, float>, IEquatable<M>
+        public static M Translation<M> (params float[] offsets)
+            where M : struct, ISquareMat<M, float>
         {
-            return DeterminantFA (ToArray<M, float> (mat));
+            var res = Identity<M> ();
+            if (res.Rows <= offsets.Length)
+                throw new ArgumentOutOfRangeException ("offsets", "Too many offsets.");
+            var lastcol = res.Columns - 1;
+            for (int i = 0; i < offsets.Length; i++)
+                res[lastcol, i] = offsets[i];
+            return res;
+        }
+
+        public static M Scaling<M> (params float[] factors)
+            where M : struct, ISquareMat<M, float>
+        {
+            var res = Identity<M> ();
+            if (factors.Length > res.Columns || factors.Length > res.Rows)
+                throw new ArgumentOutOfRangeException ("factors", "Too many factors.");
+            for (int i = 0; i < factors.Length; i++)
+                res[i, i] = factors[i];
+            return res;
+        }
+
+        public static M RotationX<M> (float alpha)
+            where M : struct, ISquareMat<M, float>
+        {
+            var res = Identity<M> ();
+            var sina = (float)Math.Sin (alpha);
+            var cosa = (float)Math.Cos (alpha);
+            res[1, 1] = cosa;
+            res[1, 2] = sina;
+            res[2, 1] = -sina;
+            res[2, 2] = cosa;
+            return res;
+        }
+
+        public static M RotationY<M> (float alpha)
+            where M : struct, ISquareMat<M, float>
+        {
+            var res = Identity<M> ();
+            var sina = (float)Math.Sin (alpha);
+            var cosa = (float)Math.Cos (alpha);
+            res[0, 0] = cosa;
+            res[0, 2] = -sina;
+            res[2, 0] = sina;
+            res[2, 2] = cosa;
+            return res;
+        }
+
+        public static M RotationZ<M> (float alpha)
+            where M : struct, ISquareMat<M, float>
+        {
+            var res = Identity<M> ();
+            var sina = (float)Math.Sin (alpha);
+            var cosa = (float)Math.Cos (alpha);
+            res[0, 0] = cosa;
+            res[0, 1] = sina;
+            res[1, 0] = -sina;
+            res[1, 1] = cosa;
+            return res;
+        }
+
+        public static float Determinant<M> (M mat)
+            where M : struct, ISquareMat<M, float>
+        {
+            return DeterminantFA (ToJaggedArray<M, float> (mat));
         }
 
         public static M Inverse<M> (M mat)
-            where M : struct, ISquareMat<M, float>, IEquatable<M>
+            where M : struct, ISquareMat<M, float>
         {
-            return FromArray<M, float> (InverseFA (ToArray<M, float> (mat)));
+            return FromJaggedArray<M, float> (InverseFA (ToJaggedArray<M, float> (mat)));
+        }
+
+        public static Mat4 PerspectiveOffCenter (float left, float right, float bottom, float top,
+            float zNear, float zFar)
+        {
+            if (zNear <= 0 || zNear >= zFar)
+                throw new ArgumentOutOfRangeException ("zNear");
+            var width = right - left;
+            var height = top - bottom;
+            var depth = zFar - zNear;
+
+            return new Mat4 (
+                new Vec4 ((2.0f * zNear) / width, 0f, 0f, 0f ),
+                new Vec4 (0f, (2.0f * zNear) / height, 0f, 0f),
+                new Vec4 ((right + left) / width, (top + bottom) / height, -(zFar + zNear) / depth, -1f),
+                new Vec4 (0f, 0f, -(2.0f * zFar * zNear) / depth, 0f));
         }
 
         /// <summary>

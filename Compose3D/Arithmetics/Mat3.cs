@@ -3,7 +3,7 @@
     using System;
     using System.Text;
 
-    public struct Mat3 : ISquareMat<Mat3, float>, IEquatable<Mat3>
+    public struct Mat3 : ISquareMat<Mat3, float>
     { 
 		public Vec3 Column0; 
 		public Vec3 Column1; 
@@ -72,8 +72,13 @@
 			get { return this[column][row]; }
 			set 
             { 
-                var vec = this[column];
-                vec[row] = value; 
+				switch (column)
+				{	         
+					case 0: Column0[row] = value; break;          
+					case 1: Column1[row] = value; break;          
+					case 2: Column2[row] = value; break; 
+			        default: throw new ArgumentOutOfRangeException("column");
+				}
             }
 		} 
 					

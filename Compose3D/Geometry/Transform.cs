@@ -5,7 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	internal class Transform<V> : Geometry<V> where V : struct, IVertex
 	{
@@ -17,7 +17,7 @@
 		{
 			_geometry = geometry;
 			_matrix = matrix;
-            _normalMatrix = _matrix.ConvertTo<Mat3> ();
+            _normalMatrix = _matrix.ConvertTo<Mat4, Mat3, float> ();
             //_normalMatrix.Invert ();
             //_normalMatrix.Transpose ();
 		}
@@ -32,9 +32,9 @@
 			get
 			{
 				return _geometry.Vertices.Select (v => 
-                    Vertex (new Vec3 (_matrix * new Vec4(v.Position, 1f)), 
+                    Vertex (new Vec3 (_matrix * new Vec4 (v.Position, 1f)), 
                         v.Color,
-                        (_normalMatrix * v.Normal).Normalize ()));
+                        (_normalMatrix * v.Normal).Normalized));
 			}
 		}
 

@@ -2,8 +2,8 @@
 {
     using System;
 
-    public interface IMat<M, T>
-        where M : struct, IMat<M, T>, IEquatable<M>
+    public interface IMat<M, T> : IEquatable<M>
+        where M : struct, IMat<M, T>
         where T : struct, IEquatable<T>
     {
         M Add (M mat);

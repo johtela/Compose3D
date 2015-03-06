@@ -5,7 +5,7 @@
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	public class GeometryError : Exception
 	{
@@ -135,23 +135,23 @@
 		public static Geometry<V> Translate<V> (this Geometry<V> geometry, float offsetX, float offsetY, float offsetZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matf.Translation<Mat4> (offsetX, offsetY, offsetZ);
+			var matrix = Mat.Translation<Mat4> (offsetX, offsetY, offsetZ);
 			return Transform (geometry, matrix);
 		}
 
 		public static Geometry<V> Scale<V> (this Geometry<V> geometry, float factorX, float factorY, float factorZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matf.Scaling<Mat4> (factorX, factorY, factorZ);
+			var matrix = Mat.Scaling<Mat4> (factorX, factorY, factorZ);
 			return Transform (geometry, matrix);
 		}
 
 		public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
 			where V : struct, IVertex
 		{
-			var matrix = Matf.RotationZ<Mat4> (angleZ);
-			if (angleX != 0.0f) matrix *= Matf.RotationX<Mat4> (angleX);
-			if (angleY != 0.0f) matrix *= Matf.RotationY<Mat4> (angleY);
+			var matrix = Mat.RotationZ<Mat4> (angleZ);
+			if (angleX != 0.0f) matrix *= Mat.RotationX<Mat4> (angleX);
+			if (angleY != 0.0f) matrix *= Mat.RotationY<Mat4> (angleY);
 			return Transform (geometry, matrix);
 		}
 

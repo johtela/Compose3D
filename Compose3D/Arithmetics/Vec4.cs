@@ -3,7 +3,7 @@
     using System;
     using System.Text;
 
-    public struct Vec4 : IVec<Vec4, float>, IEquatable<Vec4>
+    public struct Vec4 : IVec<Vec4, float>
     { 
 		public float X; 
 		public float Y; 

@@ -2,8 +2,8 @@
 {
     using System;
 
-    public interface IVec<V, T>
-        where V : struct, IVec<V, T>, IEquatable<V>
+    public interface IVec<V, T> : IEquatable<V>
+        where V : struct, IVec<V, T>
         where T : struct, IEquatable<T>
     {
         V Negate ();

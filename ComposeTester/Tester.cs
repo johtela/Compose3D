@@ -7,7 +7,7 @@
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using Compose3D;
-    using Compose3D.GLSL;
+    using Compose3D.Arithmetics;
     using Compose3D.GLTypes;
 	using Compose3D.Geometry;
     using System.Threading.Tasks;
@@ -16,9 +16,9 @@
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex
 	{
-		private Vector3 position;
-		private Vector4 color;
-        private Vector3 normal;
+		private Vec3 position;
+		private Vec4 color;
+        private Vec3 normal;
 
 		public Vec3 Position
 		{
@@ -86,10 +86,10 @@
 
 		private void UpdateWorldMatrix ()
 		{
-            var worm = Matf.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
-                Matf.RotationY<Mat4> (_orientation.Y) * Matf.RotationX<Mat4> (_orientation.X);
+            var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
+                Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_worldMatrix &= worm;
-            var norm = worm.ConvertTo<Mat3> ().Transpose<Mat3, float> ();
+            var norm = worm.ConvertTo<Mat4, Mat3, float> ().Transposed;
             _normalMatrix &= norm;
             _dirToLight &= new Vec3 (0f, 0f, 1f);
 		}
@@ -106,8 +106,8 @@
 		{
 			base.OnResize (e);
 			UpdateWorldMatrix ();
-			_perspectiveMatrix &= Matf.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
-				Mat4.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
+			_perspectiveMatrix &= Mat.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
+				Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
             GL.Viewport (ClientSize);
 		}
 
@@ -134,14 +134,14 @@
 		[STAThread]
 		static void Main (string[] args)
 		{
-            //var wnd = new TestWindow ();
-            //wnd.Init ();
-            //wnd.Run ();
-            Tester.RunTestsTimed (
-                //new VecTests (),
-                //new MatTests (),
-                new PerformanceTests ());
-            Console.ReadLine ();
+            var wnd = new TestWindow ();
+            wnd.Init ();
+            wnd.Run ();
+            //Tester.RunTestsTimed (
+            //    new VecTests (),
+            //    new MatTests ());
+                //new PerformanceTests ());
+            //Console.ReadLine ();
 		}
 	}
 }

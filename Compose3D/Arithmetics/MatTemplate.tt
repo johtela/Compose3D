@@ -13,7 +13,7 @@ namespace Compose3D.Arithmetics
     using System;
     using System.Text;
 
-    public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>, IEquatable<<#= matType #>>
+    public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>
     { 
 <#+		ColumnFields (cols, vecType);
 		BasicConstructor (cols, matType, vecType);
@@ -275,8 +275,12 @@ void Indexers(int cols, int rows, string type, string vecType) { #>
 			get { return this[column][row]; }
 			set 
             { 
-                var vec = this[column];
-                vec[row] = value; 
+				switch (column)
+				{	<#+ foreach (int i in Enumerable.Range(0, cols)) { #>         
+					case <#= i.ToString() #>: <#= Column(i) #>[row] = value; break; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("column");
+				}
             }
 		} 
 					

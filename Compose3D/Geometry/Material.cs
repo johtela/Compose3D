@@ -5,7 +5,7 @@ namespace Compose3D.Geometry
 	using System.Linq;
 	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
-    using GLSL;
+    using Arithmetics;
 
 	/// <summary>
 	/// Interface that returns the material attributes of the vertices.

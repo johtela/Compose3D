@@ -1,7 +1,7 @@
 namespace Compose3D.Geometry
 {
     using System;
-    using GLSL;
+    using Arithmetics;
 
     /// <summary>
     /// Enumeration that describes the alignment between two bounding box.

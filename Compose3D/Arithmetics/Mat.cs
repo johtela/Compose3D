@@ -7,13 +7,19 @@
 
     public static class Mat
     {
-        public static bool ApproxEquals<M> (M mat, M other)
+        public static bool ApproxEquals<M> (M mat, M other, float epsilon)
             where M : struct, IMat<M, float>
         {
             for (int c = 0; c < mat.Columns; c++)
                 for (int r = 0; r < mat.Rows; r++)
-                    if (!mat[c, r].ApproxEquals (other[c, r])) return false;
+                    if (!mat[c, r].ApproxEquals (other[c, r], epsilon)) return false;
             return true;
+        }
+
+        public static bool ApproxEquals<M> (M mat, M other)
+            where M : struct, IMat<M, float>
+        {
+            return ApproxEquals<M> (mat, other, 0.000001f);
         }
 
         public static T[] ToArray<M, T> (M mat)
@@ -226,7 +232,7 @@
                     // adjust the row-swap toggle
                     toggle = -toggle;                 
                 }
-                if (Math.Abs (matrix[c][c]) != 0f)
+                if (Math.Abs (matrix[c][c]).ApproxEquals (0f))
                     throw new ArgumentException ("Matrix is singular", "matrix");
                 for (int r = c + 1; r < rows; ++r)
                 {

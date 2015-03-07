@@ -89,7 +89,7 @@
             var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_worldMatrix &= worm;
-            var norm = worm.ConvertTo<Mat4, Mat3, float> ().Transposed;
+            var norm = worm.ConvertTo<Mat4, Mat3, float> ().Inverse.Transposed;
             _normalMatrix &= norm;
             _dirToLight &= new Vec3 (0f, 0f, 1f);
 		}
@@ -133,15 +133,15 @@
 
 		[STAThread]
 		static void Main (string[] args)
-		{
+        {
             var wnd = new TestWindow ();
             wnd.Init ();
             wnd.Run ();
-            //Tester.RunTestsTimed (
-            //    new VecTests (),
-            //    new MatTests ());
+            Tester.RunTestsTimed (
+                new VecTests (),
+                new MatTests ());
                 //new PerformanceTests ());
-            //Console.ReadLine ();
+            Console.ReadLine ();
 		}
 	}
 }

@@ -51,8 +51,8 @@ namespace Compose3D
             for (int i = 0; i < matrix.Length; i++)
             {
                 var len = matrix[i].Length;
-                var copy = new T[len];
-                Array.Copy (matrix[i], copy, len);
+                res[i] = new T[len];
+                Array.Copy (matrix[i], res[i], len);
             }
             return res;
         }

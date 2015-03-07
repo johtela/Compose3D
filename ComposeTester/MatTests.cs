@@ -153,6 +153,19 @@
                 .Check (p => p.transvec.Length.ApproxEquals (p.vec.Length));
         }
 
+        public void CheckInverse<M> ()
+            where M : struct, ISquareMat<M, float>
+        {
+            var prop = from mat in Prop.Choose<M> ()
+                       let inv = Mat.Inverse (mat)
+                       let mat_inv = mat.Multiply (inv)
+                       let ident = Mat.Identity<M> ()
+                       select new { mat, inv, mat_inv, ident };
+
+            prop.Label ("{0}: mat * mat^-1 = I", typeof (M).Name)
+                .Check (p => Mat.ApproxEquals (p.mat_inv, p.ident, 0.01f));
+        }
+
         [Test]
         public void TestAddSubtract ()
         {
@@ -209,6 +222,14 @@
             CheckRotationZ<Mat4, Vec4> ();
             CheckRotationXY<Mat3, Vec3> ();
             CheckRotationXY<Mat4, Vec4> ();
+        }
+
+        [Test]
+        public void TestInverse ()
+        {
+            CheckInverse<Mat2> ();
+            CheckInverse<Mat3> ();
+            CheckInverse<Mat4> ();
         }
     }
 }

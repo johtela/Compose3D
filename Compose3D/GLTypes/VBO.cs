@@ -1,11 +1,10 @@
 ﻿namespace Compose3D.GLTypes
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Runtime.InteropServices;
-	using System.Linq;
-	using OpenTK;
-	using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.InteropServices;
 
 	public class VBO<T> where T : struct
 	{

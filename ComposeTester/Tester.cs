@@ -1,17 +1,15 @@
 ﻿namespace ComposeTester
 {
-	using System;
-	using System.Runtime.InteropServices;
-	using OpenTK;
-	using OpenTK.Graphics;
-	using OpenTK.Graphics.OpenGL;
-	using OpenTK.Input;
-	using Compose3D;
     using Compose3D.Arithmetics;
+    using Compose3D.Geometry;
     using Compose3D.GLTypes;
-	using Compose3D.Geometry;
-    using System.Threading.Tasks;
     using LinqCheck;
+    using OpenTK;
+    using OpenTK.Graphics;
+    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Input;
+    using System;
+    using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex : IVertex

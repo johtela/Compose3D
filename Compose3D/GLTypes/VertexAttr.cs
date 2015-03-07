@@ -1,13 +1,12 @@
 ﻿namespace Compose3D.GLTypes
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Reflection;
-	using System.Runtime.InteropServices;
-	using OpenTK;
-	using OpenTK.Graphics.OpenGL;
     using Arithmetics;
+    using OpenTK.Graphics.OpenGL;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
 
 	public class VertexAttr
 	{

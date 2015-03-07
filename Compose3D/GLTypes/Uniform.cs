@@ -1,11 +1,9 @@
 ﻿namespace Compose3D.GLTypes
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using OpenTK;
-	using OpenTK.Graphics.OpenGL;
     using Arithmetics;
+    using OpenTK.Graphics.OpenGL;
+    using System;
+    using System.Collections.Generic;
 
 	public class Uniform<T>
 	{

@@ -2,10 +2,8 @@ namespace Compose3D
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
-    using OpenTK;
 
-	public static class Ext
+    public static class Ext
 	{
         #region float extensions
 

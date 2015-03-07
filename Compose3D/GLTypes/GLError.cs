@@ -1,10 +1,7 @@
 ﻿namespace Compose3D.GLTypes
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using OpenTK;
-	using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL;
+    using System;
 
 	public class GLError : Exception
 	{

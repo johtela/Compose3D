@@ -17,7 +17,7 @@
 		{
 			_geometry = geometry;
 			_matrix = matrix;
-            _normalMatrix = _matrix.ConvertTo<Mat4, Mat3, float> ();
+            _normalMatrix = new Mat3(_matrix);
             //_normalMatrix.Invert ();
             //_normalMatrix.Transpose ();
 		}

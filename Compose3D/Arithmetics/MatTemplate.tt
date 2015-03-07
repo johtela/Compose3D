@@ -5,7 +5,7 @@
 <#+ void Mat(int cols, int rows, string type, string suffix) { 
 	
 	var square = rows == cols;
-	var matType = square ? string.Format("Mat{0}{1}", cols, suffix) : string.Format("Mat{0}x{1}{2}", cols, rows, suffix);
+	var matType = MatType (cols, rows, type, suffix);
 	var vecType = "Vec" + rows + suffix;
 #>
 namespace Compose3D.Arithmetics
@@ -17,6 +17,8 @@ namespace Compose3D.Arithmetics
     { 
 <#+		ColumnFields (cols, vecType);
 		BasicConstructor (cols, matType, vecType);
+		for (int rc = 2; rc <= 4; rc++)
+			CopyConstructor (cols, rows, type, suffix, rc, rc);
 		SingleValueConstructor (cols, rows, type, matType, vecType);
 		AllValuesConstructor (cols, rows, type, matType, vecType);
 		Indexers (cols, rows, type, vecType);
@@ -139,6 +141,11 @@ namespace Compose3D.Arithmetics
 <#+ 
 }
 
+string MatType (int cols, int rows, string type, string suffix)
+{
+	return cols == rows ? string.Format("Mat{0}{1}", cols, suffix) : string.Format("Mat{0}x{1}{2}", cols, rows, suffix);
+}
+
 string Column(int i) {
 	return "Column" + i;
 }
@@ -207,8 +214,8 @@ void BasicConstructor(int cols, string matType, string vecType) { #>
 
  <#+ }
 
-string IdentityColumnValues (int col, int rows, string value) {
-	return Delimiterize(Enumerable.Range(0, rows).Select(r => r == col ? value : "0"), ", ");
+string IdentityColumnValues (int col, int startRow, int rows, string value) {
+	return Delimiterize(Enumerable.Range(startRow, rows - startRow).Select(r => r == col ? value : "0"), ", ");
 }
 
 string ColumnValues (int col, int rows) {
@@ -221,7 +228,7 @@ void SingleValueConstructor(int cols, int rows, string type, string matType, str
 		{	
 <#+ var col = 0;
 	ColumnStatements(cols, s => string.Format("			{0} = new {1} ({2})", 
-		s, vecType, IdentityColumnValues(col++, rows, "value"))); #>
+		s, vecType, IdentityColumnValues(col++, 0, rows, "value"))); #>
 		}
 
  <#+ }
@@ -236,6 +243,22 @@ void AllValuesConstructor(int cols, int rows, string type, string matType, strin
 		}
 
  <#+ }
+
+void CopyConstructor(int cols, int rows, string type, string suffix, int otherCols, int otherRows) { #>
+		public <#= MatType(cols, rows, type, suffix) #> (<#= MatType(otherCols, otherRows, type, suffix) #> mat)
+		{	
+<#+	for (int c = 0; c < cols; c++) {
+		if (c < otherCols) {
+#>			Column<#= c #> = new Vec<#= rows + suffix #> (mat.Column<#= c #><#= 
+				rows > otherRows ? ", " + IdentityColumnValues(c, otherRows, rows, "1f") : ""  #>);
+<#+		}
+		else {
+#>			Column<#= c #> = new Vec<#= rows + suffix #> (<#= IdentityColumnValues(c, 0, rows, "1") #>);
+<#+	    }
+	}
+#>		}
+
+<#+ }
  
 void Indexers(int cols, int rows, string type, string vecType) { #>
 		public int Columns

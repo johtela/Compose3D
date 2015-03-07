@@ -89,8 +89,7 @@
             var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_worldMatrix &= worm;
-            var norm = worm.ConvertTo<Mat4, Mat3, float> ().Inverse.Transposed;
-            _normalMatrix &= norm;
+            _normalMatrix &= new Mat3(worm).Inverse.Transposed;
             _dirToLight &= new Vec3 (0f, 0f, 1f);
 		}
 

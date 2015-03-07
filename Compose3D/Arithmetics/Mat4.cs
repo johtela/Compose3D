@@ -18,7 +18,31 @@
 			Column3 = column3; 
 		}
 
- 		public Mat4 (float value)
+ 		public Mat4 (Mat2 mat)
+		{	
+			Column0 = new Vec4 (mat.Column0, 0, 0);
+			Column1 = new Vec4 (mat.Column1, 0, 0);
+			Column2 = new Vec4 (0, 0, 1, 0);
+			Column3 = new Vec4 (0, 0, 0, 1);
+		}
+
+		public Mat4 (Mat3 mat)
+		{	
+			Column0 = new Vec4 (mat.Column0, 0);
+			Column1 = new Vec4 (mat.Column1, 0);
+			Column2 = new Vec4 (mat.Column2, 0);
+			Column3 = new Vec4 (0, 0, 0, 1);
+		}
+
+		public Mat4 (Mat4 mat)
+		{	
+			Column0 = new Vec4 (mat.Column0);
+			Column1 = new Vec4 (mat.Column1);
+			Column2 = new Vec4 (mat.Column2);
+			Column3 = new Vec4 (mat.Column3);
+		}
+
+		public Mat4 (float value)
 		{	
 			Column0 = new Vec4 (value, 0, 0, 0); 
 			Column1 = new Vec4 (0, value, 0, 0); 

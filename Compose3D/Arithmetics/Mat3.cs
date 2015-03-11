@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct Mat3 : ISquareMat<Mat3, float>
     { 
@@ -9,6 +10,7 @@
 		public Vec3 Column1; 
 		public Vec3 Column2; 
 
+		[GLConstructor ("mat3 ({0})")]
 		public Mat3 (Vec3 column0, Vec3 column1, Vec3 column2)
 		{
 			Column0 = column0; 
@@ -16,13 +18,15 @@
 			Column2 = column2; 
 		}
 
- 		public Mat3 (Mat2 mat)
+ 		[GLConstructor ("mat3 ({0})")]
+		public Mat3 (Mat2 mat)
 		{	
 			Column0 = new Vec3 (mat.Column0, 0);
 			Column1 = new Vec3 (mat.Column1, 0);
 			Column2 = new Vec3 (0, 0, 1);
 		}
 
+		[GLConstructor ("mat3 ({0})")]
 		public Mat3 (Mat3 mat)
 		{	
 			Column0 = new Vec3 (mat.Column0);
@@ -30,6 +34,7 @@
 			Column2 = new Vec3 (mat.Column2);
 		}
 
+		[GLConstructor ("mat3 ({0})")]
 		public Mat3 (Mat4 mat)
 		{	
 			Column0 = new Vec3 (mat.Column0);
@@ -44,7 +49,8 @@
 			Column2 = new Vec3 (0, 0, value); 
 		}
 
- 		public Mat3 (
+ 		[GLConstructor ("mat3 ({0})")]
+		public Mat3 (
 			float m00, float m01, float m02, 
 			float m10, float m11, float m12, 
 			float m20, float m21, float m22)
@@ -103,21 +109,25 @@
             }
 		} 
 					
+		[GLBinaryOperator ("{0} + {1}")]
 		public Mat3 Add (Mat3 other)
 		{
 			return new Mat3 (Column0 + other.Column0, Column1 + other.Column1, Column2 + other.Column2);
 		}
 
+		[GLBinaryOperator ("{0} - {1}")]
 		public Mat3 Subtract (Mat3 other)
 		{
 			return new Mat3 (Column0 - other.Column0, Column1 - other.Column1, Column2 - other.Column2);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Mat3 Multiply (float scalar)
 		{
 			return new Mat3 (Column0 * scalar, Column1 * scalar, Column2 * scalar);
 		}
 
+		[GLBinaryOperator ("{0} / {1}")]
 		public Mat3 Divide (float scalar)
 		{
 			return new Mat3 (Column0 / scalar, Column1 / scalar, Column2 / scalar);
@@ -140,21 +150,25 @@
 			return Column0 == other.Column0 && Column1 == other.Column1 && Column2 == other.Column2;
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
         public Mat3 Multiply (Mat3 mat)
         {
             return this * mat;
         }
 
+		[GLFunction ("transpose ({0})")]
         public Mat3 Transposed
         {
             get { return Mat.Transpose<Mat3, float> (this); }
         }
 
+		[GLFunction ("determinant ({0})")]
         public float Determinant
         {
             get { return Mat.Determinant (this); }
         }
 
+		[GLFunction ("inverse ({0})")]
         public Mat3 Inverse
         {
             get { return Mat.Inverse (this); }
@@ -184,21 +198,25 @@
             return sb.ToString ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
        public static Mat3 operator - (Mat3 left, Mat3 right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat3 operator * (float scalar, Mat3 mat)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat3 operator * (Mat3 mat, float scalar)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat3 operator * (Mat3 left, Mat3 right)
         {
 			return new Mat3 (
@@ -213,6 +231,7 @@
 				left.Column0.Z * right.Column2.X + left.Column1.Z * right.Column2.Y + left.Column2.Z * right.Column2.Z);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec3 operator * (Mat3 mat, Vec3 vec)
         {
 			return new Vec3 (
@@ -221,11 +240,13 @@
 				mat.Column0.Z * vec.X + mat.Column1.Z * vec.Y + mat.Column2.Z * vec.Z);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static Mat3 operator / (Mat3 mat, float scalar)
         {
             return mat.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static Mat3 operator + (Mat3 left, Mat3 right)
         {
             return left.Add (right);

@@ -1,7 +1,7 @@
 ﻿#version 330
 
 in vec3 position;
-in vec3 color;
+in vec4 color;
 in vec3 normal;
 
 smooth out vec4 theColor;
@@ -16,5 +16,5 @@ void main()
     gl_Position = perspectiveMatrix * worldMatrix * vec4(position, 1.0);
 	vec3 norm = normalize(normalMatrix * normal);
 	float angle = dot(norm, dirToLight);
-    theColor = vec4(color, 1.0) * angle;
+    theColor = color * angle;
 }

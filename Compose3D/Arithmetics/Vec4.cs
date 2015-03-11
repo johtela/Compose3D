@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct Vec4 : IVec<Vec4, float>
     { 
@@ -10,6 +11,7 @@
 		public float Z; 
 		public float W; 
 
+		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float x, float y, float z, float w)
 		{	
 			X = x; 
@@ -18,7 +20,8 @@
 			W = w; 
 		}
 
- 		public Vec4 (float value)
+ 		[GLConstructor ("vec4 ({0})")]
+		public Vec4 (float value)
 		{	
 			X = value; 
 			Y = value; 
@@ -26,7 +29,8 @@
 			W = value; 
 		}
 
- 		public Vec4 (Vec2 vec, float z, float w)
+ 		[GLConstructor ("vec4 ({0})")]
+		public Vec4 (Vec2 vec, float z, float w)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
@@ -34,7 +38,8 @@
 			W = w; 
 		}
 
- 		public Vec4 (Vec3 vec, float w)
+ 		[GLConstructor ("vec4 ({0})")]
+		public Vec4 (Vec3 vec, float w)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
@@ -42,7 +47,8 @@
 			W = w; 
 		}
 
- 		public Vec4 (Vec4 vec)
+ 		[GLConstructor ("vec4 ({0})")]
+		public Vec4 (Vec4 vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
@@ -50,36 +56,43 @@
 			W = vec.W; 
 		}
 
- 		public Vec4 Negate ()
+ 		[GLUnaryOperator ("-{0}")]
+		public Vec4 Negate ()
 		{
 			return new Vec4 (-X, -Y, -Z, -W);
 		}
 
+		[GLBinaryOperator ("{0} + {1}")]
 		public Vec4 Add (Vec4 other)
 		{
 			return new Vec4 (X + other.X, Y + other.Y, Z + other.Z, W + other.W);
 		}
 
+		[GLBinaryOperator ("{0} - {1}")]
 		public Vec4 Subtract (Vec4 other)
 		{
 			return new Vec4 (X - other.X, Y - other.Y, Z - other.Z, W - other.W);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Vec4 Multiply (Vec4 other)
 		{
 			return new Vec4 (X * other.X, Y * other.Y, Z * other.Z, W * other.W);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Vec4 Multiply (float scalar)
 		{
 			return new Vec4 (X * scalar, Y * scalar, Z * scalar, W * scalar);
 		}
 
+		[GLBinaryOperator ("{0} / {1}")]
 		public Vec4 Divide (float scalar)
 		{
 			return new Vec4 (X / scalar, Y / scalar, Z / scalar, W / scalar);
 		}
 
+		[GLFunction ("dot ({0})")]
 		public float Dot (Vec4 other)
 		{
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
@@ -159,11 +172,13 @@
 			get { return X * X + Y * Y + Z * Z + W * W; }
 		}
 
+		[GLFunction ("length ({0})")]
 		public float Length
 		{
 			get { return (float)Math.Sqrt (LengthSquared); }
 		}
 
+		[GLFunction ("normalize ({0})")]
 		public Vec4 Normalized
 		{
 			get { return Divide (Length); }
@@ -188,46 +203,55 @@
             return sb.ToString ();
         }
 
+		[GLUnaryOperator ("-{0}")]
         public static Vec4 operator - (Vec4 vec)
         {
             return vec.Negate ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
         public static Vec4 operator - (Vec4 left, Vec4 right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec4 operator * (float scalar, Vec4 vec)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec4 operator * (Vec4 vec, float scalar)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec4 operator * (Vec4 vec, Vec4 scale)
         {
             return vec.Multiply (scale);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static Vec4 operator / (Vec4 vec, float scalar)
         {
             return vec.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static Vec4 operator + (Vec4 left, Vec4 right)
         {
             return left.Add (right);
         }
 
+		[GLBinaryOperator ("{0} == {1}")]
         public static bool operator == (Vec4 left, Vec4 right)
         {
             return left.Equals (right);
         }
 
+		[GLBinaryOperator ("{0} != {1}")]
         public static bool operator != (Vec4 left, Vec4 right)
         {
             return !left.Equals (right);

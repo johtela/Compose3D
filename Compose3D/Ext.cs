@@ -2,9 +2,18 @@ namespace Compose3D
 {
 	using System;
 	using System.Collections.Generic;
+    using System.Linq;
 
     public static class Ext
 	{
+        public static S Match<T, S> (this object expr, Func<T, S> func) 
+            where T : class
+            where S : class
+        {
+            var casted = expr as T;
+            return casted != null ? func (casted) : null;
+        }
+
         #region float extensions
 
         public static bool ApproxEquals (this float x, float y, float epsilon)
@@ -132,6 +141,11 @@ namespace Compose3D
         public static IEnumerable<T[]> Combinations<T> (this T[] vector, Func<T, IEnumerable<T>> project)
         {
             return EnumerateCombinations (vector.Map (project), new T[vector.Length], 0);
+        }
+
+        public static string SeparateWith (this IEnumerable<string> lines, string separator)
+        {
+            return lines.Aggregate ((s1, s2) => s1 + separator + s2);
         }
 
         #endregion        

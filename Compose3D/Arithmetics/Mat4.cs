@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct Mat4 : ISquareMat<Mat4, float>
     { 
@@ -10,6 +11,7 @@
 		public Vec4 Column2; 
 		public Vec4 Column3; 
 
+		[GLConstructor ("mat4 ({0})")]
 		public Mat4 (Vec4 column0, Vec4 column1, Vec4 column2, Vec4 column3)
 		{
 			Column0 = column0; 
@@ -18,7 +20,8 @@
 			Column3 = column3; 
 		}
 
- 		public Mat4 (Mat2 mat)
+ 		[GLConstructor ("mat4 ({0})")]
+		public Mat4 (Mat2 mat)
 		{	
 			Column0 = new Vec4 (mat.Column0, 0, 0);
 			Column1 = new Vec4 (mat.Column1, 0, 0);
@@ -26,6 +29,7 @@
 			Column3 = new Vec4 (0, 0, 0, 1);
 		}
 
+		[GLConstructor ("mat4 ({0})")]
 		public Mat4 (Mat3 mat)
 		{	
 			Column0 = new Vec4 (mat.Column0, 0);
@@ -34,6 +38,7 @@
 			Column3 = new Vec4 (0, 0, 0, 1);
 		}
 
+		[GLConstructor ("mat4 ({0})")]
 		public Mat4 (Mat4 mat)
 		{	
 			Column0 = new Vec4 (mat.Column0);
@@ -50,7 +55,8 @@
 			Column3 = new Vec4 (0, 0, 0, value); 
 		}
 
- 		public Mat4 (
+ 		[GLConstructor ("mat4 ({0})")]
+		public Mat4 (
 			float m00, float m01, float m02, float m03, 
 			float m10, float m11, float m12, float m13, 
 			float m20, float m21, float m22, float m23, 
@@ -114,21 +120,25 @@
             }
 		} 
 					
+		[GLBinaryOperator ("{0} + {1}")]
 		public Mat4 Add (Mat4 other)
 		{
 			return new Mat4 (Column0 + other.Column0, Column1 + other.Column1, Column2 + other.Column2, Column3 + other.Column3);
 		}
 
+		[GLBinaryOperator ("{0} - {1}")]
 		public Mat4 Subtract (Mat4 other)
 		{
 			return new Mat4 (Column0 - other.Column0, Column1 - other.Column1, Column2 - other.Column2, Column3 - other.Column3);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Mat4 Multiply (float scalar)
 		{
 			return new Mat4 (Column0 * scalar, Column1 * scalar, Column2 * scalar, Column3 * scalar);
 		}
 
+		[GLBinaryOperator ("{0} / {1}")]
 		public Mat4 Divide (float scalar)
 		{
 			return new Mat4 (Column0 / scalar, Column1 / scalar, Column2 / scalar, Column3 / scalar);
@@ -152,21 +162,25 @@
 			return Column0 == other.Column0 && Column1 == other.Column1 && Column2 == other.Column2 && Column3 == other.Column3;
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
         public Mat4 Multiply (Mat4 mat)
         {
             return this * mat;
         }
 
+		[GLFunction ("transpose ({0})")]
         public Mat4 Transposed
         {
             get { return Mat.Transpose<Mat4, float> (this); }
         }
 
+		[GLFunction ("determinant ({0})")]
         public float Determinant
         {
             get { return Mat.Determinant (this); }
         }
 
+		[GLFunction ("inverse ({0})")]
         public Mat4 Inverse
         {
             get { return Mat.Inverse (this); }
@@ -196,21 +210,25 @@
             return sb.ToString ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
        public static Mat4 operator - (Mat4 left, Mat4 right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat4 operator * (float scalar, Mat4 mat)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat4 operator * (Mat4 mat, float scalar)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Mat4 operator * (Mat4 left, Mat4 right)
         {
 			return new Mat4 (
@@ -232,6 +250,7 @@
 				left.Column0.W * right.Column3.X + left.Column1.W * right.Column3.Y + left.Column2.W * right.Column3.Z + left.Column3.W * right.Column3.W);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec4 operator * (Mat4 mat, Vec4 vec)
         {
 			return new Vec4 (
@@ -241,11 +260,13 @@
 				mat.Column0.W * vec.X + mat.Column1.W * vec.Y + mat.Column2.W * vec.Z + mat.Column3.W * vec.W);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static Mat4 operator / (Mat4 mat, float scalar)
         {
             return mat.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static Mat4 operator + (Mat4 left, Mat4 right)
         {
             return left.Add (right);

@@ -6,26 +6,36 @@
 	
 	var square = rows == cols;
 	var matType = MatType (cols, rows, type, suffix);
+	var glType = GLType (cols, rows, type, suffix);
 	var vecType = "Vec" + rows + suffix;
 #>
 namespace Compose3D.Arithmetics
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>
     { 
-<#+		ColumnFields (cols, vecType);
-		BasicConstructor (cols, matType, vecType);
-		for (int rc = 2; rc <= 4; rc++)
-			CopyConstructor (cols, rows, type, suffix, rc, rc);
-		SingleValueConstructor (cols, rows, type, matType, vecType);
-		AllValuesConstructor (cols, rows, type, matType, vecType);
-		Indexers (cols, rows, type, vecType);
-		Binary (cols, matType, "Add", "+", ", ");
-		Binary (cols, matType, "Subtract", "-", ", ");
-		Scalar (cols, matType, type, "Multiply", "*", ", ");
-		Scalar (cols, matType, type, "Divide", "/", ", ");
+<#+		ColumnFields (cols, vecType); #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+		BasicConstructor (cols, matType, vecType);
+		for (int rc = 2; rc <= 4; rc++) { #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+			CopyConstructor (cols, rows, type, suffix, rc, rc);
+        }
+		SingleValueConstructor (cols, rows, type, matType, vecType); #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+		AllValuesConstructor (cols, rows, type, matType, vecType);
+		Indexers (cols, rows, type, vecType); #>
+		[GLBinaryOperator ("{0} + {1}")]
+<#+		Binary (cols, matType, "Add", "+", ", "); #>
+		[GLBinaryOperator ("{0} - {1}")]
+<#+		Binary (cols, matType, "Subtract", "-", ", "); #>
+		[GLBinaryOperator ("{0} * {1}")]
+<#+		Scalar (cols, matType, type, "Multiply", "*", ", "); #>
+		[GLBinaryOperator ("{0} / {1}")]
+<#+		Scalar (cols, matType, type, "Divide", "/", ", ");
 #>
         public V Multiply<V> (V vec) where V : struct, IVec<V, float>, IEquatable<V>
         {
@@ -43,21 +53,25 @@ namespace Compose3D.Arithmetics
 
 <#+		BinaryScalar (cols, matType, "bool", "Equals", "==", " && "); 
 		if (square) { #>
+		[GLBinaryOperator ("{0} * {1}")]
         public <#= matType #> Multiply (<#= matType #> mat)
         {
             return this * mat;
         }
 
+		[GLFunction ("transpose ({0})")]
         public <#= matType #> Transposed
         {
             get { return Mat.Transpose<<#= matType #>, <#= type #>> (this); }
         }
 
+		[GLFunction ("determinant ({0})")]
         public <#= type #> Determinant
         {
             get { return Mat.Determinant (this); }
         }
 
+		[GLFunction ("inverse ({0})")]
         public <#= matType #> Inverse
         {
             get { return Mat.Inverse (this); }
@@ -88,21 +102,25 @@ namespace Compose3D.Arithmetics
             return sb.ToString ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
        public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= type #> scalar, <#= matType #> mat)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= matType #> mat, <#= type #> scalar)
         {
             return mat.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= matType #> left, <#= matType #> right)
         {
 			return new <#= matType #> (
@@ -110,6 +128,7 @@ namespace Compose3D.Arithmetics
 				(c, r, k) => string.Format("left.{0} * right.{1}", Component(k, r), Component(c, k))), ",\r\n				") #>);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= matType #> mat, <#= vecType #> vec)
         {
 			return new <#= vecType #> (
@@ -117,11 +136,13 @@ namespace Compose3D.Arithmetics
 				(c, r) => string.Format("mat.{0} * vec.{1}", Component(c, r), Row(c))), ",\r\n				") #>);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static <#= matType #> operator / (<#= matType #> mat, <#= type #> scalar)
         {
             return mat.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static <#= matType #> operator + (<#= matType #> left, <#= matType #> right)
         {
             return left.Add (right);
@@ -144,6 +165,11 @@ namespace Compose3D.Arithmetics
 string MatType (int cols, int rows, string type, string suffix)
 {
 	return cols == rows ? string.Format("Mat{0}{1}", cols, suffix) : string.Format("Mat{0}x{1}{2}", cols, rows, suffix);
+}
+
+string GLType (int cols, int rows, string type, string suffix)
+{
+	return cols == rows ? string.Format("{0}mat{1}", suffix, cols) : string.Format("{0}matx{1}x{2}", suffix, cols, rows);
 }
 
 string Column(int i) {

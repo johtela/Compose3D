@@ -42,5 +42,10 @@
 				throw new GLError ("Incompatible uniform type: " + typeof (T).Name);
 			}
 		}
+
+        public static T operator ! (Uniform<T> uniform)
+        {
+            return default (T);
+        }
 	}
 }

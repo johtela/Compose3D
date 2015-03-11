@@ -10,6 +10,7 @@ namespace Compose3D.Arithmetics
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
     { 
@@ -17,14 +18,21 @@ namespace Compose3D.Arithmetics
 		BasicConstructor (dim, type, suffix);
 		SingleValueConstructor (dim, type, suffix);
 		for (int i = 2; i <= 4; i++)
-			CopyConstructor (dim, type, suffix, i);
-		Unary (dim, vecType, "Negate", "-", ", ");
-		Binary (dim, vecType, "Add", "+", ", ");
-		Binary (dim, vecType, "Subtract", "-", ", ");
-		Binary (dim, vecType, "Multiply", "*", ", ");
-		Scalar (dim, vecType, type, "Multiply", "*", ", ");
-		Scalar (dim, vecType, type, "Divide", "/", ", ");
-		BinaryScalar (dim, vecType, type, "Dot", "*", " + ");
+			CopyConstructor (dim, type, suffix, i); #>
+		[GLUnaryOperator ("-{0}")]
+<#+		Unary (dim, vecType, "Negate", "-", ", "); #>
+		[GLBinaryOperator ("{0} + {1}")]
+<#+		Binary (dim, vecType, "Add", "+", ", "); #>
+		[GLBinaryOperator ("{0} - {1}")]
+<#+		Binary (dim, vecType, "Subtract", "-", ", "); #>
+		[GLBinaryOperator ("{0} * {1}")]
+<#+		Binary (dim, vecType, "Multiply", "*", ", "); #>
+		[GLBinaryOperator ("{0} * {1}")]
+<#+		Scalar (dim, vecType, type, "Multiply", "*", ", "); #>
+		[GLBinaryOperator ("{0} / {1}")]
+<#+		Scalar (dim, vecType, type, "Divide", "/", ", "); #>
+		[GLFunction ("dot ({0})")]
+<#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");
 		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
 		Indexer(dim, type); 
 	    for (int i = dim; i > 1; i--)
@@ -35,11 +43,13 @@ namespace Compose3D.Arithmetics
 			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }
 		}
 
+		[GLFunction ("length ({0})")]
 		public <#= type #> Length
 		{
 			get { return (<#= type #>)Math.Sqrt (LengthSquared); }
 		}
 
+		[GLFunction ("normalize ({0})")]
 		public <#= vecType #> Normalized
 		{
 			get { return Divide (Length); }
@@ -64,46 +74,55 @@ namespace Compose3D.Arithmetics
             return sb.ToString ();
         }
 
+		[GLUnaryOperator ("-{0}")]
         public static <#= vecType #> operator - (<#= vecType #> vec)
         {
             return vec.Negate ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
         public static <#= vecType #> operator - (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= type #> scalar, <#= vecType #> vec)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= vecType #> vec, <#= type #> scalar)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= vecType #> vec, <#= vecType #> scale)
         {
             return vec.Multiply (scale);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static <#= vecType #> operator / (<#= vecType #> vec, <#= type #> scalar)
         {
             return vec.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static <#= vecType #> operator + (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Add (right);
         }
 
+		[GLBinaryOperator ("{0} == {1}")]
         public static bool operator == (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Equals (right);
         }
 
+		[GLBinaryOperator ("{0} != {1}")]
         public static bool operator != (<#= vecType #> left, <#= vecType #> right)
         {
             return !left.Equals (right);
@@ -155,6 +174,7 @@ void ComponentFields(int dim, string type) {
 }
  
 void BasicConstructor(int dim, string type, string suffix) { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= ArgumentList(dim, type) #>)
 		{	
 <#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); #>
@@ -163,6 +183,7 @@ void BasicConstructor(int dim, string type, string suffix) { #>
  <#+ }
 
 void SingleValueConstructor(int dim, string type, string suffix) { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= type #> value)
 		{	
 <#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); #>
@@ -172,10 +193,12 @@ void SingleValueConstructor(int dim, string type, string suffix) { #>
  
 void CopyConstructor(int dim, string type, string suffix, int otherDim) { 
 	if (dim > otherDim) { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec, <#= PartialArgumentList(otherDim, dim, type) #>)
 		{	
 <#+ }
 	else { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec)
 		{	
 <#+ 

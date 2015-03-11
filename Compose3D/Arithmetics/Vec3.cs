@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+	using GLTypes;
 
     public struct Vec3 : IVec<Vec3, float>
     { 
@@ -9,6 +10,7 @@
 		public float Y; 
 		public float Z; 
 
+		[GLConstructor ("vec3 ({0})")]
 		public Vec3 (float x, float y, float z)
 		{	
 			X = x; 
@@ -16,64 +18,75 @@
 			Z = z; 
 		}
 
- 		public Vec3 (float value)
+ 		[GLConstructor ("vec3 ({0})")]
+		public Vec3 (float value)
 		{	
 			X = value; 
 			Y = value; 
 			Z = value; 
 		}
 
- 		public Vec3 (Vec2 vec, float z)
+ 		[GLConstructor ("vec3 ({0})")]
+		public Vec3 (Vec2 vec, float z)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 			Z = z; 
 		}
 
- 		public Vec3 (Vec3 vec)
+ 		[GLConstructor ("vec3 ({0})")]
+		public Vec3 (Vec3 vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 			Z = vec.Z; 
 		}
 
- 		public Vec3 (Vec4 vec)
+ 		[GLConstructor ("vec3 ({0})")]
+		public Vec3 (Vec4 vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 			Z = vec.Z; 
 		}
 
- 		public Vec3 Negate ()
+ 		[GLUnaryOperator ("-{0}")]
+		public Vec3 Negate ()
 		{
 			return new Vec3 (-X, -Y, -Z);
 		}
 
+		[GLBinaryOperator ("{0} + {1}")]
 		public Vec3 Add (Vec3 other)
 		{
 			return new Vec3 (X + other.X, Y + other.Y, Z + other.Z);
 		}
 
+		[GLBinaryOperator ("{0} - {1}")]
 		public Vec3 Subtract (Vec3 other)
 		{
 			return new Vec3 (X - other.X, Y - other.Y, Z - other.Z);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Vec3 Multiply (Vec3 other)
 		{
 			return new Vec3 (X * other.X, Y * other.Y, Z * other.Z);
 		}
 
+		[GLBinaryOperator ("{0} * {1}")]
 		public Vec3 Multiply (float scalar)
 		{
 			return new Vec3 (X * scalar, Y * scalar, Z * scalar);
 		}
 
+		[GLBinaryOperator ("{0} / {1}")]
 		public Vec3 Divide (float scalar)
 		{
 			return new Vec3 (X / scalar, Y / scalar, Z / scalar);
 		}
 
+		[GLFunction ("dot ({0})")]
 		public float Dot (Vec3 other)
 		{
 			return X * other.X + Y * other.Y + Z * other.Z;
@@ -139,11 +152,13 @@
 			get { return X * X + Y * Y + Z * Z; }
 		}
 
+		[GLFunction ("length ({0})")]
 		public float Length
 		{
 			get { return (float)Math.Sqrt (LengthSquared); }
 		}
 
+		[GLFunction ("normalize ({0})")]
 		public Vec3 Normalized
 		{
 			get { return Divide (Length); }
@@ -168,46 +183,55 @@
             return sb.ToString ();
         }
 
+		[GLUnaryOperator ("-{0}")]
         public static Vec3 operator - (Vec3 vec)
         {
             return vec.Negate ();
         }
 
+		[GLBinaryOperator ("{0} - {1}")]
         public static Vec3 operator - (Vec3 left, Vec3 right)
         {
             return left.Subtract (right);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec3 operator * (float scalar, Vec3 vec)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec3 operator * (Vec3 vec, float scalar)
         {
             return vec.Multiply (scalar);
         }
 
+		[GLBinaryOperator ("{0} * {1}")]
         public static Vec3 operator * (Vec3 vec, Vec3 scale)
         {
             return vec.Multiply (scale);
         }
 
+		[GLBinaryOperator ("{0} / {1}")]
         public static Vec3 operator / (Vec3 vec, float scalar)
         {
             return vec.Divide (scalar);
         }
 
+		[GLBinaryOperator ("{0} + {1}")]
         public static Vec3 operator + (Vec3 left, Vec3 right)
         {
             return left.Add (right);
         }
 
+		[GLBinaryOperator ("{0} == {1}")]
         public static bool operator == (Vec3 left, Vec3 right)
         {
             return left.Equals (right);
         }
 
+		[GLBinaryOperator ("{0} != {1}")]
         public static bool operator != (Vec3 left, Vec3 right)
         {
             return !left.Equals (right);

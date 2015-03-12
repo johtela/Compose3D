@@ -114,7 +114,14 @@ namespace Compose3D
 			return enumerator.Current;
 		}
 
-		public static IEnumerable<T> Repeat<T> (this IEnumerable<T> enumerable)
+        public static IEnumerable<T> Prepend<T> (this IEnumerable<T> enumerable, T item)
+        {
+            yield return item;
+            foreach (T i in enumerable)
+                yield return i;
+        }
+
+        public static IEnumerable<T> Repeat<T> (this IEnumerable<T> enumerable)
 		{
 			while (true)
 			{
@@ -145,7 +152,7 @@ namespace Compose3D
 
         public static string SeparateWith (this IEnumerable<string> lines, string separator)
         {
-            return lines.Aggregate ((s1, s2) => s1 + separator + s2);
+            return lines.Any () ? lines.Aggregate ((s1, s2) => s1 + separator + s2) : "";
         }
 
         #endregion        

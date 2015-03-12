@@ -43,6 +43,7 @@
 			}
 		}
 
+        [GLUnaryOperator ("{0}")]
         public static T operator ! (Uniform<T> uniform)
         {
             return default (T);

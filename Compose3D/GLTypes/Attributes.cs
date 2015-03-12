@@ -1,9 +1,7 @@
 ﻿namespace Compose3D.GLTypes
 {
     using System;
-
-    [AttributeUsage (AttributeTargets.Field)]
-    public class SmoothAttribute : Attribute { }
+    using System.Linq;
 
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
@@ -16,6 +14,17 @@
         {
             Syntax = syntax;
         }
+    }
+
+    public class GLQualifierAttribute :  GLAttribute 
+    {
+        public GLQualifierAttribute (string syntax) : base (syntax) { }
+    }
+
+    [AttributeUsage (AttributeTargets.Class | AttributeTargets.Struct)]
+    public class GLType : GLAttribute
+    {
+        public GLType (string syntax) : base (syntax) { }
     }
 
     [AttributeUsage (AttributeTargets.Constructor)]

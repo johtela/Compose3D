@@ -15,6 +15,7 @@ namespace Compose3D.Arithmetics
     using System.Text;
 	using GLTypes;
 
+	[GLType ("<#= glType #>")]
     public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>
     { 
 <#+		ColumnFields (cols, vecType); #>

@@ -4,6 +4,7 @@
     using System.Text;
 	using GLTypes;
 
+	[GLType ("vec4")]
     public struct Vec4 : IVec<Vec4, float>
     { 
 		public float X; 

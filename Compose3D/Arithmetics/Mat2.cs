@@ -4,6 +4,7 @@
     using System.Text;
 	using GLTypes;
 
+	[GLType ("mat2")]
     public struct Mat2 : ISquareMat<Mat2, float>
     { 
 		public Vec2 Column0; 

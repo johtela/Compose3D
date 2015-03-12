@@ -12,6 +12,7 @@ namespace Compose3D.Arithmetics
     using System.Text;
 	using GLTypes;
 
+	[GLType ("<#= suffix #>vec<#= dim #>")]
     public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
     { 
 <#+		ComponentFields (dim, type);

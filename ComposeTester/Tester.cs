@@ -37,12 +37,12 @@
         }
 	}
 
-    public struct Fragment
+    public class Fragment
     {
         [Builtin]
-        internal Vec4 gl_Position;
-        [Smooth]
-        internal Vec4 theColor;
+        internal Vec4 gl_Position = new Vec4 ();
+        [GLQualifier ("smooth")]
+        internal Vec4 theColor = new Vec4 ();
     }
 
     public struct Uniforms
@@ -80,7 +80,7 @@
 			
             _program = new Program (
 				Shader.FromFile (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
-                Shader.FromFile (ShaderType.VertexShader, @"Shaders/Vertex.glsl"));
+                vertexShader);
 
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);

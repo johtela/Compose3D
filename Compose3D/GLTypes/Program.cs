@@ -1,8 +1,9 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using Compose3D.Geometry;
-    using OpenTK.Graphics.OpenGL;
+    using System;
     using System.Runtime.InteropServices;
+    using OpenTK.Graphics.OpenGL;
+    using Compose3D.Geometry;
 
 	public class Program
 	{
@@ -33,13 +34,25 @@
 			return index;
 		}
 
-		public Uniform<T> GetUniform<T> (string name)
-		{
-			var loc = GL.GetUniformLocation (_glProgram, name);
-			if (loc < 0)
-				throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
-			return new Uniform<T> (loc);
-		}
+        private int GetUniformLocation (string name)
+        {
+            var loc = GL.GetUniformLocation (_glProgram, name);
+            if (loc < 0)
+                throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
+            return loc;
+        }
+
+        public Uniform<T> GetUniform<T> (string name)
+        {
+            return new Uniform<T> (GetUniformLocation (name));
+        }
+
+        public void InitializeUniforms<U> (U uniforms) where U : class
+        {
+            foreach (var field in Shader.GetUniforms (typeof (U)))
+                field.SetValue (uniforms, 
+                    Activator.CreateInstance (field.FieldType, GetUniformLocation (field.Name)));
+        }
 
 		public void DrawVertexBuffer<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex
 		{

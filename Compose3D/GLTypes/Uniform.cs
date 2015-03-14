@@ -23,7 +23,8 @@
 			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) }
 		};
 
-		internal int _glUniform;
+        internal int _glUniform;
+        private T _value;
 
 		public Uniform (int glUniform)
 		{
@@ -35,6 +36,7 @@
 			try
 			{
 				_setters[typeof (T)] (uniform._glUniform, (object)value);
+                uniform._value = value;
 				return uniform;
 			}
 			catch (KeyNotFoundException)
@@ -46,7 +48,7 @@
         [GLUnaryOperator ("{0}")]
         public static T operator ! (Uniform<T> uniform)
         {
-            return default (T);
+            return uniform._value;
         }
 	}
 }

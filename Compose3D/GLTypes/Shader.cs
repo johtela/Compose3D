@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.GLTypes
 {
+    using OpenTK.Graphics.OpenGL;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -7,7 +8,6 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using OpenTK.Graphics.OpenGL;
 
 	public class Shader
 	{
@@ -47,10 +47,16 @@
                 .Cast<GLQualifierAttribute> ().Select (q => q.Syntax).SeparateWith (" ");
         }
 
+        public static IEnumerable<FieldInfo> GetUniforms (Type type)
+        {
+            return from field in type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                   where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
+                   select field;
+        }
+
         public static string DeclareUniforms (Type type)
         {
-            return (from field in type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
+            return (from field in GetUniforms (type)
                     let glAttr = GetGLAttribute (field.FieldType.GetGenericArguments ().Single ())
                     select string.Format ("uniform {0} {1};", glAttr.Syntax, field.Name))
                     .SeparateWith ("\n");

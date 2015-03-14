@@ -45,7 +45,7 @@
         internal Vec4 theColor = new Vec4 ();
     }
 
-    public struct Uniforms
+    public class Uniforms
     {
         internal Uniform<Mat4> worldMatrix;
         internal Uniform<Mat4> perspectiveMatrix;
@@ -86,10 +86,7 @@
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
 
 			_orientation = new Vector3 (0f, 0f, 3f);
-			_uniforms.worldMatrix = _program.GetUniform<Mat4> ("worldMatrix");
-            _uniforms.perspectiveMatrix = _program.GetUniform<Mat4> ("perspectiveMatrix");
-            _uniforms.normalMatrix = _program.GetUniform<Mat3> ("normalMatrix");
-            _uniforms.dirToLight = _program.GetUniform<Vec3> ("dirToLight");
+            _program.InitializeUniforms (_uniforms = new Uniforms ());
 		}
 
 		public void Init ()

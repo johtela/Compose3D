@@ -39,10 +39,14 @@
 
     public class Fragment
     {
-        [Builtin]
-        internal Vec4 gl_Position = new Vec4 ();
+        [Builtin] internal Vec4 gl_Position = new Vec4 ();
         [GLQualifier ("smooth")]
         internal Vec4 theColor = new Vec4 ();
+    }
+
+    public class FrameBuffer
+    {
+        internal Vec4 outputColor = new Vec4 ();
     }
 
     public class Uniforms
@@ -72,15 +76,19 @@
 				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
 			var geometry = Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
 
-            var vertexShader = new VertexShader<Vertex, Uniforms, Fragment> ((v, u) => new Fragment()
-            {
-                gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4(v.position, 1f),
-                theColor = v.color * (!u.normalMatrix * v.normal).Normalized.Dot (!u.dirToLight)
-            });
-			
+            var vertex = new Vertex ();
+            var fragment = new Fragment ();
+
             _program = new Program (
-				Shader.FromFile (ShaderType.FragmentShader, @"Shaders/Fragment.glsl"),
-                vertexShader);
+                VertexShader.Create (vertex, _uniforms, () => new Fragment ()
+                {
+                    gl_Position = !_uniforms.perspectiveMatrix * !_uniforms.worldMatrix * new Vec4 (vertex.position, 1f),
+                    theColor = vertex.color * (!_uniforms.normalMatrix * vertex.normal).Normalized.Dot (!_uniforms.dirToLight)
+                }),
+                FragmentShader.Create (fragment, _uniforms, () => new FrameBuffer ()
+                {
+                    outputColor = fragment.theColor
+                }));
 
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);

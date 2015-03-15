@@ -44,7 +44,7 @@
         private static string GetQualifiers (MemberInfo mi)
         {
             return mi.GetCustomAttributes (typeof (GLQualifierAttribute), true)
-                .Cast<GLQualifierAttribute> ().Select (q => q.Syntax).SeparateWith (" ");
+                .Cast<GLQualifierAttribute> ().Select (q => q.Qualifier).SeparateWith (" ");
         }
 
         public static IEnumerable<FieldInfo> GetUniforms (Type type)
@@ -66,7 +66,8 @@
         {
             return (from field in type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     let typeAttr = GetGLAttribute (field.FieldType)
-                    where typeAttr != null && !field.IsDefined (typeof (BuiltinAttribute), true)
+                    where typeAttr != null && !field.IsDefined (typeof (BuiltinAttribute), true) && 
+                          !field.IsDefined (typeof (LocalAttribute), true) 
                     let qualifiers = GetQualifiers (field)
                     select string.IsNullOrEmpty (qualifiers) ?
                         string.Format ("{0} {1} {2};", varKind, typeAttr.Syntax, field.Name) :
@@ -126,6 +127,11 @@
             if (result == null)
                 throw new ArgumentException (string.Format ("Unsupported expresion type {0}", expr));
             return result;
+        }
+
+        public static ShaderCode<T> Code<T> (Expression<Func<T>> code)
+        {
+            return new ShaderCode<T> (code);
         }
     }
 }

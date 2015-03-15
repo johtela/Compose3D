@@ -79,7 +79,9 @@
     <Compile Include="Geometry\Rectangle.cs" />
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\Attributes.cs" />
+    <Compile Include="GLTypes\FragmentShader.cs" />
     <Compile Include="GLTypes\GLError.cs" />
+    <Compile Include="GLTypes\ShaderCode.cs" />
     <Compile Include="GLTypes\VertexShader.cs" />
     <Compile Include="GLTypes\Program.cs" />
     <Compile Include="GLTypes\Shader.cs" />

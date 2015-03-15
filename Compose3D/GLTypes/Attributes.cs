@@ -6,6 +6,20 @@
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
 
+    [AttributeUsage (AttributeTargets.Field)]
+    public class LocalAttribute : Attribute { }
+
+    [AttributeUsage (AttributeTargets.Field)]
+    public class GLQualifierAttribute : Attribute
+    {
+        public readonly string Qualifier;
+
+        public GLQualifierAttribute (string qualifier)
+        {
+            Qualifier = qualifier;
+        }
+    }
+
     public class GLAttribute : Attribute
     {
         public readonly string Syntax;
@@ -14,11 +28,6 @@
         {
             Syntax = syntax;
         }
-    }
-
-    public class GLQualifierAttribute :  GLAttribute 
-    {
-        public GLQualifierAttribute (string syntax) : base (syntax) { }
     }
 
     [AttributeUsage (AttributeTargets.Class | AttributeTargets.Struct)]

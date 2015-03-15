@@ -6,12 +6,13 @@
 
     public class VertexShader<V, U, F> : Shader where V : struct 
     {
-        public VertexShader (Expression<Func<V, U, F>> shader) : base (ShaderType.VertexShader, GetSource (shader))
+        public VertexShader (Expression<Func<F>> shader)
+            : base (ShaderType.VertexShader, GetSource (shader))
         {
             Console.WriteLine (GetSource (shader));
         }
 
-        private static string GetSource (Expression<Func<V, U, F>> shader)
+        private static string GetSource (Expression<Func<F>> shader)
         {
             return string.Format (
 @"#version 330
@@ -28,6 +29,15 @@ void main ()
                 DeclareVariables (typeof (F), "out"),
                 DeclareUniforms (typeof (U)),
                 ExprToGLSL ((shader as LambdaExpression).Body, typeof (V), typeof (U), typeof (F)));
+        }
+    }
+
+    public static class VertexShader
+    {
+        public static VertexShader<V, U, F> Create<V, U, F> (V vertex, U uniforms, Expression<Func<F>> shader)
+            where V : struct
+        {
+            return new VertexShader<V, U, F> (shader);
         }
     }
 }

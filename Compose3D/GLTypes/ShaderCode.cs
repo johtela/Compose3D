@@ -1,26 +1,79 @@
 ﻿namespace Compose3D.GLTypes
 {
     using System;
+    using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using OpenTK.Graphics.OpenGL;
+    using System.Collections.Generic;
 
-    public class ShaderCode<T>
+    public enum ShaderObjectKind { Input, Output, Uniform }
+
+    public class ShaderObject<T> : IQueryable<T>
     {
-        Expression<Func<T>> _code;
+        private static ShaderBuilder _builder = new ShaderBuilder ();
+        private ShaderObjectKind _kind;
+        private Expression _expr;
 
-        public ShaderCode (Expression<Func<T>> code)
+        public ShaderObject (ShaderObjectKind kind)
         {
-            _code = code;
+            _kind = kind;
+            var ci = GetType ().GetConstructor (new Type[] { typeof (ShaderObjectKind) });
+            _expr = Expression.New (ci, Expression.Constant(_kind));
         }
 
-        public string Compile (Type[] types)
+        internal ShaderObject (ShaderObjectKind kind, Expression expr)
         {
-            return Shader.ExprToGLSL ((_code as LambdaExpression).Body, types);
+            _kind = kind;
+            _expr = expr;
         }
 
-        public static T operator ! (ShaderCode<T> shaderCode)
+        public System.Collections.Generic.IEnumerator<T> GetEnumerator ()
         {
-            return default (T);
+            throw new NotImplementedException ();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator ()
+        {
+            throw new NotImplementedException ();
+        }
+
+        public Type ElementType
+        {
+            get { return typeof (T); }
+        }
+
+        public Expression Expression
+        {
+            get { return _expr; }
+        }
+
+        public IQueryProvider Provider
+        {
+            get { return _builder; }
+        }
+    }
+
+    public class ShaderBuilder : IQueryProvider
+    {
+        public IQueryable<T> CreateQuery<T> (Expression expression)
+        {
+            return new ShaderObject<T> (ShaderObjectKind.Output, expression);
+        }
+
+        public IQueryable CreateQuery (Expression expression)
+        {
+            throw new NotImplementedException ();
+        }
+
+        public T Execute<T> (Expression expression)
+        {
+            throw new NotImplementedException ();
+        }
+
+        public object Execute (Expression expression)
+        {
+            throw new NotImplementedException ();
         }
     }
 }

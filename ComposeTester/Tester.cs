@@ -9,6 +9,7 @@
     using OpenTK.Graphics.OpenGL;
     using OpenTK.Input;
     using System;
+    using System.Linq;
     using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -78,6 +79,7 @@
 
             var vertex = new Vertex ();
             var fragment = new Fragment ();
+            _uniforms = new Uniforms ();
 
             _program = new Program (
                 VertexShader.Create (vertex, _uniforms, () => new Fragment ()
@@ -90,11 +92,24 @@
                     outputColor = fragment.theColor
                 }));
 
+            var vshader = from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
+                          from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
+                          let normal = (!u.normalMatrix * v.normal).Normalized
+                          let angle = normal.Dot (!u.dirToLight)
+                          select new Fragment ()
+                          {
+                              gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
+                              theColor = v.color * angle
+                          };
+
+            var fshader = from f in new ShaderObject<Fragment> (ShaderObjectKind.Input)
+                          select new { outputColor = f.theColor };
+
 			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
 			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
 
 			_orientation = new Vector3 (0f, 0f, 3f);
-            _program.InitializeUniforms (_uniforms = new Uniforms ());
+            _program.InitializeUniforms (_uniforms);
 		}
 
 		public void Init ()

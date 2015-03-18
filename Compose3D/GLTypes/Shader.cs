@@ -128,10 +128,5 @@
                 throw new ArgumentException (string.Format ("Unsupported expresion type {0}", expr));
             return result;
         }
-
-        public static ShaderCode<T> Code<T> (Expression<Func<T>> code)
-        {
-            return new ShaderCode<T> (code);
-        }
     }
 }

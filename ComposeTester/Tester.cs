@@ -71,18 +71,11 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
             _geometry = CreateGeometry ();
-			_vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
-			_ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
-
-			_orientation = new Vector3 (0f, 0f, 3f);
-            _uniforms = new Uniforms ();
-
+            _orientation = new Vector3 (0f, 0f, 3f);
+            _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
+            _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
             _program = new Program (VertexShader (), FragmentShader ());
-
-            //_program = new Program (Shader.FromFile (ShaderType.VertexShader, "Shaders/Vertex.glsl"),
-            //    Shader.FromFile (ShaderType.FragmentShader, "Shaders/Fragment.glsl"));
-
-            _program.InitializeUniforms (_uniforms);
+            _program.InitializeUniforms (_uniforms = new Uniforms ());
         }
 
         private Geometry<Vertex> CreateGeometry ()
@@ -119,7 +112,7 @@
 
 		public void Init ()
 		{
-			GL.Enable (EnableCap.CullFace);
+            GL.Enable (EnableCap.CullFace);
 			GL.CullFace (CullFaceMode.Back);
 			GL.FrontFace (FrontFaceDirection.Cw);
 			GL.Enable (EnableCap.DepthTest);
@@ -151,7 +144,7 @@
             _uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
 				Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
             GL.Viewport (ClientSize);
-		}
+        }
 
 		protected override void OnMouseMove (MouseMoveEventArgs e)
 		{

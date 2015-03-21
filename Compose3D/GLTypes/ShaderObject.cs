@@ -11,7 +11,30 @@
 
     public class ShaderObject<T> : IQueryable<T>
     {
-        private static ShaderBuilder _builder = new ShaderBuilder ();
+        private class ShaderProvider : IQueryProvider
+        {
+            public IQueryable<U> CreateQuery<U> (Expression expression)
+            {
+                return new ShaderObject<U> (ShaderObjectKind.Output, expression);
+            }
+
+            public IQueryable CreateQuery (Expression expression)
+            {
+                throw new NotImplementedException ();
+            }
+
+            public U Execute<U> (Expression expression)
+            {
+                throw new NotImplementedException ();
+            }
+
+            public object Execute (Expression expression)
+            {
+                throw new NotImplementedException ();
+            }
+        }
+
+        private static ShaderProvider _builder = new ShaderProvider ();
         private ShaderObjectKind _kind;
         private Expression _expr;
 
@@ -51,29 +74,6 @@
         public IQueryProvider Provider
         {
             get { return _builder; }
-        }
-    }
-
-    public class ShaderBuilder : IQueryProvider
-    {
-        public IQueryable<T> CreateQuery<T> (Expression expression)
-        {
-            return new ShaderObject<T> (ShaderObjectKind.Output, expression);
-        }
-
-        public IQueryable CreateQuery (Expression expression)
-        {
-            throw new NotImplementedException ();
-        }
-
-        public T Execute<T> (Expression expression)
-        {
-            throw new NotImplementedException ();
-        }
-
-        public object Execute (Expression expression)
-        {
-            throw new NotImplementedException ();
         }
     }
 }

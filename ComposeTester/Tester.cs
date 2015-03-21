@@ -65,52 +65,57 @@
 		private VBO<int> _ibo;
 		private Vector3 _orientation;
         private Uniforms _uniforms;
+        private Geometry<Vertex> _geometry;
 
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			var cube1 = Cube.Create<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
-			var cube2 = Cube.Create<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
-			var cube3 = Cube.Create<Vertex> (1f, 1f, 2f)
-				.Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
-			var geometry = Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
-
-            var vertex = new Vertex ();
-            var fragment = new Fragment ();
-            _uniforms = new Uniforms ();
-
-            _program = new Program (
-                VertexShader.Create (vertex, _uniforms, () => new Fragment ()
-                {
-                    gl_Position = !_uniforms.perspectiveMatrix * !_uniforms.worldMatrix * new Vec4 (vertex.position, 1f),
-                    theColor = vertex.color * (!_uniforms.normalMatrix * vertex.normal).Normalized.Dot (!_uniforms.dirToLight)
-                }),
-                FragmentShader.Create (fragment, _uniforms, () => new FrameBuffer ()
-                {
-                    outputColor = fragment.theColor
-                }));
-
-            var vshader = from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
-                          from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
-                          let normal = (!u.normalMatrix * v.normal).Normalized
-                          let angle = normal.Dot (!u.dirToLight)
-                          select new Fragment ()
-                          {
-                              gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                              theColor = v.color * angle
-                          };
-
-            var fshader = from f in new ShaderObject<Fragment> (ShaderObjectKind.Input)
-                          select new { outputColor = f.theColor };
-
-			_vbo = new VBO<Vertex> (geometry.Vertices, BufferTarget.ArrayBuffer);
-			_ibo = new VBO<int> (geometry.Indices, BufferTarget.ElementArrayBuffer);
+            _geometry = CreateGeometry ();
+			_vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
+			_ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
 
 			_orientation = new Vector3 (0f, 0f, 3f);
+            _uniforms = new Uniforms ();
+
+            _program = new Program (VertexShader (), FragmentShader ());
+
+            //_program = new Program (Shader.FromFile (ShaderType.VertexShader, "Shaders/Vertex.glsl"),
+            //    Shader.FromFile (ShaderType.FragmentShader, "Shaders/Fragment.glsl"));
+
             _program.InitializeUniforms (_uniforms);
-		}
+        }
+
+        private Geometry<Vertex> CreateGeometry ()
+        {
+            var cube1 = Cube.Create<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f)
+                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+            var cube2 = Cube.Create<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f)
+                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+            var cube3 = Cube.Create<Vertex> (1f, 1f, 2f)
+                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+            return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
+        }
+
+        private Shader VertexShader ()
+        {
+            return Shader.Create (ShaderType.VertexShader,
+                from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
+                from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
+                let normal = (!u.normalMatrix * v.normal).Normalized
+                let angle = normal.Dot (!u.dirToLight)
+                select new Fragment ()
+                {
+                    gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
+                    theColor = v.color * angle
+                });
+        }
+
+        private Shader FragmentShader ()
+        {
+            return Shader.Create (ShaderType.FragmentShader,
+                from f in new ShaderObject<Fragment> (ShaderObjectKind.Input)
+                select new { outputColor = f.theColor });
+        }
 
 		public void Init ()
 		{
@@ -174,11 +179,11 @@
             var wnd = new TestWindow ();
             wnd.Init ();
             wnd.Run ();
-            Tester.RunTestsTimed (
-                new VecTests (),
-                new MatTests ());
-                //new PerformanceTests ());
-            Console.ReadLine ();
+            //Tester.RunTestsTimed (
+            //    new VecTests (),
+            //    new MatTests ());
+            ////new PerformanceTests ());
+            //Console.ReadLine ();
 		}
 	}
 }

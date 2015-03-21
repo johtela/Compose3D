@@ -49,7 +49,7 @@
 
         public void InitializeUniforms<U> (U uniforms) where U : class
         {
-            foreach (var field in Shader.GetUniforms (typeof (U)))
+            foreach (var field in ShaderBuilder.GetUniforms (typeof (U)))
                 field.SetValue (uniforms, 
                     Activator.CreateInstance (field.FieldType, GetUniformLocation (field.Name)));
         }

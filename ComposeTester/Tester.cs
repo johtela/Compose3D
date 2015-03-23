@@ -50,12 +50,26 @@
         internal Vec4 outputColor = new Vec4 ();
     }
 
+    [GLStruct ("LightColor")]
+    public struct LightColor
+    {
+        internal Vec4 color;
+    }
+
+    [GLStruct ("Light")]
+    public struct Light
+    {
+        internal Vec3 position;
+        internal LightColor diffuseColor;
+    }
+
     public class Uniforms
     {
         internal Uniform<Mat4> worldMatrix;
         internal Uniform<Mat4> perspectiveMatrix;
         internal Uniform<Mat3> normalMatrix;
         internal Uniform<Vec3> dirToLight;
+        internal Uniform<Light> light;
     }
 
 	public class TestWindow : GameWindow
@@ -96,6 +110,7 @@
                 from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
                 let normal = (!u.normalMatrix * v.normal).Normalized
                 let angle = normal.Dot (!u.dirToLight)
+                let foo = (!u.light).position
                 select new Fragment ()
                 {
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
@@ -127,6 +142,11 @@
 			_uniforms.worldMatrix &= worm;
             _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
             _uniforms.dirToLight &= new Vec3 (0f, 0f, 1f);
+            _uniforms.light &= new Light ()
+            {
+                position = new Vec3 (),
+                diffuseColor = new LightColor () { color = new Vec4 () }
+            };
 		}
 
 		protected override void OnRenderFrame (FrameEventArgs e)

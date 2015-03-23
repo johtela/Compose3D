@@ -4,6 +4,7 @@
     using System.Runtime.InteropServices;
     using OpenTK.Graphics.OpenGL;
     using Compose3D.Geometry;
+    using System.Reflection;
 
 	public class Program
 	{
@@ -35,24 +36,15 @@
 			return index;
 		}
 
-        private int GetUniformLocation (string name)
-        {
-            var loc = GL.GetUniformLocation (_glProgram, name);
-            if (loc < 0)
-                throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
-            return loc;
-        }
-
         public Uniform<T> GetUniform<T> (string name)
         {
-            return new Uniform<T> (GetUniformLocation (name));
+            return new Uniform<T> (this, name);
         }
 
         public void InitializeUniforms<U> (U uniforms) where U : class
         {
-            foreach (var field in ShaderBuilder.GetUniforms (typeof (U)))
-                field.SetValue (uniforms, 
-                    Activator.CreateInstance (field.FieldType, GetUniformLocation (field.Name)));
+            foreach (var field in typeof (U).GetUniforms ())
+                field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field.Name));
         }
 
 		public void DrawVertexBuffer<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex

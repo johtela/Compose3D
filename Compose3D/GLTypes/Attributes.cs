@@ -7,9 +7,6 @@
     public class BuiltinAttribute : Attribute { }
 
     [AttributeUsage (AttributeTargets.Field)]
-    public class LocalAttribute : Attribute { }
-
-    [AttributeUsage (AttributeTargets.Field)]
     public class GLQualifierAttribute : Attribute
     {
         public readonly string Qualifier;
@@ -58,5 +55,11 @@
     public class GLFunction : GLAttribute
     {
         public GLFunction (string syntax) : base (syntax) { }
+    }
+
+    [AttributeUsage (AttributeTargets.Struct)]
+    public class GLStruct : GLAttribute
+    {
+        public GLStruct (string syntax) : base (syntax) { }
     }
 }

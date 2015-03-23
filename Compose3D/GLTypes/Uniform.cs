@@ -4,6 +4,8 @@
     using OpenTK.Graphics.OpenGL;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
 
 	public class Uniform<T>
 	{
@@ -23,26 +25,50 @@
 			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) }
 		};
 
-        internal int _glUniform;
+        private int _glUniform;
+        private Tuple<GLStructField, int>[] _mappings;
         private T _value;
 
-		public Uniform (int glUniform)
+        public Uniform (Program program, string name)
 		{
-			_glUniform = glUniform;
+            var type = typeof (T);
+            if (type.IsGLStruct ())
+                _mappings = (from field in type.GetGLStructFields (name + ".")
+                             select Tuple.Create (field, GetUniformLocation (program, field.Name)))
+                            .ToArray ();
+            else
+                _glUniform = GetUniformLocation (program, name);
 		}
 
-		public static Uniform<T> operator & (Uniform<T> uniform, T value)
+        private static int GetUniformLocation (Program program, string name)
+        {
+            var loc = GL.GetUniformLocation (program._glProgram, name);
+            if (loc < 0)
+                throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
+            return loc;
+        }
+
+        public static Uniform<T> operator & (Uniform<T> uniform, T value)
 		{
-			try
-			{
-				_setters[typeof (T)] (uniform._glUniform, (object)value);
+            try
+            {
+                var type = typeof (T);
+                if (type.IsGLStruct ())
+                    foreach (var map in uniform._mappings)
+                    {
+                        var field = map.Item1;
+                        var glUnif = map.Item2;
+                        _setters[field.Type] (glUnif, field.Getter (value));
+                    }
+                else
+                    _setters[type] (uniform._glUniform, (object)value);
                 uniform._value = value;
-				return uniform;
-			}
-			catch (KeyNotFoundException)
-			{
-				throw new GLError ("Incompatible uniform type: " + typeof (T).Name);
-			}
+                return uniform;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new GLError ("Incompatible uniform type: " + typeof (T).Name);
+            }
 		}
 
         [GLUnaryOperator ("{0}")]

@@ -14,11 +14,13 @@
         private Type _shaderType;
         private StringBuilder _code;
         private bool _mainDefined;
+        private HashSet<Type> _structsDefined;
 
         private ShaderBuilder (Type shaderType)
         {
             _shaderType = shaderType;
             _code = new StringBuilder ("#version 330\n");
+            _structsDefined = new HashSet<Type> ();
         }
 
         public static string Execute<T> (IQueryable<T> shader)
@@ -30,57 +32,55 @@
             return builder._code.ToString ();
         }
 
-        private static GLAttribute GetGLAttribute (MemberInfo mi)
+        private void OutputStruct (Type structType)
         {
-            if (mi == null)
-                return null;
-            var attrs = mi.GetCustomAttributes (typeof (GLAttribute), true);
-            return attrs == null || attrs.Length == 0 ? null : attrs.Cast<GLAttribute> ().Single ();
-        }
-
-        private static string GetQualifiers (MemberInfo mi)
-        {
-            return mi.GetCustomAttributes (typeof (GLQualifierAttribute), true)
-                .Cast<GLQualifierAttribute> ().Select (q => q.Qualifier).SeparateWith (" ");
-        }
-
-        public static IEnumerable<FieldInfo> GetUniforms (Type type)
-        {
-            return from field in type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                   where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
-                   select field;
+            if (!_structsDefined.Contains (structType))
+            {
+                foreach (var field in structType.GetGLFields ())
+                    if (field.FieldType.IsGLStruct ())
+                        OutputStruct (field.FieldType);
+                _structsDefined.Add (structType);
+                _code.AppendFormat ("struct {0}\n{{\n", structType.Name);
+                foreach (var field in structType.GetGLFields ())
+                    DeclareVariable (field, field.FieldType, "   ");
+                _code.AppendLine ("};");
+            }
         }
 
         private void DeclareUniforms (Type type)
         {
-            foreach (var field in GetUniforms (type))
+            foreach (var field in type.GetUniforms ())
             {
-                var glAttr = GetGLAttribute (field.FieldType.GetGenericArguments ().Single ());
+                var uniType = field.FieldType.GetGenericArguments ().Single ();
+                var glAttr = uniType.GetGLAttribute ();
+                if (glAttr == null)
+                    throw new ArgumentException ("Unsupported uniform type: " + uniType.Name);
+                if (glAttr is GLStruct)
+                    OutputStruct (uniType);
                 _code.AppendFormat ("uniform {0} {1};\n", glAttr.Syntax, field.Name);
             }
         }
 
-        private void DeclareVariable (MemberInfo member, Type memberType, string varKind)
+        private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
-            var typeAttr = GetGLAttribute (memberType);
-            if (typeAttr != null && !member.IsDefined (typeof (BuiltinAttribute), true) &&
-                !member.IsDefined (typeof (LocalAttribute), true))
+            var typeAttr = memberType.GetGLAttribute ();
+            if (typeAttr != null && !member.IsBuiltin ())
             {
-                var qualifiers = GetQualifiers (member);
+                var qualifiers = member.GetQualifiers ();
                 _code.AppendLine (string.IsNullOrEmpty (qualifiers) ?
-                    string.Format ("{0} {1} {2};", varKind, typeAttr.Syntax, member.Name) :
-                    string.Format ("{0} {1} {2} {3};", qualifiers, varKind, typeAttr.Syntax, member.Name));
+                    string.Format ("{0} {1} {2};", prefix, typeAttr.Syntax, member.Name) :
+                    string.Format ("{0} {1} {2} {3};", qualifiers, prefix, typeAttr.Syntax, member.Name));
             }
         }
 
-        private void DeclareVariables (Type type, string varKind)
+        private void DeclareVariables (Type type, string prefix)
         {
             if (type.Name.StartsWith ("<>"))
-                foreach (var prop in type.GetProperties (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-                    DeclareVariable (prop, prop.PropertyType, varKind);
+                foreach (var prop in type.GetGLProperties ())
+                    DeclareVariable (prop, prop.PropertyType, prefix);
             else
-                foreach (var field in type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-                    DeclareVariable (field, field.FieldType, varKind);
+                foreach (var field in type.GetGLFields ())
+                    DeclareVariable (field, field.FieldType, prefix);
         }
 
         private static bool IsSelect (MethodInfo mi)
@@ -126,33 +126,35 @@
             var result =
                 expr.Match<BinaryExpression, string> (be =>
                 {
-                    var attr = GetGLAttribute (be.Method);
+                    var attr = be.Method.GetGLAttribute ();
                     return attr == null ? null :
                         string.Format (attr.Syntax, ExprToGLSL (be.Left), ExprToGLSL (be.Right));
                 }) ??
                 expr.Match<UnaryExpression, string> (ue =>
                 {
-                    var attr = GetGLAttribute (ue.Method);
+                    var attr = ue.Method.GetGLAttribute ();
                     return attr == null ? null :
                         string.Format (attr.Syntax, ExprToGLSL (ue.Operand));
                 }) ??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
-                    var attr = GetGLAttribute (mc.Method);
+                    var attr = mc.Method.GetGLAttribute ();
                     if (attr == null) return null;
                     var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
                     return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
                 expr.Match<MemberExpression, string> (me =>
                 {
-                    var attr = GetGLAttribute (me.Member);
+                    var attr = me.Member.GetGLAttribute ();
                     return attr != null ?
                         string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Member.Name;
+                        me.Expression.Type.IsGLStruct () ?
+                            string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.Name) :
+                            me.Member.Name;
                 }) ??
                 expr.Match<NewExpression, string> (ne =>
                 {
-                    var attr = GetGLAttribute (ne.Constructor);
+                    var attr = ne.Constructor.GetGLAttribute ();
                     return attr == null ? null :
                         string.Format (attr.Syntax, ne.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
@@ -182,7 +184,7 @@
                             _code.AppendFormat ("    {0} = {1};\n", prop.Name, ExprToGLSL (node.Arguments[i]));
                         else
                         {
-                            var attr = GetGLAttribute (prop.PropertyType);
+                            var attr = prop.PropertyType.GetGLAttribute ();
                             var type = attr == null ? TypeMapping.Type (prop.PropertyType) : attr.Syntax;
                             _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, ExprToGLSL (node.Arguments[i]));
                         }

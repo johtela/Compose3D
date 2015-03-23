@@ -85,6 +85,7 @@
     <Compile Include="GLTypes\GLError.cs" />
     <Compile Include="GLTypes\ShaderBuilder.cs" />
     <Compile Include="GLTypes\ShaderObject.cs" />
+    <Compile Include="GLTypes\TypeHelpers.cs" />
     <Compile Include="GLTypes\TypeMapping.cs" />
     <Compile Include="GLTypes\Program.cs" />
     <Compile Include="GLTypes\Shader.cs" />

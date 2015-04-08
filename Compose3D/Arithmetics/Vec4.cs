@@ -99,6 +99,12 @@
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
 
+		[GLFunction ("clamp ({0})")]
+		public Vec4 Clamp (float min, float max)
+		{
+			return new Vec4 (X.Clamp (min, max), Y.Clamp (min, max), Z.Clamp (min, max), W.Clamp (min, max));
+		}
+
 		public bool Equals (Vec4 other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;

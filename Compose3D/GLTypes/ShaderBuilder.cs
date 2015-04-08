@@ -128,7 +128,7 @@
                 {
                     var attr = be.Method.GetGLAttribute ();
                     return attr == null ? null :
-                        string.Format (attr.Syntax, ExprToGLSL (be.Left), ExprToGLSL (be.Right));
+                        string.Format ("("+ attr.Syntax + ")", ExprToGLSL (be.Left), ExprToGLSL (be.Right));
                 }) ??
                 expr.Match<UnaryExpression, string> (ue =>
                 {

@@ -66,6 +66,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Arithmetics\Numeric.cs" />
     <Compile Include="Arithmetics\Vec.cs" />
     <Compile Include="Arithmetics\Vec4.cs">
       <DependentUpon>Vec4.tt</DependentUpon>

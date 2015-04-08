@@ -33,7 +33,9 @@ namespace Compose3D.Arithmetics
 		[GLBinaryOperator ("{0} / {1}")]
 <#+		Scalar (dim, vecType, type, "Divide", "/", ", "); #>
 		[GLFunction ("dot ({0})")]
-<#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");
+<#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
+		[GLFunction ("clamp ({0})")]
+<#+		Scalar2 (dim, vecType, type, "Clamp", "{0}.Clamp ({1}, {2})", "min", "max", ", ");
 		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
 		Indexer(dim, type); 
 	    for (int i = dim; i > 1; i--)
@@ -277,6 +279,14 @@ void Scalar(int dim, string vecType, string scalarType, string name, string oper
 		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} scalar", comp, oper)) #>);
+		}
+
+<#+ } 
+
+void Scalar2(int dim, string vecType, string scalarType, string name, string format, string arg1, string arg2, string delim) { #>
+		public <#= vecType #> <#= name #> (<#= scalarType #> <#= arg1 #>, <#= scalarType #> <#= arg2 #>)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format(format, comp, arg1, arg2)) #>);
 		}
 
 <#+ } 

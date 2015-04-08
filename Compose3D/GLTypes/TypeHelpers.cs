@@ -98,6 +98,7 @@
                 result = new List<GLStructField> ();
                 var expression = Expression.Parameter (typeof (object), "obj");
                 GetStructFields (type, Expression.Convert (expression, type), expression, result, prefix);
+                _structFields.Add (type, result);
             }
             return result;
         }

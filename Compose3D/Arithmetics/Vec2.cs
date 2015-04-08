@@ -87,6 +87,12 @@
 			return X * other.X + Y * other.Y;
 		}
 
+		[GLFunction ("clamp ({0})")]
+		public Vec2 Clamp (float min, float max)
+		{
+			return new Vec2 (X.Clamp (min, max), Y.Clamp (min, max));
+		}
+
 		public bool Equals (Vec2 other)
 		{
 			return X == other.X && Y == other.Y;

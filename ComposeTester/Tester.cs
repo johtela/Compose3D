@@ -50,17 +50,21 @@
         internal Vec4 outputColor = new Vec4 ();
     }
 
-    [GLStruct ("LightColor")]
-    public struct LightColor
+    [GLStruct ("DirectionalLight")]
+    public struct DirectionalLight
     {
-        internal Vec4 color;
+        internal Vec3 intensity;
+        internal Vec3 direction;
     }
 
-    [GLStruct ("Light")]
-    public struct Light
+    [GLStruct ("SpotLight")]
+    public struct SpotLight
     {
         internal Vec3 position;
-        internal LightColor diffuseColor;
+        internal Vec3 direction;
+        internal Vec3 intensity;
+        internal float constantAttenuation, linearAttenuation, quadraticAttenuation;
+        internal float cosSpotCutoff, spotExponent;
     }
 
     public class Uniforms
@@ -68,8 +72,9 @@
         internal Uniform<Mat4> worldMatrix;
         internal Uniform<Mat4> perspectiveMatrix;
         internal Uniform<Mat3> normalMatrix;
-        internal Uniform<Vec3> dirToLight;
-        internal Uniform<Light> light;
+        internal Uniform<Vec3> ambientLightIntensity;
+        internal Uniform<DirectionalLight> directionalLight;
+        //internal Uniform<SpotLight> spotLight;
     }
 
 	public class TestWindow : GameWindow
@@ -109,12 +114,13 @@
                 from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
                 from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
                 let normal = (!u.normalMatrix * v.normal).Normalized
-                let angle = normal.Dot (!u.dirToLight)
-                let foo = (!u.light).position
+                let angle = normal.Dot ((!u.directionalLight).direction)
+                let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
+                let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
                 select new Fragment ()
                 {
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                    theColor = v.color * angle
+                    theColor = v.color * (ambient + diffuse).Clamp (0f, 1f)
                 });
         }
 
@@ -141,11 +147,11 @@
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_uniforms.worldMatrix &= worm;
             _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
-            _uniforms.dirToLight &= new Vec3 (0f, 0f, 1f);
-            _uniforms.light &= new Light ()
+            _uniforms.ambientLightIntensity &= new Vec3 (0.5f);
+            _uniforms.directionalLight &= new DirectionalLight ()
             {
-                position = new Vec3 (),
-                diffuseColor = new LightColor () { color = new Vec4 () }
+                direction = new Vec3 (-1f, -1f, 1f),
+                intensity = new Vec3 (0.5f)
             };
 		}
 

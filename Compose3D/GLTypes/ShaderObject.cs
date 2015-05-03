@@ -7,7 +7,7 @@
     using OpenTK.Graphics.OpenGL;
     using System.Collections.Generic;
 
-    public enum ShaderObjectKind { Input, Output, Uniform }
+    public enum ShaderObjectKind { Input, Output, Uniform, Array }
 
     public class ShaderObject<T> : IQueryable<T>
     {
@@ -43,6 +43,12 @@
             _kind = kind;
             var ci = GetType ().GetConstructor (new Type[] { typeof (ShaderObjectKind) });
             _expr = Expression.New (ci, Expression.Constant(_kind));
+        }
+
+        public ShaderObject (T[] array)
+        {
+            _kind = ShaderObjectKind.Array;
+            _expr = Expression.Constant (array);
         }
 
         internal ShaderObject (ShaderObjectKind kind, Expression expr)

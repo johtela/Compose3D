@@ -16,5 +16,17 @@
         {
             return Math.Min (Math.Max (value, min), max);
         }
+
+        [GLFunction ("pow ({0})")]
+        public static float Pow (this float value, float exponent)
+        {
+            return (float)Math.Pow (value, exponent);
+        }
+
+        [GLFunction ("pow ({0})")]
+        public static double Pow (this double value, double exponent)
+        {
+            return Math.Pow (value, exponent);
+        }
     }
 }

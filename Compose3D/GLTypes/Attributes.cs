@@ -9,7 +9,7 @@
     [AttributeUsage (AttributeTargets.Field)]
     public class GLQualifierAttribute : Attribute
     {
-        public readonly string Qualifier;
+        public string Qualifier;
 
         public GLQualifierAttribute (string qualifier)
         {
@@ -17,9 +17,20 @@
         }
     }
 
+    [AttributeUsage (AttributeTargets.Field)]
+    public class GLArrayAttribute : Attribute
+    {
+        public int Length;
+
+        public GLArrayAttribute (int length)
+        {
+            Length = length;
+        }
+    }
+
     public class GLAttribute : Attribute
     {
-        public readonly string Syntax;
+        public string Syntax;
 
         public GLAttribute (string syntax)
         {

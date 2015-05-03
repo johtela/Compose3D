@@ -63,7 +63,7 @@
         internal Vec3 position;
         internal Vec3 direction;
         internal Vec3 intensity;
-        internal float constantAttenuation, linearAttenuation, quadraticAttenuation;
+        internal float linearAttenuation, quadraticAttenuation;
         internal float cosSpotCutoff, spotExponent;
     }
 
@@ -74,7 +74,8 @@
         internal Uniform<Mat3> normalMatrix;
         internal Uniform<Vec3> ambientLightIntensity;
         internal Uniform<DirectionalLight> directionalLight;
-        //internal Uniform<SpotLight> spotLight;
+        [GLArray (4)] 
+        internal Uniform<SpotLight[]> spotLights;
     }
 
 	public class TestWindow : GameWindow
@@ -117,8 +118,18 @@
                 let angle = normal.Dot ((!u.directionalLight).direction)
                 let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
                 let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
+                let spot = (from sp in new ShaderObject<SpotLight> (!u.spotLights)
+                            let vecToLight = sp.position - v.position
+                            let dist = vecToLight.Length
+                            let lightDir = vecToLight.Normalized
+                            let attenuation = 1f / 
+                                ((sp.linearAttenuation * dist) + (sp.quadraticAttenuation * dist * dist))
+                            let cosAngle = -lightDir.Dot (sp.direction)
+                            select cosAngle < sp.cosSpotCutoff ? 
+                                0f : attenuation *  cosAngle.Pow (sp.spotExponent))
+                            .Aggregate (0f, (r, i) => r + i)
                 select new Fragment ()
-                {
+                {   
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
                     theColor = v.color * (ambient + diffuse).Clamp (0f, 1f)
                 });

@@ -17,4 +17,12 @@ void main()
 	vec3 norm = normalize(normalMatrix * normal);
 	float angle = dot(norm, dirToLight);
     theColor = color * angle;
+	float r = 0;
+	for (int i1 = 0, i1 < len, i1++)
+	{
+		sp = spotLights[i];
+		...
+		i = 
+		r = r + 
+	}
 }

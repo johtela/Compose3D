@@ -78,6 +78,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Vec3.tt</DependentUpon>
     </Compile>
+    <Compile Include="GLTypes\ParsingHelpers.cs" />
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Geometry\Rectangle.cs" />

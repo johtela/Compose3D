@@ -64,7 +64,9 @@
             var res = CastExpr<T> (expr, type);
             if (res == null)
                 throw new ParseException (
-                    string.Format ("Expected '{0}' expression of type '{1}'", type, typeof (T)));
+                    string.Format ("Unexpected expression '{0}'.\n" + 
+                    "Expected '{1}' of type '{2}', encountered '{3}' of type '{4}'",
+                    expr, type, typeof (T), expr.NodeType, expr.GetType ()));
             return res;
         }
 

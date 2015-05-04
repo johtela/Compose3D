@@ -249,6 +249,12 @@
             {
                 if (node.Method.GetGenericArguments ().Length != 2)
                     throw new ParseException ("The only supported overload of Aggregate is one containing two generic parameters.");
+                var loopBody = node.Arguments[0];
+                var accumInit = ExprToGLSL (node.Arguments[1]);
+                var aggrFun = node.Arguments[2].Expect<UnaryExpression> (ExpressionType.Quote).Operand
+                    .Expect<LambdaExpression> (ExpressionType.Lambda);
+                var accum = aggrFun.Parameters[0];
+                var iterRes = aggrFun.Parameters[1];
                 return true;
             }
             else return false;

@@ -82,8 +82,16 @@
                 foreach (var sexpr in mcexpr.Arguments[0].Traverse ())
                     yield return sexpr;
                 yield return mcexpr.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
-                    .Operand.Expect<LambdaExpression> (ExpressionType.Lambda).Body;
+                    .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
             }
+        }
+
+        public static MethodCallExpression ExpectSelect (this Expression expr)
+        {
+            var result = expr.Expect<MethodCallExpression> (ExpressionType.Call);
+            if (!result.Method.IsSelect ())
+                throw new ParseException ("Expected a Select or SelectMany call");
+            return result;
         }
 
         public static bool IsSelect (this MethodInfo mi)
@@ -93,7 +101,22 @@
 
         public static bool IsAggregate (this MethodInfo mi)
         {
-            return mi.DeclaringType == typeof (Queryable) && (mi.Name == "Aggregate");
+            if (mi.DeclaringType != typeof (Queryable) || mi.Name != "Aggregate")
+                return false;
+            if (mi.GetGenericArguments ().Length != 2)
+                throw new ParseException ("The only supported overload of Aggregate is one containing two generic parameters.");
+            return true;
+        }
+
+        public static bool ParseLambda (this Source source, Func<LambdaExpression, NewExpression, bool> func)
+        {
+            var lambdaExpr = source.Current.CastExpr<LambdaExpression> (ExpressionType.Lambda);
+            if (lambdaExpr == null)
+                return false;
+            var newExpr = lambdaExpr.Body.CastExpr<NewExpression> (ExpressionType.New);
+            if (newExpr == null)
+                return false;
+            return func (lambdaExpr, newExpr);
         }
 
         public static Parser ExactlyOne (this Parser parser)

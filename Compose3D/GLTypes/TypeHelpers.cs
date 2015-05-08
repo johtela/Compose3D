@@ -28,12 +28,22 @@
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private static Dictionary<Type, IList<GLStructField>> _structFields = new Dictionary<Type, IList<GLStructField>> ();
 
-        public static GLAttribute GetGLAttribute (this MemberInfo mi)
+        private static T GetAttribute<T> (MemberInfo mi) where T : Attribute
         {
             if (mi == null)
                 return null;
-            var attrs = mi.GetCustomAttributes (typeof (GLAttribute), true);
-            return attrs == null || attrs.Length == 0 ? null : attrs.Cast<GLAttribute> ().Single ();
+            var attrs = mi.GetCustomAttributes (typeof (T), true);
+            return attrs == null || attrs.Length == 0 ? null : attrs.Cast<T> ().Single ();
+        }
+
+        public static GLAttribute GetGLAttribute (this MemberInfo mi)
+        {
+            return GetAttribute<GLAttribute> (mi);
+        }
+
+        public static GLArrayAttribute GetGLArrayAttribute (this FieldInfo fi)
+        {
+            return GetAttribute<GLArrayAttribute> (fi);
         }
 
         public static bool IsGLType (this Type type)

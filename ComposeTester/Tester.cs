@@ -114,8 +114,8 @@
             return Shader.Create (ShaderType.VertexShader,
                 from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
                 from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
-                let normal = (!u.normalMatrix * v.normal).Normalized
-                let angle = normal.Dot ((!u.directionalLight).direction)
+                let normalizedNormal = (!u.normalMatrix * v.normal).Normalized
+                let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
                 let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
                 let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
                 let spot = (from sp in new ShaderObject<SpotLight> (!u.spotLights)

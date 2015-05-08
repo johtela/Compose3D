@@ -11,24 +11,22 @@
 
     public class ShaderBuilder
     {
-        private Type _shaderType;
         private StringBuilder _code;
         private bool _mainDefined;
         private HashSet<Type> _structsDefined;
+        private int _localVarCount;
 
-        private ShaderBuilder (Type shaderType)
+        private ShaderBuilder ()
         {
-            _shaderType = shaderType;
             _code = new StringBuilder ("#version 330\n");
             _structsDefined = new HashSet<Type> ();
         }
 
         public static string Execute<T> (IQueryable<T> shader)
         {
-            var builder = new ShaderBuilder (typeof (T));
+            var builder = new ShaderBuilder ();
             builder.DeclareVariables (typeof (T), "out");
-            var parser = builder.ShaderParser ();
-            parser.Execute (new Source (shader.Expression.Traverse ()));
+            builder.Shader (shader.Expression);
             return builder._code.ToString ();
         }
 
@@ -55,10 +53,10 @@
                 var arrayLen = 0;
                 if (uniType.IsArray)
                 {
-                    var arrAttr = field.GetCustomAttributes (true).SingleOrDefault (attr => attr is GLArrayAttribute);
+                    var arrAttr = field.GetGLArrayAttribute ();
                     if (arrAttr == null)
                         throw new ArgumentException ("Missing GLArray attribute for array uniform.");
-                    arrayLen = (arrAttr as GLArrayAttribute).Length;
+                    arrayLen = arrAttr.Length;
                     uniType = uniType.GetElementType ();
                 }
                 var glAttr = uniType.GetGLAttribute ();
@@ -126,6 +124,12 @@
                 _code.Append ("}");
         }
 
+        private static string GLType (Type type)
+        {
+            var attr = type.GetGLAttribute ();
+            return attr == null ? TypeMapping.Type (type) : attr.Syntax;
+        }
+
         private static string ExprToGLSL (Expression expr)
         {
             var result =
@@ -173,34 +177,30 @@
 
         public bool Declaration (Source source)
         {
-            var node = source.Current.CastExpr<NewExpression> (ExpressionType.New);
+            var le = source.Current.CastExpr<LambdaExpression> (ExpressionType.Lambda);
+            var node = le == null ?
+                source.Current.CastExpr<NewExpression> (ExpressionType.New) :
+                le.Body.CastExpr<NewExpression> (ExpressionType.New);
             if (node == null)
                 return false;
             var createdType = node.Constructor.DeclaringType;
-            if (createdType.IsGenericType && createdType.GetGenericTypeDefinition () == typeof (ShaderObject<>))
-            {
-                Declarations (node, createdType);
-                return true;
-            }
-            else return false;
+            if (!createdType.IsGenericType || createdType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
+                return false;
+            Declarations (node, createdType);
+            return true;
         }
 
         public bool LetBinding (Source source)
         {
-            var node = source.Current.CastExpr<NewExpression> (ExpressionType.New);
-            if (node == null)
-                return false;
-            var createdType = node.Constructor.DeclaringType;
-            if (createdType != _shaderType)
+            return source.ParseLambda ((_, node) =>
             {
                 for (int i = 0; i < node.Members.Count; i++)
                 {
                     var prop = (PropertyInfo)node.Members[i];
                     if (!prop.Name.StartsWith ("<>"))
                     {
-                        var attr = prop.PropertyType.GetGLAttribute ();
-                        var type = attr == null ? TypeMapping.Type (prop.PropertyType) : attr.Syntax;
-                        if (ParseAggregate (node.Arguments[i]))
+                        var type = GLType (prop.PropertyType);
+                        if (Aggregate (node.Arguments[i]))
                         {
                             // TODO: something
                         }
@@ -210,54 +210,84 @@
                     }
                 }
                 return true;
-            }
-            else return false;
+            });
         }
 
-        public bool MemberInitReturn (Expression expr)
-        {
-            var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
-            if (mie == null || mie.Type != _shaderType)
-                return false;
-            foreach (MemberAssignment assign in mie.Bindings)
-                _code.AppendFormat ("    {0} = {1};\n", assign.Member.Name, ExprToGLSL (assign.Expression));
-            return true;
-        }
-
-        public bool Return (Source source)
-        {
-            var ne = source.Current.CastExpr<NewExpression> (ExpressionType.New);
-            if (ne == null)
-                return MemberInitReturn (source.Current);
-            if (ne.Type != _shaderType)
-                return false;
-            for (int i = 0; i < ne.Members.Count; i++)
-            {
-                var prop = (PropertyInfo)ne.Members[i];
-                if (!prop.Name.StartsWith ("<>"))
-                    _code.AppendFormat ("    {0} = {1};\n", prop.Name, ExprToGLSL (ne.Arguments[i]));
-            }
-            return true;
-        }
-
-        public bool ParseAggregate (Expression expr)
+        public bool Aggregate (Expression expr)
         {
             var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
             if (node == null)
                 return false;
-            if (node.Method.IsAggregate ())
+            if (!node.Method.IsAggregate ())
+                return false;
+            var loopBody = node.Arguments[0];
+            var aggrFun = node.Arguments[2].Expect<UnaryExpression> (ExpressionType.Quote).Operand
+                .Expect<LambdaExpression> (ExpressionType.Lambda);
+            var accum = aggrFun.Parameters[0];
+            var iterRes = aggrFun.Parameters[1];
+            _code.AppendFormat ("    {0} {1} = {2};\n", GLType(accum.Type), accum.Name, 
+                ExprToGLSL (node.Arguments[1]));
+
+            return true;
+        }
+
+        public bool ForLoop (Source source)
+        {
+            return source.ParseLambda ((_, node) =>
             {
-                if (node.Method.GetGenericArguments ().Length != 2)
-                    throw new ParseException ("The only supported overload of Aggregate is one containing two generic parameters.");
-                var loopBody = node.Arguments[0];
-                var accumInit = ExprToGLSL (node.Arguments[1]);
-                var aggrFun = node.Arguments[2].Expect<UnaryExpression> (ExpressionType.Quote).Operand
-                    .Expect<LambdaExpression> (ExpressionType.Lambda);
-                var accum = aggrFun.Parameters[0];
-                var iterRes = aggrFun.Parameters[1];
+                var soType = node.Constructor.DeclaringType;
+                if (!soType.IsGenericType || soType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
+                    return false;
+                var elemType = soType.GetGenericArguments()[0];
+                var param = node.Arguments[0];
+                var field = param.Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
+                var attr = field.GetGLArrayAttribute ();
+                if (field == null || attr == null)
+                    throw new ParseException ("Invalid shader object parameter. " +
+                        "Expected field with GLArray attribute. Encountered: " + param);
+                var indexVar = NewLocalVar ("ind");
+                _code.AppendFormat ("    for (int {0} = 0; {0} < {1}; {0}++)\n", indexVar, attr.Length);
+                _code.AppendLine ("    {");
+
                 return true;
+            });
+        }
+
+        private string NewLocalVar (string name)
+        {
+            return string.Format ("__{0}{1}", name, ++_localVarCount);
+        }
+
+        public void Return (Expression expr)
+        {
+            var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
+            if (ne == null)
+            {
+                var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
+                if (mie == null)
+                    throw new ParseException ("Unsupported shader expression: " + expr);
+                foreach (MemberAssignment assign in mie.Bindings)
+                    _code.AppendFormat ("    {0} = {1};\n", assign.Member.Name, ExprToGLSL (assign.Expression));
             }
-            else return false;
+            else
+            {
+                for (int i = 0; i < ne.Members.Count; i++)
+                {
+                    var prop = (PropertyInfo)ne.Members[i];
+                    if (!prop.Name.StartsWith ("<>"))
+                        _code.AppendFormat ("    {0} = {1};\n", prop.Name, ExprToGLSL (ne.Arguments[i]));
+                }
+            }
+        }
+
+        public void Shader (Expression expr)
+        {
+            var mce = expr.ExpectSelect ();
+            var parser = ShaderParser ();
+            parser.Execute (new Source (mce.Arguments[0].Traverse ()));
+            Return (mce.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
+                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda).Body);
+            EndMain ();
         }
 
         public Parser ShaderParser ()
@@ -265,9 +295,7 @@
             var decl = Parse.OneOrMore (Declaration).IfFail (new ParseException (
                 "Must have at least one from clause in the beginning of Linq expression."));
             var body = Parse.ZeroOrMore (LetBinding);
-            var ret = Parse.ExactlyOne (Return).IfFail (new ParseException (
-                "Must have exactly one select clause at the end of Linq expression."));
-            return decl.IfSucceed (StartMain).Then (body).Then (ret).IfSucceed (EndMain);
+            return decl.IfSucceed (StartMain).Then (body);
         }
     }
 }

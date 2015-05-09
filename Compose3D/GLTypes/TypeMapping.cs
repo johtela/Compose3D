@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
 
@@ -30,6 +31,20 @@
             { GetMethod (mathT, "Max", floatT, floatT), "max ({0})" },
             { GetMethod (mathT, "Max", doubleT, doubleT), "max ({0})" }
         };
+
+        private static Dictionary<ExpressionType, string> _operators = new Dictionary<ExpressionType, string>
+        {
+            { ExpressionType.Add, "{0} + {1}"},
+            { ExpressionType.Subtract, "{0} - {1}"},
+            { ExpressionType.Multiply, "{0} * {1}"},
+            { ExpressionType.Divide, "{0} / {1}"},
+            { ExpressionType.Negate, "-{0}"},
+            { ExpressionType.Equal, "{0} == {1}"},
+            { ExpressionType.LessThan, "{0} < {1}"},
+            { ExpressionType.LessThanOrEqual, "{0} <= {1}"},
+            { ExpressionType.GreaterThan, "{0} > {1}"},
+            { ExpressionType.GreaterThanOrEqual, "{0} >= {1}"}
+        };
  
         public static string Type (Type type)
         {
@@ -39,6 +54,11 @@
         public static string Function (MethodInfo method)
         {
             return _functions[method];
+        }
+
+        public static string Operators (ExpressionType et)
+        {
+            return _operators[et];
         }
     }
 }

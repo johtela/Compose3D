@@ -71,13 +71,13 @@
 
         private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
-            var typeAttr = memberType.GetGLAttribute ();
-            if (typeAttr != null && !member.IsBuiltin ())
+            var syntax = GLType (memberType); 
+            if (!member.IsBuiltin ())
             {
                 var qualifiers = member.GetQualifiers ();
                 _code.AppendLine (string.IsNullOrEmpty (qualifiers) ?
-                    string.Format ("{0} {1} {2};", prefix, typeAttr.Syntax, member.Name) :
-                    string.Format ("{0} {1} {2} {3};", qualifiers, prefix, typeAttr.Syntax, member.Name));
+                    string.Format ("{0} {1} {2};", prefix, syntax, member.Name) :
+                    string.Format ("{0} {1} {2} {3};", qualifiers, prefix, syntax, member.Name));
             }
         }
 
@@ -124,26 +124,33 @@
                 _code.Append ("}");
         }
 
-        private static string GLType (Type type)
+        private string GLType (Type type)
         {
             var attr = type.GetGLAttribute ();
             return attr == null ? TypeMapping.Type (type) : attr.Syntax;
         }
 
-        private static string ExprToGLSL (Expression expr)
+        private string NewLocalVar (string name)
+        {
+            return string.Format ("_gen_{0}{1}", name, ++_localVarCount);
+        }
+
+        private string ExprToGLSL (Expression expr)
         {
             var result =
                 expr.Match<BinaryExpression, string> (be =>
                 {
                     var attr = be.Method.GetGLAttribute ();
-                    return attr == null ? null :
-                        string.Format ("("+ attr.Syntax + ")", ExprToGLSL (be.Left), ExprToGLSL (be.Right));
+                    return "(" + string.Format (
+                        attr != null ? attr.Syntax : TypeMapping.Operators (be.NodeType),
+                        ExprToGLSL (be.Left), ExprToGLSL (be.Right)) + ")";
+
                 }) ??
                 expr.Match<UnaryExpression, string> (ue =>
                 {
                     var attr = ue.Method.GetGLAttribute ();
-                    return attr == null ? null :
-                        string.Format (attr.Syntax, ExprToGLSL (ue.Operand));
+                    return string.Format (attr != null ? attr.Syntax : TypeMapping.Operators (ue.NodeType), 
+                        ExprToGLSL (ue.Operand));
                 }) ??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
@@ -169,6 +176,12 @@
                 }) ??
                 expr.Match<ConstantExpression, string> (ce =>
                     string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
+                ) ?? 
+                expr.Match<ConditionalExpression, string> (ce => string.Format ("{0} ? {1} : {2}", 
+                    ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))
+                ) ?? 
+                expr.Match<ParameterExpression, string> (pe => 
+                    pe.Name
                 ) ?? null;
             if (result == null)
                 throw new ArgumentException (string.Format ("Unsupported expression type {0}", expr));
@@ -177,85 +190,100 @@
 
         public bool Declaration (Source source)
         {
-            var le = source.Current.CastExpr<LambdaExpression> (ExpressionType.Lambda);
-            var node = le == null ?
-                source.Current.CastExpr<NewExpression> (ExpressionType.New) :
-                le.Body.CastExpr<NewExpression> (ExpressionType.New);
-            if (node == null)
-                return false;
-            var createdType = node.Constructor.DeclaringType;
+            var arg0 = source.Current.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
+            var arg1 = source.Current.GetSelectLambda ().Body.Expect<NewExpression> (ExpressionType.New);
+            return arg0 != null ?
+                OutputDeclarations (arg0) | OutputDeclarations (arg1) :
+                OutputDeclarations (arg1);
+        }
+
+        private bool OutputDeclarations (NewExpression ne)
+        {
+            var createdType = ne.Constructor.DeclaringType;
             if (!createdType.IsGenericType || createdType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
                 return false;
-            Declarations (node, createdType);
+            Declarations (ne, createdType);
             return true;
         }
 
         public bool LetBinding (Source source)
         {
-            return source.ParseLambda ((_, node) =>
-            {
-                for (int i = 0; i < node.Members.Count; i++)
-                {
-                    var prop = (PropertyInfo)node.Members[i];
-                    if (!prop.Name.StartsWith ("<>"))
-                    {
-                        var type = GLType (prop.PropertyType);
-                        if (Aggregate (node.Arguments[i]))
-                        {
-                            // TODO: something
-                        }
-                        else
-                            _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, 
-                                ExprToGLSL (node.Arguments[i]));
-                    }
-                }
-                return true;
-            });
+            return source.ParseLambda ((_, ne) => OutputLet (ne));
         }
 
-        public bool Aggregate (Expression expr)
+        private bool OutputLet (NewExpression ne)
+        {
+            for (int i = 0; i < ne.Members.Count; i++)
+            {
+                var prop = (PropertyInfo)ne.Members[i];
+                if (!prop.Name.StartsWith ("<>"))
+                {
+                    var type = GLType (prop.PropertyType);
+                    var aggr = Aggregate (ne.Arguments[i]);
+                    if (aggr != null)
+                        _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, aggr);
+                    else
+                    {
+                        var val = ExprToGLSL (ne.Arguments[i]);
+                        if (prop.Name != val)
+                            _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, val);
+                    }
+                }
+            }
+            return true;
+        }
+
+        public string Aggregate (Expression expr)
         {
             var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-            if (node == null)
-                return false;
-            if (!node.Method.IsAggregate ())
-                return false;
-            var loopBody = node.Arguments[0];
+            if (node == null || !node.Method.IsAggregate ())
+                return null;
             var aggrFun = node.Arguments[2].Expect<UnaryExpression> (ExpressionType.Quote).Operand
                 .Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
-            var iterRes = aggrFun.Parameters[1];
+            var iterVar = aggrFun.Parameters[1];
             _code.AppendFormat ("    {0} {1} = {2};\n", GLType(accum.Type), accum.Name, 
                 ExprToGLSL (node.Arguments[1]));
-
-            return true;
+            var se = node.Arguments[0].ExpectSelect ();
+            ForParser ().Execute (new Source (se.Arguments[0].Traverse ()));
+            _code.AppendFormat ("        {0} {1} = {2};\n", GLType (iterVar.Type), iterVar.Name, 
+                ExprToGLSL (se.Arguments[1].ExpectQuotedLambda ().Body));
+            _code.AppendFormat ("        {0} = {1};\n", accum.Name, ExprToGLSL (aggrFun.Body));
+            _code.AppendLine ("    }");
+            return accum.Name;
         }
 
         public bool ForLoop (Source source)
         {
-            return source.ParseLambda ((_, node) =>
-            {
-                var soType = node.Constructor.DeclaringType;
-                if (!soType.IsGenericType || soType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
-                    return false;
-                var elemType = soType.GetGenericArguments()[0];
-                var param = node.Arguments[0];
-                var field = param.Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
-                var attr = field.GetGLArrayAttribute ();
-                if (field == null || attr == null)
-                    throw new ParseException ("Invalid shader object parameter. " +
-                        "Expected field with GLArray attribute. Encountered: " + param);
-                var indexVar = NewLocalVar ("ind");
-                _code.AppendFormat ("    for (int {0} = 0; {0} < {1}; {0}++)\n", indexVar, attr.Length);
-                _code.AppendLine ("    {");
-
-                return true;
-            });
+            var ne = source.Current.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
+            if (ne == null)
+                return false;
+            var soType = ne.Constructor.DeclaringType;
+            if (!soType.IsGenericType || soType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
+                return false;
+            var array = ne.Arguments[0];
+            var field = array.SkipUnary (ExpressionType.Not)
+                .Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
+            var attr = field.GetGLArrayAttribute ();
+            if (field == null || attr == null)
+                throw new ParseException ("Invalid shader object parameter. " +
+                    "Expected field with GLArray attribute. Encountered: " + array);
+            var indexVar = NewLocalVar ("ind");
+            var le = source.Current.GetSelectLambda ();
+            var item = le.Parameters[0];
+            _code.AppendFormat ("    for (int {0} = 0; {0} < {1}; {0}++)\n", indexVar, attr.Length);
+            _code.AppendLine ("    {");
+            _code.AppendFormat ("        {0} {1} = {2}[{3}];\n", GLType (item.Type), item.Name, 
+                ExprToGLSL (array), indexVar);
+            OutputLet (le.Body.Expect<NewExpression> (ExpressionType.New));
+            return true;
         }
 
-        private string NewLocalVar (string name)
+        public Parser ForParser ()
         {
-            return string.Format ("__{0}{1}", name, ++_localVarCount);
+            return Parse.ExactlyOne (ForLoop).IfFail (new ParseException (
+                "Must have exactly one from clause in the beginning of aggregate expression."))
+                .Then (Parse.ZeroOrMore (LetBinding));
         }
 
         public void Return (Expression expr)
@@ -285,8 +313,7 @@
             var mce = expr.ExpectSelect ();
             var parser = ShaderParser ();
             parser.Execute (new Source (mce.Arguments[0].Traverse ()));
-            Return (mce.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
-                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda).Body);
+            Return (mce.Arguments[1].ExpectQuotedLambda ().Body);
             EndMain ();
         }
 

@@ -8,10 +8,10 @@
 
     public class Source
     {
-        private IEnumerator<Expression> _enumerator;
+        private IEnumerator<MethodCallExpression> _enumerator;
         private bool _atEnd;
 
-        public Source (IEnumerable<Expression> e)
+        public Source (IEnumerable<MethodCallExpression> e)
         {
             _enumerator = e.GetEnumerator ();
             _atEnd = !_enumerator.MoveNext ();
@@ -28,7 +28,7 @@
             get { return _atEnd; }
         }
 
-        public Expression Current
+        public MethodCallExpression Current
         {
             get 
             {
@@ -70,20 +70,27 @@
             return res;
         }
 
-        public static IEnumerable<Expression> Traverse (this Expression expr)
+        public static Expression SkipUnary (this Expression expr, ExpressionType et) 
+        {
+            var res = expr.CastExpr<UnaryExpression> (et);
+            return res == null ? expr : res.Operand;
+        }
+
+        public static IEnumerable<MethodCallExpression> Traverse (this Expression expr)
         {
             var mcexpr = expr as MethodCallExpression;
-            if (mcexpr == null)
-                yield return expr;
-            else
+            if (mcexpr != null && mcexpr.Method.IsSelect ())
             {
-                if (!mcexpr.Method.IsSelect ())
-                    throw new ParseException ("Expected a Select or SelectMany call");
                 foreach (var sexpr in mcexpr.Arguments[0].Traverse ())
                     yield return sexpr;
-                yield return mcexpr.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
-                    .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
+                yield return mcexpr;
             }
+        }
+
+        public static LambdaExpression GetSelectLambda (this MethodCallExpression expr)
+        {
+            return expr.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
+                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
         }
 
         public static MethodCallExpression ExpectSelect (this Expression expr)
@@ -92,6 +99,12 @@
             if (!result.Method.IsSelect ())
                 throw new ParseException ("Expected a Select or SelectMany call");
             return result;
+        }
+
+        public static LambdaExpression ExpectQuotedLambda (this Expression expr)
+        {
+            return expr.Expect<UnaryExpression> (ExpressionType.Quote)
+                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
         }
 
         public static bool IsSelect (this MethodInfo mi)
@@ -110,7 +123,7 @@
 
         public static bool ParseLambda (this Source source, Func<LambdaExpression, NewExpression, bool> func)
         {
-            var lambdaExpr = source.Current.CastExpr<LambdaExpression> (ExpressionType.Lambda);
+            var lambdaExpr = source.Current.GetSelectLambda ();
             if (lambdaExpr == null)
                 return false;
             var newExpr = lambdaExpr.Body.CastExpr<NewExpression> (ExpressionType.New);
@@ -173,6 +186,11 @@
                 if (res) action ();
                 return res;
             };
+        }
+
+        public static Parser SkipOne ()
+        {
+            return ExactlyOne (source => true);
         }
 
         public static void Execute (this Parser parser, Source source)

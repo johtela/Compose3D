@@ -125,13 +125,13 @@
                             let attenuation = 1f / 
                                 ((sp.linearAttenuation * dist) + (sp.quadraticAttenuation * dist * dist))
                             let cosAngle = -lightDir.Dot (sp.direction)
-                            select cosAngle < sp.cosSpotCutoff ? 
-                                0f : attenuation *  cosAngle.Pow (sp.spotExponent))
-                            .Aggregate (0f, (r, i) => r + i)
+                            select sp.intensity * (cosAngle < sp.cosSpotCutoff ? 
+                                0f : attenuation *  cosAngle.Pow (sp.spotExponent)))
+                            .Aggregate (new Vec3 (0f), (r, i) => r + i)
                 select new Fragment ()
                 {   
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                    theColor = v.color * (ambient + diffuse).Clamp (0f, 1f)
+                    theColor = v.color * (ambient + diffuse + new Vec4 (spot, 0f)).Clamp (0f, 1f)
                 });
         }
 

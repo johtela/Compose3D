@@ -15,6 +15,7 @@
         private bool _mainDefined;
         private HashSet<Type> _structsDefined;
         private int _localVarCount;
+        private int _tabLevel;
 
         private ShaderBuilder ()
         {
@@ -29,6 +30,24 @@
             builder.Shader (shader.Expression);
             return builder._code.ToString ();
         }
+        
+        private string Tabs ()
+        {
+            var sb = new StringBuilder ();
+            for (int i = 0; i < _tabLevel; i++)
+                sb.Append ("    ");
+            return sb.ToString ();
+        }
+
+        private void CodeOut (string code)
+        {
+            _code.AppendLine (Tabs () + code);
+        }
+
+        private void CodeOut (string code, params object[] args)
+        {
+            _code.AppendFormat (Tabs () + code + "\n", args);
+        }
 
         private void OutputStruct (Type structType)
         {
@@ -38,10 +57,10 @@
                     if (field.FieldType.IsGLStruct ())
                         OutputStruct (field.FieldType);
                 _structsDefined.Add (structType);
-                _code.AppendFormat ("struct {0}\n{{\n", structType.Name);
+                CodeOut ("struct {0}\n{{", structType.Name);
                 foreach (var field in structType.GetGLFields ())
-                    DeclareVariable (field, field.FieldType, "   ");
-                _code.AppendLine ("};");
+                    DeclareVariable (field, field.FieldType, "    ");
+                CodeOut ("};");
             }
         }
 
@@ -64,7 +83,7 @@
                     throw new ArgumentException ("Unsupported uniform type: " + uniType.Name);
                 if (glAttr is GLStruct)
                     OutputStruct (uniType);
-                _code.AppendFormat ("uniform {0} {1}{2};\n", glAttr.Syntax, field.Name, 
+                CodeOut ("uniform {0} {1}{2};", glAttr.Syntax, field.Name, 
                     arrayLen > 0 ? "[" + arrayLen + "]" : "");
             }
         }
@@ -75,7 +94,7 @@
             if (!member.IsBuiltin ())
             {
                 var qualifiers = member.GetQualifiers ();
-                _code.AppendLine (string.IsNullOrEmpty (qualifiers) ?
+                CodeOut (string.IsNullOrEmpty (qualifiers) ?
                     string.Format ("{0} {1} {2};", prefix, syntax, member.Name) :
                     string.Format ("{0} {1} {2} {3};", qualifiers, prefix, syntax, member.Name));
             }
@@ -112,8 +131,9 @@
         {
             if (!_mainDefined)
             {
-                _code.AppendLine ("void main ()");
-                _code.AppendLine ("{");
+                CodeOut ("void main ()");
+                CodeOut ("{");
+                _tabLevel++;
                 _mainDefined = true;
             }
         }
@@ -121,7 +141,10 @@
         private void EndMain ()
         {
             if (_mainDefined)
-                _code.Append ("}");
+            {
+                _tabLevel--;
+                CodeOut ("}");
+            }
         }
 
         private string GLType (Type type)
@@ -177,7 +200,7 @@
                 expr.Match<ConstantExpression, string> (ce =>
                     string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
                 ) ?? 
-                expr.Match<ConditionalExpression, string> (ce => string.Format ("{0} ? {1} : {2}", 
+                expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
                     ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))
                 ) ?? 
                 expr.Match<ParameterExpression, string> (pe => 
@@ -221,12 +244,12 @@
                     var type = GLType (prop.PropertyType);
                     var aggr = Aggregate (ne.Arguments[i]);
                     if (aggr != null)
-                        _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, aggr);
+                        CodeOut ("{0} {1} = {2};", type, prop.Name, aggr);
                     else
                     {
                         var val = ExprToGLSL (ne.Arguments[i]);
                         if (prop.Name != val)
-                            _code.AppendFormat ("    {0} {1} = {2};\n", type, prop.Name, val);
+                            CodeOut ("{0} {1} = {2};", type, prop.Name, val);
                     }
                 }
             }
@@ -242,14 +265,15 @@
                 .Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
-            _code.AppendFormat ("    {0} {1} = {2};\n", GLType(accum.Type), accum.Name, 
+            CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
                 ExprToGLSL (node.Arguments[1]));
             var se = node.Arguments[0].ExpectSelect ();
             ForParser ().Execute (new Source (se.Arguments[0].Traverse ()));
-            _code.AppendFormat ("        {0} {1} = {2};\n", GLType (iterVar.Type), iterVar.Name, 
+            CodeOut ("{0} {1} = {2};", GLType (iterVar.Type), iterVar.Name, 
                 ExprToGLSL (se.Arguments[1].ExpectQuotedLambda ().Body));
-            _code.AppendFormat ("        {0} = {1};\n", accum.Name, ExprToGLSL (aggrFun.Body));
-            _code.AppendLine ("    }");
+            CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
+            _tabLevel--;
+            CodeOut ("}");
             return accum.Name;
         }
 
@@ -271,9 +295,10 @@
             var indexVar = NewLocalVar ("ind");
             var le = source.Current.GetSelectLambda ();
             var item = le.Parameters[0];
-            _code.AppendFormat ("    for (int {0} = 0; {0} < {1}; {0}++)\n", indexVar, attr.Length);
-            _code.AppendLine ("    {");
-            _code.AppendFormat ("        {0} {1} = {2}[{3}];\n", GLType (item.Type), item.Name, 
+            CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, attr.Length);
+            CodeOut ("{");
+            _tabLevel++;
+            CodeOut ("{0} {1} = {2}[{3}];", GLType (item.Type), item.Name, 
                 ExprToGLSL (array), indexVar);
             OutputLet (le.Body.Expect<NewExpression> (ExpressionType.New));
             return true;
@@ -295,7 +320,7 @@
                 if (mie == null)
                     throw new ParseException ("Unsupported shader expression: " + expr);
                 foreach (MemberAssignment assign in mie.Bindings)
-                    _code.AppendFormat ("    {0} = {1};\n", assign.Member.Name, ExprToGLSL (assign.Expression));
+                    CodeOut ("{0} = {1};", assign.Member.Name, ExprToGLSL (assign.Expression));
             }
             else
             {
@@ -303,7 +328,7 @@
                 {
                     var prop = (PropertyInfo)ne.Members[i];
                     if (!prop.Name.StartsWith ("<>"))
-                        _code.AppendFormat ("    {0} = {1};\n", prop.Name, ExprToGLSL (ne.Arguments[i]));
+                        CodeOut ("{0} = {1};", prop.Name, ExprToGLSL (ne.Arguments[i]));
                 }
             }
         }
@@ -311,8 +336,13 @@
         public void Shader (Expression expr)
         {
             var mce = expr.ExpectSelect ();
-            var parser = ShaderParser ();
-            parser.Execute (new Source (mce.Arguments[0].Traverse ()));
+            var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
+            if (ne != null)
+            {
+                OutputDeclarations (ne);
+                StartMain ();
+            } else
+                ShaderParser ().Execute (new Source (mce.Arguments[0].Traverse ()));
             Return (mce.Arguments[1].ExpectQuotedLambda ().Body);
             EndMain ();
         }

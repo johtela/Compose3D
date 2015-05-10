@@ -29,16 +29,35 @@
         private Tuple<GLStructField, int>[] _mappings;
         private T _value;
 
+        public Uniform (Program program, FieldInfo field)
+		{
+            if (field.FieldType.GetGenericTypeDefinition () != typeof (Uniform<>))
+                throw new ArgumentException ("Field must be of Uniform<> generic type.");
+            var type = field.FieldType.GetGenericArguments() [0];
+            if (type != typeof (T))
+                throw new ArgumentException ("Field type is different from uniform type.");
+            if (type.IsArray)
+                _mappings = (from elem in type.GetGLArrayElements (field.Name, field.ExpectGLArrayAttribute ().Length)
+                             select Tuple.Create (elem, GetUniformLocation (program, elem.Name)))
+                            .ToArray ();
+            else
+                CreateUniform (program, field.Name, type);
+		}
+
         public Uniform (Program program, string name)
 		{
-            var type = typeof (T);
+            CreateUniform (program, name, typeof (T));
+		}
+
+        private void CreateUniform (Program program, string name, Type type)
+        {
             if (type.IsGLStruct ())
                 _mappings = (from field in type.GetGLStructFields (name + ".")
                              select Tuple.Create (field, GetUniformLocation (program, field.Name)))
                             .ToArray ();
             else
                 _glUniform = GetUniformLocation (program, name);
-		}
+        }
 
         private static int GetUniformLocation (Program program, string name)
         {

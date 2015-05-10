@@ -72,9 +72,7 @@
                 var arrayLen = 0;
                 if (uniType.IsArray)
                 {
-                    var arrAttr = field.GetGLArrayAttribute ();
-                    if (arrAttr == null)
-                        throw new ArgumentException ("Missing GLArray attribute for array uniform.");
+                    var arrAttr = field.ExpectGLArrayAttribute ();
                     arrayLen = arrAttr.Length;
                     uniType = uniType.GetElementType ();
                 }
@@ -288,10 +286,10 @@
             var array = ne.Arguments[0];
             var field = array.SkipUnary (ExpressionType.Not)
                 .Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
-            var attr = field.GetGLArrayAttribute ();
-            if (field == null || attr == null)
+            if (field == null)
                 throw new ParseException ("Invalid shader object parameter. " +
-                    "Expected field with GLArray attribute. Encountered: " + array);
+                    "Expected field reference. Encountered: " + array);
+            var attr = field.ExpectGLArrayAttribute ();
             var indexVar = NewLocalVar ("ind");
             var le = source.Current.GetSelectLambda ();
             var item = le.Parameters[0];

@@ -41,9 +41,12 @@
             return GetAttribute<GLAttribute> (mi);
         }
 
-        public static GLArrayAttribute GetGLArrayAttribute (this FieldInfo fi)
+        public static GLArrayAttribute ExpectGLArrayAttribute (this FieldInfo fi)
         {
-            return GetAttribute<GLArrayAttribute> (fi);
+            var res = GetAttribute<GLArrayAttribute> (fi);
+            if (res == null)
+                throw new ArgumentException ("Missing GLArray attribute for array.");
+            return res;
         }
 
         public static bool IsGLType (this Type type)
@@ -84,19 +87,39 @@
                    select field;
         }
 
+        private static void GetArrayFields (Type type, Expression expression, ParameterExpression parameter,
+            IList<GLStructField> fields, string prefix, int arrayLen)
+        {
+            for (int i = 0; i < arrayLen; i++)
+            {
+                var elemType = type.GetElementType ();
+                var arrayExpr = Expression.ArrayAccess (expression, Expression.Constant (i));
+                if (elemType.IsGLStruct ())
+                    GetStructFields (elemType, arrayExpr, parameter, fields, 
+                        string.Format ("{0}[{1}].", prefix, i));
+                else
+                    fields.Add (new GLStructField (string.Format ("{0}[{1}]", prefix, i),
+                        elemType, Expression.Lambda<Func<object, object>> (
+                        Expression.Convert(arrayExpr, typeof (object)), parameter).Compile ()));
+            }
+        }
+
         private static void GetStructFields (Type type, Expression expression, ParameterExpression parameter,
             IList<GLStructField> fields, string prefix)
         {
             foreach (var field in type.GetGLFields ())
             {
                 var fieldType = field.FieldType;
-                var expr = Expression.Field (expression, field);
+                var fieldExpr = Expression.Field (expression, field);
                 if (fieldType.IsGLStruct ())
-                    GetStructFields (fieldType, expr, parameter, fields, prefix + field.Name + ".");
+                    GetStructFields (fieldType, fieldExpr, parameter, fields, prefix + field.Name + ".");
+                else if (fieldType.IsArray)
+                    GetArrayFields (fieldType, fieldExpr, parameter, fields, prefix + field.Name, 
+                        field.ExpectGLArrayAttribute ().Length);
                 else
-                    fields.Add (new GLStructField (prefix + field.Name, fieldType, 
+                    fields.Add (new GLStructField (prefix + field.Name, fieldType,
                         Expression.Lambda<Func<object, object>> (
-                        Expression.Convert(expr, typeof (object)), parameter).Compile ()));
+                        Expression.Convert (fieldExpr, typeof (object)), parameter).Compile ()));
             }
         }
 
@@ -108,6 +131,19 @@
                 result = new List<GLStructField> ();
                 var expression = Expression.Parameter (typeof (object), "obj");
                 GetStructFields (type, Expression.Convert (expression, type), expression, result, prefix);
+                _structFields.Add (type, result);
+            }
+            return result;
+        }
+
+        public static IEnumerable<GLStructField> GetGLArrayElements (this Type type, string prefix, int arrayLen)
+        {
+            IList<GLStructField> result;
+            if (!_structFields.TryGetValue (type, out result))
+            {
+                result = new List<GLStructField> ();
+                var expression = Expression.Parameter (typeof (object), "obj");
+                GetArrayFields (type, Expression.Convert (expression, type), expression, result, prefix, arrayLen);
                 _structFields.Add (type, result);
             }
             return result;

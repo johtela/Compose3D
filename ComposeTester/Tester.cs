@@ -131,7 +131,7 @@
                 select new Fragment ()
                 {   
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                    theColor = v.color * (ambient + diffuse + new Vec4 (spot, 0f)).Clamp (0f, 1f)
+                    theColor = v.color * (ambient + diffuse).Clamp (0f, 1f)
                 });
         }
 

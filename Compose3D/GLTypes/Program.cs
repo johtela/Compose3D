@@ -44,7 +44,7 @@
         public void InitializeUniforms<U> (U uniforms) where U : class
         {
             foreach (var field in typeof (U).GetUniforms ())
-                field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field.Name));
+                field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field));
         }
 
 		public void DrawVertexBuffer<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex

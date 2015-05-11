@@ -9,6 +9,7 @@
     using OpenTK.Graphics.OpenGL;
     using OpenTK.Input;
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
 
@@ -101,11 +102,11 @@
         private Geometry<Vertex> CreateGeometry ()
         {
             var cube1 = Cube.Create<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f)
-                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+                .Material (Material.RepeatColors (Color.Random));
             var cube2 = Cube.Create<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f)
-                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+                .Material (Material.RepeatColors (Color.Random));
             var cube3 = Cube.Create<Vertex> (1f, 1f, 2f)
-                .Material (Material.RepeatColors (Color.Random, Color.White, Color.Random));
+                .Material (Material.RepeatColors (Color.Random));
             return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
         }
 
@@ -131,7 +132,7 @@
                 select new Fragment ()
                 {   
                     gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                    theColor = v.color * (ambient + diffuse).Clamp (0f, 1f)
+                    theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
                 });
         }
 

@@ -93,6 +93,12 @@
 			return new Vec2 (X.Clamp (min, max), Y.Clamp (min, max));
 		}
 
+		[GLFunction ("reflect ({0})")]
+		public Vec2 Reflect (Vec2 along)
+		{
+			return Subtract (along.Multiply (2 * Dot (along)));
+		}
+
 		public bool Equals (Vec2 other)
 		{
 			return X == other.X && Y == other.Y;
@@ -134,6 +140,7 @@
 				this[(int)y] = value.Y; 
 			}
 		}
+
 
 		public float LengthSquared
 		{

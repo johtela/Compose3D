@@ -99,6 +99,12 @@
 			return new Vec3 (X.Clamp (min, max), Y.Clamp (min, max), Z.Clamp (min, max));
 		}
 
+		[GLFunction ("reflect ({0})")]
+		public Vec3 Reflect (Vec3 along)
+		{
+			return Subtract (along.Multiply (2 * Dot (along)));
+		}
+
 		public bool Equals (Vec3 other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
@@ -153,6 +159,7 @@
 				this[(int)y] = value.Y; 
 			}
 		}
+
 
 		public float LengthSquared
 		{

@@ -231,8 +231,7 @@
 			{
 				// Shrinking phase.
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.Write ("Falsifiable after {1} tests. Shrinking input.",
-					state.Label, state.SuccessfulTests + 1);
+				Console.Write ("Falsifiable after {0} tests. Shrinking input.", state.SuccessfulTests + 1);
 				state = new TestState (TestPhase.StartShrink, seed, size, state.Values,
 					new List<List<object>> ());
 				Test (testProp, 1, state);

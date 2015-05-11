@@ -35,12 +35,19 @@ namespace Compose3D.Arithmetics
 		[GLFunction ("dot ({0})")]
 <#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
 		[GLFunction ("clamp ({0})")]
-<#+		Scalar2 (dim, vecType, type, "Clamp", "{0}.Clamp ({1}, {2})", "min", "max", ", ");
-		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
+<#+		Scalar2 (dim, vecType, type, "Clamp", "{0}.Clamp ({1}, {2})", "min", "max", ", ");#>
+		[GLFunction ("reflect ({0})")]
+		public <#= vecType #> Reflect (<#= vecType #> along)
+		{
+			return Subtract (along.Multiply (2 * Dot (along)));
+		}
+
+<#+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
 		Indexer(dim, type); 
 	    for (int i = dim; i > 1; i--)
 			Swizzler(i, type, suffix);
 #>
+
 		public <#= type #> LengthSquared
 		{
 			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }

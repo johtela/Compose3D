@@ -24,7 +24,7 @@
 			GL.ShaderSource (_glShader, source);
 			GL.CompileShader (_glShader);
 			var log = GL.GetShaderInfoLog (_glShader);
-			if (log.Contains ("ERROR"))
+			if (log.ToUpper ().Contains ("ERROR"))
 				throw new GLError (string.Format ("Shader compilation error:\n{0}", log));
 		}
 

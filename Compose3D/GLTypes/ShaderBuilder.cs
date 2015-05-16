@@ -19,7 +19,7 @@
 
         private ShaderBuilder ()
         {
-            _code = new StringBuilder ("#version 330\n");
+			_code = new StringBuilder ("#version 300 es\nprecision highp float;\n");
             _structsDefined = new HashSet<Type> ();
         }
 
@@ -81,7 +81,7 @@
                     throw new ArgumentException ("Unsupported uniform type: " + uniType.Name);
                 if (glAttr is GLStruct)
                     OutputStruct (uniType);
-                CodeOut ("uniform {0} {1}{2};", glAttr.Syntax, field.Name, 
+				CodeOut ("uniform {0} {1}{2};", glAttr.Syntax, field.Name, 
                     arrayLen > 0 ? "[" + arrayLen + "]" : "");
             }
         }
@@ -196,7 +196,7 @@
                         string.Format (attr.Syntax, ne.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
                 expr.Match<ConstantExpression, string> (ce =>
-                    string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
+						string.Format (CultureInfo.InvariantCulture, "{0}{1}", ce.Value, ce.Type == typeof(float) ? "f" : "")
                 ) ?? 
                 expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
                     ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))

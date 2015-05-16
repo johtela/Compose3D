@@ -22,7 +22,7 @@
 				GL.AttachShader (_glProgram, shader._glShader);
 			GL.LinkProgram (_glProgram);
 			var log = GL.GetProgramInfoLog (_glProgram);
-			if (log.Contains ("ERROR"))
+			if (log.ToUpper ().Contains ("ERROR"))
 				throw new GLError (string.Format ("Program linking error:\n{0}", log));
 			GL.UseProgram (_glProgram);
             GC.Collect ();

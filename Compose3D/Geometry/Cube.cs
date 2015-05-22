@@ -6,7 +6,7 @@
     using System.Collections.Generic;
 
 	[Flags]
-	public enum CubeFace
+	public enum CubeFaces
 	{
 		Front = 1,
 		Back = 2,
@@ -19,7 +19,7 @@
 	
 	public static class Cube
 	{
-		private static IEnumerable<Geometry<V>> GetFaces<V> (float width, float height, float depth, CubeFace faces) 
+		private static IEnumerable<Geometry<V>> GetFaces<V> (float width, float height, float depth, CubeFaces faces) 
 			where V : struct, IVertex
 		{
 			var right = width / 2f;
@@ -29,15 +29,15 @@
 			var front = depth / 2f;
 			var back = -front;
 
-			if (faces.HasFlag (CubeFace.Front)) yield return FrontFace<V> (width, height, front);
-			if (faces.HasFlag (CubeFace.Back)) yield return BackFace<V> (width, height, back);
-			if (faces.HasFlag (CubeFace.Top)) yield return TopFace<V> (width, depth, top);
-			if (faces.HasFlag (CubeFace.Bottom)) yield return BottomFace<V> (width, depth, bottom);
-			if (faces.HasFlag (CubeFace.Left)) yield return LeftFace<V> (depth, height, left);
-			if (faces.HasFlag (CubeFace.Right)) yield return RightFace<V> (depth, height, right);
+			if (faces.HasFlag (CubeFaces.Front)) yield return FrontFace<V> (width, height, front);
+			if (faces.HasFlag (CubeFaces.Back)) yield return BackFace<V> (width, height, back);
+			if (faces.HasFlag (CubeFaces.Top)) yield return TopFace<V> (width, depth, top);
+			if (faces.HasFlag (CubeFaces.Bottom)) yield return BottomFace<V> (width, depth, bottom);
+			if (faces.HasFlag (CubeFaces.Left)) yield return LeftFace<V> (depth, height, left);
+			if (faces.HasFlag (CubeFaces.Right)) yield return RightFace<V> (depth, height, right);
 		}
 
-		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFace faces) 
+		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFaces faces) 
 			where V : struct, IVertex
 		{
 			return Composite.Create<V> (GetFaces<V> (width, height, depth, faces));
@@ -45,7 +45,7 @@
 
 		public static Geometry<V> Create<V> (float width, float height, float depth) where V : struct, IVertex
 		{
-			return Create<V> (width, height, depth, CubeFace.All);
+			return Create<V> (width, height, depth, CubeFaces.All);
 		}
 
 		public static Geometry<V> FrontFace<V> (float width, float height, float offset) where V : struct, IVertex

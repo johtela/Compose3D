@@ -8,6 +8,7 @@
     using System.Collections.Generic;
     using System.Text;
     using System.Globalization;
+	using Compose3D;
 
     public class ShaderBuilder
     {
@@ -30,6 +31,15 @@
             builder.Shader (shader.Expression);
             return builder._code.ToString ();
         }
+
+		public static string CreateFunction<TPar, TRes> (string name, IQueryable<TRes> body)
+		{
+			var builder = new ShaderBuilder ();
+			builder.StartFunction (name, typeof (TPar), typeof(TRes));
+			builder.FunctionBody (body.Expression);
+			builder.EndFunction ();
+			return builder._code.ToString ();
+		}
         
         private string Tabs ()
         {
@@ -125,6 +135,27 @@
             }
         }
 
+		private string FunctionParams (Type parType)
+		{
+			if (parType.IsValueType)
+				return GLType (parType);
+			return (from field in parType.GetGLFields ()
+			        select GLType (field.FieldType)).SeparateWith (", ");
+		}
+
+		private void StartFunction (string name, Type parType, Type resType)
+		{
+			CodeOut ("{0} {1} ({2})", GLType (resType), name, FunctionParams (parType));
+			CodeOut ("{");
+			_tabLevel++;
+		}
+
+		private void EndFunction ()
+		{
+			_tabLevel--;
+			CodeOut ("}");
+		}
+
         private void StartMain ()
         {
             if (!_mainDefined)
@@ -138,11 +169,8 @@
 
         private void EndMain ()
         {
-            if (_mainDefined)
-            {
-                _tabLevel--;
-                CodeOut ("}");
-            }
+			if (_mainDefined)
+				EndFunction ();
         }
 
         private string GLType (Type type)
@@ -352,5 +380,14 @@
             var body = Parse.ZeroOrMore (LetBinding);
             return decl.IfSucceed (StartMain).Then (body);
         }
+
+		public void FunctionBody (Expression expr)
+		{
+			var mce = expr.ExpectSelect ();
+			var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
+			if (ne == null)
+				Parse.ZeroOrMore (LetBinding).Execute (new Source (mce.Arguments[0].Traverse ()));
+			CodeOut ("return " + ExprToGLSL (mce.Arguments[1].ExpectQuotedLambda ().Body));
+		}
     }
 }

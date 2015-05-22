@@ -7,7 +7,7 @@
     using OpenTK.Graphics.OpenGL;
     using System.Collections.Generic;
 
-    public enum ShaderObjectKind { Input, Output, Uniform, Array }
+	public enum ShaderObjectKind { Input, Output, Uniform, Array, FunctionParams }
 
     public class ShaderObject<T> : IQueryable<T>
     {

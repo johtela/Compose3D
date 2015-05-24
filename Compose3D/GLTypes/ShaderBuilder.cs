@@ -12,9 +12,11 @@
 
     public class ShaderBuilder
     {
+		internal static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ();
         private StringBuilder _code;
         private bool _mainDefined;
         private HashSet<Type> _structsDefined;
+		private HashSet<MethodInfo> _funcRefs;
         private int _localVarCount;
         private int _tabLevel;
 
@@ -22,23 +24,35 @@
         {
 			_code = new StringBuilder ("#version 300 es\nprecision highp float;\n");
             _structsDefined = new HashSet<Type> ();
+			_funcRefs = new HashSet<MethodInfo> ();
         }
 
         public static string Execute<T> (IQueryable<T> shader)
         {
             var builder = new ShaderBuilder ();
             builder.DeclareVariables (typeof (T), "out");
-            builder.Shader (shader.Expression);
+            builder.OutputShader (shader.Expression);
+			builder.OutputReferredFunctions ();
             return builder._code.ToString ();
         }
 
-		public static string CreateFunction<TPar, TRes> (string name, IQueryable<TRes> body)
+		public static void CreateFunction<TPar, TRes> (MethodInfo mi, IQueryable<TRes> body)
 		{
+			if (_functions.ContainsKey (mi))
+				throw new ArgumentException ("Function already declared", "mi");
+			if (!mi.IsStatic)
+				throw new ArgumentException ("Function method must be static", "mi");
 			var builder = new ShaderBuilder ();
-			builder.StartFunction (name, typeof (TPar), typeof(TRes));
+			builder.StartFunction (mi.Name, typeof (TPar), typeof(TRes));
 			builder.FunctionBody (body.Expression);
 			builder.EndFunction ();
-			return builder._code.ToString ();
+			_functions.Add (mi, builder._code.ToString ());
+		}
+
+		private void OutputReferredFunctions ()
+		{
+			foreach (var mi in _funcRefs) 
+				CodeOut ("\n" + _functions[mi]);
 		}
         
         private string Tabs ()
@@ -204,9 +218,18 @@
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
                     var attr = mc.Method.GetGLAttribute ();
-                    if (attr == null) return null;
-                    var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
-                    return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+					if (attr != null) 
+					{
+						var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
+						return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+					}
+					if (_functions.ContainsKey (mc.Method))
+					{
+						_funcRefs.Add (mc.Method);
+						return string.Format ("{0} ({1})", mc.Method.Name,
+							mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+					}
+					return null;
                 }) ??
                 expr.Match<MemberExpression, string> (me =>
                 {
@@ -359,7 +382,7 @@
             }
         }
 
-        public void Shader (Expression expr)
+        public void OutputShader (Expression expr)
         {
             var mce = expr.ExpectSelect ();
             var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);

@@ -11,8 +11,6 @@
 
 	public class Shader
 	{
-		private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ();
-
 		internal int _glShader;
 
 		public Shader (int glShader)
@@ -32,10 +30,7 @@
 
 		public static void DeclareFunction<TPar, TRes> (Func<TPar, TRes> func, IQueryable<TRes> body)
 		{
-			var mi = func.Method;
-			if (_functions.ContainsKey (mi))
-				throw new ArgumentException ("Function already declared", "func");
-			_functions.Add (mi, ShaderBuilder.CreateFunction<TPar, TRes> (mi.Name, body));
+			ShaderBuilder.CreateFunction<TPar, TRes> (func.Method, body);
 		}
 
         public static Shader FromFile (ShaderType type, string path)

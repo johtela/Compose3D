@@ -65,6 +65,11 @@
             return mi.IsDefined (typeof (BuiltinAttribute), true);
         }
 
+		public static bool IsDeclaration (this MethodInfo mi)
+		{
+			return mi.IsDefined (typeof (DeclarationAttribute), true);
+		}
+
         public static bool IsGLStruct (this Type type)
         {
             return type.IsDefined (typeof (GLStruct), true);

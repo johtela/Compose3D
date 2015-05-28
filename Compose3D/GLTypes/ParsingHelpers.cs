@@ -89,8 +89,7 @@
 
         public static LambdaExpression GetSelectLambda (this MethodCallExpression expr)
         {
-            return expr.Arguments[1].Expect<UnaryExpression> (ExpressionType.Quote)
-                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
+			return expr.Arguments[1].ExpectLambda ();
         }
 
         public static MethodCallExpression ExpectSelect (this Expression expr)
@@ -101,20 +100,20 @@
             return result;
         }
 
-        public static LambdaExpression ExpectQuotedLambda (this Expression expr)
+        public static LambdaExpression ExpectLambda (this Expression expr)
         {
-            return expr.Expect<UnaryExpression> (ExpressionType.Quote)
-                .Operand.Expect<LambdaExpression> (ExpressionType.Lambda);
+            return expr.Expect<LambdaExpression> (ExpressionType.Lambda);
         }
 
         public static bool IsSelect (this MethodInfo mi)
         {
-            return mi.DeclaringType == typeof (Queryable) && (mi.Name == "Select" || mi.Name == "SelectMany");
+			return (mi.DeclaringType == typeof (Shader) || mi.DeclaringType == typeof (Enumerable))
+				&& (mi.Name == "Select" || mi.Name == "SelectMany");
         }
 
         public static bool IsAggregate (this MethodInfo mi)
         {
-            if (mi.DeclaringType != typeof (Queryable) || mi.Name != "Aggregate")
+			if (mi.DeclaringType != typeof (Enumerable) || mi.Name != "Aggregate")
                 return false;
             if (mi.GetGenericArguments ().Length != 2)
                 throw new ParseException ("The only supported overload of Aggregate is one containing two generic parameters.");

@@ -1,48 +1,55 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using OpenTK.Graphics.OpenGL;
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
+	using System;
+	using System.Linq;
+	using System.Linq.Expressions;
+	using System.Reflection;
+	using OpenTK.Graphics.OpenGL;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Globalization;
 
-	public class Shader
+	public delegate T Shader<T> (ShaderState state); 
+
+	public static class Shader
 	{
-		internal int _glShader;
-
-		public Shader (int glShader)
+		public static Shader<T> ToShader<T> (this T value)
 		{
-			_glShader = glShader;
+			return state => value;
 		}
 
-		public Shader (ShaderType type, string source)
+		public static Shader<U> Bind<T, U> (this Shader<T> shader, Func<T, Shader<U>> func)
 		{
-			_glShader = GL.CreateShader (type);
-			GL.ShaderSource (_glShader, source);
-			GL.CompileShader (_glShader);
-			var log = GL.GetShaderInfoLog (_glShader);
-			if (log.ToUpper ().Contains ("ERROR"))
-				throw new GLError (string.Format ("Shader compilation error:\n{0}", log));
+			return state => func (shader (state)) (state);
 		}
 
-		public static void DeclareFunction<TPar, TRes> (Func<TPar, TRes> func, IQueryable<TRes> body)
+		public static T Execute<T> (this Shader<T> shader, ShaderState state)
 		{
-			ShaderBuilder.CreateFunction<TPar, TRes> (func.Method, body);
+			return shader (state);
 		}
 
-        public static Shader FromFile (ShaderType type, string path)
-        {
-            return new Shader (type, File.ReadAllText (path));
-        }
+		[Declaration]
+		public static Shader<T> Inputs<T> ()
+		{
+			return state => state.Inputs<T> ();
+		}
 
-        public static Shader Create<T> (ShaderType type, IQueryable<T> shader)
-        {
-            var source = ShaderBuilder.Execute (shader);
-            Console.WriteLine(source);
-            return new Shader (type, source);
-        }
-    }
+		[Declaration]
+		public static Shader<T> Uniforms<T> ()
+		{
+			return state => state.Uniforms<T> ();
+		}
+
+		public static Shader<U> Select<T, U> (this Shader<T> shader, Func<T, U> select)
+		{
+			return shader.Bind (a => select (a).ToShader ());
+		}
+
+		public static Shader<V> SelectMany<T, U, V> (this Shader<T> shader,
+			Func<T, Shader<U>> project, Func<T, U, V> select)
+		{
+			return shader.Bind (a => project (a).Bind (b => select (a, b).ToShader ()));
+		}
+
+	}
 }

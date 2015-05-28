@@ -15,7 +15,7 @@
 			_glProgram = glProgram;
 		}
 
-		public Program (params Shader[] shaders)
+		public Program (params GLShader[] shaders)
 		{
 			_glProgram = GL.CreateProgram ();
 			foreach (var shader in shaders)

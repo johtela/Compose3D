@@ -6,6 +6,9 @@
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
 
+	[AttributeUsage (AttributeTargets.Method)]
+	public class DeclarationAttribute : Attribute { }
+
     [AttributeUsage (AttributeTargets.Field)]
     public class GLQualifierAttribute : Attribute
     {

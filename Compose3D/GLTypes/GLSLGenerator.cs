@@ -10,7 +10,7 @@
     using System.Globalization;
 	using Compose3D;
 
-    public class ShaderBuilder
+	public class GLSLGenerator
     {
 		internal static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ();
         private StringBuilder _code;
@@ -20,31 +20,31 @@
         private int _localVarCount;
         private int _tabLevel;
 
-        private ShaderBuilder ()
+		private GLSLGenerator ()
         {
 			_code = new StringBuilder ("#version 300 es\nprecision highp float;\n");
             _structsDefined = new HashSet<Type> ();
 			_funcRefs = new HashSet<MethodInfo> ();
         }
 
-        public static string Execute<T> (IQueryable<T> shader)
+		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
         {
-            var builder = new ShaderBuilder ();
+			var builder = new GLSLGenerator ();
             builder.DeclareVariables (typeof (T), "out");
-            builder.OutputShader (shader.Expression);
+            builder.OutputShader (shader);
 			builder.OutputReferredFunctions ();
             return builder._code.ToString ();
         }
 
-		public static void CreateFunction<TPar, TRes> (MethodInfo mi, IQueryable<TRes> body)
+		public static void CreateFunction (MethodInfo mi, Expression body)
 		{
 			if (_functions.ContainsKey (mi))
 				throw new ArgumentException ("Function already declared", "mi");
 			if (!mi.IsStatic)
 				throw new ArgumentException ("Function method must be static", "mi");
-			var builder = new ShaderBuilder ();
-			builder.StartFunction (mi.Name, typeof (TPar), typeof(TRes));
-			builder.FunctionBody (body.Expression);
+			var builder = new GLSLGenerator ();
+			builder.StartFunction (mi.Name, mi.ReturnType, mi.GetParameters ().Select (p => p.ParameterType));
+			builder.FunctionBody (body);
 			builder.EndFunction ();
 			_functions.Add (mi, builder._code.ToString ());
 		}
@@ -132,34 +132,20 @@
                     DeclareVariable (field, field.FieldType, prefix);
         }
 
-        private void Declarations (NewExpression node, Type type)
+		private void Declarations (MethodCallExpression node)
         {
-            var soType = type.GetGenericArguments ().Single ();
-            var soKind = (ShaderObjectKind)((ConstantExpression)node.Arguments.First ()).Value;
-            switch (soKind)
-            {
-                case ShaderObjectKind.Input:
-                    DeclareVariables (soType, "in");
-                    break;
-                case ShaderObjectKind.Uniform:
-                    DeclareUniforms (soType);
-                    break;
-                default:
-                    throw new ArgumentException ("Unsupported shader object kind.", soKind.ToString ());
-            }
+			var type = node.Method.GetGenericArguments () [0];
+			if (node.Method.Name == "Inputs")
+				DeclareVariables (type, "in");
+			else if (node.Method.Name == "Uniforms")
+				DeclareUniforms (type);
+			else
+				throw new ArgumentException ("Unknown declaration method.", node.Method.ToString ());
         }
 
-		private string FunctionParams (Type parType)
+		private void StartFunction (string name, Type resType, IEnumerable<Type> parTypes)
 		{
-			if (parType.IsValueType)
-				return GLType (parType);
-			return (from field in parType.GetGLFields ()
-			        select GLType (field.FieldType)).SeparateWith (", ");
-		}
-
-		private void StartFunction (string name, Type parType, Type resType)
-		{
-			CodeOut ("{0} {1} ({2})", GLType (resType), name, FunctionParams (parType));
+			CodeOut ("{0} {1} ({2})", GLType (resType), name, parTypes.Select (GLType).SeparateWith (", "));
 			CodeOut ("{");
 			_tabLevel++;
 		}
@@ -260,22 +246,22 @@
             return result;
         }
 
+		private MethodCallExpression CastDeclaration (Expression expr)
+		{
+			var me = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
+			return  me != null && me.Method.IsDeclaration () ? me : null;
+		}
+
         public bool Declaration (Source source)
         {
-            var arg0 = source.Current.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
-            var arg1 = source.Current.GetSelectLambda ().Body.Expect<NewExpression> (ExpressionType.New);
-            return arg0 != null ?
-                OutputDeclarations (arg0) | OutputDeclarations (arg1) :
-                OutputDeclarations (arg1);
-        }
-
-        private bool OutputDeclarations (NewExpression ne)
-        {
-            var createdType = ne.Constructor.DeclaringType;
-            if (!createdType.IsGenericType || createdType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
-                return false;
-            Declarations (ne, createdType);
-            return true;
+			var arg1 = CastDeclaration (source.Current.GetSelectLambda ().Body);
+			if (arg1 == null)
+				return false;
+			var arg0 = CastDeclaration (source.Current.Arguments[0]);
+			if (arg0 != null)
+				Declarations (arg0);
+			Declarations (arg1);
+			return true;
         }
 
         public bool LetBinding (Source source)
@@ -310,8 +296,7 @@
             var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
             if (node == null || !node.Method.IsAggregate ())
                 return null;
-            var aggrFun = node.Arguments[2].Expect<UnaryExpression> (ExpressionType.Quote).Operand
-                .Expect<LambdaExpression> (ExpressionType.Lambda);
+            var aggrFun = node.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
             CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
@@ -319,7 +304,7 @@
             var se = node.Arguments[0].ExpectSelect ();
             ForParser ().Execute (new Source (se.Arguments[0].Traverse ()));
             CodeOut ("{0} {1} = {2};", GLType (iterVar.Type), iterVar.Name, 
-                ExprToGLSL (se.Arguments[1].ExpectQuotedLambda ().Body));
+                ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
             CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
@@ -328,18 +313,12 @@
 
         public bool ForLoop (Source source)
         {
-            var ne = source.Current.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
-            if (ne == null)
-                return false;
-            var soType = ne.Constructor.DeclaringType;
-            if (!soType.IsGenericType || soType.GetGenericTypeDefinition () != typeof (ShaderObject<>))
-                return false;
-            var array = ne.Arguments[0];
+			var array = source.Current.Arguments[0];
             var field = array.SkipUnary (ExpressionType.Not)
                 .Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
             if (field == null)
-                throw new ParseException ("Invalid shader object parameter. " +
-                    "Expected field reference. Encountered: " + array);
+				throw new ParseException ("Invalid array expression. " +
+					"Expected uniform field reference. Encountered: " + array);
             var attr = field.ExpectGLArrayAttribute ();
             var indexVar = NewLocalVar ("ind");
             var le = source.Current.GetSelectLambda ();
@@ -382,17 +361,17 @@
             }
         }
 
-        public void OutputShader (Expression expr)
+		public void OutputShader (LambdaExpression expr)
         {
-            var mce = expr.ExpectSelect ();
-            var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
-            if (ne != null)
+			var mce = expr.Body.ExpectSelect ();
+			var me = CastDeclaration (mce.Arguments[0]);
+			if (me != null)
             {
-                OutputDeclarations (ne);
+				Declarations (me);
                 StartMain ();
             } else
                 ShaderParser ().Execute (new Source (mce.Arguments[0].Traverse ()));
-            Return (mce.Arguments[1].ExpectQuotedLambda ().Body);
+            Return (mce.Arguments[1].ExpectLambda ().Body);
             EndMain ();
         }
 
@@ -410,7 +389,7 @@
 			var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
 			if (ne == null)
 				Parse.ZeroOrMore (LetBinding).Execute (new Source (mce.Arguments[0].Traverse ()));
-			CodeOut ("return " + ExprToGLSL (mce.Arguments[1].ExpectQuotedLambda ().Body));
+			CodeOut ("return " + ExprToGLSL (mce.Arguments[1].ExpectLambda ().Body));
 		}
     }
 }

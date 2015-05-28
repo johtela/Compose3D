@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{515CEF49-ED7F-4EAA-8F64-C62005D8F6D0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -85,12 +83,9 @@
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\Attributes.cs" />
     <Compile Include="GLTypes\GLError.cs" />
-    <Compile Include="GLTypes\ShaderBuilder.cs" />
-    <Compile Include="GLTypes\ShaderObject.cs" />
     <Compile Include="GLTypes\TypeHelpers.cs" />
     <Compile Include="GLTypes\TypeMapping.cs" />
     <Compile Include="GLTypes\Program.cs" />
-    <Compile Include="GLTypes\Shader.cs" />
     <Compile Include="GLTypes\Uniform.cs" />
     <Compile Include="GLTypes\VBO.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
@@ -110,6 +105,10 @@
     <Compile Include="Geometry\Color.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="Geometry\BBox.cs" />
+    <Compile Include="GLTypes\GLShader.cs" />
+    <Compile Include="GLTypes\Shader.cs" />
+    <Compile Include="GLTypes\ShaderState.cs" />
+    <Compile Include="GLTypes\GLSLGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

@@ -110,36 +110,36 @@
             return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
         }
 
-        private Shader VertexShader ()
+        private GLShader VertexShader ()
         {
-            return Shader.Create (ShaderType.VertexShader,
-                from v in new ShaderObject<Vertex> (ShaderObjectKind.Input)
-                from u in new ShaderObject<Uniforms> (ShaderObjectKind.Uniform)
-                let normalizedNormal = (!u.normalMatrix * v.normal).Normalized
-                let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
-                let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
-                let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
-                let spot = (from sp in new ShaderObject<SpotLight> (!u.spotLights)
-                            let vecToLight = sp.position - v.position
-                            let dist = vecToLight.Length
-                            let lightDir = vecToLight.Normalized
-                            let attenuation = 1f / 
-                                ((sp.linearAttenuation * dist) + (sp.quadraticAttenuation * dist * dist))
-                            let cosAngle = -lightDir.Dot (sp.direction)
-                            select sp.intensity * (cosAngle < sp.cosSpotCutoff ? 
-                                0f : attenuation *  cosAngle.Pow (sp.spotExponent)))
-                            .Aggregate (new Vec3 (0f), (r, i) => r + i)
-                select new Fragment ()
-                {   
-                    gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-                    theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
-                });
+			return GLShader.Create (ShaderType.VertexShader, () =>
+				from v in Shader.Inputs<Vertex> ()
+				from u in Shader.Uniforms<Uniforms> ()
+				let normalizedNormal = (!u.normalMatrix * v.normal).Normalized
+				let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
+				let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
+				let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
+				let spot = (from sp in !u.spotLights
+					let vecToLight = sp.position - v.position
+					let dist = vecToLight.Length
+					let lightDir = vecToLight.Normalized
+					let attenuation = 1f / 
+					((sp.linearAttenuation * dist) + (sp.quadraticAttenuation * dist * dist))
+					let cosAngle = -lightDir.Dot (sp.direction)
+					select sp.intensity * (cosAngle < sp.cosSpotCutoff ? 
+						0f : attenuation *  cosAngle.Pow (sp.spotExponent)))
+				.Aggregate (new Vec3 (0f), (r, i) => r + i)
+				select new Fragment ()
+				{   
+					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
+					theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
+				});
         }
 
-        private Shader FragmentShader ()
+        private GLShader FragmentShader ()
         {
-            return Shader.Create (ShaderType.FragmentShader,
-                from f in new ShaderObject<Fragment> (ShaderObjectKind.Input)
+			return GLShader.Create (ShaderType.FragmentShader, () =>
+				from f in Shader.Inputs<Fragment> ()
                 select new { outputColor = f.theColor });
         }
 

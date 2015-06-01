@@ -12,47 +12,47 @@
 
 	public class GLSLGenerator
     {
-		internal static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ();
+		internal static Dictionary<MemberInfo, string> _functions = new Dictionary<MemberInfo, string> ();
         private StringBuilder _code;
         private bool _mainDefined;
+		private int _mainStart;
         private HashSet<Type> _structsDefined;
-		private HashSet<MethodInfo> _funcRefs;
+		private HashSet<MemberInfo> _funcRefs;
         private int _localVarCount;
         private int _tabLevel;
 
-		private GLSLGenerator ()
+		private GLSLGenerator (bool fragment)
         {
-			_code = new StringBuilder ("#version 300 es\nprecision highp float;\n");
+			_code = new StringBuilder (fragment ? "" : "#version 300 es\nprecision highp float;\n");
             _structsDefined = new HashSet<Type> ();
-			_funcRefs = new HashSet<MethodInfo> ();
+			_funcRefs = new HashSet<MemberInfo> ();
         }
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
         {
-			var builder = new GLSLGenerator ();
+			var builder = new GLSLGenerator (false);
             builder.DeclareVariables (typeof (T), "out");
             builder.OutputShader (shader);
-			builder.OutputReferredFunctions ();
+			builder._code.Insert (builder._mainStart, GenerateFunctions (builder._funcRefs));
             return builder._code.ToString ();
         }
 
-		public static void CreateFunction (MethodInfo mi, Expression body)
+		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
-			if (_functions.ContainsKey (mi))
-				throw new ArgumentException ("Function already declared", "mi");
-			if (!mi.IsStatic)
-				throw new ArgumentException ("Function method must be static", "mi");
-			var builder = new GLSLGenerator ();
-			builder.StartFunction (mi.Name, mi.ReturnType, mi.GetParameters ().Select (p => p.ParameterType));
-			builder.FunctionBody (body);
-			builder.EndFunction ();
-			_functions.Add (mi, builder._code.ToString ());
+			var builder = new GLSLGenerator (true);
+			builder.OutputFunction (member.Name, expr);
+			_functions.Add (member, builder._code.ToString ());
 		}
 
-		private void OutputReferredFunctions ()
+		public static string GenerateFunctions (HashSet<MemberInfo> functions)
 		{
-			foreach (var mi in _funcRefs) 
-				CodeOut ("\n" + _functions[mi]);
+			if (functions.Count == 0)
+				return "";
+			var sb = new StringBuilder ();
+			sb.AppendLine ();
+			foreach (var mi in functions)
+				sb.AppendLine (_functions [mi]);
+			return sb.ToString ();
 		}
         
         private string Tabs ()
@@ -143,11 +143,16 @@
 				throw new ArgumentException ("Unknown declaration method.", node.Method.ToString ());
         }
 
-		private void StartFunction (string name, Type resType, IEnumerable<Type> parTypes)
+		private void OutputFunction (string name, LambdaExpression expr)
 		{
-			CodeOut ("{0} {1} ({2})", GLType (resType), name, parTypes.Select (GLType).SeparateWith (", "));
+			var pars = (from p in expr.Parameters
+			            select string.Format ("{0} {1}", GLType (p.Type), p.Name))
+				.SeparateWith (", ");
+			CodeOut ("{0} {1} ({2})", GLType (expr.ReturnType), name, pars);
 			CodeOut ("{");
 			_tabLevel++;
+			FunctionBody (expr.Body);
+			EndFunction ();
 		}
 
 		private void EndFunction ()
@@ -160,6 +165,7 @@
         {
             if (!_mainDefined)
             {
+				_mainStart = _code.Length;
                 CodeOut ("void main ()");
                 CodeOut ("{");
                 _tabLevel++;
@@ -209,14 +215,19 @@
 						var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
 						return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
 					}
-					if (_functions.ContainsKey (mc.Method))
-					{
-						_funcRefs.Add (mc.Method);
-						return string.Format ("{0} ({1})", mc.Method.Name,
-							mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
-					}
 					return null;
                 }) ??
+				expr.Match<InvocationExpression, string> (ie => 
+				{
+					var	member = ie.Expression.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
+					if (_functions.ContainsKey (member))
+					{
+						_funcRefs.Add (member);
+						return string.Format ("{0} ({1})", member.Name,
+							ie.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+					}
+					return null;
+				}) ??
                 expr.Match<MemberExpression, string> (me =>
                 {
                     var attr = me.Member.GetGLAttribute ();
@@ -385,11 +396,16 @@
 
 		public void FunctionBody (Expression expr)
 		{
-			var mce = expr.ExpectSelect ();
-			var ne = mce.Arguments[0].CastExpr<NewExpression> (ExpressionType.New);
-			if (ne == null)
-				Parse.ZeroOrMore (LetBinding).Execute (new Source (mce.Arguments[0].Traverse ()));
-			CodeOut ("return " + ExprToGLSL (mce.Arguments[1].ExpectLambda ().Body));
+			var mce = expr.GetSelect ();
+			if (mce != null)
+			{
+				var ne = mce.Arguments [0].CastExpr<NewExpression> (ExpressionType.New);
+				if (ne == null)
+					Parse.ZeroOrMore (LetBinding).Execute (new Source (mce.Arguments [0].Traverse ()));
+				CodeOut ("return {0};", ExprToGLSL (mce.Arguments[1].ExpectLambda ().Body));
+			}
+			else
+				CodeOut ("return {0};", ExprToGLSL (expr));
 		}
     }
 }

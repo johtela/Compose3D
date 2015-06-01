@@ -28,6 +28,11 @@
 				throw new GLError (string.Format ("Shader compilation error:\n{0}", log));
 		}
 
+		public static GLShader FromFile (ShaderType type, string path)
+		{
+			return new GLShader (type, File.ReadAllText (path));
+		}
+
 		public static GLShader Create<T> (ShaderType type, Expression<Func<Shader<T>>> func)
 		{
 			var source = GLSLGenerator.CreateShader (func);
@@ -35,9 +40,39 @@
 			return new GLShader (type, source);
 		}
 
-        public static GLShader FromFile (ShaderType type, string path)
-        {
-            return new GLShader (type, File.ReadAllText (path));
-        }
+		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
+		{
+			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			return func.Compile ();
+		}
+
+		public static Func<T1, TRes> Function<T1, TRes> (Expression<Func<Func<T1, TRes>>> member, 
+			Expression<Func<T1, TRes>> func)
+		{
+			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			return func.Compile ();
+		}
+
+		public static Func<T1, T2, TRes> Function<T1, T2, TRes> (Expression<Func<Func<T1, T2, TRes>>> member, 
+			Expression<Func<T1, T2, TRes>> func)
+		{
+			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			return func.Compile ();
+		}
+
+		public static Func<T1, T2, T3, TRes> Function<T1, T2, T3, TRes> (Expression<Func<Func<T1, T2, T3, TRes>>> member, 
+			Expression<Func<T1, T2, T3, TRes>> func)
+		{
+			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			return func.Compile ();
+		}
+
+		public static Func<T1, T2, T3, T4, TRes> Function<T1, T2, T3, T4, TRes> (
+			Expression<Func<Func<T1, T2, T3, T4, TRes>>> member, 
+			Expression<Func<T1, T2, T3, T4, TRes>> func)
+		{
+			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			return func.Compile ();
+		}
     }
 }

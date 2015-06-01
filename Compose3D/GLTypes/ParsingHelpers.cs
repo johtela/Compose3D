@@ -78,14 +78,20 @@
 
         public static IEnumerable<MethodCallExpression> Traverse (this Expression expr)
         {
-            var mcexpr = expr as MethodCallExpression;
-            if (mcexpr != null && mcexpr.Method.IsSelect ())
+			var mcexpr = expr.GetSelect ();
+            if (mcexpr != null)
             {
                 foreach (var sexpr in mcexpr.Arguments[0].Traverse ())
                     yield return sexpr;
                 yield return mcexpr;
             }
         }
+
+		public static MethodCallExpression GetSelect (this Expression expr)
+		{
+			var mcexpr = expr as MethodCallExpression;
+			return mcexpr != null && mcexpr.Method.IsSelect () ? mcexpr : null;
+		}
 
         public static LambdaExpression GetSelectLambda (this MethodCallExpression expr)
         {

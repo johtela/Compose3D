@@ -98,6 +98,11 @@
 			return expr.Arguments[1].ExpectLambda ();
         }
 
+		public static ParameterExpression GetLambdaParameter (this Expression expr)
+		{
+			return expr.ExpectLambda ().Parameters [0];
+		}
+
         public static MethodCallExpression ExpectSelect (this Expression expr)
         {
             var result = expr.Expect<MethodCallExpression> (ExpressionType.Call);
@@ -117,7 +122,12 @@
 				&& (mi.Name == "Select" || mi.Name == "SelectMany");
         }
 
-        public static bool IsAggregate (this MethodInfo mi)
+		public static bool IsSelectMany (this MethodInfo mi)
+		{
+			return mi.DeclaringType == typeof (Shader) && mi.Name == "SelectMany";
+		}
+
+		public static bool IsAggregate (this MethodInfo mi)
         {
 			if (mi.DeclaringType != typeof (Enumerable) || mi.Name != "Aggregate")
                 return false;
@@ -126,7 +136,12 @@
             return true;
         }
 
-        public static bool ParseLambda (this Source source, Func<LambdaExpression, NewExpression, bool> func)
+		public static bool IsEvaluate (this MethodInfo mi)
+		{
+			return mi.DeclaringType == typeof (Shader) || mi.Name == "Evaluate";
+		}
+		       
+		public static bool ParseLambda (this Source source, Func<LambdaExpression, NewExpression, bool> func)
         {
             var lambdaExpr = source.Current.GetSelectLambda ();
             if (lambdaExpr == null)

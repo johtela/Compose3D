@@ -65,9 +65,9 @@
             return mi.IsDefined (typeof (BuiltinAttribute), true);
         }
 
-		public static bool IsDeclaration (this MethodInfo mi)
+		public static bool IsLiftMethod (this MethodInfo mi)
 		{
-			return mi.IsDefined (typeof (DeclarationAttribute), true);
+			return mi.IsDefined (typeof (LiftMethodAttribute), true);
 		}
 
         public static bool IsGLStruct (this Type type)

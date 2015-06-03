@@ -3,11 +3,7 @@
 	using Compose3D.Arithmetics;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
-	using LinqCheck;
-	using OpenTK;
-	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
-	using OpenTK.Input;
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -81,13 +77,27 @@
 
 	public static class Shaders
 	{
-		public static readonly Func<SpotLight, float, float> Attenuation = GLShader.Function (
-			() => Attenuation,
-			(sp, d) => 1f / ((sp.linearAttenuation * d) + (sp.quadraticAttenuation * d * d)));
+		public static readonly Func<SpotLight, float, float> Attenuation = 
+			GLShader.Function (
+				() => Attenuation,
+				(sp, d) => 1f / ((sp.linearAttenuation * d) + (sp.quadraticAttenuation * d * d)));
+
+		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
+			GLShader.Function (
+				() => CalcSpotLight,
+				(sp, v) => (from vecToLight in (sp.position - v).ToShader ()
+				            let dist = vecToLight.Length
+				            let lightDir = vecToLight.Normalized
+				            let attenuation = Attenuation (sp, dist)
+				            let cosAngle = -lightDir.Dot (sp.direction)
+				            select sp.intensity *
+				                (cosAngle < sp.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (sp.spotExponent)))
+				.Evaluate ());
 
 		public static GLShader VertexShader ()
 		{
-			return GLShader.Create (ShaderType.VertexShader, () =>
+			return GLShader.Create (ShaderType.VertexShader, 
+				() => 
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let normalizedNormal = (!u.normalMatrix * v.normal).Normalized
@@ -95,19 +105,13 @@
 				let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
 				let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
 				let spot = (from sp in !u.spotLights
-					let vecToLight = sp.position - v.position
-					let dist = vecToLight.Length
-					let lightDir = vecToLight.Normalized
-					let attenuation = Attenuation (sp, dist)
-					let cosAngle = -lightDir.Dot (sp.direction)
-					select sp.intensity * (cosAngle < sp.cosSpotCutoff ? 
-						0f : attenuation *  cosAngle.Pow (sp.spotExponent)))
-				.Aggregate (new Vec3 (0f), (r, i) => r + i)
-				select new Fragment ()
-			{   
-				gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-				theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
-			});
+					select CalcSpotLight (sp, v.position)).
+							Aggregate (new Vec3 (0f), (r, i) => r + i)
+				select new Fragment () 
+				{   
+					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
+					theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
+				});
 		}
 
 		public static GLShader FragmentShader ()

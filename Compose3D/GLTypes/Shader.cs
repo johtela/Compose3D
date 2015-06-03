@@ -13,6 +13,7 @@
 
 	public static class Shader
 	{
+		[LiftMethod]
 		public static Shader<T> ToShader<T> (this T value)
 		{
 			return state => value;
@@ -28,13 +29,18 @@
 			return shader (state);
 		}
 
-		[Declaration]
+		public static T Evaluate<T> (this Shader<T> shader)
+		{
+			return shader (new ShaderState (null, null));
+		}
+
+		[LiftMethod]
 		public static Shader<T> Inputs<T> ()
 		{
 			return state => state.Inputs<T> ();
 		}
 
-		[Declaration]
+		[LiftMethod]
 		public static Shader<T> Uniforms<T> ()
 		{
 			return state => state.Uniforms<T> ();

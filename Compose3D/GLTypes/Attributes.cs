@@ -7,7 +7,7 @@
     public class BuiltinAttribute : Attribute { }
 
 	[AttributeUsage (AttributeTargets.Method)]
-	public class DeclarationAttribute : Attribute { }
+	public class LiftMethodAttribute : Attribute { }
 
     [AttributeUsage (AttributeTargets.Field)]
     public class GLQualifierAttribute : Attribute

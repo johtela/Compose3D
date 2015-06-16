@@ -12,11 +12,11 @@
 
 	public class GLSLGenerator
     {
-		internal static Dictionary<MemberInfo, string> _functions = new Dictionary<MemberInfo, string> ();
+		internal static Dictionary<MemberInfo, Function> _functions = new Dictionary<MemberInfo, Function> ();
 		private StringBuilder _decl;
 		private StringBuilder _code;
 		private HashSet<Type> _typesDefined;
-		private HashSet<MemberInfo> _funcRefs;
+		private HashSet<Function> _funcRefs;
         private int _localVarCount;
         private int _tabLevel;
 
@@ -25,7 +25,7 @@
 			_decl = new StringBuilder ();
 			_code = new StringBuilder ();
             _typesDefined = new HashSet<Type> ();
-			_funcRefs = new HashSet<MemberInfo> ();
+			_funcRefs = new HashSet<Function> ();
         }
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
@@ -43,17 +43,18 @@
 		{
 			var builder = new GLSLGenerator ();
 			builder.OutputFunction (member.Name, expr);
-			_functions.Add (member, builder._code.ToString ());
+			_functions.Add (member, new Function (member, builder._code.ToString (), builder._funcRefs));
 		}
 
-		public static string GenerateFunctions (HashSet<MemberInfo> functions)
+		private static string GenerateFunctions (HashSet<Function> functions)
 		{
 			if (functions.Count == 0)
 				return "";
+			var outputted = new HashSet<Function> ();
 			var sb = new StringBuilder ();
 			sb.AppendLine ();
-			foreach (var mi in functions)
-				sb.AppendLine (_functions [mi]);
+			foreach (var fun in functions)
+				fun.Output (sb, outputted);
 			return sb.ToString ();
 		}
         
@@ -226,9 +227,10 @@
 				expr.Match<InvocationExpression, string> (ie => 
 				{
 					var	member = ie.Expression.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
-					if (_functions.ContainsKey (member))
+					Function fun;
+					if (_functions.TryGetValue (member, out fun))
 					{
-						_funcRefs.Add (member);
+						_funcRefs.Add (fun);
 						return string.Format ("{0} ({1})", member.Name,
 							ie.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
 					}

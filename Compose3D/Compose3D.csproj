@@ -109,6 +109,7 @@
     <Compile Include="GLTypes\Shader.cs" />
     <Compile Include="GLTypes\ShaderState.cs" />
     <Compile Include="GLTypes\GLSLGenerator.cs" />
+    <Compile Include="GLTypes\Function.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

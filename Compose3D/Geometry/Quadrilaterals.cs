@@ -17,7 +17,7 @@
 		All = 63
 	}
 	
-	public static class Cube
+	public static class Quadrilaterals
 	{
 		private static IEnumerable<Geometry<V>> GetFaces<V> (float width, float height, float depth, CubeFaces faces) 
 			where V : struct, IVertex
@@ -37,15 +37,15 @@
 			if (faces.HasFlag (CubeFaces.Right)) yield return RightFace<V> (depth, height, right);
 		}
 
-		public static Geometry<V> Create<V> (float width, float height, float depth, CubeFaces faces) 
+		public static Geometry<V> Cube<V> (float width, float height, float depth, CubeFaces faces) 
 			where V : struct, IVertex
 		{
 			return Composite.Create<V> (GetFaces<V> (width, height, depth, faces));
 		}
 
-		public static Geometry<V> Create<V> (float width, float height, float depth) where V : struct, IVertex
+		public static Geometry<V> Cube<V> (float width, float height, float depth) where V : struct, IVertex
 		{
-			return Create<V> (width, height, depth, CubeFaces.All);
+			return Cube<V> (width, height, depth, CubeFaces.All);
 		}
 
 		public static Geometry<V> FrontFace<V> (float width, float height, float offset) where V : struct, IVertex

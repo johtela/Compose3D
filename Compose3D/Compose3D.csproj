@@ -78,7 +78,6 @@
     </Compile>
     <Compile Include="GLTypes\ParsingHelpers.cs" />
     <Compile Include="Geometry\Composite.cs" />
-    <Compile Include="Geometry\Rectangle.cs" />
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\Attributes.cs" />
     <Compile Include="GLTypes\GLError.cs" />
@@ -110,7 +109,8 @@
     <Compile Include="GLTypes\GLSLGenerator.cs" />
     <Compile Include="GLTypes\Function.cs" />
     <Compile Include="Geometry\Quadrilaterals.cs" />
-    <Compile Include="Geometry\Extrude.cs" />
+    <Compile Include="Geometry\Quadrilateral.cs" />
+    <Compile Include="Geometry\Volume.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

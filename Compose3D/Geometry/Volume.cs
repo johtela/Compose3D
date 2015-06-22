@@ -5,7 +5,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
-	public class Extrude<V> : Geometry<V> where V : struct, IVertex
+	public static class Volume
 	{
 		private struct Edge
 		{
@@ -24,21 +24,24 @@
 			}
 		}
 
-		public readonly Geometry<V> Geometry2D;
-
-		public Extrude (Geometry<V> geometry2D)
+		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth)
+			where V : struct, IVertex
 		{
-			if (!Is2DGeometry (geometry2D))
-				throw new ArgumentException ("Geometry is not on completely on the 2D plane.", "geometry2D");
-			Geometry2D = geometry2D;
+			if (!Is2DGeometry (frontFace))
+				throw new ArgumentException ("Geometry is not on completely on the 2D plane.", "frontFace");
+			var backFace = frontFace.Transform (
+				Mat.Translation<Mat4> (0f, 0f, depth) * Mat.Scaling<Mat4> (0f, 0f, -1f));
+			return Composite.Create (frontFace, backFace);
 		}
 
-		private static bool Is2DGeometry (Geometry<V> geometry)
+		private static bool Is2DGeometry<V> (Geometry<V> geometry)
+			where V : struct, IVertex
 		{
 			return geometry.Vertices.All (v => v.Position.Z == 0f);
 		}
 
-		private static IEnumerable<Edge> GetEdges (Geometry<V> geometry)
+		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
+			where V : struct, IVertex
 		{
 			var indices = geometry.Indices.ToArray ();
 			for (int i = 0; i < indices.Length; i += 3)
@@ -63,34 +66,6 @@
 					}
 			return edges.Except (removed);
 		}
-
-		#region implemented abstract members of Geometry
-
-		public override int VertexCount
-		{
-			get
-			{
-				throw new NotImplementedException ();
-			}
-		}
-
-		public override IEnumerable<V> Vertices
-		{
-			get
-			{
-				throw new NotImplementedException ();
-			}
-		}
-
-		public override IEnumerable<int> Indices
-		{
-			get
-			{
-				throw new NotImplementedException ();
-			}
-		}
-
-		#endregion
 	}
 }
 

@@ -121,7 +121,7 @@
 	{
 		public static Geometry<V> Rectangle<V> (float width, float height) where V : struct, IVertex
 		{
-			return new Rectangle<V> (width, height);
+			return Quadrilateral<V>.Rectangle (width, height);
 		}
 
 		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Mat4 matrix) where V : struct, IVertex
@@ -150,6 +150,24 @@
 			if (angleX != 0.0f) matrix *= Mat.RotationX<Mat4> (angleX);
 			if (angleY != 0.0f) matrix *= Mat.RotationY<Mat4> (angleY);
 			return Transform (geometry, matrix);
+		}
+
+		public static Geometry<V> ReflectX<V> (this Geometry<V> geometry)
+			where V : struct, IVertex
+		{
+			return geometry.Scale (-1f, 0f, 0f);
+		}
+
+		public static Geometry<V> ReflectY<V> (this Geometry<V> geometry)
+			where V : struct, IVertex
+		{
+			return geometry.Scale (0f, -1f, 0f);
+		}
+
+		public static Geometry<V> ReflectZ<V> (this Geometry<V> geometry)
+			where V : struct, IVertex
+		{
+			return geometry.Scale (0f, 0f, -1f);
 		}
 
 		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex

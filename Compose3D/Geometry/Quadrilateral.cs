@@ -13,12 +13,16 @@
 		private Quadrilateral (Func<Geometry<V>, V[]> generateVertices)
 		{
 			_generateVertices = generateVertices;
-			_indices = CalculateIndices (0);
+			_indices = new int[] { 0, 1, 2, 2, 3, 0 };
 		}
 
-		public static int[] CalculateIndices (int first)
+		public static Quadrilateral<V> FromVertices (params V[] vertices)
 		{
-			return new int[] { first, first + 1, first + 2, first + 2, first + 3, first };
+			if (vertices.Length != 4)
+				throw new GeometryError ("Quadrilaterals must have four vertices");
+			if (!VertexHelpers.AreCoplanar (vertices))
+				throw new GeometryError ("Vertices are not coplanar");
+			return new Quadrilateral<V> (q => vertices);
 		}
 
 		public static Quadrilateral<V> Rectangle (float width, float height)

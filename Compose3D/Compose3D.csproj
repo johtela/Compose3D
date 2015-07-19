@@ -111,6 +111,7 @@
     <Compile Include="Geometry\Quadrilaterals.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
     <Compile Include="Geometry\Volume.cs" />
+    <Compile Include="Geometry\Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

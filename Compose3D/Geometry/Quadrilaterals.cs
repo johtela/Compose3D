@@ -1,4 +1,4 @@
-﻿		namespace Compose3D.Geometry
+﻿namespace Compose3D.Geometry
 {
     using Arithmetics;
     using OpenTK;

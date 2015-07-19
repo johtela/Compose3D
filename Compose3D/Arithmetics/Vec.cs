@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Arithmetics
 {
     using System;
+	using GLTypes;
 
     public static class Vec
     {
@@ -40,5 +41,14 @@
             res[i] = value;
             return res;
         }
+
+		[GLFunction ("cross ({0})")]
+		public static Vec3 Cross (this Vec3 v1, Vec3 v2)
+		{
+			return new Vec3 (
+				v1.Y * v2.Z - v1.Z * v2.Y,
+				v1.Z * v2.X - v1.X * v2.Z,
+				v1.X * v2.Y - v1.Y * v2.X);			
+		}
     }
 }

@@ -10,31 +10,6 @@
 	}
 
 	/// <summary>
-	/// Interface that is used to access mandatory vertex attributes.
-	/// </summary>
-	/// <description>
-	/// All Vertex structures need to implement this interface. Through it
-	/// geometry generators can set vertex attributes.
-	/// </description>
-	public interface IVertex
-	{
-		/// <summary>
-		/// Position of the vertex.
-		/// </summary>
-		Vec3 Position { get; set; }
-
-		/// <summary>
-		/// Color of the vertex.
-		/// </summary>
-		Vec4 Color { get; set; }
-
-        /// <summary>
-        /// The normal of the vertex.
-        /// </summary>
-        Vec3 Normal { get; set; }
-	}
-
-	/// <summary>
 	/// Abstraction for geometrical shapes that can be rendered with OpenGL.
 	/// </summary>
 	/// <description>

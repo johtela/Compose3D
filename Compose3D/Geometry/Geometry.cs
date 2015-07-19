@@ -3,6 +3,7 @@
     using Arithmetics;
     using System;
     using System.Collections.Generic;
+	using System.Linq;
 
 	public class GeometryError : Exception
 	{
@@ -19,21 +20,41 @@
 	{
 		private IMaterial _material;
 		private BBox _boundingBox;
+		private V[] _vertices;
+		private int[] _indices;
 
-		/// <summary>
-		/// Gets the number of vertices in this geometry.
-		/// </summary>
-		public abstract int VertexCount { get; }
+		private V[] CachedVertices ()
+		{
+			if (_vertices == null)
+				_vertices = GenerateVertices ().ToArray ();
+			return _vertices;
+		}
+
+		private int[] CachedIndices ()
+		{
+			if (_indices == null)
+				_indices = GenerateIndices ().ToArray ();
+			return _indices;
+		}
+
+		protected abstract IEnumerable<V> GenerateVertices ();
+		protected abstract IEnumerable<int> GenerateIndices ();
 
 		/// <summary>
 		/// Enumerates the vertices of the geometry.
 		/// </summary>
-		public abstract IEnumerable<V> Vertices { get; }
+		public V[] Vertices 
+		{ 
+			get { return CachedVertices (); }
+		}
 
 		/// <summary>
 		/// Enumerates the indices used to draw triangles of the geometry.
 		/// </summary>
-		public abstract IEnumerable<int> Indices { get; }
+		public int[] Indices 
+		{ 
+			get { return CachedIndices (); }
+		}
 
 		/// <summary>
 		/// Return the bounding box of this geometry.
@@ -44,12 +65,11 @@
 			{
 				if (_boundingBox == null)
 				{
-					var e = Vertices.GetEnumerator ();
-					if (!e.MoveNext ())
+					if (Vertices.Length < 1)
 						throw new GeometryError ("Geometry must contain at least one vertex");
-					_boundingBox = new BBox (e.Current.Position);
-					while (e.MoveNext ())
-						_boundingBox += e.Current.Position;
+					_boundingBox = new BBox (Vertices[0].Position);
+					for (int i = 0; i < Vertices.Length; i++)
+						_boundingBox += Vertices[i].Position;
 				}
 				return _boundingBox;
 			}

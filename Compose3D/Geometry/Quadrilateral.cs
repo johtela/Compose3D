@@ -7,13 +7,10 @@
 	internal class Quadrilateral<V> : Geometry<V> where V : struct, IVertex
 	{
 		private Func<Geometry<V>, V[]> _generateVertices;
-		private V[] _vertices;
-		private int[] _indices;
 
 		private Quadrilateral (Func<Geometry<V>, V[]> generateVertices)
 		{
 			_generateVertices = generateVertices;
-			_indices = new int[] { 0, 1, 2, 2, 3, 0 };
 		}
 
 		public static Quadrilateral<V> FromVertices (params V[] vertices)
@@ -56,24 +53,14 @@
 			});
 		}
 
-		public override int VertexCount
+		protected override IEnumerable<V> GenerateVertices ()
 		{
-			get { return 4; }
+			return _generateVertices (this);
 		}
 
-		public override IEnumerable<V> Vertices
+		protected override IEnumerable<int> GenerateIndices ()
 		{
-			get 
-			{ 
-				if (_vertices == null)
-					_vertices = _generateVertices (this);
-				return _vertices;
-			}
-		}
-
-		public override IEnumerable<int> Indices
-		{
-			get { return _indices; }
+			return new int[] { 0, 1, 2, 2, 3, 0 };
 		}
 	}
 }

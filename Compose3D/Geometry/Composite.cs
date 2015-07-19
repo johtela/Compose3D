@@ -24,7 +24,6 @@
 	internal class Composite<V> : Geometry<V> where V : struct, IVertex
 	{
 		private Geometry<V>[] _geometries;
-		private int? _vertexCount;
 
 		public Composite (params Geometry<V>[] geometries)
 		{
@@ -36,31 +35,18 @@
 			_geometries = geometries.ToArray ();
 		}
 
-		public override int VertexCount
+		protected override IEnumerable<V> GenerateVertices ()
 		{
-			get
-			{
-				if (!_vertexCount.HasValue)
-					_vertexCount = _geometries.Sum (g => g.VertexCount);
-				return _vertexCount.Value;
-			}
+			return _geometries.SelectMany (g => g.Vertices);
 		}
 
-		public override IEnumerable<V> Vertices
+		protected override IEnumerable<int> GenerateIndices ()
 		{
-			get { return _geometries.SelectMany (g => g.Vertices); }
-		}
-
-		public override IEnumerable<int> Indices
-		{
-			get
+			for (int g = 0, c = 0; g < _geometries.Length; g++)
 			{
-				for (int g = 0, c = 0; g < _geometries.Length; g++)
-				{
-					foreach (var i in _geometries[g].Indices)
-						yield return c + i;
-					c += _geometries[g].VertexCount;
-				}
+				foreach (var i in _geometries[g].Indices)
+					yield return c + i;
+				c += _geometries [g].Vertices.Length;
 			}
 		}
 

@@ -19,25 +19,17 @@
             //_normalMatrix.Transpose ();
 		}
 
-		public override int VertexCount
+		protected override IEnumerable<V> GenerateVertices ()
 		{
-			get { return _geometry.VertexCount; }
-		}
-
-		public override IEnumerable<V> Vertices
-		{
-			get
-			{
-				return _geometry.Vertices.Select (v => 
+			return _geometry.Vertices.Select (v => 
                     Vertex (new Vec3 (_matrix * new Vec4 (v.Position, 1f)), 
-                        v.Color,
-                        (_normalMatrix * v.Normal).Normalized));
-			}
+				v.Color,
+				(_normalMatrix * v.Normal).Normalized));
 		}
 
-		public override IEnumerable<int> Indices
+		protected override IEnumerable<int> GenerateIndices ()
 		{
-			get { return _geometry.Indices; }
+			return _geometry.Indices;
 		}
 
 		public override IMaterial Material

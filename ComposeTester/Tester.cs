@@ -30,15 +30,17 @@
             _program.InitializeUniforms (_uniforms = new Uniforms ());
         }
 
+		private IMaterial Mater ()
+		{
+			return Material.RepeatColors (Color.Random);
+		}
+
         private Geometry<Vertex> CreateGeometry ()
         {
-            var cube1 = Quadrilaterals.Cube<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f)
-                .Material (Material.RepeatColors (Color.Random));
-            var cube2 = Quadrilaterals.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f)
-                .Material (Material.RepeatColors (Color.Random));
-            var cube3 = Quadrilaterals.Cube<Vertex> (1f, 1f, 2f)
-                .Material (Material.RepeatColors (Color.Random));
-            return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
+			var cube1 = Volume.Cube<Vertex> (1f, 1.5f, 2f, Mater ()).Rotate (0f, MathHelper.PiOver2, 0f);
+			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f, Mater ()).Scale (0.8f, 0.8f, 0.8f);
+			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f, Mater ());
+			return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
         }
 
 		public void Init ()

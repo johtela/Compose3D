@@ -52,14 +52,7 @@
 
 		public override IMaterial Material
 		{
-			get { return base.Material; }
-			set
-			{
-				foreach (var geometry in _geometries)
-					if (!geometry.HasMaterial)
-						geometry.Material = value;
-				base.Material = value;
-			}
+			get { return _geometries [0].Material; }
 		}
 	}
 

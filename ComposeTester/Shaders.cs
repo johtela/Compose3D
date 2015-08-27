@@ -33,6 +33,11 @@
 			get { return normal; }
 			set { normal = value; }
 		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[Vertex: Position={0}, Color={1}, Normal={2}]", Position, Color, Normal);
+		}
 	}
 
 	public class Fragment

@@ -108,10 +108,11 @@
     <Compile Include="GLTypes\ShaderState.cs" />
     <Compile Include="GLTypes\GLSLGenerator.cs" />
     <Compile Include="GLTypes\Function.cs" />
-    <Compile Include="Geometry\Quadrilaterals.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
     <Compile Include="Geometry\Volume.cs" />
     <Compile Include="Geometry\Vertex.cs" />
+    <Compile Include="Geometry\ReverseIndices.cs" />
+    <Compile Include="Geometry\Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

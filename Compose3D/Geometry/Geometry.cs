@@ -18,7 +18,6 @@
 	/// </description>
 	public abstract class Geometry<V> where V : struct, IVertex
 	{
-		private IMaterial _material;
 		private BBox _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
@@ -39,6 +38,7 @@
 
 		protected abstract IEnumerable<V> GenerateVertices ();
 		protected abstract IEnumerable<int> GenerateIndices ();
+		public abstract IMaterial Material { get; }
 
 		/// <summary>
 		/// Enumerates the vertices of the geometry.
@@ -76,27 +76,6 @@
 		}
 
 		/// <summary>
-		/// Gets the material used for the geometry.
-		/// </summary>
-		public virtual IMaterial Material 
-		{ 
-			get 
-			{ 
-				if (_material == null) throw new GeometryError("Material not set for this geometry");
-				return _material;
-			}
-			set { _material = value; }
-		}
-
-		/// <summary>
-		/// Gets a value indicating whether this geometry has material set.
-		/// </summary>
-		public bool HasMaterial
-		{
-			get { return _material != null; }
-		}
-
-		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
 		public static V Vertex (Vec3 position, Vec4 color, Vec3 normal)
@@ -114,12 +93,14 @@
 	/// </summary>
 	public static class Geometry
 	{
-		public static Geometry<V> Rectangle<V> (float width, float height) where V : struct, IVertex
+		public static Geometry<V> ReverseIndices<V> (this Geometry<V> geometry) 
+			where V : struct, IVertex
 		{
-			return Quadrilateral<V>.Rectangle (width, height);
+			return new ReverseIndices<V> (geometry);
 		}
 
-		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Mat4 matrix) where V : struct, IVertex
+		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Mat4 matrix) 
+			where V : struct, IVertex
 		{
 			return new Transform<V> (geometry, matrix);
 		}
@@ -150,31 +131,25 @@
 		public static Geometry<V> ReflectX<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (-1f, 0f, 0f);
+			return geometry.Scale (-1f, 0f, 0f).ReverseIndices ();
 		}
 
 		public static Geometry<V> ReflectY<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (0f, -1f, 0f);
+			return geometry.Scale (0f, -1f, 0f).ReverseIndices ();
 		}
 
 		public static Geometry<V> ReflectZ<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (0f, 0f, -1f);
+			return geometry.Scale (0f, 0f, -1f).ReverseIndices ();
 		}
 
 		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex
 		{
 			var center = geometry.BoundingBox.Center;
 			return Translate (geometry, -center.X, -center.Y, -center.Z);
-		}
-
-		public static Geometry<V> Material<V> (this Geometry<V> geometry, IMaterial material) where V : struct, IVertex
-		{
-			geometry.Material = material;
-			return geometry;
 		}
 	}
 }

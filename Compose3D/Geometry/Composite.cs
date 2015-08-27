@@ -101,7 +101,9 @@
 			{
 				var current = geom.BoundingBox;
 				var matrix = GetStackingMatrix (axis, direction, xalign, yalign, zalign, previous, current);
-				previous = new BBox (new Vec3 (matrix * new Vec4 (current.Position, 1f)), current.Size);
+				previous = new BBox (
+					new Vec3 (matrix * new Vec4 (current.Min, 1f)), 
+					new Vec3 (matrix * new Vec4 (current.Max, 1f)));
 				return Geometry.Transform (geom, matrix);
 			});
 			return Create (geometries.Take (1).Concat (stackedGeometries));

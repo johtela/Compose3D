@@ -41,6 +41,8 @@
 			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f, Mater ()).Scale (0.8f, 0.8f, 0.8f);
 			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f, Mater ());
 			return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
+
+//			return Quadrilateral<Vertex>.Rectangle (1f, 1f, Mater ()).Center ();
         }
 
 		public void Init ()
@@ -59,11 +61,11 @@
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_uniforms.worldMatrix &= worm;
             _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
-            _uniforms.ambientLightIntensity &= new Vec3 (0.5f);
+			_uniforms.ambientLightIntensity &= new Vec3 (0.6f);
             _uniforms.directionalLight &= new DirectionalLight ()
             {
                 direction = new Vec3 (-1f, -1f, 1f),
-                intensity = new Vec3 (0.5f)
+				intensity = new Vec3 (0.4f)
             };
 		}
 

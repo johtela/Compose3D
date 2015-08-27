@@ -59,7 +59,7 @@
 		/// <summary>
 		/// Return the bounding box of this geometry.
 		/// </summary>
-		public  virtual BBox BoundingBox 
+		public virtual BBox BoundingBox 
 		{
 			get
 			{
@@ -68,7 +68,7 @@
 					if (Vertices.Length < 1)
 						throw new GeometryError ("Geometry must contain at least one vertex");
 					_boundingBox = new BBox (Vertices[0].Position);
-					for (int i = 0; i < Vertices.Length; i++)
+					for (int i = 1; i < Vertices.Length; i++)
 						_boundingBox += Vertices[i].Position;
 				}
 				return _boundingBox;
@@ -119,7 +119,7 @@
 			return Transform (geometry, matrix);
 		}
 
-		public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
+			public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
 			where V : struct, IVertex
 		{
 			var matrix = Mat.RotationZ<Mat4> (angleZ);

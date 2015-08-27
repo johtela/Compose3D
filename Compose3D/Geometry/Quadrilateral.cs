@@ -4,7 +4,7 @@
 	using System;
     using System.Collections.Generic;
 
-	internal class Quadrilateral<V> : Geometry<V> where V : struct, IVertex
+	public class Quadrilateral<V> : Geometry<V> where V : struct, IVertex
 	{
 		private Func<Geometry<V>, V[]> _generateVertices;
 		private IMaterial _material;

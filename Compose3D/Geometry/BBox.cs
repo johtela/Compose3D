@@ -26,26 +26,27 @@ namespace Compose3D.Geometry
         /// Effectively the coordinate back-left-bottom corner since the axis grow
         /// from back to front, left to right, and bottom to top.
         /// </description>
-        public readonly Vec3 Position;
+		public readonly Vec3 Min;
 
-        /// <summary>
-        /// The size of the bounding box along X, Y, and Z axis.
-        /// </summary>
-        /// <description>
-        /// The components of the size vector are always positive.
-        /// </description>
-        public readonly Vec3 Size;
+		/// <summary>
+		/// The maximum X, Y, and Z coordinates of all 8 corners of the bounding box.
+		/// </summary>
+		/// <description>
+		/// Effectively the coordinate front-right-top corner since the axis grow
+		/// from back to front, left to right, and bottom to top.
+		/// </description>
+		public readonly Vec3 Max;
 
-        public BBox (Vec3 position, Vec3 size)
+		public BBox (Vec3 min, Vec3 max)
         {
-            Position = position;
-            Size = size;
+			Min = min;
+			Max = max;
         }
 
         public BBox (Vec3 position)
         {
-            Position = position;
-            Size = new Vec3 ();
+			Min = position;
+			Max = position;
         }
 
         /// <summary>
@@ -53,7 +54,7 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Left
         {
-            get { return Position.X; }
+			get { return Min.X; }
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Right
         {
-            get { return Position.X + Size.X; }
+			get { return Max.X; }
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Bottom
         {
-            get { return Position.Y; }
+			get { return Min.Y; }
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Top
         {
-            get { return Position.Y + Size.Y; }
+			get { return Max.Y; }
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Back
         {
-            get { return Position.Z; }
+			get { return Min.Z; }
         }
 
         /// <summary>
@@ -93,17 +94,17 @@ namespace Compose3D.Geometry
         /// </summary>
         public float Front
         {
-            get { return Position.Z + Size.Z; }
+			get { return Max.Z; }
         }
+
+		public Vec3 Size
+		{
+			get { return Max - Min; }
+		}
 
         public Vec3 Center
         {
-            get
-            {
-                return new Vec3 (Position.X + (Size.X / 2.0f),
-                                 Position.Y + (Size.Y / 2.0f),
-                                 Position.Z + (Size.Z / 2.0f));
-            }
+			get { return (Min + Max) / 2; }
         }
 
         /// <summary>
@@ -150,24 +151,28 @@ namespace Compose3D.Geometry
 
         public static BBox operator + (BBox bbox, Vec3 vertex)
         {
-            var pos = new Vec3 (Math.Min (bbox.Position.X, vertex.X),
-                                Math.Min (bbox.Position.Y, vertex.Y),
-                                Math.Min (bbox.Position.Z, vertex.Z));
-            var size = new Vec3 (Math.Max (bbox.Size.X, vertex.X - pos.X),
-                                 Math.Max (bbox.Size.Y, vertex.Y - pos.Y),
-                                 Math.Max (bbox.Size.Z, vertex.Z - pos.Z));
-            return new BBox (pos, size);
+			var min = new Vec3 (
+				Math.Min (bbox.Min.X, vertex.X), 
+				Math.Min (bbox.Min.Y, vertex.Y), 
+				Math.Min (bbox.Min.Z, vertex.Z));
+			var max = new Vec3 (
+				Math.Max (bbox.Max.X, vertex.X), 
+				Math.Max (bbox.Max.Y, vertex.Y), 
+				Math.Max (bbox.Max.Z, vertex.Z));
+			return new BBox (min, max);
         }
 
         public static BBox operator + (BBox bbox, BBox other)
         {
-            var pos = new Vec3 (Math.Min (bbox.Left, other.Left),
-                                Math.Min (bbox.Bottom, other.Bottom),
-                                Math.Min (bbox.Back, other.Back));
-            var size = new Vec3 (Math.Max (bbox.Right, other.Right) - pos.X,
-                                 Math.Max (bbox.Top, other.Top) - pos.Y,
-                                 Math.Max (bbox.Front, other.Front) - pos.Z);
-            return new BBox (pos, size);
+			var min = new Vec3 (
+				Math.Min (bbox.Min.X, other.Min.X),
+				Math.Min (bbox.Min.Y, other.Min.Y),
+				Math.Min (bbox.Min.Z, other.Min.Z));
+			var max = new Vec3 (
+				Math.Max (bbox.Max.X, other.Max.X),
+				Math.Max (bbox.Max.Y, other.Max.Y),
+				Math.Max (bbox.Max.Z, other.Max.Z));
+			return new BBox (min, max);
         }
     }
 }

@@ -69,12 +69,7 @@
 		private static V ChangeNormal<V> (V vertex, Vec3 normal)
 			where V : struct, IVertex
 		{
-			return new V () 
-			{ 
-				Position = vertex.Position,
-				Color = vertex.Color,
-				Normal = normal
-			};
+			return Geometry<V>.NewVertex (vertex.Position, vertex.Color, normal);
 		}
 
 		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)

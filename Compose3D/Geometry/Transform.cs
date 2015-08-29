@@ -21,9 +21,8 @@
 		protected override IEnumerable<V> GenerateVertices ()
 		{
 			return _geometry.Vertices.Select (v => 
-                Vertex (new Vec3 (_matrix * new Vec4 (v.Position, 1f)), 
-				v.Color,
-				(_normalMatrix * v.Normal).Normalized));
+                NewVertex (new Vec3 (_matrix * new Vec4 (v.Position, 1f)), 
+					v.Color, (_normalMatrix * v.Normal).Normalized, v.Tag));
 		}
 	}
 }

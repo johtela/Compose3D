@@ -78,13 +78,19 @@
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
-		public static V Vertex (Vec3 position, Vec4 color, Vec3 normal)
+		public static V NewVertex (Vec3 position, Vec4 color, Vec3 normal, int tag)
 		{
 			var vertex = new V ();
 			vertex.Position = position;
 			vertex.Color = color;
             vertex.Normal = normal;
+			vertex.Tag = tag;
 			return vertex;
+		}
+
+		public static V NewVertex (Vec3 position, Vec4 color, Vec3 normal)
+		{
+			return NewVertex (position, color, normal, 0);
 		}
 	}
 

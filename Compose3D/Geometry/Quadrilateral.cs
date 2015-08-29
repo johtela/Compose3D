@@ -49,10 +49,10 @@
 				var colors = q.Material.Colors.GetEnumerator ();
 				return new V[] 
 				{
-					Vertex (new Vec3 (topRight, top, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (bottomRight, bottom, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (bottomLeft, bottom, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (topLeft, top, 0f), colors.Next (), normal)
+					NewVertex (new Vec3 (topRight, top, 0f), colors.Next (), normal),
+					NewVertex (new Vec3 (bottomRight, bottom, 0f), colors.Next (), normal),
+					NewVertex (new Vec3 (bottomLeft, bottom, 0f), colors.Next (), normal),
+					NewVertex (new Vec3 (topLeft, top, 0f), colors.Next (), normal)
 				};
 			}, material);
 		}

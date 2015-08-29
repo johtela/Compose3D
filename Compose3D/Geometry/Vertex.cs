@@ -39,38 +39,50 @@
 	{
 		private static int _lastTag;
 
-		public static int TagVertex (this IVertex vertex)
+		public static int TagVertex<V> (this V vertex) where V : struct, IVertex
 		{
 			vertex.Tag = ++_lastTag;
 			return vertex.Tag;
 		}
 
-		public static IEnumerable<IVertex> Leftmost (this IEnumerable<IVertex> vertices)
+		public static V FindByTag<V> (this IEnumerable<V> vertices, int tag)
+			where V : struct, IVertex
+		{
+			return vertices.First (v => v.Tag == tag);
+		}
+
+		public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MinimumItems (v => v.Position.X);
 		}
 
-		public static IEnumerable<IVertex> Rightmost (this IEnumerable<IVertex> vertices)
+		public static IEnumerable<V> Rightmost<V>  (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MaximumItems (v => v.Position.X);
 		}
 
-		public static IEnumerable<IVertex> Bottommost (this IEnumerable<IVertex> vertices)
+		public static IEnumerable<V> Bottommost<V>  (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MinimumItems (v => v.Position.Y);
 		}
 
-		public static IEnumerable<IVertex> Topmost (this IEnumerable<IVertex> vertices)
+		public static IEnumerable<V> Topmost<V>  (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MaximumItems (v => v.Position.Y);
 		}
 
-		public static IEnumerable<IVertex> Backmost (this IEnumerable<IVertex> vertices)
+		public static IEnumerable<V> Backmost<V>  (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MinimumItems (v => v.Position.Z);
 		}
 
-		public static IEnumerable<IVertex> Frontmost (this IEnumerable<IVertex> vertices)
+		public static IEnumerable<V> Frontmost<V>  (this IEnumerable<V> vertices)
+			where V : struct, IVertex
 		{
 			return vertices.MaximumItems (v => v.Position.Z);
 		}

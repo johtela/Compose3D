@@ -6,7 +6,7 @@ namespace Compose3D.Geometry
     /// <summary>
     /// Enumeration that describes the alignment between two bounding box.
     /// </summary>
-    public enum Align
+    public enum Alignment
     {
         None,		/// No alignment
         Negative,	/// Align along faces with the smaller coordinates.
@@ -110,13 +110,13 @@ namespace Compose3D.Geometry
         /// <summary>
         /// Gets the X offset of a bounding box when aligned with the current one along X axis.
         /// </summary>
-        public float GetXOffset (BBox other, Align align)
+        public float GetXOffset (BBox other, Alignment align)
         {
             switch (align)
             {
-                case Align.Negative: return Left - other.Left;
-                case Align.Positive: return Right - other.Right;
-                case Align.Center: return Center.X - other.Center.X;
+                case Alignment.Negative: return Left - other.Left;
+                case Alignment.Positive: return Right - other.Right;
+                case Alignment.Center: return Center.X - other.Center.X;
                 default: return 0f;
             }
         }
@@ -124,13 +124,13 @@ namespace Compose3D.Geometry
         /// <summary>
         /// Gets the Y offset of a bounding box when aligned with the current one along Y axis.
         /// </summary>
-        public float GetYOffset (BBox other, Align align)
+        public float GetYOffset (BBox other, Alignment align)
         {
             switch (align)
             {
-                case Align.Negative: return Bottom - other.Bottom;
-                case Align.Positive: return Top - other.Top;
-                case Align.Center: return Center.Y - other.Center.Y;
+                case Alignment.Negative: return Bottom - other.Bottom;
+                case Alignment.Positive: return Top - other.Top;
+                case Alignment.Center: return Center.Y - other.Center.Y;
                 default: return 0f;
             }
         }
@@ -138,13 +138,13 @@ namespace Compose3D.Geometry
         /// <summary>
         /// Gets the Y offset of a bounding box when aligned with the current one along Y axis.
         /// </summary>
-        public float GetZOffset (BBox other, Align align)
+        public float GetZOffset (BBox other, Alignment align)
         {
             switch (align)
             {
-                case Align.Negative: return Back - other.Back;
-                case Align.Positive: return Front - other.Front;
-                case Align.Center: return Center.Z - other.Center.Z;
+                case Alignment.Negative: return Back - other.Back;
+                case Alignment.Positive: return Front - other.Front;
+                case Alignment.Center: return Center.Z - other.Center.Z;
                 default: return 0.0f;
             }
         }

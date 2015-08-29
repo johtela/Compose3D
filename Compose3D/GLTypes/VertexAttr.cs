@@ -37,13 +37,17 @@
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 3);
 			else if (ft == typeof (Vec4))
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 4);
+			else if (ft == typeof (int))
+				return new VertexAttr (name, VertexAttribPointerType.Int, s, 1);
+			// TODO: Add rest of the supported types.
 			else throw new ArgumentException ("Incompatible vertex attribute type " + name);
 		}
 
 		public static IEnumerable<VertexAttr> GetAttributes<T> () where T : struct
 		{
-			return from fi in typeof (T).GetFields (BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-				   select FromFieldInfo (fi);
+			return from fi in typeof(T).GetFields (BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+			       where !fi.IsDefined (typeof(OmitInGlslAttribute), true)
+			       select FromFieldInfo (fi);
 		}
 	}
 }

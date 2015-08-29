@@ -3,7 +3,6 @@
     using Compose3D.Arithmetics;
     using Compose3D.Geometry;
     using Compose3D.GLTypes;
-    using LinqCheck;
     using OpenTK;
     using OpenTK.Graphics;
     using OpenTK.Graphics.OpenGL;
@@ -22,27 +21,12 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-            _geometry = CreateGeometry ();
-            _orientation = new Vector3 (0f, 0f, 3f);
+			_geometry = Geometries.Roof ();
+			_orientation = new Vector3 (0f, 0f, 20f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
             _program.InitializeUniforms (_uniforms = new Uniforms ());
-        }
-
-		private IMaterial Mater ()
-		{
-			return Material.RepeatColors (Color.Random);
-		}
-
-        private Geometry<Vertex> CreateGeometry ()
-        {
-			var cube1 = Volume.Cube<Vertex> (1f, 1.5f, 2f, Mater ()).Rotate (0f, MathHelper.PiOver2, 0f);
-			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f, Mater ()).Scale (0.8f, 0.8f, 0.8f);
-			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f, Mater ());
-			return Composite.StackRight (Align.Center, Align.Center, cube1, cube2, cube3).Center ();
-
-//			return Quadrilateral<Vertex>.Rectangle (1f, 1f, Mater ()).Center ();
         }
 
 		public void Init ()

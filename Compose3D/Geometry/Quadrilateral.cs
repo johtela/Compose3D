@@ -37,10 +37,11 @@
 		public static Quadrilateral<V> Trapezoid (float width, float height, 
 			float topLeftOffset, float topRightOffset, IMaterial material)
 		{
-			var halfx = width / 2f;
-			var right = halfx + topRightOffset;
+			var bottomRight = width / 2f;
+			var topRight = bottomRight + topRightOffset;
 			var top = height / 2f;
-			var left = -halfx + topLeftOffset;
+			var bottomLeft = -bottomRight;
+			var topLeft = bottomLeft + topLeftOffset;
 			var bottom = -top;
 			var normal = new Vec3 (0f, 0f, -1f);
 			return new Quadrilateral<V> (q =>
@@ -48,10 +49,10 @@
 				var colors = q.Material.Colors.GetEnumerator ();
 				return new V[] 
 				{
-					Vertex (new Vec3 (right, top, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (right, bottom, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (left, bottom, 0f), colors.Next (), normal),
-					Vertex (new Vec3 (left, top, 0f), colors.Next (), normal)
+					Vertex (new Vec3 (topRight, top, 0f), colors.Next (), normal),
+					Vertex (new Vec3 (bottomRight, bottom, 0f), colors.Next (), normal),
+					Vertex (new Vec3 (bottomLeft, bottom, 0f), colors.Next (), normal),
+					Vertex (new Vec3 (topLeft, top, 0f), colors.Next (), normal)
 				};
 			}, material);
 		}

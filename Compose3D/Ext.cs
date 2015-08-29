@@ -155,6 +155,20 @@ namespace Compose3D
             return lines.Any () ? lines.Aggregate ((s1, s2) => s1 + separator + s2) : "";
         }
 
+		public static IEnumerable<T> MinimumItems<T, U> (this IEnumerable<T> items, Func<T, U> selector)
+			where U : IEquatable<U>
+		{
+			var min = items.Min (selector);
+			return items.Where (i => selector (i).Equals (min));
+		}
+
+		public static IEnumerable<T> MaximumItems<T, U> (this IEnumerable<T> items, Func<T, U> selector)
+			where U : IEquatable<U>
+		{
+			var max = items.Max (selector);
+			return items.Where (i => selector (i).Equals (max));
+		}
+
         #endregion        
         
         #region Map & Fold

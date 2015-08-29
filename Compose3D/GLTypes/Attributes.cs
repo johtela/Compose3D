@@ -6,6 +6,9 @@
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
 
+	[AttributeUsage (AttributeTargets.Field)]
+	public class OmitInGlslAttribute : Attribute { }
+
 	[AttributeUsage (AttributeTargets.Method)]
 	public class LiftMethodAttribute : Attribute { }
 

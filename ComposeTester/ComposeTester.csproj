@@ -48,6 +48,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VecTests.cs" />
     <Compile Include="Shaders.cs" />
+    <Compile Include="Geometries.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Fragment.glsl">

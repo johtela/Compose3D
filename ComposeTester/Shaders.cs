@@ -15,6 +15,7 @@
 		internal Vec3 position;
 		internal Vec4 color;
 		internal Vec3 normal;
+		[OmitInGlsl] internal int tag;
 
 		public Vec3 Position
 		{
@@ -32,6 +33,12 @@
 		{
 			get { return normal; }
 			set { normal = value; }
+		}
+
+		public int Tag
+		{
+			get { return tag; }
+			set { tag = value; }
 		}
 
 		public override string ToString ()
@@ -109,9 +116,9 @@
 				let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
 				let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
 				let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
-				let spot = (from sp in !u.spotLights
-					select CalcSpotLight (sp, v.position)).
-							Aggregate (new Vec3 (0f), (r, i) => r + i)
+				let spot = 
+					(from sp in !u.spotLights
+					select CalcSpotLight (sp, v.position)).Aggregate (new Vec3 (0f), (r, i) => r + i)
 				select new Fragment () 
 				{   
 					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),

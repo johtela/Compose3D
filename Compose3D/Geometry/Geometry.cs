@@ -131,19 +131,19 @@
 		public static Geometry<V> ReflectX<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (-1f, 0f, 0f).ReverseIndices ();
+			return geometry.Scale (-1f, 1f, 1f).ReverseIndices ();
 		}
 
 		public static Geometry<V> ReflectY<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (0f, -1f, 0f).ReverseIndices ();
+			return geometry.Scale (1f, -1f, 1f).ReverseIndices ();
 		}
 
 		public static Geometry<V> ReflectZ<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return geometry.Scale (0f, 0f, -1f).ReverseIndices ();
+			return geometry.Scale (1f, 1f, -1f).ReverseIndices ();
 		}
 
 		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex

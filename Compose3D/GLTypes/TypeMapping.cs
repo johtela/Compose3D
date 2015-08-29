@@ -11,6 +11,7 @@
     {
         private static Type floatT = typeof (float);
         private static Type doubleT = typeof (double);
+		private static Type intT = typeof (int);
         private static Type mathT = typeof (Math);
 
         private static MethodInfo GetMethod (Type type, string name, params Type[] args)
@@ -20,8 +21,9 @@
 
         private static Dictionary<Type, string> _types = new Dictionary<Type, string> ()
         {
-             { floatT, "float" },
-             { doubleT, "double "}
+            { floatT, "float" },
+			{ doubleT, "double " },
+			{ intT, "int" }
         };
 
         private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ()
@@ -48,17 +50,26 @@
  
         public static string Type (Type type)
         {
-            return _types[type];
+			string result;
+			if (!_types.TryGetValue (type, out result))
+				throw new GLError ("No mapping defined for type: " + type);
+			return result;
         }
 
         public static string Function (MethodInfo method)
         {
-            return _functions[method];
+			string result;
+			if (!_functions.TryGetValue (method, out result))
+				throw new GLError ("No mapping defined for method: " + method);
+			return result;
         }
 
         public static string Operators (ExpressionType et)
         {
-            return _operators[et];
+			string result;
+			if (!_operators.TryGetValue (et, out result))
+				throw new GLError ("No mapping defined for operator: " + et);
+			return result;
         }
     }
 }

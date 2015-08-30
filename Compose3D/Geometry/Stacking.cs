@@ -4,29 +4,15 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
-	/// <summary>
-	/// Axis along which the geometries are stacked.
-	/// </summary>
-	public enum StackAxis { X, Y, Z }
-
-	/// <summary>
-	/// Direction of the stack; towards negative or positive values.
-	/// </summary>
-	public enum StackDirection : int
-	{ 
-		Negative = -1, 
-		Positive = 1
-	}
-
 	public static class Stacking
 	{
-		private static Mat4 GetStackingMatrix (StackAxis axis, StackDirection direction, BBox previous, BBox current)
+		private static Mat4 GetStackingMatrix (Axis axis, AxisDirection direction, BBox previous, BBox current)
 		{
 			switch (axis)
 			{
-			case StackAxis.X: 
+			case Axis.X: 
 				return Mat.Translation<Mat4> ((previous.Right - current.Left) * (float)direction, 0f, 0f);
-			case StackAxis.Y: 
+			case Axis.Y: 
 				return Mat.Translation<Mat4> (0f, (previous.Top - current.Bottom) * (float)direction, 0f);
 			default: 
 				return Mat.Translation<Mat4> (0f, 0f, (previous.Front - current.Back) * (float)direction);
@@ -34,7 +20,7 @@
 		}
 
 		public static IEnumerable<Geometry<V>> Stack<V> (this IEnumerable<Geometry<V>> geometries, 
-			StackAxis axis, StackDirection direction) where V : struct, IVertex
+			Axis axis, AxisDirection direction) where V : struct, IVertex
 		{
 			var previous = geometries.First ().BoundingBox;
 			var stackedGeometries = geometries.Skip (1).Select (geom => 
@@ -49,7 +35,7 @@
 			return geometries.Take (1).Concat (stackedGeometries);
 		}
 
-		public static IEnumerable<Geometry<V>> Stack<V> (StackAxis axis, StackDirection direction, 
+		public static IEnumerable<Geometry<V>> Stack<V> (Axis axis, AxisDirection direction, 
 			params Geometry<V>[] geometries) where V : struct, IVertex
 		{
 			return geometries.Stack (axis, direction);
@@ -58,7 +44,7 @@
 		public static IEnumerable<Geometry<V>> StackLeft<V> (this IEnumerable<Geometry<V>> geometries) 
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.X, StackDirection.Negative);
+			return geometries.Stack (Axis.X, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackLeft<V> (params Geometry<V>[] geometries)
@@ -70,7 +56,7 @@
 		public static IEnumerable<Geometry<V>> StackRight<V> (this IEnumerable<Geometry<V>> geometries)
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.X, StackDirection.Positive);
+			return geometries.Stack (Axis.X, AxisDirection.Positive);
 		}
 
 		public static IEnumerable<Geometry<V>> StackRight<V> (params Geometry<V>[] geometries)
@@ -82,7 +68,7 @@
 		public static IEnumerable<Geometry<V>> StackDown<V> (this IEnumerable<Geometry<V>> geometries)
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.Y, StackDirection.Negative);
+			return geometries.Stack (Axis.Y, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackDown<V> (params Geometry<V>[] geometries)
@@ -94,7 +80,7 @@
 		public static IEnumerable<Geometry<V>> StackUp<V> (this IEnumerable<Geometry<V>> geometries)
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.Y, StackDirection.Positive);
+			return geometries.Stack (Axis.Y, AxisDirection.Positive);
 		}
 
 		public static IEnumerable<Geometry<V>> StackUp<V> (params Geometry<V>[] geometries)
@@ -106,7 +92,7 @@
 		public static IEnumerable<Geometry<V>> StackBackward<V> (this IEnumerable<Geometry<V>> geometries)
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.Z, StackDirection.Negative);
+			return geometries.Stack (Axis.Z, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackBackward<V> (params Geometry<V>[] geometries)
@@ -118,10 +104,10 @@
 		public static IEnumerable<Geometry<V>> StackForward<V> (this IEnumerable<Geometry<V>> geometries)
 			where V : struct, IVertex
 		{
-			return geometries.Stack (StackAxis.Z, StackDirection.Positive);
+			return geometries.Stack (Axis.Z, AxisDirection.Positive);
 		}
 
-		public static IEnumerable<Geometry<V>> StackForward<V> (Alignment xalign, Alignment yalign, params Geometry<V>[] geometries)
+		public static IEnumerable<Geometry<V>> StackForward<V> (params Geometry<V>[] geometries)
 			where V : struct, IVertex
 		{
 			return geometries.StackForward ();

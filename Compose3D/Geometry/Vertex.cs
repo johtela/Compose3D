@@ -37,20 +37,6 @@
 
 	public static class VertexHelpers
 	{
-		private static int _lastTag;
-
-		public static int TagVertex<V> (this V vertex) where V : struct, IVertex
-		{
-			vertex.Tag = ++_lastTag;
-			return vertex.Tag;
-		}
-
-		public static V FindByTag<V> (this IEnumerable<V> vertices, int tag)
-			where V : struct, IVertex
-		{
-			return vertices.First (v => v.Tag == tag);
-		}
-
 		public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
 			where V : struct, IVertex
 		{

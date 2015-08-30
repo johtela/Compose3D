@@ -45,8 +45,8 @@
 				return new V[] 
 				{
 					NewVertex (new Vec3 (0f, height, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (leftOffset, 0f, 0f), colors.Next (), normal),
 					NewVertex (new Vec3 (rightOffset, 0f, 0f), colors.Next (), normal),
+					NewVertex (new Vec3 (leftOffset, 0f, 0f), colors.Next (), normal)
 				};
 			}, material);
 		}

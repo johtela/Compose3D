@@ -5,6 +5,26 @@
     using System.Collections.Generic;
 	using System.Linq;
 
+	/// <summary>
+	/// Enumerations representing the axes in 3D cartesian coordinate system.
+	/// </summary>
+	public enum Axis { X, Y, Z }
+
+	/// <summary>
+	/// Enumeration representing a set of coordinate axes.
+	/// </summary>
+	[Flags]
+	public enum Axes { X = 1, Y = 2, Z = 4, All = 7 }
+
+	/// <summary>
+	/// Direction of the axis; towards negative or positive values.
+	/// </summary>
+	public enum AxisDirection : int
+	{ 
+		Negative = -1, 
+		Positive = 1
+	}
+
 	public class GeometryError : Exception
 	{
 		public GeometryError (string msg) : base (msg) { }
@@ -18,6 +38,7 @@
 	/// </description>
 	public abstract class Geometry<V> where V : struct, IVertex
 	{
+		private static int _lastTag;
 		private BBox _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
@@ -92,6 +113,25 @@
 		{
 			return NewVertex (position, color, normal, 0);
 		}
+
+		public int FindVertex (V vertex)
+		{
+			for (int i = 0; i < Vertices.Length; i++)
+				if (Vertices [i].Equals (vertex))
+					return i;
+			throw new ArgumentException ("Could not find vertex: " + vertex);
+		}
+
+		public int TagVertex (V vertex)
+		{
+			Vertices [FindVertex (vertex)].Tag = ++_lastTag;
+			return _lastTag;
+		}
+
+		public V FindVertexByTag (int tag)
+		{
+			return Vertices.First (v => v.Tag == tag);
+		}
 	}
 
 	/// <summary>
@@ -156,6 +196,25 @@
 		{
 			var center = geometry.BoundingBox.Center;
 			return Translate (geometry, -center.X, -center.Y, -center.Z);
+		}
+
+		private static Vec3 GetSnapOffset (Vec3 pos, Vec3 snapToPos, Axes snapAxes)
+		{
+			var result = snapToPos - pos;
+			if ((snapAxes & Axes.X) == 0)
+				result.X = 0f;
+			if ((snapAxes & Axes.Y) == 0)
+				result.Y = 0f;
+			if ((snapAxes & Axes.Z) == 0)
+				result.Z = 0f;
+			return result;
+		}
+
+		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, V vertex, V snapToVertex, Axes snapAxes)
+			where V : struct, IVertex
+		{
+			var offset = GetSnapOffset (vertex.Position, snapToVertex.Position, snapAxes);
+			return Translate (geometry, offset.X, offset.Y, offset.Z);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 	using Compose3D.GLTypes;
 	using OpenTK;
 	using System;
+	using System.Linq;
 
 	public static class Geometries
 	{
@@ -24,10 +25,24 @@
 
 		public static Geometry<Vertex> Roof ()
 		{
-			var leftPane = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, Mater ())
-				.Extrude (20f).Rotate (0f, 0f, MathHelper.PiOver4);
+			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, Mater ());
+			var roofSnapTag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost (). Rightmost().Single ());
+			var leftPane = trapezoid.Extrude (30f, true).Rotate (0f, 0f, MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
-			return Composite.Create (Stacking.StackRight (leftPane, rightPane)).Center ();
+			var roof = Composite.Create (Stacking.StackRight (leftPane, rightPane));
+			var gableHeight = roof.BoundingBox.Size.Y * 0.85f;
+			var frontGable = Triangle<Vertex>.Isosceles (2 * gableHeight, gableHeight, Mater ());
+			var gableTopTag = frontGable.TagVertex (frontGable.Vertices.Topmost ().Single ());
+			var backGable = frontGable.ReflectZ ().Translate (0f, 0f, -roof.BoundingBox.Size.Z * 0.85f);
+			var gables = Composite.Create (frontGable, backGable);
+			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z, Mater ())
+				.Extrude (12f, false).Rotate (MathHelper.PiOver2, 0f, 0f);
+			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
+				.Align (Alignment.Center, Alignment.None, Alignment.Center));
+			wallsAndGables = wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
+				roof.FindVertexByTag (roofSnapTag), Axes.All);
+			return Composite.Create (
+				Aligning.Align (Alignment.None, Alignment.None, Alignment.Center, roof, wallsAndGables)).Center ();
 		}
 	}
 }

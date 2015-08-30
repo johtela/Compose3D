@@ -36,7 +36,7 @@
 			}
 		}
 
-		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth)
+		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, bool includeBackFace)
 			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
@@ -48,16 +48,18 @@
 			var edges = GetEdges (frontFace).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
 
-			var geometries = new Geometry<V> [outerEdges.Length + 2];
-			geometries [0] = frontFace;
-			geometries [1] = backFace.ReverseIndices ();
+			var i = 0;
+			var geometries = new Geometry<V> [outerEdges.Length + (includeBackFace ? 2 : 1)];
+			geometries [i++] = frontFace;
+			if (includeBackFace)
+				geometries [i++] = backFace.ReverseIndices ();
 
-			for (int i = 0; i < outerEdges.Length; i++)
+			for (var j = 0; j < outerEdges.Length; i++, j++)
 			{
-				var edge = outerEdges [i];
+				var edge = outerEdges [j];
 				var normal = Mat.RotationZ<Mat3> (MathHelper.PiOver2) * 
 					(vertices [edge.Index2].Position - vertices [edge.Index1].Position);
-				geometries [i + 2] = Quadrilateral<V>.FromVertices (frontFace.Material, 
+				geometries [i] = Quadrilateral<V>.FromVertices (frontFace.Material, 
 					ChangeNormal (vertices [edge.Index2], normal),
 					ChangeNormal (vertices [edge.Index1], normal),
 					ChangeNormal (backFace.Vertices [edge.Index1], normal),
@@ -100,7 +102,7 @@
 
 		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) where V : struct, IVertex
 		{
-			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth);
+			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth, true);
 		}
 	}
 }

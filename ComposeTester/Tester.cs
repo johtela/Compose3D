@@ -21,8 +21,8 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.Hammer ();
-			_orientation = new Vector3 (0f, 0f, 20f);
+			_geometry = Geometries.Roof ();
+			_orientation = new Vector3 (0f, 0f, 40f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());

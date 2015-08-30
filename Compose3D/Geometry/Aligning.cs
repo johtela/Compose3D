@@ -36,6 +36,42 @@
 		{
 			return geometries.Align (xalign, yalign, zalign);
 		}
+
+		public static IEnumerable<Geometry<V>> AlignX<V> (this IEnumerable<Geometry<V>> geometries, Alignment xalign) 
+			where V : struct, IVertex
+		{
+			return geometries.Align (xalign, Alignment.None, Alignment.None);
+		}
+
+		public static IEnumerable<Geometry<V>> AlignX<V> (Alignment xalign, params Geometry<V>[] geometries) 
+			where V : struct, IVertex
+		{
+			return geometries.AlignX (xalign);
+		}
+
+		public static IEnumerable<Geometry<V>> AlignY<V> (this IEnumerable<Geometry<V>> geometries, Alignment yalign) 
+			where V : struct, IVertex
+		{
+			return geometries.Align (Alignment.None, yalign, Alignment.None);
+		}
+
+		public static IEnumerable<Geometry<V>> AlignY<V> (Alignment yalign, params Geometry<V>[] geometries) 
+			where V : struct, IVertex
+		{
+			return geometries.AlignY (yalign);
+		}
+
+		public static IEnumerable<Geometry<V>> AlignZ<V> (this IEnumerable<Geometry<V>> geometries, Alignment zalign) 
+			where V : struct, IVertex
+		{
+			return geometries.Align (Alignment.None, Alignment.None, zalign);
+		}
+
+		public static IEnumerable<Geometry<V>> AlignZ<V> (Alignment zalign, params Geometry<V>[] geometries) 
+			where V : struct, IVertex
+		{
+			return geometries.AlignZ (zalign);
+		}
 	}
 }
 

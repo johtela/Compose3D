@@ -27,7 +27,7 @@
 		{
 			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, NewMat ());
 			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
-			var leftPane = trapezoid.Extrude (30f, true).Rotate (0f, 0f, MathHelper.PiOver4);
+			var leftPane = trapezoid.Extrude (30f, 2, true).Rotate (0f, 0f, MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
 			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
 		}

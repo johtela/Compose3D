@@ -14,8 +14,6 @@
 		{
 			if (vertices.Length != 4)
 				throw new GeometryError ("Quadrilaterals must have four vertices");
-			if (!VertexHelpers.AreCoplanar (vertices))
-				throw new GeometryError ("Vertices are not coplanar");
 			return new Quadrilateral<V> (q => vertices, material);
 		}
 

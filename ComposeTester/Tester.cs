@@ -21,7 +21,7 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.House ();
+			_geometry = Geometries.Tube ();
 			_orientation = new Vector3 (0f, 0f, 40f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);

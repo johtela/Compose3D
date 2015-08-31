@@ -15,8 +15,6 @@
 		{
 			if (vertices.Length != 3)
 				throw new GeometryError ("Triangles must have three vertices");
-			if (!VertexHelpers.AreCoplanar (vertices))
-				throw new GeometryError ("Vertices are not coplanar");
 			return new Triangle<V> (t => vertices, material);
 		}
 			

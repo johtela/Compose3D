@@ -83,7 +83,7 @@
 			var normal = ab.Cross (ac);
 
 			for (int i = 3; i < vertices.Length; i++)
-				if (!normal.Dot (vertices [i].Position - first).ApproxEquals (0f))
+				if (!normal.Dot (vertices [i].Position - first).ApproxEquals (0f, 0.1f))
 					return false;
 			return true;
 		}

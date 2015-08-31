@@ -11,7 +11,7 @@
 	{
 		private static IMaterial NewMat ()
 		{
-			return Material.RepeatColors (Color.Random, Color.Random);
+			return Material.RepeatColors (Color.Random);
 		}
 
 		public static Geometry<Vertex> Hammer ()
@@ -27,7 +27,7 @@
 		{
 			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, NewMat ());
 			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
-			var leftPane = trapezoid.Extrude (30f, 2, true).Rotate (0f, 0f, MathHelper.PiOver4);
+			var leftPane = trapezoid.Extrude (30f).Rotate (0f, 0f, MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
 			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
 		}
@@ -45,7 +45,7 @@
 			int roofSnapTag, int gableTopTag)
 		{
 			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z, NewMat ())
-				.Extrude (12f, false).Rotate (MathHelper.PiOver2, 0f, 0f);
+				.Extrude (12f, false, false).Rotate (MathHelper.PiOver2, 0f, 0f);
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
 			return wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
@@ -59,6 +59,12 @@
 			var gables = Gables (roof, out gableTopTag);
 			var wallsAndGables = WallsAndGables (roof, gables, roofSnapTag, gableTopTag);
 			return Composite.Create (Aligning.AlignZ (Alignment.Center, roof, wallsAndGables)).Center ();
+		}
+
+		public static Geometry<Vertex> Tube ()
+		{
+			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
+				.Extrude (10f, 10, false, true, (g, i) => Mat.RotationX<Mat4> (MathHelper.PiOver6)).Center ();
 		}
 	}
 }

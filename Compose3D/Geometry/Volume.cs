@@ -37,7 +37,7 @@
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, int times, bool includeBackFace,
-            Func<Geometry<V>, int, Mat4> transform)	where V : struct, IVertex
+			bool smooth, Func<Geometry<V>, int, Mat4> transform) where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
 			if (!vertices.All (v => v.Position.Z == 0f))
@@ -53,17 +53,31 @@
             for (var t = 0; t < times; t++)
             {
                 backFace = backFace.Translate (0f, 0f, -depth);
-                backFace = backFace.Transform (transform (backFace, t));
+				var ptrans = transform (backFace, t);
+				backFace = backFace.Transform (ptrans);
                 for (var j = 0; j < outerEdges.Length; i++, j++)
                 {
                     var edge = outerEdges[j];
-                    var normal = Mat.RotationZ<Mat3> (MathHelper.PiOver2) *
-                        (vertices[edge.Index2].Position - vertices[edge.Index1].Position);
-                    geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
-                        ChangeNormal (vertices[edge.Index2], normal),
-                        ChangeNormal (vertices[edge.Index1], normal),
-                        ChangeNormal (backFace.Vertices[edge.Index1], normal),
-                        ChangeNormal (backFace.Vertices[edge.Index2], normal));
+					Vec3 normal = CalculateNormal (vertices, edge);
+					Vec3 normal1, normal2;
+					if (smooth)
+					{
+						normal1 = (normal + CalculateNormal (vertices, FindPreviousEdge (outerEdges, edge))).Normalized;
+						normal2 = (normal + CalculateNormal (vertices, FindNextEdge (outerEdges, edge))).Normalized;
+					}
+					else
+					{
+						normal1 = normal;
+						normal2 = normal;
+					}
+					var ntrans = new Mat3 (ptrans);
+					Vec3 normal3 = ntrans * normal1;
+					Vec3 normal4 = ntrans * normal2;
+					geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
+						ChangeNormal (vertices[edge.Index2], normal2),
+						ChangeNormal (vertices[edge.Index1], normal1),
+						ChangeNormal (backFace.Vertices[edge.Index1], normal3),
+						ChangeNormal (backFace.Vertices[edge.Index2], normal4));
                 }
                 vertices = backFace.Vertices;
             }
@@ -71,18 +85,6 @@
                 geometries[i++] = backFace.ReverseIndices();
             return Composite.Create (geometries);
 		}
-
-        public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, int times, bool includeBackFace)
-            where V : struct, IVertex
-        {
-            return frontFace.Extrude (depth, times, includeBackFace, (g, t) => new Mat4 (1f));
-        }
-
-        public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, bool includeBackFace) 
-            where V : struct, IVertex
-        {
-            return frontFace.Extrude (depth, 1, includeBackFace);
-        }
 
         private static V ChangeNormal<V> (V vertex, Vec3 normal)
 			where V : struct, IVertex
@@ -116,9 +118,44 @@
 			return edges.Except (innerEdges);
 		}
 
-		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) where V : struct, IVertex
+		private static Edge FindPreviousEdge (Edge[] edges, Edge edge)
 		{
-			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth, true);
+			return edges.Single (e => e.Index2 == edge.Index1);
+		}
+
+		private static Edge FindNextEdge (Edge[] edges, Edge edge)
+		{
+			return edges.Single (e => e.Index1 == edge.Index2);
+		}
+
+		private static Vec3 CalculateNormal<V> (V[] vertices, Edge edge) where V : struct, IVertex
+		{
+			return Mat.RotationZ<Mat3> (MathHelper.PiOver2) *
+				(vertices[edge.Index2].Position - vertices[edge.Index1].Position);
+		}
+
+		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, int times, 
+			bool includeBackFace, bool smooth) where V : struct, IVertex
+		{
+			return frontFace.Extrude (depth, times, includeBackFace, smooth, (g, t) => new Mat4 (1f));
+		}
+
+		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, 
+			bool includeBackFace, bool smooth) where V : struct, IVertex
+		{
+			return frontFace.Extrude (depth, 1, includeBackFace, smooth);
+		}
+
+		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
+			where V : struct, IVertex
+		{
+			return frontFace.Extrude (depth, 1, true, false);
+		}
+
+		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) 
+			where V : struct, IVertex
+		{
+			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth);
 		}
 	}
 }

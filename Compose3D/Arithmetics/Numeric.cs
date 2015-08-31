@@ -1,7 +1,8 @@
 ﻿namespace Compose3D.Arithmetics
 {
-    using System;
     using GLTypes;
+	using OpenTK;
+	using System;
 
     public static class Numeric
     {
@@ -28,5 +29,15 @@
         {
             return Math.Pow (value, exponent);
         }
+
+		public static float ToRadians (this float degrees)
+		{
+			return degrees * MathHelper.Pi / 180f;
+		}
+
+		public static double ToRadians (this double degrees)
+		{
+			return degrees * Math.PI / 180.0;
+		}
     }
 }

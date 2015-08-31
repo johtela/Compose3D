@@ -76,6 +76,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Vec3.tt</DependentUpon>
     </Compile>
+    <Compile Include="Geometry\Circular.cs" />
     <Compile Include="GLTypes\ParsingHelpers.cs" />
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Transform.cs" />
@@ -98,6 +99,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>VecTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Primitive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Geometry\Material.cs" />
     <Compile Include="Geometry\Color.cs" />

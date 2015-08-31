@@ -4,18 +4,13 @@
 	using System;
     using System.Collections.Generic;
 
-	public class Quadrilateral<V> : Geometry<V> where V : struct, IVertex
+	public class Quadrilateral<V> : Primitive<V> where V : struct, IVertex
 	{
-		private Func<Geometry<V>, V[]> _generateVertices;
-		private IMaterial _material;
-
 		private Quadrilateral (Func<Geometry<V>, V[]> generateVertices, IMaterial material)
-		{
-			_generateVertices = generateVertices;
-			_material = material;
-		}
+            : base (generateVertices, material)
+        { }
 
-		public static Quadrilateral<V> FromVertices (IMaterial material, params V[] vertices)
+        public static Quadrilateral<V> FromVertices (IMaterial material, params V[] vertices)
 		{
 			if (vertices.Length != 4)
 				throw new GeometryError ("Quadrilaterals must have four vertices");
@@ -57,19 +52,9 @@
 			}, material);
 		}
 
-		protected override IEnumerable<V> GenerateVertices ()
-		{
-			return _generateVertices (this);
-		}
-
 		protected override IEnumerable<int> GenerateIndices ()
 		{
 			return new int[] { 0, 1, 2, 2, 3, 0 };
-		}
-
-		public override IMaterial Material
-		{
-			get { return _material; }
 		}
 	}
 }

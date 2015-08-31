@@ -5,18 +5,13 @@
 	using System;
 	using System.Collections.Generic;
 
-	public class Triangle<V> : Geometry<V> where V : struct, IVertex
+	public class Triangle<V> : Primitive<V> where V : struct, IVertex
 	{
-		private Func<Geometry<V>, V[]> _generateVertices;
-		private IMaterial _material;
-
 		private Triangle (Func<Geometry<V>, V[]> generateVertices, IMaterial material)
-		{
-			_generateVertices = generateVertices;
-			_material = material;
-		}
+            : base (generateVertices, material)
+        { }
 
-		public static Triangle<V> FromVertices (IMaterial material, params V[] vertices)
+        public static Triangle<V> FromVertices (IMaterial material, params V[] vertices)
 		{
 			if (vertices.Length != 3)
 				throw new GeometryError ("Triangles must have three vertices");
@@ -51,19 +46,9 @@
 			}, material);
 		}
 
-		protected override IEnumerable<V> GenerateVertices ()
-		{
-			return _generateVertices (this);
-		}
-
 		protected override IEnumerable<int> GenerateIndices ()
 		{
 			return new int[] { 0, 1, 2 };
-		}
-
-		public override IMaterial Material
-		{
-			get { return _material; }
 		}
 	}
 }

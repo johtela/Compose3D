@@ -53,7 +53,7 @@
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * repeatCount)
 			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
-            var backFace = frontFace;
+			var backFace = frontFace.Scale (1f, 1f, -1f);
             var i = 0;
 			if (includeFrontFace)
             	geometries[i++] = frontFace;
@@ -91,7 +91,7 @@
                 vertices = backFace.Vertices;
             }
             if (includeBackFace)
-				geometries[i++] = backFace.ReflectZ ();
+				geometries[i++] = backFace.ReverseIndices ();
             return Composite.Create (geometries);
 		}
 

@@ -53,8 +53,7 @@
             for (var t = 0; t < times; t++)
             {
                 backFace = backFace.Translate (0f, 0f, -depth);
-				var ptrans = transform (backFace, t);
-				backFace = backFace.Transform (ptrans);
+				backFace = backFace.Transform (transform (backFace, t));
                 for (var j = 0; j < outerEdges.Length; i++, j++)
                 {
                     var edge = outerEdges[j];
@@ -70,9 +69,8 @@
 						normal1 = normal;
 						normal2 = normal;
 					}
-					var ntrans = new Mat3 (ptrans);
-					Vec3 normal3 = ntrans * normal1;
-					Vec3 normal4 = ntrans * normal2;
+					Vec3 normal3 = normal1;
+					Vec3 normal4 = normal2;
 					geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
 						ChangeNormal (vertices[edge.Index2], normal2),
 						ChangeNormal (vertices[edge.Index1], normal1),
@@ -128,7 +126,8 @@
 			return edges.Single (e => e.Index1 == edge.Index2);
 		}
 
-		private static Vec3 CalculateNormal<V> (V[] vertices, Edge edge) where V : struct, IVertex
+		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, Edge edge) 
+            where V : struct, IVertex
 		{
 			return Mat.RotationZ<Mat3> (MathHelper.PiOver2) *
 				(vertices[edge.Index2].Position - vertices[edge.Index1].Position);

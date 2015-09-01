@@ -41,8 +41,9 @@
 			}
 		}
 
-		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, int times, bool includeBackFace,
-			bool smooth, Func<Geometry<V>, int, Mat4> transform) where V : struct, IVertex
+		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
+			bool includeFrontFace, bool includeBackFace, bool smoothNormals, 
+			Func<Geometry<V>, int, Mat4> transform) where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
 			if (!vertices.All (v => v.Position.Z == 0f))
@@ -50,14 +51,15 @@
 
 			var edges = GetEdges (frontFace).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
-			var geometries = new Geometry<V> [(outerEdges.Length * times) + (includeBackFace ? 2 : 1)];
-            var backFace = frontFace.Transform (Mat.Scaling<Mat4> (1f, 1f, -1f));
+			var geometries = new Geometry<V> [(outerEdges.Length * repeatCount)
+			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
+            var backFace = frontFace;
             var i = 0;
-            geometries[i++] = frontFace;
+			if (includeFrontFace)
+            	geometries[i++] = frontFace;
 
-            for (var t = 0; t < times; t++)
+            for (var t = 0; t < repeatCount; t++)
             {
-                backFace = backFace.Translate (0f, 0f, -depth);
 				backFace = backFace.Transform (transform (backFace, t));
 				var backVertices = backFace.Vertices;
                 for (var j = 0; j < outerEdges.Length; i++, j++)
@@ -67,7 +69,7 @@
 					var frontNormal2 = frontNormal1;
 					var backNormal1 = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
 					var backNormal2 = backNormal1;
-					if (smooth)
+					if (smoothNormals)
 					{
 						var prevEdge = FindPreviousEdge (outerEdges, edge);
 						var nextEdge = FindNextEdge (outerEdges, edge);
@@ -89,8 +91,13 @@
                 vertices = backFace.Vertices;
             }
             if (includeBackFace)
-                geometries[i++] = backFace.ReverseIndices();
+				geometries[i++] = backFace.ReflectZ ();
             return Composite.Create (geometries);
+		}
+
+		private static int BoolToInt (bool b)
+		{
+			return b ? 1 : 0;
 		}
 
         private static V ChangeNormal<V> (V vertex, Vec3 normal)
@@ -143,22 +150,17 @@
 			return vec1.Cross (vec2).Normalized;
 		}
 
-		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, int times, 
+		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 
 			bool includeBackFace, bool smooth) where V : struct, IVertex
 		{
-			return frontFace.Extrude (depth, times, includeBackFace, smooth, (g, t) => new Mat4 (1f));
-		}
-
-		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth, 
-			bool includeBackFace, bool smooth) where V : struct, IVertex
-		{
-			return frontFace.Extrude (depth, 1, includeBackFace, smooth);
+			return frontFace.Stretch (1, true, includeBackFace, smooth, 
+				(g, t) => Mat.Translation<Mat4> (0f, 0f, -depth));
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
 			where V : struct, IVertex
 		{
-			return frontFace.Extrude (depth, 1, true, false);
+			return frontFace.Extrude (depth, true, false);
 		}
 
 		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) 

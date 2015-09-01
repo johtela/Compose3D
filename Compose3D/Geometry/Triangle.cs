@@ -31,7 +31,7 @@
 
 		public static Triangle<V> Scalene (float leftOffset, float rightOffset, float height, IMaterial material)
 		{
-			var normal = new Vec3 (0f, 0f, -1f);
+			var normal = new Vec3 (0f, 0f, 1f);
 			return new Triangle<V> (q =>
 			{
 				var colors = q.Material.Colors.GetEnumerator ();

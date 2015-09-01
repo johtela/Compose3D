@@ -63,8 +63,16 @@
 
 		public static Geometry<Vertex> Tube ()
 		{
-			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
-				.Extrude (10f, 10, false, true, (g, i) => Mat.RotationX<Mat4> (MathHelper.PiOver6)).Center ();
+			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, 270f.ToRadians (), NewMat ())
+				.Extrude (10f, 10, true, true, 
+					(g, i) => Mat.RotationX<Mat4> (MathHelper.PiOver6))
+				.Center ();
+		}
+
+		public static Geometry<Vertex> Arrow ()
+		{
+			return Circular<Vertex>.Circle (10f, 20f.ToRadians (), NewMat ())
+				.Extrude (20f, 1, true, true, (g, i) => Mat.Scaling<Mat4> (0.01f, 0.01f, 1f, 1f)).Center ();
 		}
 	}
 }

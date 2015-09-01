@@ -24,7 +24,7 @@
 			if (fullArc)
 				endAngle += MathHelper.TwoPi;
 			var vertCount = (int)Math.Ceiling ((endAngle - startAngle) / stepAngle) + (fullArc ? 1 : 2);
-            var normal = new Vec3 (0f, 0f, -1f);
+            var normal = new Vec3 (0f, 0f, 1f);
 			return new Circular<V> (e =>
 			{
 				var colors = e.Material.Colors.GetEnumerator ();

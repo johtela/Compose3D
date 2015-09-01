@@ -29,6 +29,11 @@
 				return Index1.GetHashCode () ^ Index2.GetHashCode ();
 			}
 
+			public override string ToString ()
+			{
+				return string.Format ("({0}, {1})", Index1, Index2);
+			}
+
 			public bool Equals (Edge other)
 			{
 				return (Index1 == other.Index1 && Index2 == other.Index2) ||
@@ -54,28 +59,32 @@
             {
                 backFace = backFace.Translate (0f, 0f, -depth);
 				backFace = backFace.Transform (transform (backFace, t));
+				var backVertices = backFace.Vertices;
                 for (var j = 0; j < outerEdges.Length; i++, j++)
                 {
                     var edge = outerEdges[j];
-					Vec3 normal = CalculateNormal (vertices, edge);
-					Vec3 normal1, normal2;
+					var frontNormal1 = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
+					var frontNormal2 = frontNormal1;
+					var backNormal1 = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
+					var backNormal2 = backNormal1;
 					if (smooth)
 					{
-						normal1 = (normal + CalculateNormal (vertices, FindPreviousEdge (outerEdges, edge))).Normalized;
-						normal2 = (normal + CalculateNormal (vertices, FindNextEdge (outerEdges, edge))).Normalized;
+						var prevEdge = FindPreviousEdge (outerEdges, edge);
+						var nextEdge = FindNextEdge (outerEdges, edge);
+						var frontPrevNormal = CalculateNormal (vertices, backVertices, prevEdge.Index1, prevEdge.Index2);
+						var frontNextNormal = CalculateNormal (vertices, backVertices, nextEdge.Index1, nextEdge.Index2);
+						var backPrevNormal = CalculateNormal (backVertices, vertices, prevEdge.Index2, prevEdge.Index1);
+						var backNextNormal = CalculateNormal (backVertices, vertices, nextEdge.Index2, nextEdge.Index1);
+						frontNormal1 = (frontNormal1 + frontPrevNormal).Normalized;
+						frontNormal2 = (frontNormal2 + frontNextNormal).Normalized;
+						backNormal1 = (backNormal1 + backPrevNormal).Normalized;
+						backNormal2 = (backNormal2 + backNextNormal).Normalized;
 					}
-					else
-					{
-						normal1 = normal;
-						normal2 = normal;
-					}
-					Vec3 normal3 = normal1;
-					Vec3 normal4 = normal2;
 					geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
-						ChangeNormal (vertices[edge.Index2], normal2),
-						ChangeNormal (vertices[edge.Index1], normal1),
-						ChangeNormal (backFace.Vertices[edge.Index1], normal3),
-						ChangeNormal (backFace.Vertices[edge.Index2], normal4));
+						ChangeNormal (vertices[edge.Index2], frontNormal2),
+						ChangeNormal (vertices[edge.Index1], frontNormal1),
+						ChangeNormal (backFace.Vertices[edge.Index1], backNormal1),
+						ChangeNormal (backFace.Vertices[edge.Index2], backNormal2));
                 }
                 vertices = backFace.Vertices;
             }
@@ -126,11 +135,12 @@
 			return edges.Single (e => e.Index1 == edge.Index2);
 		}
 
-		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, Edge edge) 
+		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
             where V : struct, IVertex
 		{
-			return Mat.RotationZ<Mat3> (MathHelper.PiOver2) *
-				(vertices[edge.Index2].Position - vertices[edge.Index1].Position);
+			var vec1 = vertices [index1].Position - vertices [index2].Position;
+			var vec2 = vertices [index1].Position - backVertices [index1].Position;
+			return vec1.Cross (vec2).Normalized;
 		}
 
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, int times, 

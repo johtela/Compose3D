@@ -36,7 +36,7 @@
 			var bottomLeft = -bottomRight;
 			var topLeft = bottomLeft + topLeftOffset;
 			var bottom = -top;
-			var normal = new Vec3 (0f, 0f, -1f);
+			var normal = new Vec3 (0f, 0f, 1f);
 			return new Quadrilateral<V> (q =>
 			{
 				var colors = q.Material.Colors.GetEnumerator ();

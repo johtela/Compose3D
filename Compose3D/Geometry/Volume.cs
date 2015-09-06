@@ -8,6 +8,8 @@
 
 	public static class Volume
 	{
+		#region Edges
+
 		private class Edge : IEquatable<Edge>
 		{
 			public readonly int Index1;
@@ -37,9 +39,70 @@
 			public bool Equals (Edge other)
 			{
 				return (Index1 == other.Index1 && Index2 == other.Index2) ||
-					(Index1 == other.Index2 && Index2 == other.Index1);
+				(Index1 == other.Index2 && Index2 == other.Index1);
 			}
 		}
+
+		#endregion
+
+		#region Private helper functions
+
+		private static int BoolToInt (bool b)
+		{
+			return b ? 1 : 0;
+		}
+
+		private static V ChangeNormal<V> (V vertex, Vec3 normal)
+			where V : struct, IVertex
+		{
+			return Geometry<V>.NewVertex (vertex.Position, vertex.Color, normal);
+		}
+
+		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
+			where V : struct, IVertex
+		{
+			var indices = geometry.Indices;
+			for (int i = 0; i < indices.Length; i += 3)
+			{
+				yield return new Edge (indices [i], indices [i + 1]);
+				yield return new Edge (indices [i + 1], indices [i + 2]);
+				yield return new Edge (indices [i + 2], indices [i]);
+			}
+		}
+
+		private static IEnumerable<Edge> DetermineOuterEdges (Edge[] edges)
+		{
+			var innerEdges = new HashSet<Edge> ();
+
+			for (int i = 0; i < edges.Length; i++)
+				for (int j = i + 1; j < edges.Length; j++)
+					if (edges [i].Equals (edges [j]))
+					{
+						innerEdges.Add (edges [j]);
+						break;
+					}
+			return edges.Except (innerEdges);
+		}
+
+		private static Edge FindPreviousEdge (Edge[] edges, Edge edge)
+		{
+			return edges.Single (e => e.Index2 == edge.Index1);
+		}
+
+		private static Edge FindNextEdge (Edge[] edges, Edge edge)
+		{
+			return edges.Single (e => e.Index1 == edge.Index2);
+		}
+
+		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
+			where V : struct, IVertex
+		{
+			var vec1 = vertices [index1].Position - vertices [index2].Position;
+			var vec2 = vertices [index1].Position - backVertices [index1].Position;
+			return vec1.Cross (vec2).Normalized;
+		}
+
+		#endregion
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
 			bool includeFrontFace, bool includeBackFace, bool smoothNormals, 
@@ -93,61 +156,6 @@
             if (includeBackFace)
 				geometries[i++] = backFace.ReverseIndices ();
             return Composite.Create (geometries);
-		}
-
-		private static int BoolToInt (bool b)
-		{
-			return b ? 1 : 0;
-		}
-
-        private static V ChangeNormal<V> (V vertex, Vec3 normal)
-			where V : struct, IVertex
-		{
-			return Geometry<V>.NewVertex (vertex.Position, vertex.Color, normal);
-		}
-
-		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
-			where V : struct, IVertex
-		{
-			var indices = geometry.Indices;
-			for (int i = 0; i < indices.Length; i += 3)
-			{
-				yield return new Edge (indices [i], indices [i + 1]);
-				yield return new Edge (indices [i + 1], indices [i + 2]);
-				yield return new Edge (indices [i + 2], indices [i]);
-			}
-		}
-
-		private static IEnumerable<Edge> DetermineOuterEdges (Edge[] edges)
-		{
-			var innerEdges = new HashSet<Edge> ();
-
-			for (int i = 0; i < edges.Length; i++)
-				for (int j = i + 1; j < edges.Length; j++) 
-					if (edges [i].Equals (edges [j]))
-					{
-						innerEdges.Add (edges [j]);
-						break;
-					}
-			return edges.Except (innerEdges);
-		}
-
-		private static Edge FindPreviousEdge (Edge[] edges, Edge edge)
-		{
-			return edges.Single (e => e.Index2 == edge.Index1);
-		}
-
-		private static Edge FindNextEdge (Edge[] edges, Edge edge)
-		{
-			return edges.Single (e => e.Index1 == edge.Index2);
-		}
-
-		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
-            where V : struct, IVertex
-		{
-			var vec1 = vertices [index1].Position - vertices [index2].Position;
-			var vec2 = vertices [index1].Position - backVertices [index1].Position;
-			return vec1.Cross (vec2).Normalized;
 		}
 
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 

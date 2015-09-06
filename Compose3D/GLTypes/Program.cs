@@ -47,21 +47,34 @@
                 field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field));
         }
 
-		public void DrawVertexBuffer<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex
+		void BindVertices<V> (VBO<V> vertices) where V : struct, IVertex
 		{
 			var recSize = Marshal.SizeOf (typeof(V));
 			var offset = 0;
-
 			GL.BindBuffer (BufferTarget.ArrayBuffer, vertices._glvbo);
-			foreach (var attr in VertexAttr.GetAttributes<V>())
+			foreach (var attr in VertexAttr.GetAttributes<V> ())
 			{
 				var index = GetVertexAttrIndex (attr.Name);
 				GL.EnableVertexAttribArray (index);
 				GL.VertexAttribPointer (index, attr.Count, attr.PointerType, false, recSize, offset);
 				offset += attr.Size;
 			}
+		}
+
+		public void DrawTriangles<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex
+		{
+			BindVertices (vertices);
 			GL.BindBuffer (BufferTarget.ElementArrayBuffer, indices._glvbo);
 			GL.DrawElements (PrimitiveType.Triangles, indices._count, DrawElementsType.UnsignedInt, 0);
+			GL.BindBuffer (BufferTarget.ElementArrayBuffer, 0);
+			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+		}
+
+		public void DrawNormals<V> (VBO<V> vertices) where V : struct, IVertex
+		{
+			BindVertices (vertices);
+			GL.DrawArrays (PrimitiveType.Lines, 0, vertices._count);
+			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 	using Compose3D.GLTypes;
 	using OpenTK;
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 
 	public static class Geometries
@@ -61,19 +62,27 @@
 			return Composite.Create (Aligning.AlignZ (Alignment.Center, roof, wallsAndGables)).Center ();
 		}
 
+		private static IEnumerable<Mat4> TubeTransforms ()
+		{
+			var res = new Mat4 (1f);
+			for (int i = 0; i < 10; i++)
+			{
+				res = Mat.RotationX<Mat4> (10f.ToRadians ()) * Mat.Translation<Mat4> (0f, 0f, -10f) * res;
+				yield return res;
+			}
+		}
+
 		public static Geometry<Vertex> Tube ()
 		{
 			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, 270f.ToRadians (), NewMat ())
-				.Stretch (10, true, true, true, 
-					(g, i) => Mat.RotationX<Mat4> (MathHelper.PiOver6) * Mat.Translation<Mat4> (0f, 0f, -10f))
-				.Center ();
+				.Stretch (10, true, true, true, TubeTransforms ()).Center ();
 		}
 
 		public static Geometry<Vertex> Arrow ()
 		{
 			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
 				.Stretch (1, false, false, true, 
-					(g, i) => Mat.Scaling<Mat4> (0.1f, 0.1f, 1f, 1f) * Mat.Translation<Mat4> (0f, 0f, -30f))
+					new Mat4[] { Mat.Scaling<Mat4> (0.1f, 0.1f, 1f, 1f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
 		}
 	}

@@ -14,6 +14,7 @@
 		private Program _program;
 		private VBO<Vertex> _vbo;
 		private VBO<int> _ibo;
+		private VBO<Vertex> _normalVbo;
 		private Vector3 _orientation;
         private Uniforms _uniforms;
         private Geometry<Vertex> _geometry;
@@ -21,10 +22,11 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.House ();
+			_geometry = Geometries.Tube ();
 			_orientation = new Vector3 (0f, 0f, 40f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
+			_normalVbo = new VBO<Vertex> (_geometry.Normals, BufferTarget.ArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
             _program.InitializeUniforms (_uniforms = new Uniforms ());
         }
@@ -57,7 +59,8 @@
 		{
 			base.OnRenderFrame (e);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			_program.DrawVertexBuffer<Vertex> (_vbo, _ibo);
+			_program.DrawTriangles<Vertex> (_vbo, _ibo);
+			_program.DrawNormals<Vertex> (_normalVbo);
 			SwapBuffers ();
 		}
 

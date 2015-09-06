@@ -106,7 +106,7 @@
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
 			bool includeFrontFace, bool includeBackFace, bool smoothNormals, 
-			Func<Geometry<V>, int, Mat4> transform) where V : struct, IVertex
+			IEnumerable<Mat4> transforms) where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
 			if (!vertices.All (v => v.Position.Z == 0f))
@@ -116,14 +116,17 @@
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * repeatCount)
 			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
-			var backFace = frontFace.Scale (1f, 1f, -1f);
+			var backFace = frontFace;
             var i = 0;
+			var txenum = transforms.GetEnumerator ();
 			if (includeFrontFace)
             	geometries[i++] = frontFace;
 
-            for (var t = 0; t < repeatCount; t++)
+			for (var t = 0; t < repeatCount; t++)
             {
-				backFace = backFace.Transform (transform (backFace, t));
+				if (!txenum.MoveNext ())
+					throw new GeometryError ("Transforms exhausted prematurely.");
+				backFace = frontFace.Scale (1f, 1f, -1f).Transform (txenum.Current);
 				var backVertices = backFace.Vertices;
                 for (var j = 0; j < outerEdges.Length; i++, j++)
                 {
@@ -162,7 +165,7 @@
 			bool includeBackFace, bool smooth) where V : struct, IVertex
 		{
 			return frontFace.Stretch (1, true, includeBackFace, smooth, 
-				(g, t) => Mat.Translation<Mat4> (0f, 0f, -depth));
+				new Mat4[] { Mat.Translation<Mat4> (0f, 0f, -depth) });
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 

@@ -96,6 +96,18 @@
 			}
 		}
 
+		public IEnumerable<V> Normals
+		{
+			get
+			{
+				foreach (var v in Vertices)
+				{
+					yield return NewVertex (v.Position, Color.White, v.Normal);
+					yield return NewVertex (v.Position + v.Normal, Color.White, v.Normal);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>

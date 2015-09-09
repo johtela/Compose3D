@@ -39,7 +39,7 @@
 			public bool Equals (Edge other)
 			{
 				return (Index1 == other.Index1 && Index2 == other.Index2) ||
-				(Index1 == other.Index2 && Index2 == other.Index1);
+					(Index1 == other.Index2 && Index2 == other.Index1);
 			}
 		}
 
@@ -172,6 +172,13 @@
 			where V : struct, IVertex
 		{
 			return frontFace.Extrude (depth, true, false);
+		}
+
+		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY)
+			where V : struct, IVertex
+		{
+			return frontFace.Stretch (1, false, false, false, 
+				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY, 0f) });
 		}
 
 		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) 

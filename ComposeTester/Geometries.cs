@@ -85,6 +85,13 @@
 					new Mat4[] { Mat.Scaling<Mat4> (0.1f, 0.1f, 1f, 1f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
 		}
+
+		public static Geometry<Vertex> Pipe ()
+		{
+			return Circular<Vertex>.Circle (10f, NewMat ())
+				.Hollow (1.1f, 1.1f)
+				.Extrude (10f, true, true).Center ();
+		}
 	}
 }
 

@@ -32,7 +32,12 @@
 		public Vec3 Normal
 		{
 			get { return normal; }
-			set { normal = value; }
+			set 
+			{
+				if (float.IsNaN (value.X) || float.IsNaN (value.Y) || float.IsNaN (value.Z))
+					throw new ArgumentException ("Normal component NaN");
+				normal = value; 
+			}
 		}
 
 		public int Tag

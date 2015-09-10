@@ -88,9 +88,10 @@
 
 		public static Geometry<Vertex> Pipe ()
 		{
-			return Circular<Vertex>.Circle (10f, NewMat ())
-				.Hollow (1.1f, 1.1f)
-				.Extrude (10f, true, true).Center ();
+			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
+				.Hollow (1.2f, 1.2f)
+				.Extrude (10f, true, true)
+				.Center ();
 		}
 	}
 }

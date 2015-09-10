@@ -119,6 +119,7 @@
     <Compile Include="Geometry\Triangle.cs" />
     <Compile Include="Geometry\Stacking.cs" />
     <Compile Include="Geometry\Aligning.cs" />
+    <Compile Include="Geometry\Simplified.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

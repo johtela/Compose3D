@@ -177,7 +177,7 @@
 		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY)
 			where V : struct, IVertex
 		{
-			return frontFace.Stretch (1, false, false, false, 
+			return frontFace.Center ().Stretch (1, false, false, false, 
 				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
 		}
 

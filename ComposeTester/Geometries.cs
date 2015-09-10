@@ -84,11 +84,11 @@
 				.Stretch (1, false, false, true, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.1f, 0.1f, 1f, 1f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
-		}
+		}	
 
 		public static Geometry<Vertex> Pipe ()
 		{
-			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
+			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi, NewMat ())
 				.Hollow (1.2f, 1.2f)
 				.Extrude (10f, true, true)
 				.Center ();

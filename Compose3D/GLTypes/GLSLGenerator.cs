@@ -1,14 +1,15 @@
 ﻿namespace Compose3D.GLTypes
 {
+    using Compose3D;
+    using OpenTK.Graphics.OpenGL;
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using OpenTK.Graphics.OpenGL;
-    using System.Collections.Generic;
     using System.Text;
-    using System.Globalization;
-	using Compose3D;
+    using System.Text.RegularExpressions;
 
 	public class GLSLGenerator
     {
@@ -31,9 +32,14 @@
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
         {
 			var builder = new GLSLGenerator ();
+            var glslVersion = GL.GetString(StringName.ShadingLanguageVersion);
+            var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
+            if (!match.Success || match.Groups.Count != 3)
+                throw new ParseException ("Invalid GLSL version string: " + glslVersion);
+            var version = match.Groups[1].Value + match.Groups[2].Value;
             builder.DeclareVariables (typeof (T), "out");
             builder.OutputShader (shader);
-			return "#version 300 es\nprecision highp float;\n" +
+			return string.Format ("#version {0}\nprecision highp float;\n", version) +
 				builder._decl.ToString() +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();

@@ -72,6 +72,13 @@
 		internal Vec3 direction;
 	}
 
+	[GLStruct ("PointLight")]
+	public struct PointLight
+	{
+		internal Vec3 position;
+		internal Vec3 intensity;
+	}
+
 	[GLStruct ("SpotLight")]
 	public struct SpotLight
 	{
@@ -89,48 +96,59 @@
 		internal Uniform<Mat3> normalMatrix;
 		internal Uniform<Vec3> ambientLightIntensity;
 		internal Uniform<DirectionalLight> directionalLight;
-		[GLArray (1)] 
-		internal Uniform<SpotLight[]> spotLights;
+		internal Uniform<PointLight> pointLight;
+//		[GLArray (1)]
+//		internal Uniform<SpotLight[]> spotLights;
 	}
 
 	public static class Shaders
 	{
+		public static readonly Func<DirectionalLight, Vec3, Vec4> CalcDirLight =
+			GLShader.Function (() => CalcDirLight,
+				(dirLight, normal) => 
+				(from cosAngle in normal.Dot (dirLight.direction).ToShader ()
+				 select new Vec4 (dirLight.intensity, 0f) * cosAngle.Clamp (0f, 1f))
+				.Evaluate ());
+
+		public static readonly Func<PointLight, Vec3, Vec3, Vec4> CalcPointLight =
+			GLShader.Function (() => CalcPointLight,
+				(pointLight, position, normal) => 
+				(from vecToLight in (pointLight.position - position).ToShader ()
+				 let lightVec = vecToLight.Normalized
+				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
+				 select new Vec4 (pointLight.intensity, 0f) * cosAngle)
+				.Evaluate ());
+
 		public static readonly Func<SpotLight, float, float> Attenuation = 
-			GLShader.Function (
-				() => Attenuation,
+			GLShader.Function (() => Attenuation,
 				(sp, d) => 1f / ((sp.linearAttenuation * d) + (sp.quadraticAttenuation * d * d)));
 
 		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
-			GLShader.Function (
-				() => CalcSpotLight,
-				(sp, v) => (from vecToLight in (sp.position - v).ToShader ()
-				            let dist = vecToLight.Length
-				            let lightDir = vecToLight.Normalized
-				            let attenuation = Attenuation (sp, dist)
-				            let cosAngle = (-lightDir).Dot (sp.direction)
-				            select sp.intensity *
-				                (cosAngle < sp.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (sp.spotExponent)))
+			GLShader.Function (() => CalcSpotLight,
+				(sp, v) => 
+				(from vecToLight in (sp.position - v).ToShader ()
+				 let dist = vecToLight.Length
+				 let lightDir = vecToLight.Normalized
+				 let attenuation = Attenuation (sp, dist)
+				 let cosAngle = (-lightDir).Dot (sp.direction)
+				 select sp.intensity *
+				     (cosAngle < sp.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (sp.spotExponent)))
 				.Evaluate ());
 
 		public static GLShader VertexShader ()
 		{
-			return GLShader.Create (ShaderType.VertexShader, 
-				() => 
+			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<Vertex> ()
-				from u in Shader.Uniforms<Uniforms> ()
-				let normalizedNormal = (!u.normalMatrix * v.normal).Normalized
-				let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
-				let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
-				let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
-				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				let spot =
-				    (from sp in !u.spotLights
-					select CalcSpotLight (sp, worldPos [Coord.x, Coord.y, Coord.z]))
-					.Aggregate (new Vec3 (0f), (r, i) => r + i)
-				select new Fragment () {   
-					gl_Position = !u.perspectiveMatrix * worldPos,
-					theColor = (v.color * (ambient + diffuse + new Vec4 (spot, 1f))).Clamp (0f, 1f)
-				});
+			 from u in Shader.Uniforms<Uniforms> ()
+			 let transformedNormal = (!u.normalMatrix * v.normal).Normalized
+			 let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+			 let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
+			 let diffuse = CalcDirLight (!u.directionalLight, transformedNormal) +
+			     CalcPointLight (!u.pointLight, worldPos [Coord.x, Coord.y, Coord.z], transformedNormal)
+			 select new Fragment () {   
+				gl_Position = !u.perspectiveMatrix * worldPos,
+				theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
+			});
 		}
 
 		public static GLShader FragmentShader ()

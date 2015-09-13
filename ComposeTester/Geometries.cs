@@ -90,7 +90,7 @@
 		{
 			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi, NewMat ())
 				.Hollow (1.2f, 1.2f)
-				.Extrude (10f, true, false)
+				.Extrude (10f, true, true)
 				.Center ();
 		}
 	}

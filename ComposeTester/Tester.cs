@@ -53,16 +53,10 @@
 				direction = new Vec3 (1f, 1f, 1f),
 				intensity = new Vec3 (0.0f)
             };
-			_uniforms.spotLights &= new SpotLight[1] {
-				new SpotLight () {
-					position = new Vec3 (-10f, 10f, -10f),
-					direction = new Vec3 (1f, -1f, -1f),
-					intensity = new Vec3 (10f, 10f, 10f),
-					linearAttenuation = 0.1f,
-					quadraticAttenuation = 0.1f,
-					cosSpotCutoff = 0.1f,
-					spotExponent = 1f
-				}
+			_uniforms.pointLight &= new PointLight 
+			{
+				position = new Vec3 (10f, 10f, -10f),
+				intensity = new Vec3 (1f)
 			};
 		}
 

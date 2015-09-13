@@ -2,13 +2,9 @@
 {
     public enum Coord : int
     {
-        X = 0,
-        R = 0,
-        Y = 1,
-        G = 1,
-        Z = 2,
-        B = 2,
-        W = 3,
-        A = 3
+		x = 0,
+		y = 1,
+		z = 2,
+		w = 3,
     }
 }

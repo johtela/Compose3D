@@ -89,7 +89,7 @@
 		internal Uniform<Mat3> normalMatrix;
 		internal Uniform<Vec3> ambientLightIntensity;
 		internal Uniform<DirectionalLight> directionalLight;
-		[GLArray (4)] 
+		[GLArray (1)] 
 		internal Uniform<SpotLight[]> spotLights;
 	}
 
@@ -107,7 +107,7 @@
 				            let dist = vecToLight.Length
 				            let lightDir = vecToLight.Normalized
 				            let attenuation = Attenuation (sp, dist)
-				            let cosAngle = -lightDir.Dot (sp.direction)
+				            let cosAngle = (-lightDir).Dot (sp.direction)
 				            select sp.intensity *
 				                (cosAngle < sp.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (sp.spotExponent)))
 				.Evaluate ());
@@ -122,13 +122,14 @@
 				let angle = normalizedNormal.Dot ((!u.directionalLight).direction)
 				let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
 				let diffuse = new Vec4 ((!u.directionalLight).intensity, 0f) * angle
-				let spot = 
-					(from sp in !u.spotLights
-					select CalcSpotLight (sp, v.position)).Aggregate (new Vec3 (0f), (r, i) => r + i)
-				select new Fragment () 
-				{   
-					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-					theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
+				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				let spot =
+				    (from sp in !u.spotLights
+					select CalcSpotLight (sp, worldPos [Coord.x, Coord.y, Coord.z]))
+					.Aggregate (new Vec3 (0f), (r, i) => r + i)
+				select new Fragment () {   
+					gl_Position = !u.perspectiveMatrix * worldPos,
+					theColor = (v.color * (ambient + diffuse + new Vec4 (spot, 1f))).Clamp (0f, 1f)
 				});
 		}
 

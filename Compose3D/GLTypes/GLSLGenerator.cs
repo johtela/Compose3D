@@ -223,12 +223,15 @@
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
                     var attr = mc.Method.GetGLAttribute ();
-					if (attr != null) 
+					if (attr == null)
+						return mc.Method.Name != "get_Item" ? null :
+							string.Format ("{0}.{1}", ExprToGLSL (mc.Object), 
+								mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (""));
+					else 
 					{
 						var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
 						return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
 					}
-					return null;
                 }) ??
 				expr.Match<InvocationExpression, string> (ie => 
 				{

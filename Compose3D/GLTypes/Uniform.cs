@@ -72,7 +72,7 @@
             try
             {
                 var type = typeof (T);
-                if (type.IsGLStruct ())
+				if (type.IsGLStruct () || type.IsArray)
                     foreach (var map in uniform._mappings)
                     {
                         var field = map.Item1;

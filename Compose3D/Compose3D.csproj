@@ -103,7 +103,6 @@
     <Compile Include="Primitive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Geometry\Material.cs" />
-    <Compile Include="Geometry\Color.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="Geometry\BBox.cs" />
     <Compile Include="GLTypes\GLShader.cs" />
@@ -120,6 +119,7 @@
     <Compile Include="Geometry\Stacking.cs" />
     <Compile Include="Geometry\Aligning.cs" />
     <Compile Include="Geometry\Simplified.cs" />
+    <Compile Include="Geometry\VertexColor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

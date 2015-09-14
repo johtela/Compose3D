@@ -12,7 +12,7 @@
 	{
 		private static IMaterial NewMat ()
 		{
-			return Material.RepeatColors (Color.Random);
+			return Material.RepeatColors (VertexColor.Random.DiffuseColor);
 		}
 
 		public static Geometry<Vertex> Hammer ()
@@ -74,7 +74,7 @@
 
 		public static Geometry<Vertex> Tube ()
 		{
-			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, 270f.ToRadians (), NewMat ())
+			return Circular<Vertex>.Circle (10f, NewMat ())
 				.Stretch (10, true, true, true, TubeTransforms ()).Center ();
 		}
 

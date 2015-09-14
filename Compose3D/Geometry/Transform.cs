@@ -22,7 +22,7 @@
 		{
 			return _geometry.Vertices.Select (v => 
                 NewVertex (new Vec3 (_matrix * new Vec4 (v.Position, 1f)), 
-					v.Color, (_normalMatrix * v.Normal).Normalized, v.Tag));
+					(_normalMatrix * v.Normal).Normalized, v, v.Tag));
 		}
 	}
 }

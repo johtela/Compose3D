@@ -6,24 +6,25 @@
 	using System.Linq;
 
 	/// <summary>
+	/// Interface for objects with 3D position data.
+	/// </summary>
+	public interface IPositional
+	{
+		/// <summary>
+		/// Position of the object.
+		/// </summary>
+		Vec3 Position { get; set; }
+	}
+
+	/// <summary>
 	/// Interface that is used to access mandatory vertex attributes.
 	/// </summary>
 	/// <description>
 	/// All Vertex structures need to implement this interface. Through it
 	/// geometry generators can set vertex attributes.
 	/// </description>
-	public interface IVertex
+	public interface IVertex : IPositional, IVertexMaterial
 	{
-		/// <summary>
-		/// Position of the vertex.
-		/// </summary>
-		Vec3 Position { get; set; }
-
-		/// <summary>
-		/// Color of the vertex.
-		/// </summary>
-		Vec4 Color { get; set; }
-
 		/// <summary>
 		/// The normal of the vertex.
 		/// </summary>

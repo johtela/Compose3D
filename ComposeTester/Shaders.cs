@@ -13,7 +13,7 @@
 	public struct Vertex : IVertex
 	{
 		internal Vec3 position;
-		internal Vec4 color;
+		internal Vec3 color;
 		internal Vec3 normal;
 		[OmitInGlsl] internal int tag;
 
@@ -23,7 +23,13 @@
 			set { position = value; }
 		}
 
-		public Vec4 Color
+		public Vec3 DiffuseColor
+		{
+			get { return color; }
+			set { color = value; }
+		}
+
+		public Vec3 SpecularColor
 		{
 			get { return color; }
 			set { color = value; }
@@ -48,21 +54,17 @@
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, Color={1}, Normal={2}, Tag={3}]", 
-				Position, Color, Normal, Tag);
+			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, SpecularColor={2}, Normal={3}, Tag={4}]", 
+				Position, DiffuseColor, SpecularColor, Normal, Tag);
 		}
 	}
 
 	public class Fragment
 	{
 		[Builtin] internal Vec4 gl_Position = new Vec4 ();
-		[GLQualifier ("smooth")]
-		internal Vec4 theColor = new Vec4 ();
-	}
-
-	public class FrameBuffer
-	{
-		internal Vec4 outputColor = new Vec4 ();
+		internal Vec3 vertexPosition = new Vec3 ();
+		internal Vec3 vertexNormal = new Vec3 ();
+		internal Vec3 vertexColor = new Vec3 ();
 	}
 
 	[GLStruct ("DirectionalLight")]
@@ -102,26 +104,36 @@
 
 	public static class Shaders
 	{
-		public static readonly Func<DirectionalLight, Vec3, Vec4> CalcDirLight =
+		/// <summary>
+		/// The calculate intensity of the directional light.
+		/// </summary>
+		public static readonly Func<DirectionalLight, Vec3, Vec3> CalcDirLight =
 			GLShader.Function (() => CalcDirLight,
 				(dirLight, normal) => 
 				(from cosAngle in normal.Dot (dirLight.direction).ToShader ()
-				 select new Vec4 (dirLight.intensity, 0f) * cosAngle.Clamp (0f, 1f))
+				 select dirLight.intensity * cosAngle.Clamp (0f, 1f))
 				.Evaluate ());
 
-        public static readonly Func<PointLight, float, float> Attenuation =
-            GLShader.Function (() => Attenuation,
+		/// <summary>
+		/// Calculate attenuation of a point light.
+		/// </summary>
+        public static readonly Func<PointLight, float, float> CalcAttenuation =
+            GLShader.Function (() => CalcAttenuation,
                 (pointLight, distance) => 
-                (1f / ((pointLight.linearAttenuation * distance) + (pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f));
+                (1f / ((pointLight.linearAttenuation * distance) + 
+					(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f));
 
-        public static readonly Func<PointLight, Vec3, Vec3, Vec4> CalcPointLight =
+		/// <summary>
+		/// Calculate intensity of the directional light.
+		/// </summary>
+		public static readonly Func<PointLight, Vec3, Vec3, Vec3> CalcPointLight =
 			GLShader.Function (() => CalcPointLight,
 				(pointLight, position, normal) => 
 				(from vecToLight in (pointLight.position - position).ToShader ()
 				 let lightVec = vecToLight.Normalized
 				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-                 let attenuation = Attenuation (pointLight, vecToLight.Length)
-				 select new Vec4 (pointLight.intensity, 0f) * cosAngle * attenuation)
+                 let attenuation = CalcAttenuation (pointLight, vecToLight.Length)
+				 select pointLight.intensity * cosAngle * attenuation)
 				.Evaluate ());
 
 		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
@@ -130,7 +142,7 @@
 				(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
 				 let dist = vecToLight.Length
 				 let lightDir = vecToLight.Normalized
-				 let attenuation = Attenuation (spotLight.pointLight, dist)
+				 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
 				 let cosAngle = (-lightDir).Dot (spotLight.direction)
 				 select spotLight.pointLight.intensity *
 				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
@@ -138,25 +150,32 @@
 
 		public static GLShader VertexShader ()
 		{
-			return GLShader.Create (ShaderType.VertexShader, () =>
+			return GLShader.Create (ShaderType.VertexShader, 
+				() =>
 				from v in Shader.Inputs<Vertex> ()
-			 from u in Shader.Uniforms<Uniforms> ()
-			 let transformedNormal = (!u.normalMatrix * v.normal).Normalized
-			 let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-			 let ambient = new Vec4 (!u.ambientLightIntensity, 0f)
-			 let diffuse = CalcDirLight (!u.directionalLight, transformedNormal) +
-			     CalcPointLight (!u.pointLight, worldPos [Coord.x, Coord.y, Coord.z], transformedNormal)
-			 select new Fragment () {   
-				gl_Position = !u.perspectiveMatrix * worldPos,
-				theColor = (v.color * (ambient + diffuse)).Clamp (0f, 1f)
-			});
+				from u in Shader.Uniforms<Uniforms> ()
+				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				select new Fragment () {   
+					gl_Position = !u.perspectiveMatrix * worldPos,
+					vertexPosition = worldPos [Coord.x, Coord.y, Coord.z],
+					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
+					vertexColor = v.color
+				});
 		}
 
 		public static GLShader FragmentShader ()
 		{
-			return GLShader.Create (ShaderType.FragmentShader, () =>
+			return GLShader.Create (ShaderType.FragmentShader, 
+				() =>
 				from f in Shader.Inputs<Fragment> ()
-				select new { outputColor = f.theColor });
+				from u in Shader.Uniforms<Uniforms> ()
+				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) +
+				    CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal)
+				select new 
+				{
+					outputColor = (f.vertexColor * (!u.ambientLightIntensity + diffuse)).Clamp (0f, 1f) 
+				}
+			);
 		}
 	}
 }

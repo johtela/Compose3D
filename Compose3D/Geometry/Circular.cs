@@ -27,14 +27,14 @@
             var normal = new Vec3 (0f, 0f, 1f);
 			return new Circular<V> (e =>
 			{
-				var colors = e.Material.Colors.GetEnumerator ();
+				var materials = e.Material.VertexMaterials.GetEnumerator ();
 				var vertices = new V[vertCount];
-				vertices [0] = NewVertex (new Vec3 (0f), colors.Next (), normal);
+				vertices [0] = NewVertex (new Vec3 (0f), normal, materials.Next ());
 				var angle = startAngle;
 				for (var i = 1; i < vertCount; i++)
 				{
 					var pos = new Vec3 (width * (float)Math.Cos (angle), height * (float)Math.Sin (angle), 0f);
-					vertices [i] = NewVertex (pos, colors.Next (), normal);
+					vertices [i] = NewVertex (pos, normal, materials.Next ());
 					angle = Math.Min (angle + stepAngle, endAngle);
 				}
 				return vertices;

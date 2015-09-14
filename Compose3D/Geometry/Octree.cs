@@ -5,70 +5,69 @@
     using System.Collections.Generic;
     using System.Linq;
 
-	public class Octree<V, T> 
-		where V : struct, IVertex
+	public class Octree<P, T> where P : IPositional
     {
         private class Node
         {
 			public readonly Node[] Children;
-			public readonly V Vertex;
+			public readonly P Positional;
 			public readonly T Data;
 
-			public Node (V vertex, T data)
+			public Node (P positional, T data)
             {
-				Children = new Node[1 << vertex.Position.Dimensions];
-				Vertex = vertex;
+				Children = new Node[1 << positional.Position.Dimensions];
+				Positional = positional;
 				Data = data;
             }
         }
 
 		private Node _root;
 
-		private int ChooseChild (Node node, V vertex)
+		private int ChooseChild (Node node, P positional)
 		{
 			var result = 0;
-			for (int i = 0; i < vertex.Position.Dimensions; i++)
-				result |= (vertex.Position [i] >= node.Vertex.Position [i] ? 1 : 0) << i;
+			for (int i = 0; i < positional.Position.Dimensions; i++)
+				result |= (positional.Position [i] >= node.Positional.Position [i] ? 1 : 0) << i;
 			return result;
 		}
 
-		private Node FindParentNode (Node node, V vertex, out int pos)
+		private Node FindParentNode (Node node, P positional, out int index)
 		{
-			pos = ChooseChild (node, vertex);
-			var child = node.Children [pos]; 
-			return child == null ? node : FindParentNode (child, vertex, out pos);
+			index = ChooseChild (node, positional);
+			var child = node.Children [index]; 
+			return child == null ? node : FindParentNode (child, positional, out index);
 		}
 
-		private Node FindNode (Node node, V vertex)
+		private Node FindNode (Node node, P positional)
 		{
-			if (node.Vertex.Equals (vertex))
+			if (node.Positional.Equals (positional))
 				return node;
-			var pos = ChooseChild (node, vertex);
+			var pos = ChooseChild (node, positional);
 			var child = node.Children [pos]; 
-			return child == null ? null : FindNode (child, vertex);
+			return child == null ? null : FindNode (child, positional);
 		}
 
-		public bool Add (V vertex, T data)
+		public bool Add (P positional, T data)
 		{
 			if (_root == null)
-				_root = new Node (vertex, data);
+				_root = new Node (positional, data);
 			else
 			{
 				int pos;
-				var parent = FindParentNode (_root, vertex, out pos);
-				if (parent.Vertex.Equals (vertex))
+				var parent = FindParentNode (_root, positional, out pos);
+				if (parent.Positional.Equals (positional))
 					return false;
-				parent.Children [pos] = new Node (vertex, data);
+				parent.Children [pos] = new Node (positional, data);
 			}
 			return true;
 		}
 
-		public bool ContainsKey (V vertex)
+		public bool ContainsKey (P positional)
 		{
-			return FindNode (_root, vertex) != null;
+			return FindNode (_root, positional) != null;
 		}
 
-		public bool TryGetValue (V vertex, out T value)
+		public bool TryGetValue (P vertex, out T value)
 		{
 			var node = FindNode (_root, vertex);
 			var result = node != null;
@@ -76,13 +75,13 @@
 			return result;
 		}
 
-		public T this[V vertex]
+		public T this[P positional]
 		{
 			get 
 			{
-				var node = FindNode (_root, vertex);
+				var node = FindNode (_root, positional);
 				if (node == null)
-					throw new KeyNotFoundException ("Vertex not found");
+					throw new KeyNotFoundException ("Positional not found");
 				return node.Data;
 			}
 		}

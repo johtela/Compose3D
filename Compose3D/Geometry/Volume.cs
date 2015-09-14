@@ -55,7 +55,7 @@
 		private static V ChangeNormal<V> (V vertex, Vec3 normal)
 			where V : struct, IVertex
 		{
-			return Geometry<V>.NewVertex (vertex.Position, vertex.Color, normal);
+			return Geometry<V>.NewVertex (vertex.Position, normal, vertex);
 		}
 
 		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)

@@ -34,12 +34,12 @@
 			var normal = new Vec3 (0f, 0f, 1f);
 			return new Triangle<V> (q =>
 			{
-				var colors = q.Material.Colors.GetEnumerator ();
+				var vertexMaterials = q.Material.VertexMaterials.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (0f, height, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (rightOffset, 0f, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (leftOffset, 0f, 0f), colors.Next (), normal)
+					NewVertex (new Vec3 (0f, height, 0f), normal, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, vertexMaterials.Next ())
 				};
 			}, material);
 		}

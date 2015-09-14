@@ -39,13 +39,13 @@
 			var normal = new Vec3 (0f, 0f, 1f);
 			return new Quadrilateral<V> (q =>
 			{
-				var colors = q.Material.Colors.GetEnumerator ();
+				var vertexMaterials = q.Material.VertexMaterials.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (topRight, top, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (bottomRight, bottom, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (bottomLeft, bottom, 0f), colors.Next (), normal),
-					NewVertex (new Vec3 (topLeft, top, 0f), colors.Next (), normal)
+					NewVertex (new Vec3 (topRight, top, 0f), normal, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (topLeft, top, 0f), normal, vertexMaterials.Next ())
 				};
 			}, material);
 		}

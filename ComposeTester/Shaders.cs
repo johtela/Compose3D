@@ -77,15 +77,14 @@
 	{
 		internal Vec3 position;
 		internal Vec3 intensity;
-	}
+        internal float linearAttenuation, quadraticAttenuation;
+    }
 
-	[GLStruct ("SpotLight")]
+    [GLStruct ("SpotLight")]
 	public struct SpotLight
 	{
-		internal Vec3 position;
+        internal PointLight pointLight;
 		internal Vec3 direction;
-		internal Vec3 intensity;
-		internal float linearAttenuation, quadraticAttenuation;
 		internal float cosSpotCutoff, spotExponent;
 	}
 
@@ -110,29 +109,31 @@
 				 select new Vec4 (dirLight.intensity, 0f) * cosAngle.Clamp (0f, 1f))
 				.Evaluate ());
 
-		public static readonly Func<PointLight, Vec3, Vec3, Vec4> CalcPointLight =
+        public static readonly Func<PointLight, float, float> Attenuation =
+            GLShader.Function (() => Attenuation,
+                (pointLight, distance) => 
+                (1f / ((pointLight.linearAttenuation * distance) + (pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f));
+
+        public static readonly Func<PointLight, Vec3, Vec3, Vec4> CalcPointLight =
 			GLShader.Function (() => CalcPointLight,
 				(pointLight, position, normal) => 
 				(from vecToLight in (pointLight.position - position).ToShader ()
 				 let lightVec = vecToLight.Normalized
 				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-				 select new Vec4 (pointLight.intensity, 0f) * cosAngle)
+                 let attenuation = Attenuation (pointLight, vecToLight.Length)
+				 select new Vec4 (pointLight.intensity, 0f) * cosAngle * attenuation)
 				.Evaluate ());
-
-		public static readonly Func<SpotLight, float, float> Attenuation = 
-			GLShader.Function (() => Attenuation,
-				(sp, d) => 1f / ((sp.linearAttenuation * d) + (sp.quadraticAttenuation * d * d)));
 
 		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
 			GLShader.Function (() => CalcSpotLight,
-				(sp, v) => 
-				(from vecToLight in (sp.position - v).ToShader ()
+				(spotLight, position) => 
+				(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
 				 let dist = vecToLight.Length
 				 let lightDir = vecToLight.Normalized
-				 let attenuation = Attenuation (sp, dist)
-				 let cosAngle = (-lightDir).Dot (sp.direction)
-				 select sp.intensity *
-				     (cosAngle < sp.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (sp.spotExponent)))
+				 let attenuation = Attenuation (spotLight.pointLight, dist)
+				 let cosAngle = (-lightDir).Dot (spotLight.direction)
+				 select spotLight.pointLight.intensity *
+				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
 				.Evaluate ());
 
 		public static GLShader VertexShader ()

@@ -117,6 +117,7 @@
 			vertex.Position = position;
 			vertex.DiffuseColor = material.DiffuseColor;
 			vertex.SpecularColor = material.SpecularColor;
+            vertex.Shininess = material.Shininess;
             vertex.Normal = normal;
 			vertex.Tag = tag;
 			return vertex;

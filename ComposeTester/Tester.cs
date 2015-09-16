@@ -47,7 +47,7 @@
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
 			_uniforms.worldMatrix &= worm;
             _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
-			_uniforms.ambientLightIntensity &= new Vec3 (0.2f);
+			_uniforms.ambientLightIntensity &= new Vec3 (0.1f);
             _uniforms.directionalLight &= new DirectionalLight ()
             {
 				direction = new Vec3 (-1f, 1f, 1f),
@@ -56,7 +56,7 @@
 			_uniforms.pointLight &= new PointLight 
 			{
 				position = new Vec3 (10f, 10f, -10f),
-				intensity = new Vec3 (1f),
+				intensity = new Vec3 (0.5f),
                 linearAttenuation = 0.005f,
                 quadraticAttenuation = 0.005f
 			};

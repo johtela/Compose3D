@@ -13,29 +13,38 @@
 	public struct Vertex : IVertex
 	{
 		internal Vec3 position;
-		internal Vec3 color;
-		internal Vec3 normal;
-		[OmitInGlsl] internal int tag;
+        internal Vec3 normal;
+        internal Vec3 diffuseColor;
+        internal Vec3 specularColor;
+        internal float shininess;
+        [OmitInGlsl]
+        internal int tag;
 
-		public Vec3 Position
+        Vec3 IPositional.Position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		public Vec3 DiffuseColor
+        Vec3 IVertexMaterial.DiffuseColor
 		{
-			get { return color; }
-			set { color = value; }
+			get { return diffuseColor; }
+			set { diffuseColor = value; }
 		}
 
-		public Vec3 SpecularColor
+        Vec3 IVertexMaterial.SpecularColor
 		{
-			get { return color; }
-			set { color = value; }
+			get { return specularColor; }
+			set { specularColor = value; }
 		}
 
-		public Vec3 Normal
+        float IVertexMaterial.Shininess
+        {
+            get { return shininess; }
+            set { shininess = value; }
+        }
+
+        Vec3 IVertex.Normal
 		{
 			get { return normal; }
 			set 
@@ -46,7 +55,7 @@
 			}
 		}
 
-		public int Tag
+        int IVertex.Tag
 		{
 			get { return tag; }
 			set { tag = value; }
@@ -55,17 +64,19 @@
 		public override string ToString ()
 		{
 			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, SpecularColor={2}, Normal={3}, Tag={4}]", 
-				Position, DiffuseColor, SpecularColor, Normal, Tag);
+				position, diffuseColor, specularColor, normal, tag);
 		}
 	}
 
 	public class Fragment
 	{
-		[Builtin] internal Vec4 gl_Position = new Vec4 ();
-		internal Vec3 vertexPosition = new Vec3 ();
-		internal Vec3 vertexNormal = new Vec3 ();
-		internal Vec3 vertexColor = new Vec3 ();
-	}
+		[Builtin] internal Vec4 gl_Position;
+		internal Vec3 vertexPosition;
+        internal Vec3 vertexNormal;
+		internal Vec3 vertexDiffuse;
+        internal Vec3 vertexSpecular;
+        internal float vertexShininess;
+    }
 
 	[GLStruct ("DirectionalLight")]
 	public struct DirectionalLight
@@ -126,14 +137,18 @@
 		/// <summary>
 		/// Calculate intensity of the directional light.
 		/// </summary>
-		public static readonly Func<PointLight, Vec3, Vec3, Vec3> CalcPointLight =
+		public static readonly Func<PointLight, Vec3, Vec3, Vec3, Vec3, float, Vec3> CalcPointLight =
 			GLShader.Function (() => CalcPointLight,
-				(pointLight, position, normal) => 
+				(pointLight, position, normal, diffuse, specular, shininess) => 
 				(from vecToLight in (pointLight.position - position).ToShader ()
 				 let lightVec = vecToLight.Normalized
 				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-                 let attenuation = CalcAttenuation (pointLight, vecToLight.Length)
-				 select pointLight.intensity * cosAngle * attenuation)
+                 let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
+                 let viewDir = -position.Normalized
+                 let reflectDir = (-lightVec).Reflect (normal)
+                 let phong = cosAngle == 0f ? 0f :
+                    viewDir.Dot (reflectDir).Clamp (0f, 1f).Pow (shininess)
+				 select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * phong))
 				.Evaluate ());
 
 		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
@@ -159,7 +174,9 @@
 					gl_Position = !u.perspectiveMatrix * worldPos,
 					vertexPosition = worldPos [Coord.x, Coord.y, Coord.z],
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
-					vertexColor = v.color
+					vertexDiffuse = v.diffuseColor,
+					vertexSpecular = v.specularColor,
+                    vertexShininess = v.shininess
 				});
 		}
 
@@ -169,11 +186,12 @@
 				() =>
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
-				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) +
-				    CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal)
+				let diffuseAndSpecular = CalcDirLight (!u.directionalLight, f.vertexNormal) +
+				    CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal, f.vertexDiffuse, 
+                    f.vertexSpecular, f.vertexShininess)
 				select new 
 				{
-					outputColor = (f.vertexColor * (!u.ambientLightIntensity + diffuse)).Clamp (0f, 1f) 
+					outputColor = ((f.vertexDiffuse * !u.ambientLightIntensity) + diffuseAndSpecular).Clamp (0f, 1f) 
 				}
 			);
 		}

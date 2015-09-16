@@ -8,6 +8,7 @@ namespace Compose3D.Geometry
 	{
 		Vec3 DiffuseColor { get; set; }
 		Vec3 SpecularColor { get; set; }
+        float Shininess { get; set; }
 	}
 
 	/// <summary>
@@ -25,14 +26,16 @@ namespace Compose3D.Geometry
 	{
 		public Vec3 DiffuseColor { get; set; }
 		public Vec3 SpecularColor { get; set; }
+        public float Shininess { get; set; }
 
-		public VertexMaterial (Vec3 diffuse, Vec3 specular)
+		public VertexMaterial (Vec3 diffuse, Vec3 specular, float shininess)
 		{
 			DiffuseColor = diffuse;
 			SpecularColor = specular;
+            Shininess = shininess;
 		}
 
-		public VertexMaterial (Vec3 color) : this (color, color) { }
+		public VertexMaterial (Vec3 color) : this (color, color / 5f, 1f) { }
 	}
 
 	/// <summary>

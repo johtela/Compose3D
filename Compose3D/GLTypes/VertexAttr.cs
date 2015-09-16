@@ -39,7 +39,9 @@
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 4);
 			else if (ft == typeof (int))
 				return new VertexAttr (name, VertexAttribPointerType.Int, s, 1);
-			// TODO: Add rest of the supported types.
+            else if (ft == typeof (float))
+                return new VertexAttr (name, VertexAttribPointerType.Float, s, 1);
+            // TODO: Add rest of the supported types.
 			else throw new ArgumentException ("Incompatible vertex attribute type " + name);
 		}
 

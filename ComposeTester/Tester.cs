@@ -22,7 +22,7 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.House ();
+			_geometry = Geometries.Pipe ();
 			_orientation = new Vector3 (0f, 0f, 40f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
@@ -56,7 +56,7 @@
 			_uniforms.pointLight &= new PointLight 
 			{
 				position = new Vec3 (10f, 10f, -10f),
-				intensity = new Vec3 (0.5f),
+				intensity = new Vec3 (1f),
                 linearAttenuation = 0.005f,
                 quadraticAttenuation = 0.005f
 			};

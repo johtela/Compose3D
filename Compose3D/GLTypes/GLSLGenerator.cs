@@ -39,7 +39,7 @@
             var version = match.Groups[1].Value + match.Groups[2].Value;
             builder.DeclareVariables (typeof (T), "out");
             builder.OutputShader (shader);
-			return string.Format ("#version {0}\nprecision highp float;\n", version) +
+            return string.Format ("#version {0}\nprecision highp float;\n", version) +
 				builder._decl.ToString() +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();
@@ -260,8 +260,9 @@
                     return attr == null ? null :
                         string.Format (attr.Syntax, ne.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
-                expr.Match<ConstantExpression, string> (ce =>
-						string.Format (CultureInfo.InvariantCulture, "{0}{1}", ce.Value, ce.Type == typeof(float) ? "f" : "")
+                expr.Match<ConstantExpression, string> (ce => ce.Type == typeof(float) ? 
+						string.Format (CultureInfo.InvariantCulture, "{0:0.0############}f", ce.Value) :
+						string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
                 ) ?? 
                 expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
                     ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))

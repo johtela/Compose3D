@@ -35,7 +35,7 @@ namespace Compose3D.Geometry
             Shininess = shininess;
 		}
 
-		public VertexMaterial (Vec3 color) : this (color, color / 5f, 1f) { }
+		public VertexMaterial (Vec3 color) : this (color, color / 2f, 100f) { }
 	}
 
 	/// <summary>

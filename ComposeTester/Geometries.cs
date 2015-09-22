@@ -82,7 +82,7 @@
 		{
 			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
 				.Stretch (1, false, false, true, 
-					new Mat4[] { Mat.Scaling<Mat4> (0.1f, 0.1f, 1f, 1f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
+					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
 		}	
 

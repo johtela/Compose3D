@@ -143,14 +143,17 @@
 				(from vecToLight in (pointLight.position - position).ToShader ()
 				 let lightVec = vecToLight.Normalized
 				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-                 let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
-                 let viewDir = -position.Normalized
-                 let reflectDir = (-lightVec).Reflect (normal)
-                 let phong = cosAngle == 0f ? 0f :
-                    viewDir.Dot (reflectDir).Clamp (0f, 1f).Pow (shininess)
-				 select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * phong))
+				 let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
+				 let viewDir = -position.Normalized
+				 let halfAngle = (lightVec + viewDir).Normalized
+				 let blinn = cosAngle == 0f ? 0f :
+					normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
+				 select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn))
 				.Evaluate ());
 
+		//                 let reflectDir = (-lightVec).Reflect (normal)
+		//                 let phong = cosAngle == 0f ? 0f :
+		//                    viewDir.Dot (reflectDir).Clamp (0f, 1f).Pow (shininess)
 		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
 			GLShader.Function (() => CalcSpotLight,
 				(spotLight, position) => 

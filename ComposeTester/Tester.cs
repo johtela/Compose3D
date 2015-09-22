@@ -51,7 +51,7 @@
             _uniforms.directionalLight &= new DirectionalLight ()
             {
 				direction = new Vec3 (-1f, 1f, 1f),
-				intensity = new Vec3 (0f)
+				intensity = new Vec3 (0.1f)
             };
 			_uniforms.pointLight &= new PointLight 
 			{

@@ -120,6 +120,8 @@
     <Compile Include="Geometry\Aligning.cs" />
     <Compile Include="Geometry\Simplified.cs" />
     <Compile Include="Geometry\VertexColor.cs" />
+    <Compile Include="Reactive\Mouse.cs" />
+    <Compile Include="Reactive\Reaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">
@@ -167,4 +169,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Reactive\" />
+  </ItemGroup>
 </Project>

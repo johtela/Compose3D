@@ -3,6 +3,7 @@
     using Compose3D.Arithmetics;
     using Compose3D.Geometry;
     using Compose3D.GLTypes;
+	using Compose3D.Reactive;
     using OpenTK;
     using OpenTK.Graphics;
     using OpenTK.Graphics.OpenGL;
@@ -22,7 +23,7 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.Pipe ();
+			_geometry = Geometries.House ();
 			_orientation = new Vector3 (0f, 0f, 40f);
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
@@ -39,6 +40,18 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+
+			Reaction.Create<double> (Render)
+				.WhenRendered (this);
+			Reaction.Create<Vec2> (ResizeViewport)
+				.WhenResized (this);
+			Reaction.Create<Vec2> (RotateView)
+				.Map<MouseMoveEventArgs, Vec2> (e => 
+					new Vec2 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f))
+				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
+				.WhenMouseMovesOn (this);
+			Reaction.Create<float> (ZoomView)
+				.WhenMouseWheelDeltaChangesOn (this);
 		}
 
 		private void UpdateWorldMatrix ()
@@ -62,40 +75,31 @@
 			};
 		}
 
-		protected override void OnRenderFrame (FrameEventArgs e)
+		private void Render (double time)
 		{
-			base.OnRenderFrame (e);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			_program.DrawTriangles<Vertex> (_vbo, _ibo);
 			_program.DrawNormals<Vertex> (_normalVbo);
 			SwapBuffers ();
 		}
 
-		protected override void OnResize (EventArgs e)
+		private void ResizeViewport (Vec2 size)
 		{
-			base.OnResize (e);
 			UpdateWorldMatrix ();
-            _uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> ((float)ClientSize.Height / (float)ClientSize.Width, 1f, 1f) *
+			_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
 				Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
             GL.Viewport (ClientSize);
         }
 
-		protected override void OnMouseMove (MouseMoveEventArgs e)
+		private void RotateView (Vec2 rot)
 		{
-			base.OnMouseMove (e);
-			if (e.Mouse.IsButtonDown (MouseButton.Left))
-			{
-				var rotX = ((float)e.YDelta / 500f) * MathHelper.Pi;
-				var rotY = ((float)e.XDelta / 500f) * MathHelper.Pi;
-				_orientation += new Vector3 (rotX, rotY, 0f);
-				UpdateWorldMatrix ();
-			}
+			_orientation += new Vector3 (rot.X, rot.Y, 0f);
+			UpdateWorldMatrix ();
 		}
 
-		protected override void OnMouseWheel (MouseWheelEventArgs e)
+		private void ZoomView (float delta)
 		{
-			base.OnMouseWheel (e);
-			_orientation.Z += e.DeltaPrecise * -0.1f;
+			_orientation.Z += delta * -0.1f;
 			_orientation.Z = Math.Max (_orientation.Z, 2f);
 			UpdateWorldMatrix ();
 		}

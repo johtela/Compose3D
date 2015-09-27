@@ -35,6 +35,11 @@
 			return degrees * MathHelper.Pi / 180f;
 		}
 
+		public static float ToRadians (this int degrees)
+		{
+			return (float)degrees * MathHelper.Pi / 180f;
+		}
+
 		public static double ToRadians (this double degrees)
 		{
 			return degrees * Math.PI / 180.0;

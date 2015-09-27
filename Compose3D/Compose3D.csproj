@@ -37,6 +37,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Arithmetics\Coord.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Geometry\VertexColor.cs" />
     <Compile Include="Reactive\Mouse.cs" />
     <Compile Include="Reactive\Reaction.cs" />
+    <Compile Include="Reactive\Window.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

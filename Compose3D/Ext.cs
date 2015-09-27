@@ -6,6 +6,21 @@ namespace Compose3D
 
     public static class Ext
 	{
+		public static bool In<T> (this T obj, params T[] alternatives)
+		{
+			return alternatives.Contains (obj);
+		}
+
+		public static bool IsDefault<T> (this T obj)
+		{
+			return obj.Equals (default (T));
+		}
+
+		public static bool NotDefault<T> (this T obj)
+		{
+			return !obj.Equals (default (T));
+		}
+
         public static S Match<T, S> (this object expr, Func<T, S> func) 
             where T : class
             where S : class
@@ -298,5 +313,95 @@ namespace Compose3D
         }
 
         #endregion
+
+		#region Tuple extensions
+
+		public static Tuple<T, U> EmptyTuple<T, U> ()
+		{
+			return Tuple.Create (default (T), default (U));
+		}
+
+		public static Tuple<T, U, V> EmptyTuple<T, U, V> ()
+		{
+			return Tuple.Create (default (T), default (U), default (V));
+		}
+
+		public static Tuple<T, U, V, W> EmptyTuple<T, U, V, W> ()
+		{
+			return Tuple.Create (default (T), default (U), default (V), default (W));
+		}
+
+		public static bool HasValues<T, U> (this Tuple<T, U> tuple)
+		{
+			return tuple.Item1.NotDefault () && tuple.Item2.NotDefault ();
+		}
+
+		public static bool HasValues<T, U, V> (this Tuple<T, U, V> tuple)
+		{
+			return tuple.Item1.NotDefault () && tuple.Item2.NotDefault () && tuple.Item3.NotDefault ();
+		}
+
+		public static bool HasValues<T, U, V, W> (this Tuple<T, U, V, W> tuple)
+		{
+			return tuple.Item1.NotDefault () && tuple.Item2.NotDefault () && tuple.Item3.NotDefault () &&
+				tuple.Item4.NotDefault ();
+		}
+
+		public static void Switch<T, U> (this Tuple<T, U> tuple, Action<T> first, Action<U> second)
+		{
+			if (tuple.Item1.NotDefault ())
+				first (tuple.Item1);
+			else if (tuple.Item2.NotDefault ())
+				second (tuple.Item2);
+		}
+
+		public static void Switch<T, U, V> (this Tuple<T, U, V> tuple, Action<T> first, Action<U> second, 
+			Action<V> third)
+		{
+			if (tuple.Item1.NotDefault ())
+				first (tuple.Item1);
+			else if (tuple.Item2.NotDefault ())
+				second (tuple.Item2);
+			else if (tuple.Item3.NotDefault ())
+				third (tuple.Item3);
+		}
+
+		public static void Switch<T, U, V, W> (this Tuple<T, U, V, W> tuple, Action<T> first, Action<U> second, 
+			Action<V> third, Action<W> fourth)
+		{
+			if (tuple.Item1.NotDefault ())
+				first (tuple.Item1);
+			else if (tuple.Item2.NotDefault ())
+				second (tuple.Item2);
+			else if (tuple.Item3.NotDefault ())
+				third (tuple.Item3);
+			else if (tuple.Item4.NotDefault ())
+				fourth (tuple.Item4);
+		}
+
+		public static void ForAll<T, U> (this Tuple<T, U> tuple, Action<T> first, Action<U> second)
+		{
+			first (tuple.Item1);
+			second (tuple.Item2);
+		}
+
+		public static void ForAll<T, U, V> (this Tuple<T, U, V> tuple, Action<T> first, Action<U> second,
+			Action<V> third)
+		{
+			first (tuple.Item1);
+			second (tuple.Item2);
+			third (tuple.Item3);
+		}
+
+		public static void ForAll<T, U, V, W> (this Tuple<T, U, V, W> tuple, Action<T> first, Action<U> second,
+			Action<V> third, Action<W> fourth)
+		{
+			first (tuple.Item1);
+			second (tuple.Item2);
+			third (tuple.Item3);
+			fourth (tuple.Item4);
+		}
+
+		#endregion
 	}
 }

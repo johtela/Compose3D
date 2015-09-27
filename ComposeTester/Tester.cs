@@ -41,16 +41,20 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 
-			Reaction.Create<double> (Render)
+			React.By<double> (Render)
 				.WhenRendered (this);
-			Reaction.Create<Vec2> (ResizeViewport)
+
+			React.By<Vec2> (ResizeViewport)
 				.WhenResized (this);
-			Reaction.Create<Vec2> (RotateView)
+
+			React.By<Vec2> (RotateView)
 				.Map<MouseMoveEventArgs, Vec2> (e => 
 					new Vec2 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f))
 				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this);
-			Reaction.Create<float> (ZoomView)
+
+			React.By<float> (ZoomView)
+				.Map (delta => delta * 0.2f)
 				.WhenMouseWheelDeltaChangesOn (this);
 		}
 
@@ -99,8 +103,7 @@
 
 		private void ZoomView (float delta)
 		{
-			_orientation.Z += delta * -0.1f;
-			_orientation.Z = Math.Max (_orientation.Z, 2f);
+			_orientation.Z = Math.Max (_orientation.Z + delta, 2f);
 			UpdateWorldMatrix ();
 		}
 

@@ -9,7 +9,7 @@
 	{
 		public static void WhenMouseMovesOn (this Reaction<MouseMoveEventArgs> reaction, GameWindow window)
 		{
-			window.MouseMove += (sender, e) => reaction (e);
+			window.MouseMove += reaction.ToEvent ();
 		}
 
 		public static void WhenMouseXYChangesOn (this Reaction<Vec2> reaction, GameWindow window)
@@ -20,7 +20,7 @@
 
 		public static void WhenMouseWheelRollsOn (this Reaction<MouseWheelEventArgs> reaction, GameWindow window)
 		{
-			window.MouseWheel += (sender, e) => reaction (e);
+			window.MouseWheel += reaction.ToEvent ();
 		}
 
 		public static void WhenMouseWheelDeltaChangesOn (this Reaction<float> reaction, GameWindow window)

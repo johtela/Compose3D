@@ -122,8 +122,8 @@
     <Compile Include="Geometry\Simplified.cs" />
     <Compile Include="Geometry\VertexColor.cs" />
     <Compile Include="Reactive\Mouse.cs" />
-    <Compile Include="Reactive\Reaction.cs" />
     <Compile Include="Reactive\Window.cs" />
+    <Compile Include="Reactive\React.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

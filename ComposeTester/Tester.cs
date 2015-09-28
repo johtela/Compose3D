@@ -12,19 +12,27 @@
 
 	public class TestWindow : GameWindow
 	{
+		// OpenGL objects
 		private Program _program;
 		private VBO<Vertex> _vbo;
 		private VBO<int> _ibo;
 		private VBO<Vertex> _normalVbo;
-		private Vector3 _orientation;
         private Uniforms _uniforms;
+
+		// Scene state
+		private Vec2 _orientation;
+		private Vec3 _position;
+
+		// Scene geometry
         private Geometry<Vertex> _geometry;
 
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_geometry = Geometries.House ();
-			_orientation = new Vector3 (0f, 0f, 40f);
+			_orientation = new Vec2 (0f, 0f);
+			_position = new Vec3 (0f, 0f, -40f);
+
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
 			_normalVbo = new VBO<Vertex> (_geometry.Normals, BufferTarget.ArrayBuffer);
@@ -83,7 +91,7 @@
                 .WhenMouseMovesOn (this);
 
             React.By<float> (ZoomView)
-                .Map (delta => delta * 0.2f)
+				.Map (delta => delta * -0.2f)
                 .WhenMouseWheelDeltaChangesOn (this);
         }
 
@@ -93,7 +101,7 @@
 
         private void UpdateWorldMatrix ()
         {
-            var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) *
+			var worm = Mat.Translation<Mat4> (_position.ToArray<Vec3, float> ()) *
                 Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
             _uniforms.worldMatrix &= worm;
             _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
@@ -117,13 +125,13 @@
 
         private void RotateView (Vec2 rot)
         {
-            _orientation += new Vector3 (rot.X, rot.Y, 0f);
+			_orientation += rot;
             UpdateWorldMatrix ();
         }
 
         private void ZoomView (float delta)
         {
-            _orientation.Z = Math.Max (_orientation.Z + delta, 2f);
+			_position.Z = Math.Min (_position.Z + delta, 2f);
             UpdateWorldMatrix ();
         }
 

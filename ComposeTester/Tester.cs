@@ -33,81 +33,103 @@
         }
 
 		public void Init ()
-		{
+        {
+            SetupOpenGL ();
+            SetupLights ();
+            SetupReactions ();
+        }
+
+        #region Setup
+
+        private static void SetupOpenGL ()
+        {
             GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Back);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Enable (EnableCap.DepthTest);
-			GL.DepthMask (true);
-			GL.DepthFunc (DepthFunction.Less);
+            GL.CullFace (CullFaceMode.Back);
+            GL.FrontFace (FrontFaceDirection.Cw);
+            GL.Enable (EnableCap.DepthTest);
+            GL.DepthMask (true);
+            GL.DepthFunc (DepthFunction.Less);
+        }
 
-			React.By<double> (Render)
-				.WhenRendered (this);
-
-			React.By<Vec2> (ResizeViewport)
-				.WhenResized (this);
-
-			React.By<Vec2> (RotateView)
-				.Map<MouseMoveEventArgs, Vec2> (e => 
-					new Vec2 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f))
-				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
-				.WhenMouseMovesOn (this);
-
-			React.By<float> (ZoomView)
-				.Map (delta => delta * 0.2f)
-				.WhenMouseWheelDeltaChangesOn (this);
-		}
-
-		private void UpdateWorldMatrix ()
-		{
-            var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) * 
-                Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
-			_uniforms.worldMatrix &= worm;
-            _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
-			_uniforms.ambientLightIntensity &= new Vec3 (0.1f);
+        private void SetupLights ()
+        {
+            _uniforms.ambientLightIntensity &= new Vec3 (0.1f);
             _uniforms.directionalLight &= new DirectionalLight ()
             {
-				direction = new Vec3 (-1f, 1f, 1f),
-				intensity = new Vec3 (0.1f)
+                direction = new Vec3 (-1f, 1f, 1f),
+                intensity = new Vec3 (0.1f)
             };
-			_uniforms.pointLight &= new PointLight 
-			{
-				position = new Vec3 (10f, 10f, -10f),
-				intensity = new Vec3 (1f),
+            _uniforms.pointLight &= new PointLight
+            {
+                position = new Vec3 (10f, 10f, -10f),
+                intensity = new Vec3 (1f),
                 linearAttenuation = 0.005f,
                 quadraticAttenuation = 0.005f
-			};
-		}
+            };
+        }
 
-		private void Render (double time)
-		{
-			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			_program.DrawTriangles<Vertex> (_vbo, _ibo);
-			_program.DrawNormals<Vertex> (_normalVbo);
-			SwapBuffers ();
-		}
+        private void SetupReactions ()
+        {
+            React.By<double> (Render)
+                .WhenRendered (this);
 
-		private void ResizeViewport (Vec2 size)
-		{
-			UpdateWorldMatrix ();
-			_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
-				Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
+            React.By<Vec2> (ResizeViewport)
+                .WhenResized (this);
+
+            React.By<Vec2> (RotateView)
+                .Map<MouseMoveEventArgs, Vec2> (e =>
+                    new Vec2 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f))
+                .Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
+                .WhenMouseMovesOn (this);
+
+            React.By<float> (ZoomView)
+                .Map (delta => delta * 0.2f)
+                .WhenMouseWheelDeltaChangesOn (this);
+        }
+
+        #endregion
+
+        #region Update operations
+
+        private void UpdateWorldMatrix ()
+        {
+            var worm = Mat.Translation<Mat4> (0f, 0f, -_orientation.Z) *
+                Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
+            _uniforms.worldMatrix &= worm;
+            _uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
+        }
+
+        private void Render (double time)
+        {
+            GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            _program.DrawTriangles<Vertex> (_vbo, _ibo);
+            _program.DrawNormals<Vertex> (_normalVbo);
+            SwapBuffers ();
+        }
+
+        private void ResizeViewport (Vec2 size)
+        {
+            UpdateWorldMatrix ();
+            _uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
+                Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
             GL.Viewport (ClientSize);
         }
 
-		private void RotateView (Vec2 rot)
-		{
-			_orientation += new Vector3 (rot.X, rot.Y, 0f);
-			UpdateWorldMatrix ();
-		}
+        private void RotateView (Vec2 rot)
+        {
+            _orientation += new Vector3 (rot.X, rot.Y, 0f);
+            UpdateWorldMatrix ();
+        }
 
-		private void ZoomView (float delta)
-		{
-			_orientation.Z = Math.Max (_orientation.Z + delta, 2f);
-			UpdateWorldMatrix ();
-		}
+        private void ZoomView (float delta)
+        {
+            _orientation.Z = Math.Max (_orientation.Z + delta, 2f);
+            UpdateWorldMatrix ();
+        }
 
-		[STAThread]
+        #endregion
+
+        [STAThread]
 		static void Main (string[] args)
         {
             var wnd = new TestWindow ();

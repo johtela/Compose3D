@@ -93,6 +93,12 @@
 			return X * other.X + Y * other.Y + Z * other.Z;
 		}
 
+		[GLFunction ("pow ({0})")]
+		public Vec3 Pow (Vec3 other)
+		{
+			return new Vec3 (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y), Numeric.Pow (Z, other.Z));
+		}
+
 		[GLFunction ("clamp ({0})")]
 		public Vec3 Clamp (float min, float max)
 		{

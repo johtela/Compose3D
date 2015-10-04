@@ -99,6 +99,12 @@
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
 
+		[GLFunction ("pow ({0})")]
+		public Vec4 Pow (Vec4 other)
+		{
+			return new Vec4 (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y), Numeric.Pow (Z, other.Z), Numeric.Pow (W, other.W));
+		}
+
 		[GLFunction ("clamp ({0})")]
 		public Vec4 Clamp (float min, float max)
 		{

@@ -90,7 +90,7 @@
 	{
 		internal Vec3 position;
 		internal Vec3 intensity;
-        internal float linearAttenuation, quadraticAttenuation;
+		internal float linearAttenuation, quadraticAttenuation;
     }
 
     [GLStruct ("SpotLight")]
@@ -101,16 +101,24 @@
 		internal float cosSpotCutoff, spotExponent;
 	}
 
+	[GLStruct ("GlobalLighting")]
+	public struct GlobalLighting
+	{
+		internal Vec3 ambientLightIntensity;
+		internal float maxintensity;
+		internal float inverseGamma;
+	}
+
 	public class Uniforms
 	{
 		internal Uniform<Mat4> worldMatrix;
 		internal Uniform<Mat4> perspectiveMatrix;
 		internal Uniform<Mat3> normalMatrix;
-		internal Uniform<Vec3> ambientLightIntensity;
+		internal Uniform<GlobalLighting> globalLighting;
 		internal Uniform<DirectionalLight> directionalLight;
 		internal Uniform<PointLight> pointLight;
-//		[GLArray (1)]
-//		internal Uniform<SpotLight[]> spotLights;
+		//[GLArray (1)]
+		//internal Uniform<SpotLight[]> spotLights;
 	}
 
 	public static class Shaders
@@ -151,19 +159,25 @@
 				 select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn))
 				.Evaluate ());
 
-		//                 let reflectDir = (-lightVec).Reflect (normal)
-		//                 let phong = cosAngle == 0f ? 0f :
-		//                    viewDir.Dot (reflectDir).Clamp (0f, 1f).Pow (shininess)
-		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
-			GLShader.Function (() => CalcSpotLight,
-				(spotLight, position) => 
-				(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
-				 let dist = vecToLight.Length
-				 let lightDir = vecToLight.Normalized
-				 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
-				 let cosAngle = (-lightDir).Dot (spotLight.direction)
-				 select spotLight.pointLight.intensity *
-				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
+//		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
+//			GLShader.Function (() => CalcSpotLight,
+//				(spotLight, position) => 
+//				(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
+//				 let dist = vecToLight.Length
+//				 let lightDir = vecToLight.Normalized
+//				 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
+//				 let cosAngle = (-lightDir).Dot (spotLight.direction)
+//				 select spotLight.pointLight.intensity *
+//				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
+//				.Evaluate ());
+
+		public static readonly Func<GlobalLighting, Vec3, Vec3, Vec3> CalcGlobalLight =
+			GLShader.Function (() => CalcGlobalLight,
+				(globalLight, diffuse, other) =>
+				(from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
+				 let maxInten = globalLight.maxintensity
+				 let ambient = diffuse * globalLight.ambientLightIntensity
+					select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f))
 				.Evaluate ());
 
 		public static GLShader VertexShader ()
@@ -173,7 +187,8 @@
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				select new Fragment () {   
+				select new Fragment () 
+				{   
 					gl_Position = !u.perspectiveMatrix * worldPos,
 					vertexPosition = worldPos [Coord.x, Coord.y, Coord.z],
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
@@ -189,14 +204,13 @@
 				() =>
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
-				let diffuseAndSpecular = CalcDirLight (!u.directionalLight, f.vertexNormal) +
-				    CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal, f.vertexDiffuse, 
-                    f.vertexSpecular, f.vertexShininess)
+				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal)
+				let specular = CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal, 
+					    f.vertexDiffuse, f.vertexSpecular, f.vertexShininess)
 				select new 
 				{
-					outputColor = ((f.vertexDiffuse * !u.ambientLightIntensity) + diffuseAndSpecular).Clamp (0f, 1f) 
-				}
-			);
+					outputColor = CalcGlobalLight (!u.globalLighting, f.vertexDiffuse, diffuse + specular)
+				});
 		}
 	}
 }

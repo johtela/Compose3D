@@ -61,18 +61,23 @@
 
         private void SetupLights ()
         {
-            _uniforms.ambientLightIntensity &= new Vec3 (0.1f);
+			_uniforms.globalLighting &= new GlobalLighting ()
+			{
+				ambientLightIntensity = new Vec3 (0.1f),
+				maxintensity = 2f,
+				inverseGamma = 1f / 2.2f
+			};
             _uniforms.directionalLight &= new DirectionalLight ()
             {
                 direction = new Vec3 (-1f, 1f, 1f),
-                intensity = new Vec3 (0.1f)
+				intensity = new Vec3 (0.1f)
             };
             _uniforms.pointLight &= new PointLight
             {
                 position = new Vec3 (10f, 10f, -10f),
-                intensity = new Vec3 (1f),
-                linearAttenuation = 0.005f,
-                quadraticAttenuation = 0.005f
+				intensity = new Vec3 (2f),
+				linearAttenuation = 0.005f,
+				quadraticAttenuation = 0.005f
             };
         }
 

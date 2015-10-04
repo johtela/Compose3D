@@ -156,7 +156,6 @@
       <LastGenOutput>Vec3.cs</LastGenOutput>
     </None>
     <None Include="Arithmetics\VecTemplate.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>VecTemplate.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />

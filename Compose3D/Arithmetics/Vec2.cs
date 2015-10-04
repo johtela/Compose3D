@@ -87,6 +87,12 @@
 			return X * other.X + Y * other.Y;
 		}
 
+		[GLFunction ("pow ({0})")]
+		public Vec2 Pow (Vec2 other)
+		{
+			return new Vec2 (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y));
+		}
+
 		[GLFunction ("clamp ({0})")]
 		public Vec2 Clamp (float min, float max)
 		{
@@ -232,4 +238,4 @@
             return !left.Equals (right);
         }
     }
-}  
+} 

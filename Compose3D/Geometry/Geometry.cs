@@ -102,8 +102,8 @@
 			{
 				foreach (var v in Vertices)
 				{
-					yield return NewVertex (v.Position, v.Normal, VertexColor.White);
-					yield return NewVertex (v.Position + v.Normal, v.Normal, VertexColor.White);
+					yield return NewVertex (v.Position, v.Normal, new Vec2 (), VertexColor.White);
+					yield return NewVertex (v.Position + v.Normal, v.Normal, new Vec2 (), VertexColor.White);
 				}
 			}
 		}
@@ -111,7 +111,8 @@
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
-		public static V NewVertex (Vec3 position, Vec3 normal, IVertexMaterial material, int tag)
+		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 textureCoord, 
+			IVertexMaterial material, int tag)
 		{
 			var vertex = new V ();
 			vertex.Position = position;
@@ -119,13 +120,14 @@
 			vertex.SpecularColor = material.SpecularColor;
             vertex.Shininess = material.Shininess;
             vertex.Normal = normal;
+			vertex.TextureCoord = textureCoord;
 			vertex.Tag = tag;
 			return vertex;
 		}
 
-		public static V NewVertex (Vec3 position, Vec3 normal, IVertexMaterial material)
+		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 textureCoord, IVertexMaterial material)
 		{
-			return NewVertex (position, normal, material, 0);
+			return NewVertex (position, normal, textureCoord, material, 0);
 		}
 
 		public int FindVertex (V vertex)

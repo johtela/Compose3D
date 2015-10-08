@@ -42,10 +42,10 @@
 				var vertexMaterials = q.Material.VertexMaterials.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (topRight, top, 0f), normal, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (topLeft, top, 0f), normal, vertexMaterials.Next ())
+					NewVertex (new Vec3 (topRight, top, 0f), normal, new Vec2 (1f, 1f), vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, new Vec2 (1f, 0f), vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, new Vec2 (0f, 0f), vertexMaterials.Next ()),
+					NewVertex (new Vec3 (topLeft, top, 0f), normal, new Vec2 (0f, 1f), vertexMaterials.Next ())
 				};
 			}, material);
 		}

@@ -28,14 +28,6 @@
             GC.Collect ();
         }
 
-		public int GetVertexAttrIndex (string name)
-		{
-			var index = GL.GetAttribLocation (_glProgram, name);
-			if (index < 0)
-				throw new GLError (string.Format ("Attribute '{0}' was not found in program", name));
-			return index;
-		}
-
         public Uniform<T> GetUniform<T> (string name)
         {
             return new Uniform<T> (this, name);
@@ -54,9 +46,12 @@
 			GL.BindBuffer (BufferTarget.ArrayBuffer, vertices._glvbo);
 			foreach (var attr in VertexAttr.GetAttributes<V> ())
 			{
-				var index = GetVertexAttrIndex (attr.Name);
-				GL.EnableVertexAttribArray (index);
-				GL.VertexAttribPointer (index, attr.Count, attr.PointerType, false, recSize, offset);
+				var index = GL.GetAttribLocation (_glProgram, attr.Name);
+				if (index >= 0)
+				{
+					GL.EnableVertexAttribArray (index);
+					GL.VertexAttribPointer (index, attr.Count, attr.PointerType, false, recSize, offset);
+				}
 				offset += attr.Size;
 			}
 		}

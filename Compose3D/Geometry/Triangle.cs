@@ -32,14 +32,16 @@
 		public static Triangle<V> Scalene (float leftOffset, float rightOffset, float height, IMaterial material)
 		{
 			var normal = new Vec3 (0f, 0f, 1f);
-			return new Triangle<V> (q =>
+			var width = rightOffset - leftOffset;
+ 			return new Triangle<V> (q =>
 			{
 				var vertexMaterials = q.Material.VertexMaterials.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (0f, height, 0f), normal, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, vertexMaterials.Next ())
+					NewVertex (new Vec3 (0f, height, 0f), normal, 
+						new Vec2 ((-leftOffset / width).Clamp (0f, 1f), 1f), vertexMaterials.Next ()),
+					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, new Vec2 (1f, 0f), vertexMaterials.Next ()),
+					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, new Vec2 (0f, 0f), vertexMaterials.Next ())
 				};
 			}, material);
 		}

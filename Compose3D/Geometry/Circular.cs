@@ -29,12 +29,13 @@
 			{
 				var materials = e.Material.VertexMaterials.GetEnumerator ();
 				var vertices = new V[vertCount];
-				vertices [0] = NewVertex (new Vec3 (0f), normal, materials.Next ());
+				vertices [0] = NewVertex (new Vec3 (0f), normal, new Vec2 (0.5f, 0.5f), materials.Next ());
 				var angle = startAngle;
 				for (var i = 1; i < vertCount; i++)
 				{
-					var pos = new Vec3 (width * (float)Math.Cos (angle), height * (float)Math.Sin (angle), 0f);
-					vertices [i] = NewVertex (pos, normal, materials.Next ());
+					var unitPos = new Vec2 ((float)Math.Cos (angle), (float)Math.Sin (angle));
+					var pos = new Vec3 (width * unitPos.X, height * unitPos.Y, 0f);
+					vertices [i] = NewVertex (pos, normal, unitPos + new Vec2 (0.5f, 0.5f), materials.Next ());
 					angle = Math.Min (angle + stepAngle, endAngle);
 				}
 				return vertices;

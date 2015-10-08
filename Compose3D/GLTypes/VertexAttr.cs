@@ -33,6 +33,8 @@
 			var s = Marshal.SizeOf (ft);
 			var name = fi.Name;
 
+			if (ft == typeof (Vec2))
+				return new VertexAttr (name, VertexAttribPointerType.Float, s, 2);
 			if (ft == typeof (Vec3))
 				return new VertexAttr (name, VertexAttribPointerType.Float, s, 3);
 			else if (ft == typeof (Vec4))

@@ -16,6 +16,7 @@
         internal Vec3 normal;
         internal Vec3 diffuseColor;
         internal Vec3 specularColor;
+		internal Vec2 textureCoord;
         internal float shininess;
         [OmitInGlsl]
         internal int tag;
@@ -53,6 +54,12 @@
 					throw new ArgumentException ("Normal component NaN");
 				normal = value; 
 			}
+		}
+
+		Vec2 IVertex.TextureCoord
+		{
+			get { return textureCoord; }
+			set { textureCoord = value; }
 		}
 
         int IVertex.Tag

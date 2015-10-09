@@ -33,7 +33,7 @@
 		/// <summary>
 		/// The texture coordinate of the vertex.
 		/// </summary>
-		Vec2 TextureCoord { get; set; }
+		Vec2 TexturePos { get; set; }
 
 		/// <summary>
 		/// Tag can be used to identify a vertex.

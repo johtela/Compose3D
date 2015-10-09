@@ -111,7 +111,7 @@
 		/// <summary>
 		/// Helper function that creates a vertex and sets its position and color.
 		/// </summary>
-		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 textureCoord, 
+		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 texturePos, 
 			IVertexMaterial material, int tag)
 		{
 			var vertex = new V ();
@@ -120,14 +120,14 @@
 			vertex.SpecularColor = material.SpecularColor;
             vertex.Shininess = material.Shininess;
             vertex.Normal = normal;
-			vertex.TextureCoord = textureCoord;
+			vertex.TexturePos = texturePos;
 			vertex.Tag = tag;
 			return vertex;
 		}
 
-		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 textureCoord, IVertexMaterial material)
+		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 texturePos, IVertexMaterial material)
 		{
-			return NewVertex (position, normal, textureCoord, material, 0);
+			return NewVertex (position, normal, texturePos, material, 0);
 		}
 
 		public int FindVertex (V vertex)

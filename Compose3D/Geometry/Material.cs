@@ -27,7 +27,6 @@ namespace Compose3D.Geometry
 		public Vec3 DiffuseColor { get; set; }
 		public Vec3 SpecularColor { get; set; }
         public float Shininess { get; set; }
-		public Vec2 TextureCoord { get; set; }
 
 		public VertexMaterial (Vec3 diffuse, Vec3 specular, float shininess)
 		{

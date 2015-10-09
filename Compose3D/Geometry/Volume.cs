@@ -1,12 +1,12 @@
 ﻿namespace Compose3D.Geometry
 {
-	using System;
-	using Arithmetics;
-	using System.Collections.Generic;
-	using System.Linq;
-	using OpenTK;
+    using System;
+    using Arithmetics;
+    using Textures;
+    using System.Collections.Generic;
+    using System.Linq;
 
-	public static class Volume
+    public static class Volume
 	{
 		#region Edges
 
@@ -52,10 +52,10 @@
 			return b ? 1 : 0;
 		}
 
-		private static V ChangeNormal<V> (V vertex, Vec3 normal)
+		private static V SideVertex<V> (V vertex, Vec3 normal, Vec2 texturePos)
 			where V : struct, IVertex
 		{
-			return Geometry<V>.NewVertex (vertex.Position, normal, vertex.TextureCoord, vertex);
+			return Geometry<V>.NewVertex (vertex.Position, normal, texturePos, vertex);
 		}
 
 		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
@@ -149,10 +149,10 @@
 						backNormal2 = (backNormal2 + backNextNormal).Normalized;
 					}
 					geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
-						ChangeNormal (vertices[edge.Index2], frontNormal2),
-						ChangeNormal (vertices[edge.Index1], frontNormal1),
-						ChangeNormal (backFace.Vertices[edge.Index1], backNormal1),
-						ChangeNormal (backFace.Vertices[edge.Index2], backNormal2));
+						SideVertex (vertices[edge.Index2], frontNormal2, TexturePos.BottomRight),
+						SideVertex (vertices[edge.Index1], frontNormal1, TexturePos.BottomLeft),
+						SideVertex (backFace.Vertices[edge.Index1], backNormal1, TexturePos.TopLeft),
+						SideVertex (backFace.Vertices[edge.Index2], backNormal2, TexturePos.TopRight));
                 }
                 vertices = backFace.Vertices;
             }

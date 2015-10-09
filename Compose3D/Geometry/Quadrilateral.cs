@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
     using Arithmetics;
+    using Textures;
 	using System;
     using System.Collections.Generic;
 
@@ -42,10 +43,10 @@
 				var vertexMaterials = q.Material.VertexMaterials.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (topRight, top, 0f), normal, new Vec2 (1f, 1f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, new Vec2 (1f, 0f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, new Vec2 (0f, 0f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (topLeft, top, 0f), normal, new Vec2 (0f, 1f), vertexMaterials.Next ())
+					NewVertex (new Vec3 (topRight, top, 0f), normal, TexturePos.TopRight, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, TexturePos.BottomRight, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, TexturePos.BottomLeft, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (topLeft, top, 0f), normal, TexturePos.TopLeft, vertexMaterials.Next ())
 				};
 			}, material);
 		}

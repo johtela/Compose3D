@@ -125,6 +125,8 @@
     <Compile Include="Reactive\Reaction.cs" />
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
+    <Compile Include="Textures\Texture.cs" />
+    <Compile Include="Textures\TexturePos.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">
@@ -171,7 +173,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <Folder Include="Reactive\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

@@ -16,7 +16,7 @@
         internal Vec3 normal;
         internal Vec3 diffuseColor;
         internal Vec3 specularColor;
-		internal Vec2 textureCoord;
+		internal Vec2 texturePos;
         internal float shininess;
         [OmitInGlsl]
         internal int tag;
@@ -56,10 +56,10 @@
 			}
 		}
 
-		Vec2 IVertex.TextureCoord
+		Vec2 IVertex.TexturePos
 		{
-			get { return textureCoord; }
-			set { textureCoord = value; }
+			get { return texturePos; }
+			set { texturePos = value; }
 		}
 
         int IVertex.Tag

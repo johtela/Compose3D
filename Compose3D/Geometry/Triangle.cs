@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
 	using Arithmetics;
+    using Textures;
 	using OpenTK;
 	using System;
 	using System.Collections.Generic;
@@ -40,8 +41,8 @@
 				{
 					NewVertex (new Vec3 (0f, height, 0f), normal, 
 						new Vec2 ((-leftOffset / width).Clamp (0f, 1f), 1f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, new Vec2 (1f, 0f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, new Vec2 (0f, 0f), vertexMaterials.Next ())
+					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, TexturePos.BottomRight, vertexMaterials.Next ()),
+					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, TexturePos.BottomLeft, vertexMaterials.Next ())
 				};
 			}, material);
 		}

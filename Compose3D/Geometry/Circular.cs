@@ -9,14 +9,14 @@
     {
 		bool _fullArc;
 
-		private Circular (Func<Geometry<V>, V[]> generateVertices, IMaterial material, bool fullArc)
-            : base (generateVertices, material)
+		private Circular (Func<Geometry<V>, V[]> generateVertices, bool fullArc)
+            : base (generateVertices)
         {
 			_fullArc = fullArc;
 		}
 
         public static Circular<V> Pie (float width, float height, float stepAngle, 
-            float startAngle, float endAngle, IMaterial material)
+            float startAngle, float endAngle, IColors colors)
         {
             if (startAngle > endAngle)
                 throw new ArgumentException ("Start angle must be bigger than end angle");
@@ -27,37 +27,37 @@
             var normal = new Vec3 (0f, 0f, 1f);
 			return new Circular<V> (e =>
 			{
-				var materials = e.Material.VertexMaterials.GetEnumerator ();
+				var colEnum = colors.VertexColors.GetEnumerator ();
 				var vertices = new V[vertCount];
-				vertices [0] = NewVertex (new Vec3 (0f), normal, new Vec2 (0.5f, 0.5f), materials.Next ());
+				vertices [0] = NewVertex (new Vec3 (0f), normal, new Vec2 (0.5f, 0.5f), colEnum.Next ());
 				var angle = startAngle;
 				for (var i = 1; i < vertCount; i++)
 				{
 					var unitPos = new Vec2 ((float)Math.Cos (angle), (float)Math.Sin (angle));
 					var pos = new Vec3 (width * unitPos.X, height * unitPos.Y, 0f);
-					vertices [i] = NewVertex (pos, normal, unitPos + new Vec2 (0.5f, 0.5f), materials.Next ());
+					vertices [i] = NewVertex (pos, normal, unitPos + new Vec2 (0.5f, 0.5f), colEnum.Next ());
 					angle = Math.Min (angle + stepAngle, endAngle);
 				}
 				return vertices;
-			}, material, fullArc);
+			}, fullArc);
         }
 
-        public static Circular<V> Ellipse (float width, float height, float stepAngle, IMaterial material)
+        public static Circular<V> Ellipse (float width, float height, float stepAngle, IColors material)
         {
 			return Pie (width, height, stepAngle, 0f, 0f, material);
         }
 
-        public static Circular<V> Ellipse (float width, float height, IMaterial material)
+        public static Circular<V> Ellipse (float width, float height, IColors material)
         {
 			return Ellipse (width, height, MathHelper.Pi / 18, material);
         }
 
-        public static Circular<V> Circle (float diameter, float stepAngle, IMaterial material)
+        public static Circular<V> Circle (float diameter, float stepAngle, IColors material)
         {
 			return Ellipse (diameter, diameter, stepAngle, material);
         }
 
-        public static Circular<V> Circle (float diameter, IMaterial material)
+        public static Circular<V> Circle (float diameter, IColors material)
         {
 			return Ellipse (diameter, diameter, material);
         }

@@ -23,7 +23,7 @@
 	/// All Vertex structures need to implement this interface. Through it
 	/// geometry generators can set vertex attributes.
 	/// </description>
-	public interface IVertex : IPositional, IVertexMaterial
+	public interface IVertex : IPositional, IVertexColor
 	{
 		/// <summary>
 		/// The normal of the vertex.

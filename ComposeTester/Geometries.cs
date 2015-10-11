@@ -10,9 +10,9 @@
 
 	public static class Geometries
 	{
-		private static IMaterial NewMat ()
+		private static IColors NewMat ()
 		{
-			return Material.RepeatColors (VertexColor.Random.DiffuseColor);
+			return Colors.Uniform (VertexColor.Random.DiffuseColor);
 		}
 
 		public static Geometry<Vertex> Hammer ()
@@ -26,7 +26,8 @@
 
 		private static Geometry<Vertex> Roof (out int tag)
 		{
-			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, NewMat ());
+			var mat = NewMat ();
+			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, mat);
 			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
 			var leftPane = trapezoid.Extrude (30f).Rotate (0f, 0f, MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
@@ -45,7 +46,8 @@
 		private static Geometry<Vertex> WallsAndGables (Geometry<Vertex> roof, Geometry<Vertex> gables, 
 			int roofSnapTag, int gableTopTag)
 		{
-			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z, NewMat ())
+			var mat = NewMat ();
+				var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z, mat)
 				.Extrude (12f, false, false).Rotate (MathHelper.PiOver2, 0f, 0f);
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
@@ -74,13 +76,15 @@
 
 		public static Geometry<Vertex> Tube ()
 		{
-			return Circular<Vertex>.Circle (10f, NewMat ())
+			var mat = NewMat ();
+			return Circular<Vertex>.Circle (10f, mat)
 				.Stretch (10, true, true, true, TubeTransforms ()).Center ();
 		}
 
 		public static Geometry<Vertex> Arrow ()
 		{
-			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), NewMat ())
+			var mat = NewMat ();
+			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), mat)
 				.Stretch (1, false, false, true, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
@@ -88,7 +92,8 @@
 
 		public static Geometry<Vertex> Pipe ()
 		{
-			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi, NewMat ())
+			var mat = NewMat ();
+			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi, mat)
 				.Hollow (1.2f, 1.2f)
 				.Extrude (10f, true, true)
 				.Center ();

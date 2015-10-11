@@ -4,7 +4,7 @@ namespace Compose3D.Geometry
     using System.Collections.Generic;
 	using System.Linq;
 
-	public interface IVertexMaterial
+	public interface IVertexColor
 	{
 		Vec3 DiffuseColor { get; set; }
 		Vec3 SpecularColor { get; set; }
@@ -14,99 +14,78 @@ namespace Compose3D.Geometry
 	/// <summary>
 	/// Interface that returns the material attributes of the vertices.
 	/// </summary>
-	public interface IMaterial
+	public interface IColors
 	{
 		/// <summary>
 		/// Get the vertex colors.
 		/// </summary>
-		IEnumerable<IVertexMaterial> VertexMaterials { get; }
+		IEnumerable<IVertexColor> VertexColors { get; }
 	}
 
-	public class VertexMaterial : IVertexMaterial
+	public class VertColor : IVertexColor
 	{
 		public Vec3 DiffuseColor { get; set; }
 		public Vec3 SpecularColor { get; set; }
         public float Shininess { get; set; }
 
-		public VertexMaterial (Vec3 diffuse, Vec3 specular, float shininess)
+		public VertColor (Vec3 diffuse, Vec3 specular, float shininess)
 		{
 			DiffuseColor = diffuse;
 			SpecularColor = specular;
             Shininess = shininess;
 		}
 
-		public VertexMaterial (Vec3 color) : this (color, color / 2f, 100f) { }
+		public VertColor (Vec3 color) : this (color, color / 2f, 100f) { }
 	}
 
 	/// <summary>
 	/// Static class that contains extension methods to generate various materials,
 	/// </summary>
-	public static class Material
+	public static class Colors
 	{
-		private class UniformColorMaterial : IMaterial
-		{
-			private Vec3 _color;
-
-			public UniformColorMaterial (Vec3 color)
-			{
-				_color = color;
-			}
-
-			public IEnumerable<IVertexMaterial> VertexMaterials
-			{
-				get { while (true) yield return new VertexMaterial (_color); }
-			}
-		}
-
-		public class RepeatColorsMaterial : IMaterial
+		private class ColorVec : IColors
 		{
 			private Vec3[] _colors;
 
-			public RepeatColorsMaterial (params Vec3[] colors)
+			public ColorVec (params Vec3[] colors)
 			{
 				_colors = colors;
 			}
 
-			public IEnumerable<IVertexMaterial> VertexMaterials
+			public IEnumerable<IVertexColor> VertexColors
 			{
-				get { return _colors.Select (c => new VertexMaterial (c)).Repeat (); }
+				get { return _colors.Select (v => new VertColor (v)); }
 			}
 		}
 
-		public class RepeatMaterial : IMaterial
+		private class RepeatColors : IColors
 		{
-			private IMaterial[] _materials;
-			private int _index;
+			private IColors[] _colors;
 
-			public RepeatMaterial (params IMaterial[] materials)
+			public RepeatColors (params IColors[] colors)
 			{
-				_materials = materials;
-				_index = -1;
+				_colors = colors;
 			}
 
-			public IEnumerable<IVertexMaterial> VertexMaterials
+			public IEnumerable<IVertexColor> VertexColors
 			{
-				get
-				{
-					_index = (_index + 1) % _materials.Length;
-					return _materials[_index].VertexMaterials;
-				}
+				get { return _colors.SelectMany (c => c.VertexColors).Repeat (); }
 			}
 		}
 
-		public static IMaterial UniformColor (Vec3 color)
+		public static IColors Uniform (Vec3 color)
 		{
-			return new UniformColorMaterial (color);
+			return new ColorVec (color);
 		}
 
-		public static IMaterial RepeatColors (params Vec3[] colors)
+		public static IColors Repeat (params Vec3[] colors)
 		{
-			return new RepeatColorsMaterial (colors);
+			return new ColorVec (colors);
 		}
 
-		public static IMaterial Repeat (params IMaterial[] materials)
+		public static IColors Repeat (params IColors[] colors)
 		{
-			return new RepeatMaterial (materials);
+			return new RepeatColors (colors);
 		}
 	}	
 }

@@ -148,7 +148,7 @@
 						backNormal1 = (backNormal1 + backPrevNormal).Normalized;
 						backNormal2 = (backNormal2 + backNextNormal).Normalized;
 					}
-					geometries[i] = Quadrilateral<V>.FromVertices (frontFace.Material,
+					geometries[i] = Quadrilateral<V>.FromVertices (
 						SideVertex (vertices[edge.Index2], frontNormal2, TexturePos.BottomRight),
 						SideVertex (vertices[edge.Index1], frontNormal1, TexturePos.BottomLeft),
 						SideVertex (backFace.Vertices[edge.Index1], backNormal1, TexturePos.TopLeft),
@@ -174,14 +174,14 @@
 			return frontFace.Extrude (depth, true, false);
 		}
 
-		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY)
+		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
 			where V : struct, IVertex
 		{
 			return frontFace.Center ().Stretch (1, false, false, false, 
 				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
 		}
 
-		public static Geometry<V> Cube<V> (float width, float height, float depth, IMaterial material) 
+		public static Geometry<V> Cube<V> (float width, float height, float depth, IColors material) 
 			where V : struct, IVertex
 		{
 			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth);

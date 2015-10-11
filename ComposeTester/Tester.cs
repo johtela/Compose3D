@@ -29,7 +29,7 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.House ();
+			_geometry = Geometries.Pipe ();
 			_orientation = new Vec2 (0f, 0f);
 			_position = new Vec3 (0f, 0f, -40f);
 

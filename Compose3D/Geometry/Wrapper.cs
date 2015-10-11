@@ -21,11 +21,6 @@
 		{
 			return _geometry.Indices;
 		}
-
-		public override IMaterial Material
-		{
-			get { return _geometry.Material; }
-		}
 	}
 }
 

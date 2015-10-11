@@ -35,11 +35,6 @@
 				c += _geometries [g].Vertices.Length;
 			}
 		}
-
-		public override IMaterial Material
-		{
-			get { return _geometries [0].Material; }
-		}
 	}
 
 	/// <summary>

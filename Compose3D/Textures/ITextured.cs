@@ -42,17 +42,18 @@
             where V : struct, IVertex, ITextured
         {
             var projected = geometry.Transform (projection);
+            var range = maxPos - minPos;
             var bbox = projected.BoundingBox;
-            var invWidth = 1f / bbox.Size.X;
-            var invHeight = 1f / bbox.Size.Y;
+            var scaleX = range.X / bbox.Size.X;
+            var scaleY = range.Y / bbox.Size.Y;
             var verts = geometry.Vertices;
             for (int i = 0; i < verts.Length; i++)
             {
                 var pv = projected.Vertices[i];
                 if (pv.Normal.Z >= 0f)
                     verts[i].TexturePos = new Vec2 (
-                        (pv.Position.X - bbox.Left) * invWidth,
-                        (pv.Position.Y - bbox.Bottom) * invHeight);
+                        (pv.Position.X - bbox.Left) * scaleX + minPos.X,
+                        (pv.Position.Y - bbox.Bottom) * scaleY + minPos.Y);
             }
         }
     }

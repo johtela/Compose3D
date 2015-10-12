@@ -188,6 +188,20 @@
                 new Vec4 (0f, 0f, -(2.0f * zFar * zNear) / depth, 0f));
         }
 
+        public static Mat4 OrthographicOffCenter (float left, float right, float bottom, float top,
+            float zNear, float zFar)
+        {
+            float invWidth = 1.0f / (right - left);
+            float invHeight = 1.0f / (top - bottom);
+            float invDepth = 1.0f / (zFar - zNear);
+
+            return new Mat4 (
+                new Vec4 (2f * invWidth, 0f, 0f, 0f),
+                new Vec4 (0f, 2f * invHeight, 0f, 0f),
+                new Vec4 (0f, 0f, -2f * invDepth, 0f),
+                new Vec4 (-(right + left) * invWidth, -(top + bottom) * invHeight, -(zFar + zNear) * invDepth, 1f));
+        }
+
         /// <summary>
         /// Doolittle LUP decomposition with partial pivoting. 
         /// </summary>

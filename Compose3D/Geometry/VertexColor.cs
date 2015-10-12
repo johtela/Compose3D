@@ -92,5 +92,3 @@ namespace Compose3D.Geometry
         }
     }
 }
-
-

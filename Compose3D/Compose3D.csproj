@@ -124,8 +124,7 @@
     <Compile Include="Reactive\Reaction.cs" />
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
-    <Compile Include="Textures\TexturePos.cs" />
-    <Compile Include="Textures\ITexture.cs" />
+    <Compile Include="Textures\ITextured.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

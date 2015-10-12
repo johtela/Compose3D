@@ -3,6 +3,7 @@
 	using Compose3D.Arithmetics;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
+    using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
 	using System;
 	using System.Collections.Generic;

@@ -16,14 +16,6 @@
 		Vec3 Position { get; set; }
 	}
 
-    public interface ITextured
-    {
-        /// <summary>
-        /// The texture coordinate of the vertex.
-        /// </summary>
-        Vec2 TexturePos { get; set; }
-    }
-
     /// <summary>
     /// Interface that is used to access mandatory vertex attributes.
     /// </summary>

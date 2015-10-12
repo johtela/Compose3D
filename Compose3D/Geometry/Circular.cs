@@ -16,7 +16,7 @@
 		}
 
         public static Circular<V> Pie (float width, float height, float stepAngle, 
-            float startAngle, float endAngle, IColors colors)
+            float startAngle, float endAngle)
         {
             if (startAngle > endAngle)
                 throw new ArgumentException ("Start angle must be bigger than end angle");
@@ -27,39 +27,37 @@
             var normal = new Vec3 (0f, 0f, 1f);
 			return new Circular<V> (e =>
 			{
-				var colEnum = colors.VertexColors.GetEnumerator ();
 				var vertices = new V[vertCount];
-				vertices [0] = NewVertex (new Vec3 (0f), normal, new Vec2 (0.5f, 0.5f), colEnum.Next ());
+				vertices [0] = VertexHelpers.New<V> (new Vec3 (0f), normal);
 				var angle = startAngle;
 				for (var i = 1; i < vertCount; i++)
 				{
-					var unitPos = new Vec2 ((float)Math.Cos (angle), (float)Math.Sin (angle));
-					var pos = new Vec3 (width * unitPos.X, height * unitPos.Y, 0f);
-					vertices [i] = NewVertex (pos, normal, unitPos + new Vec2 (0.5f, 0.5f), colEnum.Next ());
+					var pos = new Vec3 (width * (float)Math.Cos (angle), height * (float)Math.Sin (angle), 0f);
+					vertices [i] = VertexHelpers.New<V> (pos, normal);
 					angle = Math.Min (angle + stepAngle, endAngle);
 				}
 				return vertices;
 			}, fullArc);
         }
 
-        public static Circular<V> Ellipse (float width, float height, float stepAngle, IColors material)
+        public static Circular<V> Ellipse (float width, float height, float stepAngle)
         {
-			return Pie (width, height, stepAngle, 0f, 0f, material);
+			return Pie (width, height, stepAngle, 0f, 0f);
         }
 
-        public static Circular<V> Ellipse (float width, float height, IColors material)
+        public static Circular<V> Ellipse (float width, float height)
         {
-			return Ellipse (width, height, MathHelper.Pi / 18, material);
+			return Ellipse (width, height, MathHelper.Pi / 18);
         }
 
-        public static Circular<V> Circle (float diameter, float stepAngle, IColors material)
+        public static Circular<V> Circle (float diameter, float stepAngle)
         {
-			return Ellipse (diameter, diameter, stepAngle, material);
+			return Ellipse (diameter, diameter, stepAngle);
         }
 
-        public static Circular<V> Circle (float diameter, IColors material)
+        public static Circular<V> Circle (float diameter)
         {
-			return Ellipse (diameter, diameter, material);
+			return Ellipse (diameter, diameter);
         }
 
         protected override IEnumerable<int> GenerateIndices ()

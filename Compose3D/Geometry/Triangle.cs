@@ -12,37 +12,34 @@
             : base (generateVertices)
         { }
 
-        public static Triangle<V> FromVertices (IColors material, params V[] vertices)
+        public static Triangle<V> FromVertices (params V[] vertices)
 		{
 			if (vertices.Length != 3)
 				throw new GeometryError ("Triangles must have three vertices");
 			return new Triangle<V> (t => vertices);
 		}
 			
-		public static Triangle<V> Equilateral (float width, IColors material)
+		public static Triangle<V> Equilateral (float width)
 		{
-			return Isosceles (width, width * (float)Math.Sin (MathHelper.PiOver6), material);
+			return Isosceles (width, width * (float)Math.Sin (MathHelper.PiOver6));
 		}
 
-		public static Triangle<V> Isosceles (float width, float height, IColors material)
+		public static Triangle<V> Isosceles (float width, float height)
 		{
 			var offs = width / 2f;
-			return Scalene (-offs, offs, height, material);
+			return Scalene (-offs, offs, height);
 		}
 
-		public static Triangle<V> Scalene (float leftOffset, float rightOffset, float height, IColors material)
+		public static Triangle<V> Scalene (float leftOffset, float rightOffset, float height)
 		{
 			var normal = new Vec3 (0f, 0f, 1f);
-			var width = rightOffset - leftOffset;
  			return new Triangle<V> (q =>
 			{
-				var vertexMaterials = material.VertexColors.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (0f, height, 0f), normal, 
-						new Vec2 ((-leftOffset / width).Clamp (0f, 1f), 1f), vertexMaterials.Next ()),
-					NewVertex (new Vec3 (rightOffset, 0f, 0f), normal, TexturePos.BottomRight, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (leftOffset, 0f, 0f), normal, TexturePos.BottomLeft, vertexMaterials.Next ())
+                    VertexHelpers.New<V> (new Vec3 (0f, height, 0f), normal),
+                    VertexHelpers.New<V> (new Vec3 (rightOffset, 0f, 0f), normal),
+                    VertexHelpers.New<V> (new Vec3 (leftOffset, 0f, 0f), normal)
 				};
 			});
 		}

@@ -52,10 +52,10 @@
 			return b ? 1 : 0;
 		}
 
-		private static V SideVertex<V> (V vertex, Vec3 normal, Vec2 texturePos)
+		private static V SideVertex<V> (V vertex, Vec3 normal)
 			where V : struct, IVertex
 		{
-			return Geometry<V>.NewVertex (vertex.Position, normal, texturePos, vertex);
+			return VertexHelpers.New<V> (vertex.Position, normal);
 		}
 
 		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
@@ -149,10 +149,10 @@
 						backNormal2 = (backNormal2 + backNextNormal).Normalized;
 					}
 					geometries[i] = Quadrilateral<V>.FromVertices (
-						SideVertex (vertices[edge.Index2], frontNormal2, TexturePos.BottomRight),
-						SideVertex (vertices[edge.Index1], frontNormal1, TexturePos.BottomLeft),
-						SideVertex (backFace.Vertices[edge.Index1], backNormal1, TexturePos.TopLeft),
-						SideVertex (backFace.Vertices[edge.Index2], backNormal2, TexturePos.TopRight));
+						SideVertex (vertices[edge.Index2], frontNormal2),
+						SideVertex (vertices[edge.Index1], frontNormal1),
+						SideVertex (backFace.Vertices[edge.Index1], backNormal1),
+						SideVertex (backFace.Vertices[edge.Index2], backNormal2));
                 }
                 vertices = backFace.Vertices;
             }
@@ -181,10 +181,10 @@
 				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
 		}
 
-		public static Geometry<V> Cube<V> (float width, float height, float depth, IColors material) 
+		public static Geometry<V> Cube<V> (float width, float height, float depth) 
 			where V : struct, IVertex
 		{
-			return Quadrilateral<V>.Rectangle (width, height, material).Extrude (depth);
+			return Quadrilateral<V>.Rectangle (width, height).Extrude (depth);
 		}
 	}
 }

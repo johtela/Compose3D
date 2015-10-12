@@ -10,7 +10,7 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Vertex : IVertex
+	public struct Vertex : IVertex, IVertexColor, ITextured
 	{
 		internal Vec3 position;
         internal Vec3 normal;
@@ -56,7 +56,7 @@
 			}
 		}
 
-		Vec2 IVertex.TexturePos
+		Vec2 ITextured.TexturePos
 		{
 			get { return texturePos; }
 			set { texturePos = value; }

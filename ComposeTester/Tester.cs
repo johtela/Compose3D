@@ -35,7 +35,9 @@
 
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
-			_normalVbo = new VBO<Vertex> (_geometry.Normals, BufferTarget.ArrayBuffer);
+            var normals = _geometry.Normals;
+            normals.Color (VertexColor.Uniform (VertexColor.White));
+			_normalVbo = new VBO<Vertex> (normals, BufferTarget.ArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
             _program.InitializeUniforms (_uniforms = new Uniforms ());
         }

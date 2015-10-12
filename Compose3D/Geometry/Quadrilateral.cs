@@ -18,18 +18,18 @@
 			return new Quadrilateral<V> (q => vertices);
 		}
 
-		public static Quadrilateral<V> Rectangle (float width, float height, IColors material)
+		public static Quadrilateral<V> Rectangle (float width, float height)
 		{
-			return Trapezoid (width, height, 0f, 0f, material);
+			return Trapezoid (width, height, 0f, 0f);
 		}
 
-		public static Quadrilateral<V> Parallelogram (float width, float height, float topOffset, IColors material)
+		public static Quadrilateral<V> Parallelogram (float width, float height, float topOffset)
 		{
-			return Trapezoid (width, height, topOffset, topOffset, material);
+			return Trapezoid (width, height, topOffset, topOffset);
 		}
 			
 		public static Quadrilateral<V> Trapezoid (float width, float height, 
-			float topLeftOffset, float topRightOffset, IColors material)
+			float topLeftOffset, float topRightOffset)
 		{
 			var bottomRight = width / 2f;
 			var topRight = bottomRight + topRightOffset;
@@ -40,13 +40,12 @@
 			var normal = new Vec3 (0f, 0f, 1f);
 			return new Quadrilateral<V> (q =>
 			{
-				var vertexMaterials = material.VertexColors.GetEnumerator ();
 				return new V[] 
 				{
-					NewVertex (new Vec3 (topRight, top, 0f), normal, TexturePos.TopRight, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomRight, bottom, 0f), normal, TexturePos.BottomRight, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (bottomLeft, bottom, 0f), normal, TexturePos.BottomLeft, vertexMaterials.Next ()),
-					NewVertex (new Vec3 (topLeft, top, 0f), normal, TexturePos.TopLeft, vertexMaterials.Next ())
+					VertexHelpers.New<V> (new Vec3 (topRight, top, 0f), normal),
+                    VertexHelpers.New<V> (new Vec3 (bottomRight, bottom, 0f), normal),
+                    VertexHelpers.New<V> (new Vec3 (bottomLeft, bottom, 0f), normal),
+                    VertexHelpers.New<V> (new Vec3 (topLeft, top, 0f), normal)
 				};
 			});
 		}

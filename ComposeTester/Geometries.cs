@@ -10,45 +10,43 @@
 
 	public static class Geometries
 	{
-		private static IColors NewMat ()
+		private static IEnumerable<IVertexColor> Colors ()
 		{
-			return Colors.Uniform (VertexColor.Random.DiffuseColor);
+			return VertexColor.Uniform (VertexColor.Random.DiffuseColor);
 		}
 
 		public static Geometry<Vertex> Hammer ()
 		{
-			var cube1 = Volume.Cube<Vertex> (1f, 1.5f, 2f, NewMat ()).Rotate (0f, MathHelper.PiOver2, 0f);
-			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f, NewMat ()).Scale (0.8f, 0.8f, 0.8f);
-			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f, NewMat ());
+			var cube1 = Volume.Cube<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f).Color (Colors ());
+			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f).Color (Colors ());
+			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f).Color (Colors ());
 			return Composite.Create (Stacking.StackRight (cube1, cube2, cube3)
 				.Align (Alignment.None, Alignment.Center, Alignment.Center)).Center ();
 		}
 
 		private static Geometry<Vertex> Roof (out int tag)
 		{
-			var mat = NewMat ();
-			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f, mat);
+			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f);
 			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
 			var leftPane = trapezoid.Extrude (30f).Rotate (0f, 0f, MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
-			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
+			return Composite.Create (Stacking.StackRight (leftPane, rightPane)).Color (Colors ());
 		}
 
 		private static Geometry<Vertex> Gables (Geometry<Vertex> roof, out int tag)
 		{
 			var gableHeight = roof.BoundingBox.Size.Y * 0.85f;
-			var frontGable = Triangle<Vertex>.Isosceles (2 * gableHeight, gableHeight, NewMat ());
+			var frontGable = Triangle<Vertex>.Isosceles (2 * gableHeight, gableHeight);
 			tag = frontGable.TagVertex (frontGable.Vertices.Topmost ().Single ());
 			var backGable = frontGable.ReflectZ ().Translate (0f, 0f, -roof.BoundingBox.Size.Z * 0.9f);
-			return Composite.Create (frontGable, backGable);
+			return Composite.Create (frontGable, backGable).Color (Colors ());
 		}
 
 		private static Geometry<Vertex> WallsAndGables (Geometry<Vertex> roof, Geometry<Vertex> gables, 
 			int roofSnapTag, int gableTopTag)
 		{
-			var mat = NewMat ();
-				var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z, mat)
-				.Extrude (12f, false, false).Rotate (MathHelper.PiOver2, 0f, 0f);
+			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z)
+				.Extrude (12f, false, false).Rotate (MathHelper.PiOver2, 0f, 0f).Color (Colors ());
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
 			return wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
@@ -76,27 +74,24 @@
 
 		public static Geometry<Vertex> Tube ()
 		{
-			var mat = NewMat ();
-			return Circular<Vertex>.Circle (10f, mat)
-				.Stretch (10, true, true, true, TubeTransforms ()).Center ();
+			return Circular<Vertex>.Circle (10f)
+				.Stretch (10, true, true, true, TubeTransforms ()).Center ().Color (Colors ());
 		}
 
 		public static Geometry<Vertex> Arrow ()
 		{
-			var mat = NewMat ();
-			return Circular<Vertex>.Circle (10f, 10f.ToRadians (), mat)
+			return Circular<Vertex>.Circle (10f, 10f.ToRadians ())
 				.Stretch (1, false, false, true, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
-				.Center ();
+				.Center ().Color (Colors ());
 		}	
 
 		public static Geometry<Vertex> Pipe ()
 		{
-			var mat = NewMat ();
-			return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi, mat)
-				.Hollow (1.2f, 1.2f)
-				.Extrude (10f, true, true)
-				.Center ();
+            return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi)
+                .Hollow (1.2f, 1.2f)
+                .Extrude (10f, true, true)
+                .Center ().Color (Colors ());
 		}
 	}
 }

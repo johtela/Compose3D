@@ -16,24 +16,27 @@
 		Vec3 Position { get; set; }
 	}
 
-	/// <summary>
-	/// Interface that is used to access mandatory vertex attributes.
-	/// </summary>
-	/// <description>
-	/// All Vertex structures need to implement this interface. Through it
-	/// geometry generators can set vertex attributes.
-	/// </description>
-	public interface IVertex : IPositional, IVertexColor
+    public interface ITextured
+    {
+        /// <summary>
+        /// The texture coordinate of the vertex.
+        /// </summary>
+        Vec2 TexturePos { get; set; }
+    }
+
+    /// <summary>
+    /// Interface that is used to access mandatory vertex attributes.
+    /// </summary>
+    /// <description>
+    /// All Vertex structures need to implement this interface. Through it
+    /// geometry generators can set vertex attributes.
+    /// </description>
+    public interface IVertex : IPositional
 	{
 		/// <summary>
 		/// The normal of the vertex.
 		/// </summary>
 		Vec3 Normal { get; set; }
-
-		/// <summary>
-		/// The texture coordinate of the vertex.
-		/// </summary>
-		Vec2 TexturePos { get; set; }
 
 		/// <summary>
 		/// Tag can be used to identify a vertex.
@@ -43,7 +46,39 @@
 
 	public static class VertexHelpers
 	{
-		public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
+        public static V New<V>(Vec3 position, Vec3 normal, int tag)
+            where V : struct, IVertex
+        {
+            var vertex = new V ();
+            vertex.Position = position;
+            vertex.Normal = normal;
+            vertex.Tag = tag;
+            return vertex;
+        }
+
+        public static V New<V>(Vec3 position, Vec3 normal)
+            where V : struct, IVertex
+        {
+            return New<V> (position, normal, 0);
+        }
+
+        public static V New<V> (Vec3 position, Vec3 normal, IVertexColor vertColor, int tag)
+            where V : struct, IVertex, IVertexColor
+        {
+            var vertex = New<V> (position, normal, tag);
+            vertex.DiffuseColor = vertColor.DiffuseColor;
+            vertex.SpecularColor = vertColor.SpecularColor;
+            vertex.Shininess = vertColor.Shininess;
+            return vertex;
+        }
+
+        public static V New<V> (Vec3 position, Vec3 normal, IVertexColor vertColor)
+            where V : struct, IVertex, IVertexColor
+        {
+            return New<V> (position, normal, vertColor, 0);
+        }
+
+        public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
 			where V : struct, IVertex
 		{
 			return vertices.MinimumItems (v => v.Position.X);

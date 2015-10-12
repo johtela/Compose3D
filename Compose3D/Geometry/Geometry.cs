@@ -42,20 +42,7 @@
 		private BBox _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
-
-		private V[] CachedVertices ()
-		{
-			if (_vertices == null)
-				_vertices = GenerateVertices ().ToArray ();
-			return _vertices;
-		}
-
-		private int[] CachedIndices ()
-		{
-			if (_indices == null)
-				_indices = GenerateIndices ().ToArray ();
-			return _indices;
-		}
+        private V[] _normals;
 
 		protected abstract IEnumerable<V> GenerateVertices ();
 		protected abstract IEnumerable<int> GenerateIndices ();
@@ -65,7 +52,12 @@
 		/// </summary>
 		public V[] Vertices 
 		{ 
-			get { return CachedVertices (); }
+			get
+            {
+                if (_vertices == null)
+                    _vertices = GenerateVertices ().ToArray ();
+                return _vertices;
+            }
 		}
 
 		/// <summary>
@@ -73,7 +65,12 @@
 		/// </summary>
 		public int[] Indices 
 		{ 
-			get { return CachedIndices (); }
+			get
+            {
+                if (_indices == null)
+                    _indices = GenerateIndices ().ToArray ();
+                return _indices;
+            }
 		}
 
 		/// <summary>
@@ -95,38 +92,23 @@
 			}
 		}
 
-		public IEnumerable<V> Normals
+        private IEnumerable<V> GenerateNormals ()
+        {
+            foreach (var v in Vertices)
+            {
+                yield return VertexHelpers.New<V> (v.Position, v.Normal);
+                yield return VertexHelpers.New<V> (v.Position + v.Normal, v.Normal);
+            }
+        }
+
+        public V[] Normals
 		{
 			get
 			{
-				foreach (var v in Vertices)
-				{
-					yield return NewVertex (v.Position, v.Normal, new Vec2 (), VertexColor.White);
-					yield return NewVertex (v.Position + v.Normal, v.Normal, new Vec2 (), VertexColor.White);
-				}
+                if (_normals == null)
+                    _normals = GenerateNormals ().ToArray ();
+                return _normals;
 			}
-		}
-
-		/// <summary>
-		/// Helper function that creates a vertex and sets its position and color.
-		/// </summary>
-		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 texturePos, 
-			IVertexColor vertColor, int tag)
-		{
-			var vertex = new V ();
-			vertex.Position = position;
-			vertex.DiffuseColor = vertColor.DiffuseColor;
-			vertex.SpecularColor = vertColor.SpecularColor;
-            vertex.Shininess = vertColor.Shininess;
-            vertex.Normal = normal;
-			vertex.TexturePos = texturePos;
-			vertex.Tag = tag;
-			return vertex;
-		}
-
-		public static V NewVertex (Vec3 position, Vec3 normal, Vec2 texturePos, IVertexColor vertColor)
-		{
-			return NewVertex (position, normal, texturePos, vertColor, 0);
 		}
 
 		public int FindVertex (V vertex)

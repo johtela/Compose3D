@@ -67,7 +67,7 @@
 			{
 				ambientLightIntensity = new Vec3 (0.1f),
 				maxintensity = 2f,
-				inverseGamma = 1f / 2.2f
+				inverseGamma = 1f / 1.2f
 			};
             _uniforms.directionalLight &= new DirectionalLight ()
             {

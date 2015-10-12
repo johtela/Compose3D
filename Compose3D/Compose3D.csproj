@@ -125,6 +125,7 @@
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
     <Compile Include="Textures\ITextured.cs" />
+    <Compile Include="GLTypes\Texture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

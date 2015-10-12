@@ -25,7 +25,6 @@
 			if (log.ToUpper ().Contains ("ERROR:"))
 				throw new GLError (string.Format ("Program linking error:\n{0}", log));
 			GL.UseProgram (_glProgram);
-            GC.Collect ();
         }
 
         public Uniform<T> GetUniform<T> (string name)

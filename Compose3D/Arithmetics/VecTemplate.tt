@@ -1,12 +1,11 @@
-﻿<#@ assembly name="System.Core" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
-<#+ void Vec(int dim, string type, string suffix) { 
+﻿<#@ assembly name="System.Core" 
+#><#@ import namespace="System.Linq" 
+#><#@ import namespace="System.Text" 
+#><#@ import namespace="System.Collections.Generic" 
+#><#+ void Vec(int dim, string type, string suffix) { 
 	
 	var vecType = "Vec" + dim + suffix;
-#>
-namespace Compose3D.Arithmetics
+#>namespace Compose3D.Arithmetics
 {
     using System;
     using System.Text;
@@ -48,8 +47,7 @@ namespace Compose3D.Arithmetics
 		Indexer(dim, type); 
 	    for (int i = dim; i > 1; i--)
 			Swizzler(i, type, suffix);
-#>
-
+#>		
 		public <#= type #> LengthSquared
 		{
 			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }
@@ -182,26 +180,23 @@ void ComponentFields(int dim, string type) {
 	foreach (var comp in Components(dim)) {  
 #>		public <#= type #> <#= comp #>; 
 <#+ }
-	WriteLine("");
 }
  
 void BasicConstructor(int dim, string type, string suffix) { #>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= ArgumentList(dim, type) #>)
 		{	
-<#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); #>
-		}
-
- <#+ }
+<#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); 
+#>		}
+<#+ }
 
 void SingleValueConstructor(int dim, string type, string suffix) { #>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= type #> value)
 		{	
-<#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); #>
-		}
-
- <#+ }
+<#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); 
+#>		}
+<#+ }
  
 void CopyConstructor(int dim, string type, string suffix, int otherDim) { 
 	if (dim > otherDim) { #>
@@ -219,10 +214,9 @@ void CopyConstructor(int dim, string type, string suffix, int otherDim) {
 	ComponentStatements(dim, s => 
 		++currDim <= otherDim ?
 			 string.Format("			{0} = vec.{0}", s) : 
-			 string.Format("			{0} = {1}", s, s.ToLower())); #>
-		}
-
- <#+ } 
+			 string.Format("			{0} = {1}", s, s.ToLower())); 
+#>		}
+<#+ } 
 
 void Indexer(int dim, string type) { #>
 		public int Dimensions
@@ -237,7 +231,6 @@ void Indexer(int dim, string type) { #>
 				switch (index)
 				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
 					case <#= i.ToString() #>: return <#= Component(i) #>; <#+ } #>
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -246,12 +239,10 @@ void Indexer(int dim, string type) { #>
 				switch (index)
 				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
 					case <#= i.ToString() #>: <#= Component(i) #> = value; break; <#+ } #>
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-					
 <#+ } 
 
 void Swizzler(int dim, string type, string suffix) { 
@@ -262,58 +253,51 @@ void Swizzler(int dim, string type, string suffix) {
 			get { return new <#= vecType #> (<#= ComponentList(dim, ", ", s => string.Format("this[(int){0}]", s.ToLower())) #>); }
 			set
 			{
-<#+ ComponentStatements(dim, s => string.Format("				this[(int){0}] = value.{1}", s.ToLower(), s)); #>
-			}
+<#+ ComponentStatements(dim, s => string.Format("				this[(int){0}] = value.{1}", s.ToLower(), s)); 
+#>			}
 		}
-
 <#+ } 
 
-void Unary(int dim, string vecType, string name, string oper, string delim) { #>
-		public <#= vecType #> <#= name #> ()
+void Unary(int dim, string vecType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> ()
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0}{1}", oper, comp)) #>);
 		}
-
 <#+ } 
 
-void Binary(int dim, string vecType, string name, string oper, string delim) { #>
-		public <#= vecType #> <#= name #> (<#= vecType #> other)
+void Binary(int dim, string vecType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= vecType #> other)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>);
 		}
-
 <#+ } 
 
-void BinaryFunc(int dim, string vecType, string name, string func, string delim) { #>
-		public <#= vecType #> <#= name #> (<#= vecType #> other)
+void BinaryFunc(int dim, string vecType, string name, string func, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= vecType #> other)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} ({1}, other.{1})", func, comp)) #>);
 		}
-
 <#+ } 
 
-void Scalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { #>
-		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
+void Scalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} scalar", comp, oper)) #>);
 		}
-
 <#+ } 
 
-void Scalar2(int dim, string vecType, string scalarType, string name, string format, string arg1, string arg2, string delim) { #>
-		public <#= vecType #> <#= name #> (<#= scalarType #> <#= arg1 #>, <#= scalarType #> <#= arg2 #>)
+void Scalar2(int dim, string vecType, string scalarType, string name, string format, string arg1, string arg2, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= scalarType #> <#= arg1 #>, <#= scalarType #> <#= arg2 #>)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format(format, comp, arg1, arg2)) #>);
 		}
-
 <#+ } 
 
-void BinaryScalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { #>
-		public <#= scalarType #> <#= name #> (<#= vecType #> other)
+void BinaryScalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { 
+#>		public <#= scalarType #> <#= name #> (<#= vecType #> other)
 		{
 			return <#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>;
 		}
-
 <#+ } 
 
 #>

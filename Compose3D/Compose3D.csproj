@@ -67,6 +67,21 @@
     </Compile>
     <Compile Include="Arithmetics\Numeric.cs" />
     <Compile Include="Arithmetics\Vec.cs" />
+    <Compile Include="Arithmetics\Vec4i.cs">
+      <DependentUpon>Vec4i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Arithmetics\Vec3i.cs">
+      <DependentUpon>Vec3i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Arithmetics\Vec2i.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Vec2i.tt</DependentUpon>
+    </Compile>
     <Compile Include="Arithmetics\Vec4.cs">
       <DependentUpon>Vec4.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -126,6 +141,16 @@
     <Compile Include="Reactive\Keyboard.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="GLTypes\Texture.cs" />
+    <Compile Include="Textures\Sampler1D.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sampler1D.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\Sampler2D.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sampler2D.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">
@@ -172,5 +197,35 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Arithmetics\Vec2i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Arithmetics\Vec3i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Arithmetics\Vec4i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Textures\SamplerTemplate.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Textures\Sampler2D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2D.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler1D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler1D.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
 </Project>

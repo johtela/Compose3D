@@ -1,3 +1,3 @@
-﻿<#@ template debug="false" hostspecific="false" language="C#" #>
-<#@ output extension=".cs" #>
-<#@ include file="VecTemplate.tt" #><# Vec(2, "float", ""); #>
+﻿<#@ template debug="false" hostspecific="false" language="C#" 
+#><#@ output extension=".cs" 
+#><#@ include file="VecTemplate.tt" #><# Vec(2, "float", ""); #>

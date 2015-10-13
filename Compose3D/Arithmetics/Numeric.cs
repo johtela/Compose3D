@@ -18,6 +18,12 @@
             return Math.Min (Math.Max (value, min), max);
         }
 
+        [GLFunction ("clamp ({0})")]
+        public static int Clamp (this int value, int min, int max)
+        {
+            return Math.Min (Math.Max (value, min), max);
+        }
+
         [GLFunction ("pow ({0})")]
         public static float Pow (this float value, float exponent)
         {
@@ -30,7 +36,13 @@
             return Math.Pow (value, exponent);
         }
 
-		public static float ToRadians (this float degrees)
+        [GLFunction ("pow ({0})")]
+        public static int Pow (this int value, int exponent)
+        {
+            return (int)Math.Pow (value, exponent);
+        }
+
+        public static float ToRadians (this float degrees)
 		{
 			return degrees * MathHelper.Pi / 180f;
 		}

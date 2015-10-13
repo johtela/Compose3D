@@ -21,7 +21,7 @@
 			W = w; 
 		}
 
- 		[GLConstructor ("vec4 ({0})")]
+		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float value)
 		{	
 			X = value; 
@@ -30,7 +30,7 @@
 			W = value; 
 		}
 
- 		[GLConstructor ("vec4 ({0})")]
+		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (Vec2 vec, float z, float w)
 		{	
 			X = vec.X; 
@@ -39,7 +39,7 @@
 			W = w; 
 		}
 
- 		[GLConstructor ("vec4 ({0})")]
+		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (Vec3 vec, float w)
 		{	
 			X = vec.X; 
@@ -48,7 +48,7 @@
 			W = w; 
 		}
 
- 		[GLConstructor ("vec4 ({0})")]
+		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (Vec4 vec)
 		{	
 			X = vec.X; 
@@ -57,7 +57,7 @@
 			W = vec.W; 
 		}
 
- 		[GLUnaryOperator ("-{0}")]
+		[GLUnaryOperator ("-{0}")]
 		public Vec4 Negate ()
 		{
 			return new Vec4 (-X, -Y, -Z, -W);
@@ -152,7 +152,7 @@
 				}
 			} 
 		}
-					
+
 		public Vec4 this[Coord x, Coord y, Coord z, Coord w]
 		{
 			get { return new Vec4 (this[(int)x], this[(int)y], this[(int)z], this[(int)w]); }
@@ -185,7 +185,6 @@
 				this[(int)y] = value.Y; 
 			}
 		}
-
 
 		public float LengthSquared
 		{

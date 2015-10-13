@@ -14,41 +14,54 @@
 	[GLType ("<#= suffix #>vec<#= dim #>")]
     public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
     { 
-<#+		ComponentFields (dim, type);
-		BasicConstructor (dim, type, suffix);
-		SingleValueConstructor (dim, type, suffix);
-		for (int i = 2; i <= 4; i++)
+<#+		ComponentFields (dim, type); #>
+
+<#+		BasicConstructor (dim, type, suffix); #>
+
+<#+		SingleValueConstructor (dim, type, suffix); #>
+
+<#+		for (int i = 2; i <= 4; i++)
 			CopyConstructor (dim, type, suffix, i); #>
 		[GLUnaryOperator ("-{0}")]
 <#+		Unary (dim, vecType, "Negate", "-", ", "); #>
+
 		[GLBinaryOperator ("{0} + {1}")]
 <#+		Binary (dim, vecType, "Add", "+", ", "); #>
+
 		[GLBinaryOperator ("{0} - {1}")]
 <#+		Binary (dim, vecType, "Subtract", "-", ", "); #>
+
 		[GLBinaryOperator ("{0} * {1}")]
 <#+		Binary (dim, vecType, "Multiply", "*", ", "); #>
+
 		[GLBinaryOperator ("{0} * {1}")]
 <#+		Scalar (dim, vecType, type, "Multiply", "*", ", "); #>
+
 		[GLBinaryOperator ("{0} / {1}")]
 <#+		Scalar (dim, vecType, type, "Divide", "/", ", "); #>
+
 		[GLFunction ("dot ({0})")]
 <#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
+
 		[GLFunction ("pow ({0})")]
 <#+ 	BinaryFunc (dim, vecType, "Pow", "Numeric.Pow", ", ");#>
+
 		[GLFunction ("clamp ({0})")]
 <#+		Scalar2 (dim, vecType, type, "Clamp", "{0}.Clamp ({1}, {2})", "min", "max", ", ");#>
+
 		[GLFunction ("reflect ({0})")]
 		public <#= vecType #> Reflect (<#= vecType #> along)
 		{
 			return Subtract (along.Multiply (2 * Dot (along)));
 		}
 
-<#+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && ");
-		Indexer(dim, type); 
-	    for (int i = dim; i > 1; i--)
-			Swizzler(i, type, suffix);
-#>		
-		public <#= type #> LengthSquared
+<#+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && "); #>
+
+<#+		Indexer(dim, type); #>
+
+<#+	    for (int i = dim; i > 1; i--)
+			Swizzler(i, type, suffix); 
+#>		public <#= type #> LengthSquared
 		{
 			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }
 		}
@@ -216,6 +229,7 @@ void CopyConstructor(int dim, string type, string suffix, int otherDim) {
 			 string.Format("			{0} = vec.{0}", s) : 
 			 string.Format("			{0} = {1}", s, s.ToLower())); 
 #>		}
+
 <#+ } 
 
 void Indexer(int dim, string type) { #>
@@ -231,6 +245,7 @@ void Indexer(int dim, string type) { #>
 				switch (index)
 				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
 					case <#= i.ToString() #>: return <#= Component(i) #>; <#+ } #>
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -239,6 +254,7 @@ void Indexer(int dim, string type) { #>
 				switch (index)
 				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
 					case <#= i.ToString() #>: <#= Component(i) #> = value; break; <#+ } #>
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -256,6 +272,7 @@ void Swizzler(int dim, string type, string suffix) {
 <#+ ComponentStatements(dim, s => string.Format("				this[(int){0}] = value.{1}", s.ToLower(), s)); 
 #>			}
 		}
+
 <#+ } 
 
 void Unary(int dim, string vecType, string name, string oper, string delim) { 

@@ -185,7 +185,7 @@
 				this[(int)y] = value.Y; 
 			}
 		}
-		
+
 		public int LengthSquared
 		{
 			get { return X * X + Y * Y + Z * Z + W * W; }

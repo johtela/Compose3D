@@ -165,7 +165,7 @@
 				this[(int)y] = value.Y; 
 			}
 		}
-		
+
 		public float LengthSquared
 		{
 			get { return X * X + Y * Y + Z * Z; }

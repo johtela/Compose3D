@@ -5,28 +5,28 @@
 	using GLTypes;
 	using OpenTK.Graphics.OpenGL;
 
-	[GLType ("sampler1D")]
-    public class Sampler1D : Sampler
+	[GLType ("samplerCube")]
+    public class SamplerCube : Sampler
     {
-    	public Sampler1D () : base () {}
+    	public SamplerCube () : base () {}
 
-    	public Sampler1D (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
+    	public SamplerCube (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
     		: base (texUnit, parameters) {}
     	
 		[GLFunction ("textureSize ({0})")]
-		public int Size (int lod)
+		public Vec2i Size (int lod)
 		{
-			return default (int);
+			return default (Vec2i);
 		}
 
 		[GLFunction ("texture ({0})")]
-		public Vec4 Texture (float pos)
+		public Vec4 Texture (Vec3 pos)
 		{
 			return default (Vec4);
 		}
 
 		[GLFunction ("texture ({0})")]
-		public Vec4 Texture (float pos, float bias)
+		public Vec4 Texture (Vec3 pos, float bias)
 		{
 			return default (Vec4);
 		}

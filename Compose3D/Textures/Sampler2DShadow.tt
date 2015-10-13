@@ -1,4 +1,4 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
-<#@ include file="VecTemplate.tt" #>
-<# Vec(4, "int", "i"); #>
+<#@ include file="SamplerTemplate.tt" #>
+<# Sampler(2, "", false, true); #>

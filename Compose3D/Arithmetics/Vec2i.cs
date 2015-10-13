@@ -123,7 +123,6 @@
 				{	         
 					case 0: return X;          
 					case 1: return Y; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -133,7 +132,6 @@
 				{	         
 					case 0: X = value; break;          
 					case 1: Y = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -146,10 +144,9 @@
 			{
 				this[(int)x] = value.X; 
 				this[(int)y] = value.Y; 
-
 			}
 		}
-
+					
 		public int LengthSquared
 		{
 			get { return X * X + Y * Y; }

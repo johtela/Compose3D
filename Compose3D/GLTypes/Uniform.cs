@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.GLTypes
 {
     using Arithmetics;
+	using Textures;
     using OpenTK.Graphics.OpenGL;
     using System;
     using System.Collections.Generic;
@@ -79,6 +80,11 @@
                         var glUnif = map.Item2;
                         _setters[field.Type] (glUnif, field.Getter (value));
                     }
+				else if (type.IsSubclassOf (typeof (Sampler)))
+				{
+					var texUnit = ((Sampler)((object)value))._texUnit;
+					GL.Uniform1 (uniform._glUniform, texUnit);
+				}
                 else
                     _setters[type] (uniform._glUniform, (object)value);
                 uniform._value = value;

@@ -1,23 +1,34 @@
-﻿<#@ assembly name="System.Core" 
-#><#@ import namespace="System.Linq" 
-#><#@ import namespace="System.Text" 
-#><#@ import namespace="System.Collections.Generic" 
-#><#+ 
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+ 
 void Sampler(int dim, string pixelType, bool array, bool shadow) 
 { 
 	var samplerType = "Sampler" + DimText(dim) + pixelType + ArrayText(array) + ShadowText(shadow);
-#>namespace Compose3D.Textures
+#>
+namespace Compose3D.Textures
 {
+	using System.Collections.Generic;
     using Arithmetics;
 	using GLTypes;
+	using OpenTK.Graphics.OpenGL;
 
 	[GLType ("<#= pixelType #>sampler<#= DimText(dim) + ArrayText(array) + ShadowText(shadow) #>")]
-    public struct <#= samplerType #>
+    public class <#= samplerType #> : Sampler
     {
+    	public <#= samplerType #> () : base () {}
+
+    	public <#= samplerType #> (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
+    		: base (texUnit, parameters) {}
+    	
 		[GLFunction ("textureSize ({0})")]
 <#+		Size(dim, array); #>
+
+<#+		Texture(dim, pixelType, array, shadow); #>
 	}
-}<#+
+}
+<#+
 }
 
 string DimText(int dim)
@@ -48,6 +59,27 @@ void Size(int dim, bool array)
 #>		public <#= retType #> Size (int lod)
 		{
 			return default (<#= retType #>);
-		}<#+ 
+		}
+<#+ 
 } 
+
+void Texture(int dim, string pixelType, bool array, bool shadow)
+{
+	var parDim = Math.Min (dim, 3) + (array ? 1 : 0) + (shadow ? 1 : 0);
+	var paramType = parDim == 1 ? "float" : "Vec" + parDim.ToString();
+	var retType = shadow ? "float" : "Vec4" + pixelType;
+
+#>		[GLFunction ("texture ({0})")]
+		public <#= retType #> Texture (<#= paramType #> pos)
+		{
+			return default (<#= retType #>);
+		}
+
+		[GLFunction ("texture ({0})")]
+		public <#= retType #> Texture (<#= paramType #> pos, float bias)
+		{
+			return default (<#= retType #>);
+		}
+<#+
+}
 #>

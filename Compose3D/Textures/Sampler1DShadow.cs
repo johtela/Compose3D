@@ -5,12 +5,12 @@
 	using GLTypes;
 	using OpenTK.Graphics.OpenGL;
 
-	[GLType ("sampler1D")]
-    public class Sampler1D : Sampler
+	[GLType ("sampler1DShadow")]
+    public class Sampler1DShadow : Sampler
     {
-    	public Sampler1D () : base () {}
+    	public Sampler1DShadow () : base () {}
 
-    	public Sampler1D (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
+    	public Sampler1DShadow (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
     		: base (texUnit, parameters) {}
     	
 		[GLFunction ("textureSize ({0})")]
@@ -20,15 +20,15 @@
 		}
 
 		[GLFunction ("texture ({0})")]
-		public Vec4 Texture (float pos)
+		public float Texture (Vec2 pos)
 		{
-			return default (Vec4);
+			return default (float);
 		}
 
 		[GLFunction ("texture ({0})")]
-		public Vec4 Texture (float pos, float bias)
+		public float Texture (Vec2 pos, float bias)
 		{
-			return default (Vec4);
+			return default (float);
 		}
 	}
 }

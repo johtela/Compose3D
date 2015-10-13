@@ -140,17 +140,28 @@
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
     <Compile Include="Textures\ITextured.cs" />
-    <Compile Include="GLTypes\Texture.cs" />
     <Compile Include="Textures\Sampler1D.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Sampler1D.tt</DependentUpon>
     </Compile>
+    <Compile Include="Textures\Sampler3D.cs">
+      <DependentUpon>Sampler3D.tt</DependentUpon>
+    </Compile>
     <Compile Include="Textures\Sampler2D.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>Sampler2D.tt</DependentUpon>
     </Compile>
+    <Compile Include="Textures\SamplerCube.cs">
+      <DependentUpon>SamplerCube.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\Sampler1DShadow.cs">
+      <DependentUpon>Sampler1DShadow.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\Sampler2DShadow.cs">
+      <DependentUpon>Sampler2DShadow.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\Sampler.cs" />
+    <Compile Include="Textures\Texture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">
@@ -185,6 +196,18 @@
       <LastGenOutput>VecTemplate.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <None Include="Textures\SamplerCube.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SamplerCube.cs</LastGenOutput>
+    </None>
+    <None Include="Textures\Sampler1DShadow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler1DShadow.cs</LastGenOutput>
+    </None>
+    <None Include="Textures\Sampler2DShadow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2DShadow.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -226,6 +249,10 @@
     <Content Include="Textures\Sampler1D.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler1D.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler3D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler3D.cs</LastGenOutput>
     </Content>
   </ItemGroup>
 </Project>

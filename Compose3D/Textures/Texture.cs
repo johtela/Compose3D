@@ -18,7 +18,7 @@
 
 		public Texture (TextureTarget target, int level, PixelInternalFormat internalFormat,
 			int width, int height, PixelFormat format, PixelType type, IntPtr pixels, 
-			IDictionary<TextureParameterName, object> parameters)
+			Params<TextureParameterName> parameters)
 		{
 			_target = target;
 			_glTexture = GL.GenTexture ();
@@ -28,16 +28,16 @@
 			GL.BindTexture (target, 0);
 		}
 
-		private void SetParameters (IDictionary<TextureParameterName, object> parameters)
+		private void SetParameters (Params<TextureParameterName> parameters)
 		{
 			foreach (var param in parameters)
 			{
-				if (param.Value is int)
-					GL.TexParameter (_target, param.Key, (int)param.Value);
-				else if (param.Value is float)
-					GL.TexParameter (_target, param.Key, (float)param.Value);
+				if (param.Item2 is int)
+					GL.TexParameter (_target, param.Item1, (int)param.Item2);
+				else if (param.Item2 is float)
+					GL.TexParameter (_target, param.Item1, (float)param.Item2);
 				else
-					throw new GLError ("Unsupported texture parameter value type: " + param.Value.GetType ());
+					throw new GLError ("Unsupported texture parameter Item2 type: " + param.Item2.GetType ());
 			}
 		}
 	}

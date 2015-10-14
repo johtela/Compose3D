@@ -116,6 +116,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>VecTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Params.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="Geometry\BBox.cs" />
@@ -147,18 +148,28 @@
     </Compile>
     <Compile Include="Textures\Sampler3D.cs">
       <DependentUpon>Sampler3D.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler2D.cs">
       <DependentUpon>Sampler2D.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\SamplerCube.cs">
       <DependentUpon>SamplerCube.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler1DShadow.cs">
       <DependentUpon>Sampler1DShadow.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler2DShadow.cs">
       <DependentUpon>Sampler2DShadow.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler.cs" />
     <Compile Include="Textures\Texture.cs" />

@@ -1,4 +1,5 @@
-﻿namespace Compose3D.Textures
+﻿
+namespace Compose3D.Textures
 {
 	using System.Collections.Generic;
     using Arithmetics;
@@ -10,7 +11,7 @@
     {
     	public SamplerCube () : base () {}
 
-    	public SamplerCube (int texUnit, IDictionary<SamplerParameterName, object> parameters) 
+    	public SamplerCube (int texUnit, Params<SamplerParameterName> parameters) 
     		: base (texUnit, parameters) {}
     	
 		[GLFunction ("textureSize ({0})")]
@@ -18,7 +19,6 @@
 		{
 			return default (Vec2i);
 		}
-
 		[GLFunction ("texture ({0})")]
 		public Vec4 Texture (Vec3 pos)
 		{

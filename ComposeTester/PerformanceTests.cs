@@ -18,7 +18,7 @@ namespace ComposeTester
             var mat3 = Matrix4.CreateRotationZ (50);
             var mat4 = Matrix4.CreateScale (100, 100, 100);
             var mat5 = Matrix4.CreateTranslation (1000, 1000, 1000);
-			Matrix4 res;
+            Matrix4 res = new Matrix4 ();
             for (int i = 0; i < 1000000; i++)
             {
                 res = mat1 * mat2 * mat3 * mat4 * mat5;
@@ -34,7 +34,7 @@ namespace ComposeTester
             var mat3 = Mat.RotationZ<Mat4> (50);
             var mat4 = Mat.Scaling<Mat4> (100, 100, 100);
             var mat5 = Mat.Translation<Mat4> (1000, 1000, 1000);
-			Mat4 res;
+            Mat4 res = new Mat4 ();
             for (int i = 0; i < 1000000; i++)
             {
                 res = mat1 * mat2 * mat3 * mat4 * mat5;

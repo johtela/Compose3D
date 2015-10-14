@@ -17,22 +17,22 @@
 			_texUnit = texUnit;
 		}
 
-		public Sampler (int texUnit, IDictionary<SamplerParameterName, object> parameters)
+		public Sampler (int texUnit, Params<SamplerParameterName> parameters)
 			: this (texUnit)
 		{
 			SetParameters (parameters);
 		}
 
-		private void SetParameters (IDictionary<SamplerParameterName, object> parameters)
+		private void SetParameters (Params<SamplerParameterName> parameters)
 		{
 			foreach (var param in parameters)
 			{
-				if (param.Value is int)
-					GL.SamplerParameter (_glSampler, param.Key, (int)param.Value);
-				else if (param.Value is float)
-					GL.SamplerParameter (_glSampler, param.Key, (float)param.Value);
+				if (param.Item2 is int)
+					GL.SamplerParameter (_glSampler, param.Item1, (int)param.Item2);
+				else if (param.Item2 is float)
+					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);
 				else
-					throw new GLError ("Unsupported sampler parameter value type: " + param.Value.GetType ());
+					throw new GLError ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
 			}
 		}
 	}

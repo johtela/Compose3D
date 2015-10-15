@@ -29,14 +29,14 @@
         public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.Pipe ();
+            _geometry = Geometries.Pipe ().Color (VertexColor.Brass);
 			_orientation = new Vec2 (0f, 0f);
 			_position = new Vec3 (0f, 0f, -40f);
 
             _vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
             _ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
             var normals = _geometry.Normals;
-            normals.Color (VertexColor.Uniform (VertexColor.White));
+            normals.Color (VertexColor.White);
 			_normalVbo = new VBO<Vertex> (normals, BufferTarget.ArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
             _program.InitializeUniforms (_uniforms = new Uniforms ());
@@ -126,7 +126,7 @@
         {
             UpdateWorldMatrix ();
             _uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
-                Mat.PerspectiveOffCenter (-1f, 1f, -1f, 1f, 1f, 100f);
+                Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
             GL.Viewport (ClientSize);
         }
 

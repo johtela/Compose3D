@@ -28,13 +28,13 @@
 			set { position = value; }
 		}
 
-        Vec3 IVertexColor.DiffuseColor
+        Vec3 IVertexColor.Diffuse
 		{
 			get { return diffuseColor; }
 			set { diffuseColor = value; }
 		}
 
-        Vec3 IVertexColor.SpecularColor
+        Vec3 IVertexColor.Specular
 		{
 			get { return specularColor; }
 			set { specularColor = value; }

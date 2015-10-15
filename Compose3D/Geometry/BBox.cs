@@ -1,6 +1,8 @@
 namespace Compose3D.Geometry
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Arithmetics;
 
     /// <summary>
@@ -107,6 +109,21 @@ namespace Compose3D.Geometry
 			get { return (Min + Max) / 2; }
         }
 
+        public IEnumerable<Vec3> Corners
+        {
+            get
+            {
+                yield return new Vec3 (Left, Bottom, Front);
+                yield return new Vec3 (Left, Top, Front);
+                yield return new Vec3 (Right, Top, Front);
+                yield return new Vec3 (Right, Bottom, Front);
+                yield return new Vec3 (Left, Bottom, Back);
+                yield return new Vec3 (Left, Top, Back);
+                yield return new Vec3 (Right, Top, Back);
+                yield return new Vec3 (Right, Bottom, Back);
+            }
+        }
+
         /// <summary>
         /// Gets the X offset of a bounding box when aligned with the current one along X axis.
         /// </summary>
@@ -173,6 +190,14 @@ namespace Compose3D.Geometry
 				Math.Max (bbox.Max.Y, other.Max.Y),
 				Math.Max (bbox.Max.Z, other.Max.Z));
 			return new BBox (min, max);
+        }
+
+        public static BBox operator * (Mat4 matrix, BBox bbox)
+        {
+            var result = new BBox (matrix.Transform (bbox.Corners.First ()));
+            foreach (var corner in bbox.Corners.Skip (1))
+                result += matrix.Transform (corner);
+            return result;
         }
     }
 }

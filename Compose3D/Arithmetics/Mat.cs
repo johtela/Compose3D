@@ -172,7 +172,7 @@
             return FromJaggedArray<M, float> (InverseFA (ToJaggedArray<M, float> (mat)));
         }
 
-        public static Mat4 PerspectiveOffCenter (float left, float right, float bottom, float top,
+        public static Mat4 PerspectiveProjection (float left, float right, float bottom, float top,
             float zNear, float zFar)
         {
             if (zNear <= 0 || zNear >= zFar)
@@ -188,7 +188,7 @@
                 new Vec4 (0f, 0f, -(2.0f * zFar * zNear) / depth, 0f));
         }
 
-        public static Mat4 OrthographicOffCenter (float left, float right, float bottom, float top,
+        public static Mat4 OrthographicProjection (float left, float right, float bottom, float top,
             float zNear, float zFar)
         {
             float invWidth = 1.0f / (right - left);
@@ -200,6 +200,11 @@
                 new Vec4 (0f, 2f * invHeight, 0f, 0f),
                 new Vec4 (0f, 0f, -2f * invDepth, 0f),
                 new Vec4 (-(right + left) * invWidth, -(top + bottom) * invHeight, -(zFar + zNear) * invDepth, 1f));
+        }
+
+        public static Vec3 Transform (this Mat4 mat, Vec3 point)
+        {
+            return new Vec3 (mat * new Vec4 (point, 0f));
         }
 
         /// <summary>

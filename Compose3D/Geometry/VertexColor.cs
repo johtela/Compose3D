@@ -7,8 +7,8 @@ namespace Compose3D.Geometry
 
     public interface IVertexColor
     {
-        Vec3 DiffuseColor { get; set; }
-        Vec3 SpecularColor { get; set; }
+        Vec3 Diffuse { get; set; }
+        Vec3 Specular { get; set; }
         float Shininess { get; set; }
     }
 
@@ -18,14 +18,14 @@ namespace Compose3D.Geometry
 
         private class VertColor : IVertexColor
         {
-            public Vec3 DiffuseColor { get; set; }
-            public Vec3 SpecularColor { get; set; }
+            public Vec3 Diffuse { get; set; }
+            public Vec3 Specular { get; set; }
             public float Shininess { get; set; }
 
             public VertColor (Vec3 diffuse, Vec3 specular, float shininess)
             {
-                DiffuseColor = diffuse;
-                SpecularColor = specular;
+                Diffuse = diffuse;
+                Specular = specular;
                 Shininess = shininess;
             }
 
@@ -51,43 +51,41 @@ namespace Compose3D.Geometry
 			}
 		}
 
-        public static IEnumerable<IVertexColor> Uniform (IVertexColor color)
-        {
-            return new IVertexColor[] { color }.Repeat ();
-        }
+        public static IVertexColor Brass = new VertColor(
+            new Vec3 (0.780392f, 0.568627f, 0.113725f),
+            new Vec3 (0.992157f, 0.941176f, 0.807843f),
+            27.8974f);
 
-        public static IEnumerable<IVertexColor> Uniform (Vec3 color)
-        {
-            return Uniform (new VertColor (color));
-        }
+        public static IVertexColor Bronze = new VertColor (
+            new Vec3 (0.714f, 0.4284f, 0.18144f),
+            new Vec3 (0.393548f, 0.271906f,	0.166721f),
+            25.6f);
 
-        public static IEnumerable<IVertexColor> Repeat (params IVertexColor[] colors)
-        {
-            return colors.Repeat ();
-        }
+        public static IVertexColor Chrome = new VertColor (
+            new Vec3 (0.4f, 0.4f, 0.4f),
+            new Vec3 (0.774597f, 0.774597f, 0.774597f),
+            76.8f);
 
-        public static IEnumerable<IVertexColor> Repeat (params Vec3[] colors)
-        {
-            return colors.Select (c => new VertColor (c)).Repeat ();
-        }
+        public static IVertexColor BlackPlastic = new VertColor (
+            new Vec3 (0.01f, 0.01f, 0.01f),
+            new Vec3 (0.5f, 0.5f, 0.5f),
+            32f);
 
-        public static void Color<V>(this V[] vertices, IEnumerable<IVertexColor> colors)
+        public static void Color<V> (this V[] vertices, IVertexColor color)
             where V : struct, IVertex, IVertexColor
         {
-            var colEnum = colors.GetEnumerator ();
             for (int i = 0; i < vertices.Length; i++)
             {
-                var col = colEnum.Next ();
-                vertices[i].DiffuseColor = col.DiffuseColor;
-                vertices[i].SpecularColor = col.SpecularColor;
-                vertices[i].Shininess = col.Shininess;
+                vertices[i].Diffuse = color.Diffuse;
+                vertices[i].Specular = color.Specular;
+                vertices[i].Shininess = color.Shininess;
             }
         }
 
-        public static Geometry<V> Color<V>(this Geometry<V> geometry, IEnumerable<IVertexColor> colors)
+        public static Geometry<V> Color<V>(this Geometry<V> geometry, IVertexColor color)
             where V : struct, IVertex, IVertexColor
         {
-            Color (geometry.Vertices, colors);
+            Color (geometry.Vertices, color);
             return geometry;
         }
     }

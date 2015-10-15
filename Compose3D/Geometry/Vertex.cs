@@ -58,8 +58,8 @@
             where V : struct, IVertex, IVertexColor
         {
             var vertex = New<V> (position, normal, tag);
-            vertex.DiffuseColor = vertColor.DiffuseColor;
-            vertex.SpecularColor = vertColor.SpecularColor;
+            vertex.Diffuse = vertColor.Diffuse;
+            vertex.Specular = vertColor.Specular;
             vertex.Shininess = vertColor.Shininess;
             return vertex;
         }

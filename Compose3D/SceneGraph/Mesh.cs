@@ -3,9 +3,8 @@
     using Arithmetics;
     using Geometry;
     using GLTypes;
-    using Textures;
-    using System;
     using OpenTK.Graphics.OpenGL;
+    using Textures;
 
     public class Mesh<V> : SceneNode 
         where V : struct, IVertex
@@ -14,17 +13,14 @@
         private VBO<int> _indexBuffer;
         private VBO<V> _normalBuffer;
 
-        public Mesh (Mat4 modelMatrix, Geometry<V> geometry, params Texture[] textures)
-            : base (modelMatrix)
+        public Mesh (Geometry<V> geometry, params Texture[] textures)
         {
             Geometry = geometry;
             Textures = textures;
         }
 
-        public Mesh (Geometry<V> geometry)
-            : this (new Mat4 (1f), geometry) { }
-
         public Geometry<V> Geometry { get; private set; }
+
         public Texture[] Textures { get; set; }
 
         public VBO<V> VertexBuffer
@@ -57,7 +53,7 @@
             }
         }
 
-        public override BBox BoundingBox (Mat4 matrix)
+        public BBox BoundingBox (Mat4 matrix)
         {
             return matrix * Geometry.BoundingBox;
         }

@@ -76,96 +76,113 @@
 		}
 	}
 
-	public class Fragment
-	{
-		[Builtin] internal Vec4 gl_Position;
-		internal Vec3 vertexPosition;
-        internal Vec3 vertexNormal;
-		internal Vec3 vertexDiffuse;
-        internal Vec3 vertexSpecular;
-        internal float vertexShininess;
-    }
-
-	[GLStruct ("DirectionalLight")]
-	public struct DirectionalLight
-	{
-		internal Vec3 intensity;
-		internal Vec3 direction;
-	}
-
-	[GLStruct ("PointLight")]
-	public struct PointLight
-	{
-		internal Vec3 position;
-		internal Vec3 intensity;
-		internal float linearAttenuation, quadraticAttenuation;
-    }
-
-    [GLStruct ("SpotLight")]
-	public struct SpotLight
-	{
-        internal PointLight pointLight;
-		internal Vec3 direction;
-		internal float cosSpotCutoff, spotExponent;
-	}
-
-	[GLStruct ("GlobalLighting")]
-	public struct GlobalLighting
-	{
-		internal Vec3 ambientLightIntensity;
-		internal float maxintensity;
-		internal float inverseGamma;
-	}
-
-	public class Uniforms
-	{
-		internal Uniform<Mat4> worldMatrix;
-		internal Uniform<Mat4> perspectiveMatrix;
-		internal Uniform<Mat3> normalMatrix;
-		internal Uniform<GlobalLighting> globalLighting;
-		internal Uniform<DirectionalLight> directionalLight;
-		internal Uniform<PointLight> pointLight;
-		//[GLArray (1)]
-		//internal Uniform<SpotLight[]> spotLights;
-	}
-
 	public static class Shaders
 	{
+		public class Fragment
+		{
+			[Builtin]
+			internal Vec4 gl_Position;
+			internal Vec3 vertexPosition;
+			internal Vec3 vertexNormal;
+			internal Vec3 vertexDiffuse;
+			internal Vec3 vertexSpecular;
+			internal float vertexShininess;
+		}
+
+		[GLStruct ("DirLight")]
+		public struct DirLight
+		{
+			internal Vec3 intensity;
+			internal Vec3 direction;
+		}
+
+		[GLStruct ("PointLight")]
+		public struct PointLight
+		{
+			internal Vec3 position;
+			internal Vec3 intensity;
+			internal float linearAttenuation, quadraticAttenuation;
+		}
+
+		[GLStruct ("SpotLight")]
+		public struct SpotLight
+		{
+			internal PointLight pointLight;
+			internal Vec3 direction;
+			internal float cosSpotCutoff, spotExponent;
+		}
+
+		[GLStruct ("GlobalLight")]
+		public struct GlobalLight
+		{
+			internal Vec3 ambientLightIntensity;
+			internal float maxintensity;
+			internal float inverseGamma;
+		}
+
+		public class Uniforms
+		{
+			internal Uniform<Mat4> worldMatrix;
+			internal Uniform<Mat4> perspectiveMatrix;
+			internal Uniform<Mat3> normalMatrix;
+			internal Uniform<GlobalLight> globalLighting;
+			internal Uniform<DirLight> directionalLight;
+			internal Uniform<PointLight> pointLight;
+			//[GLArray (1)]
+			//internal Uniform<SpotLight[]> spotLights;
+		}
+
 		/// <summary>
 		/// The calculate intensity of the directional light.
 		/// </summary>
-		public static readonly Func<DirectionalLight, Vec3, Vec3> CalcDirLight =
-			GLShader.Function (() => CalcDirLight,
-				(dirLight, normal) => 
-				(from cosAngle in normal.Dot (dirLight.direction).ToShader ()
-				 select dirLight.intensity * cosAngle.Clamp (0f, 1f))
-				.Evaluate ());
+		public static readonly Func<DirLight, Vec3, Vec3> CalcDirLight =
+			GLShader.Function 
+			(
+				() => CalcDirLight,
+
+				(DirLight dirLight, Vec3 normal) => 
+					Shader.Evaluate 
+					(
+						from cosAngle in normal.Dot (dirLight.direction).ToShader ()
+						select dirLight.intensity * cosAngle.Clamp (0f, 1f)
+					)
+			);
 
 		/// <summary>
 		/// Calculate attenuation of a point light.
 		/// </summary>
-        public static readonly Func<PointLight, float, float> CalcAttenuation =
-            GLShader.Function (() => CalcAttenuation,
-                (pointLight, distance) => 
-                (1f / ((pointLight.linearAttenuation * distance) + 
-					(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f));
+        public static readonly Func<PointLight, float, float> CalcAttenuation = 
+			GLShader.Function 
+			(
+				() => CalcAttenuation, 
+
+				(PointLight pointLight, float distance) => 
+					(1f / ((pointLight.linearAttenuation * distance) + 
+						(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f)
+			);
 
 		/// <summary>
-		/// Calculate intensity of the directional light.
+		/// Calculate intensity of a point light.
 		/// </summary>
 		public static readonly Func<PointLight, Vec3, Vec3, Vec3, Vec3, float, Vec3> CalcPointLight =
-			GLShader.Function (() => CalcPointLight,
-				(pointLight, position, normal, diffuse, specular, shininess) => 
-				(from vecToLight in (pointLight.position - position).ToShader ()
-				 let lightVec = vecToLight.Normalized
-				 let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-				 let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
-				 let viewDir = -position.Normalized
-				 let halfAngle = (lightVec + viewDir).Normalized
-				 let blinn = cosAngle == 0f ? 0f :
-					normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
-				 select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn))
-				.Evaluate ());
+			GLShader.Function
+			(
+				() => CalcPointLight,
+
+				(PointLight pointLight, Vec3 position, Vec3 normal, Vec3 diffuse, Vec3 specular, float shininess) =>
+					Shader.Evaluate
+					(
+						from vecToLight in (pointLight.position - position).ToShader ()
+						let lightVec = vecToLight.Normalized
+						let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
+						let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
+						let viewDir = -position.Normalized
+						let halfAngle = (lightVec + viewDir).Normalized
+						let blinn = cosAngle == 0f ? 0f :
+						   normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
+						select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn)
+					)
+			);
 
 //		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
 //			GLShader.Function (() => CalcSpotLight,
@@ -179,46 +196,58 @@
 //				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
 //				.Evaluate ());
 
-		public static readonly Func<GlobalLighting, Vec3, Vec3, Vec3> CalcGlobalLight =
-			GLShader.Function (() => CalcGlobalLight,
-				(globalLight, diffuse, other) =>
-				(from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
-				 let maxInten = globalLight.maxintensity
-				 let ambient = diffuse * globalLight.ambientLightIntensity
-					select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f))
-				.Evaluate ());
+		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3> CalcGlobalLight =
+			GLShader.Function
+			(
+				() => CalcGlobalLight,
+
+				(GlobalLight globalLight, Vec3 diffuse, Vec3 other) =>
+					Shader.Evaluate
+					(
+						from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
+						let maxInten = globalLight.maxintensity
+						let ambient = diffuse * globalLight.ambientLightIntensity
+						select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f)
+					)
+			);
 
 		public static GLShader VertexShader ()
 		{
-			return GLShader.Create (ShaderType.VertexShader, 
-				() =>
+			return GLShader.Create 
+			(
+				ShaderType.VertexShader, () =>
+
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				select new Fragment () 
-				{   
+				select new Fragment ()
+				{
 					gl_Position = !u.perspectiveMatrix * worldPos,
-					vertexPosition = worldPos [Coord.x, Coord.y, Coord.z],
+					vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
 					vertexSpecular = v.specularColor,
-                    vertexShininess = v.shininess
-				});
+					vertexShininess = v.shininess
+				}
+			);
 		}
 
 		public static GLShader FragmentShader ()
 		{
-			return GLShader.Create (ShaderType.FragmentShader, 
-				() =>
+			return GLShader.Create 
+			(
+				ShaderType.FragmentShader, () =>
+
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal)
 				let specular = CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal, 
-					    f.vertexDiffuse, f.vertexSpecular, f.vertexShininess)
+					f.vertexDiffuse, f.vertexSpecular, f.vertexShininess)
 				select new 
 				{
 					outputColor = CalcGlobalLight (!u.globalLighting, f.vertexDiffuse, diffuse + specular)
-				});
+				}
+			);
 		}
 	}
 }

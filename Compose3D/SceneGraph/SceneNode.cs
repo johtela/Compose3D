@@ -23,7 +23,7 @@
         {
             if (_subNodes != null)
                 foreach (var subNode in _subNodes)
-                    Traverse<T> (action, transform);
+                    subNode.Traverse<T> (action, transform);
             if (this is T)
                 action ((T)this, transform);
         }

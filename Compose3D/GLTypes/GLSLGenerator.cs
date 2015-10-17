@@ -341,26 +341,30 @@
             var iterVar = aggrFun.Parameters[1];
             CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
                 ExprToGLSL (node.Arguments[1]));
-			var se = ParseFor (node.Arguments[0]);
-            CodeOut ("{0} {1} = {2};", GLType (iterVar.Type), iterVar.Name, 
-                ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
+			var se = node.Arguments[0].GetSelect ();
+			if (se != null)
+			{
+				ParseFor (se);
+				CodeOut ("{0} {1} = {2};", GLType (iterVar.Type), iterVar.Name,
+					ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
+			}
+			else
+				OutputForLoop (node);
             CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
             return accum.Name;
         }
 
-		public MethodCallExpression ParseFor (Expression expr)
+		public void ParseFor (MethodCallExpression mce)
 		{
-			var mce = expr.ExpectSelect ();
-			if (mce.Arguments [0].GetSelect () == null)
+			if (mce.Arguments[0].GetSelect () == null)
 				OutputForLoop (mce);
 			else
 				Parse.ExactlyOne (ForLoop).IfFail (new ParseException (
 					"Must have exactly one from clause in the beginning of aggregate expression."))
 					.Then (Parse.ZeroOrMore (LetBinding))
-					.Execute (new Source (mce.Traverse ()));
-			return mce;
+					.Execute (new Source (mce.Arguments[0].Traverse ()));
 		}
 
 		public void OutputForLoop (MethodCallExpression expr)
@@ -373,7 +377,9 @@
 					"Expected uniform field reference. Encountered: " + array);
             var attr = field.ExpectGLArrayAttribute ();
             var indexVar = NewLocalVar ("ind");
-			var item = expr.GetSelectLambda ().Parameters[0];
+			var item = expr.Method.IsSelect () ?
+				expr.GetSelectLambda ().Parameters[0] :
+				expr.Arguments[2].ExpectLambda ().Parameters[1];
             CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, attr.Length);
             CodeOut ("{");
             _tabLevel++;

@@ -4,7 +4,7 @@
 	using Geometry;
 	using System;
 
-	class OffsetOrientationScale : SceneNode
+	public class OffsetOrientationScale : SceneNode
 	{
 		public OffsetOrientationScale (Vec3 offset, Vec3 orientation, Vec3 scale)
 		{
@@ -22,9 +22,9 @@
 			base.Traverse<T> (action, transform *
 				Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
-				Mat.RotationY<Mat4> (Orientation.Z) *
+				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
-				Mat.RotationY<Mat4> (Orientation.X));
+				Mat.RotationX<Mat4> (Orientation.X));
 		}
 	}
 }

@@ -127,9 +127,8 @@
 			internal Uniform<Mat3> normalMatrix;
 			internal Uniform<GlobalLight> globalLighting;
 			internal Uniform<DirLight> directionalLight;
-			internal Uniform<PointLight> pointLight;
-			//[GLArray (1)]
-			//internal Uniform<SpotLight[]> spotLights;
+			[GLArray (4)]
+			internal Uniform<PointLight[]> pointLights;
 		}
 
 		/// <summary>
@@ -241,8 +240,15 @@
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal)
-				let specular = CalcPointLight (!u.pointLight, f.vertexPosition, f.vertexNormal, 
-					f.vertexDiffuse, f.vertexSpecular, f.vertexShininess)
+				let specular = (!u.pointLights).Aggregate
+				(
+					new Vec3 (0f),
+					(spec, pl) =>
+						pl.intensity == new Vec3 (0f) ?
+							spec :
+							spec + CalcPointLight (pl, f.vertexPosition, f.vertexNormal, f.vertexDiffuse,
+								f.vertexSpecular, f.vertexShininess)
+				)
 				select new 
 				{
 					outputColor = CalcGlobalLight (!u.globalLighting, f.vertexDiffuse, diffuse + specular)

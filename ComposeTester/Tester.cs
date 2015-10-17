@@ -10,35 +10,24 @@
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using System;
+	using System.Linq;
 
 	public class TestWindow : GameWindow
 	{
 		// OpenGL objects
 		private Program _program;
-		private VBO<Vertex> _vbo;
-		private VBO<int> _ibo;
-		private VBO<Vertex> _normalVbo;
 		private Shaders.Uniforms _uniforms;
 
-		// Scene state
-		private Vec2 _orientation;
-		private Vec3 _position;
-
-		// Scene geometry
-		private Geometry<Vertex> _geometry;
+		// Scene graph
+		private SceneNode _sceneGraph;
+		private OffsetOrientationScale _position;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_geometry = Geometries.Pipe ().Color (VertexColor.Brass);
-			_orientation = new Vec2 (0f, 0f);
-			_position = new Vec3 (0f, 0f, -40f);
+			_sceneGraph = CreateSceneGraph ();
+			_position = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().First ();
 
-			_vbo = new VBO<Vertex> (_geometry.Vertices, BufferTarget.ArrayBuffer);
-			_ibo = new VBO<int> (_geometry.Indices, BufferTarget.ElementArrayBuffer);
-			var normals = _geometry.Normals;
-			normals.Color (VertexColor.White);
-			_normalVbo = new VBO<Vertex> (normals, BufferTarget.ArrayBuffer);
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new Shaders.Uniforms ());
 		}
@@ -64,36 +53,54 @@
 
 		private SceneNode CreateSceneGraph ()
 		{
-			var dirLight = new DirectionalLight (new Vec3 (-1f, 1f, 1f), new Vec3 (0.1f));
-			var pointLight = new PointLight (new Vec3 (2f), new Vec3 (10f, 10f, -10f), 0.005f, 0.005f);
+			var dirLight = new DirectionalLight (new Vec3 (0.1f), new Vec3 (-1f, 1f, 1f));
+			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (20f, 10f, -20f), 0.005f, 0.005f);
+			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-20f, 10f, -20f), 0.005f, 0.005f);
 
-			var mesh = new Mesh<Vertex> (Geometries.Pipe ().Color (VertexColor.Brass))
+			var geometry = Geometries.House ().Color (VertexColor.Brass);
+			geometry.Normals.Color (VertexColor.White);
+			var mesh = new Mesh<Vertex> (geometry)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
-			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight, mesh);
+			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh);
 			return root;
 		}
 
 		private void SetupLights ()
 		{
-			_uniforms.globalLighting &= new Shaders.GlobalLight ()
+			var numPointLights = 0;
+			var pointLights = new Shaders.PointLight[4];
+
+			_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
+			(
+				(globalLight, mat) =>
+					_uniforms.globalLighting &= new Shaders.GlobalLight ()
+					{
+						ambientLightIntensity = globalLight.AmbientLightIntensity,
+						maxintensity = globalLight.MaxIntensity,
+						inverseGamma = 1f / globalLight.GammaCorrection
+					},
+				(dirLight, mat) =>
+					_uniforms.directionalLight &= new Shaders.DirLight ()
+					{
+						direction = dirLight.Direction,
+						intensity = dirLight.Intensity
+					},
+				(pointLight, mat) =>
+					pointLights[numPointLights++] = new Shaders.PointLight
+					{
+						position = pointLight.Position,
+						intensity = pointLight.Intensity,
+						linearAttenuation = pointLight.LinearAttenuation,
+						quadraticAttenuation = pointLight.QuadraticAttenuation
+					}
+			);
+			_uniforms.pointLights &= pointLights;
+			for (int i = numPointLights; i < 4; i++)
 			{
-				ambientLightIntensity = new Vec3 (0.1f),
-				maxintensity = 2f,
-				inverseGamma = 1f / 1.2f
-			};
-			_uniforms.directionalLight &= new Shaders.DirLight ()
-			{
-				direction = new Vec3 (-1f, 1f, 1f),
-				intensity = new Vec3 (0.1f)
-			};
-			_uniforms.pointLight &= new Shaders.PointLight
-			{
-				position = new Vec3 (10f, 10f, -10f),
-				intensity = new Vec3 (2f),
-				linearAttenuation = 0.005f,
-				quadraticAttenuation = 0.005f
-			};
+				pointLights[i].position = new Vec3 (0f);
+				pointLights[i].intensity = new Vec3 (0f);
+			}
 		}
 
 		private void SetupReactions ()
@@ -104,9 +111,9 @@
 			React.By<Vec2> (ResizeViewport)
 				.WhenResized (this);
 
-			React.By<Vec2> (RotateView)
-				.Map<MouseMoveEventArgs, Vec2> (e =>
-					new Vec2 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f))
+			React.By<Vec3> (RotateView)
+				.Map<MouseMoveEventArgs, Vec3> (e =>
+					new Vec3 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f, 0f))
 				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this);
 
@@ -119,40 +126,37 @@
 
 		#region Update operations
 
-		private void UpdateWorldMatrix ()
-		{
-			var worm = Mat.Translation<Mat4> (_position.ToArray<Vec3, float> ()) *
-				Mat.RotationY<Mat4> (_orientation.Y) * Mat.RotationX<Mat4> (_orientation.X);
-			_uniforms.worldMatrix &= worm;
-			_uniforms.normalMatrix &= new Mat3 (worm).Inverse.Transposed;
-		}
-
 		private void Render (double time)
 		{
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			_program.DrawTriangles<Vertex> (_vbo, _ibo);
-			_program.DrawNormals<Vertex> (_normalVbo);
+
+			_sceneGraph.Traverse<Mesh<Vertex>> (
+				(mesh, mat) =>
+				{
+					_uniforms.worldMatrix &= mat;
+					_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
+					_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
+					_program.DrawNormals<Vertex> (mesh.NormalBuffer);
+				}
+			);
 			SwapBuffers ();
 		}
 
 		private void ResizeViewport (Vec2 size)
 		{
-			UpdateWorldMatrix ();
 			_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
 				Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
 			GL.Viewport (ClientSize);
 		}
 
-		private void RotateView (Vec2 rot)
+		private void RotateView (Vec3 rot)
 		{
-			_orientation += rot;
-			UpdateWorldMatrix ();
+			_position.Orientation += rot;
 		}
 
 		private void ZoomView (float delta)
 		{
-			_position.Z = Math.Min (_position.Z + delta, 2f);
-			UpdateWorldMatrix ();
+			_position.Offset = _position.Offset.With (2, Math.Min (_position.Offset.Z + delta, 2f));
 		}
 
 		#endregion

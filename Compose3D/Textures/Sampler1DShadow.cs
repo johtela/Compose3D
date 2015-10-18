@@ -11,7 +11,7 @@ namespace Compose3D.Textures
     {
     	public Sampler1DShadow () : base () {}
 
-    	public Sampler1DShadow (int texUnit, Params<SamplerParameterName> parameters) 
+    	public Sampler1DShadow (int texUnit, SamplerParams parameters) 
     		: base (texUnit, parameters) {}
     	
 		[GLFunction ("textureSize ({0})")]

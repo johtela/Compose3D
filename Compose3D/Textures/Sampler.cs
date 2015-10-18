@@ -4,6 +4,8 @@
 	using System.Collections.Generic;
 	using OpenTK.Graphics.OpenGL;
 
+	public class SamplerParams : Params<SamplerParameterName, object> { }
+
 	public abstract class Sampler
 	{
 		internal int _glSampler;
@@ -17,13 +19,13 @@
 			_texUnit = texUnit;
 		}
 
-		public Sampler (int texUnit, Params<SamplerParameterName> parameters)
+		public Sampler (int texUnit, SamplerParams parameters)
 			: this (texUnit)
 		{
 			SetParameters (parameters);
 		}
 
-		private void SetParameters (Params<SamplerParameterName> parameters)
+		private void SetParameters (SamplerParams parameters)
 		{
 			foreach (var param in parameters)
 			{

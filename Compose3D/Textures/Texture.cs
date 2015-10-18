@@ -4,6 +4,9 @@
 	using OpenTK.Graphics.OpenGL;
 	using System;
 	using System.Collections.Generic;
+	using System.Drawing;
+
+	public class TextureParams : Params<TextureParameterName, object> { }
 
 	public class Texture
 	{
@@ -18,7 +21,7 @@
 
 		public Texture (TextureTarget target, int level, PixelInternalFormat internalFormat,
 			int width, int height, PixelFormat format, PixelType type, IntPtr pixels, 
-			Params<TextureParameterName> parameters)
+			TextureParams parameters)
 		{
 			_target = target;
 			_glTexture = GL.GenTexture ();
@@ -28,7 +31,7 @@
 			GL.BindTexture (target, 0);
 		}
 
-		private void SetParameters (Params<TextureParameterName> parameters)
+		private void SetParameters (TextureParams parameters)
 		{
 			foreach (var param in parameters)
 			{
@@ -40,6 +43,55 @@
 					throw new GLError ("Unsupported texture parameter Item2 type: " + param.Item2.GetType ());
 			}
 		}
+
+		public static Texture FromBitmap (Bitmap bitmap, TextureParams parameters)
+		{
+			var bitmapData = bitmap.LockBits (new Rectangle (0, 0, bitmap.Width, bitmap.Height),
+				System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+			try
+			{
+				return new Texture (TextureTarget.Texture2D, 0, MapPixelInternalFormat (bitmap.PixelFormat),
+					bitmap.Width, bitmap.Height, MapPixelFormat (bitmap.PixelFormat), PixelType.UnsignedByte,
+					bitmapData.Scan0, parameters);
+			}
+			finally
+			{
+				bitmap.UnlockBits (bitmapData);
+			}
+		}
+
+		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)
+		{
+			switch (pixelFormat)
+			{
+				case System.Drawing.Imaging.PixelFormat.Alpha: return PixelInternalFormat.Alpha;
+				case System.Drawing.Imaging.PixelFormat.Canonical: return PixelInternalFormat.Rgba;
+				case System.Drawing.Imaging.PixelFormat.Format16bppRgb565: return PixelInternalFormat.R5G6B5IccSgix;
+				case System.Drawing.Imaging.PixelFormat.Format24bppRgb: return PixelInternalFormat.Rgb;
+				case System.Drawing.Imaging.PixelFormat.Format32bppPArgb:
+				case System.Drawing.Imaging.PixelFormat.Format32bppArgb: return PixelInternalFormat.Rgba;
+				case System.Drawing.Imaging.PixelFormat.Format48bppRgb: return PixelInternalFormat.Rgb16;
+				case System.Drawing.Imaging.PixelFormat.Format64bppPArgb:
+				case System.Drawing.Imaging.PixelFormat.Format64bppArgb: return PixelInternalFormat.Rgba16;
+				default: throw new GLError ("Unsupported pixel format: " + pixelFormat.ToString ());
+			}
+		}
+
+		private static PixelFormat MapPixelFormat (System.Drawing.Imaging.PixelFormat pixelFormat)
+		{
+			switch (pixelFormat)
+			{
+				case System.Drawing.Imaging.PixelFormat.Alpha: return PixelFormat.Alpha;
+				case System.Drawing.Imaging.PixelFormat.Canonical: return PixelFormat.Bgra;
+				case System.Drawing.Imaging.PixelFormat.Format16bppRgb565: return PixelFormat.R5G6B5IccSgix;
+				case System.Drawing.Imaging.PixelFormat.Format24bppRgb: return PixelFormat.Bgr;
+				case System.Drawing.Imaging.PixelFormat.Format32bppPArgb:
+				case System.Drawing.Imaging.PixelFormat.Format32bppArgb: return PixelFormat.Bgra;
+				case System.Drawing.Imaging.PixelFormat.Format48bppRgb: return PixelFormat.Bgr;
+				case System.Drawing.Imaging.PixelFormat.Format64bppPArgb:
+				case System.Drawing.Imaging.PixelFormat.Format64bppArgb: return PixelFormat.Bgra;
+				default: throw new GLError ("Unsupported pixel format: " + pixelFormat.ToString ());
+			}
+		}
 	}
 }
-

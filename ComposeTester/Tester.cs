@@ -20,13 +20,13 @@
 
 		// Scene graph
 		private SceneNode _sceneGraph;
-		private OffsetOrientationScale _position;
+		private OffsetOrientationScale[] _positions;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_position = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().First ();
+			_positions = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().ToArray ();
 
 			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new Shaders.Uniforms ());
@@ -54,15 +54,17 @@
 		private SceneNode CreateSceneGraph ()
 		{
 			var dirLight = new DirectionalLight (new Vec3 (0.1f), new Vec3 (-1f, 1f, 1f));
-			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (20f, 10f, -20f), 0.005f, 0.005f);
-			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-20f, 10f, -20f), 0.005f, 0.005f);
+			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.005f, 0.005f);
+			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.005f, 0.005f);
 
-			var geometry = Geometries.House ().Color (VertexColor.Brass);
+			var geometry = Geometries.Pipe ().Color (VertexColor.Brass);
 			geometry.Normals.Color (VertexColor.White);
-			var mesh = new Mesh<Vertex> (geometry)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+			var mesh1 = new Mesh<Vertex> (geometry)
+				.OffsetOrientAndScale (new Vec3 (15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+			var mesh2 = new Mesh<Vertex> (geometry.Color (VertexColor.Chrome))
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
-			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh);
+			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh1, mesh2);
 			return root;
 		}
 
@@ -151,12 +153,14 @@
 
 		private void RotateView (Vec3 rot)
 		{
-			_position.Orientation += rot;
+			foreach (var pos in _positions)
+				pos.Orientation += rot;
 		}
 
 		private void ZoomView (float delta)
 		{
-			_position.Offset = _position.Offset.With (2, Math.Min (_position.Offset.Z + delta, 2f));
+			foreach (var pos in _positions)
+				pos.Offset = pos.Offset.With (2, Math.Min (pos.Offset.Z + delta, 2f));
 		}
 
 		#endregion

@@ -85,8 +85,9 @@ namespace Compose3D.Geometry
         public static Geometry<V> Color<V>(this Geometry<V> geometry, IVertexColor color)
             where V : struct, IVertex, IVertexColor
         {
-            Color (geometry.Vertices, color);
-            return geometry;
+			var result = new Wrapper<V> (geometry);
+            Color (result.Vertices, color);
+            return result;
         }
     }
 }

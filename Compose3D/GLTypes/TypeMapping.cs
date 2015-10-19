@@ -16,7 +16,11 @@
 
         private static MethodInfo GetMethod (Type type, string name, params Type[] args)
         {
-            return type.GetMethod (name, args);
+			var res = type.GetMethod (name, args);
+			if (res == null)
+				throw new GLError (string.Format ("Method {0}.{1}({2}) not found.", type, name,
+					args.SeparateWith (", ")));
+			return res;
         }
 
         private static Dictionary<Type, string> _types = new Dictionary<Type, string> ()
@@ -28,12 +32,32 @@
 
         private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ()
         {
+            { GetMethod (mathT, "Abs", floatT), "abs ({0})" },
+            { GetMethod (mathT, "Abs", intT), "abs ({0})" },
+            { GetMethod (mathT, "Sign", floatT), "sign ({0})" },
+            { GetMethod (mathT, "Sign", doubleT), "sign ({0})" },
+            { GetMethod (mathT, "Sign", intT), "sign ({0})" },
+            { GetMethod (mathT, "Floor", doubleT), "floor ({0})" },
+            { GetMethod (mathT, "Ceiling", doubleT), "ceil ({0})" },
             { GetMethod (mathT, "Min", floatT, floatT), "min ({0})" },
             { GetMethod (mathT, "Min", doubleT, doubleT), "min ({0})" },
+            { GetMethod (mathT, "Min", intT, intT), "min ({0})" },
             { GetMethod (mathT, "Max", floatT, floatT), "max ({0})" },
             { GetMethod (mathT, "Max", doubleT, doubleT), "max ({0})" },
+            { GetMethod (mathT, "Max", intT, intT), "max ({0})" },
             { GetMethod (floatT, "IsNaN", floatT), "isnan ({0})" },
-            { GetMethod (doubleT, "IsNaN", doubleT), "isnan ({0})" }
+            { GetMethod (doubleT, "IsNaN", doubleT), "isnan ({0})" },
+            { GetMethod (mathT, "Sin", doubleT), "sin ({0})" },
+            { GetMethod (mathT, "Cos", doubleT), "cos ({0})" },
+            { GetMethod (mathT, "Tan", doubleT), "tan ({0})" },
+            { GetMethod (mathT, "Asin", doubleT), "asin ({0})" },
+            { GetMethod (mathT, "Acos", doubleT), "acos ({0})" },
+            { GetMethod (mathT, "Atan", doubleT), "atan ({0})" },
+            { GetMethod (mathT, "Atan2", doubleT, doubleT), "atan ({0})" },
+            { GetMethod (mathT, "Pow", doubleT, doubleT), "pow ({0})" },
+            { GetMethod (mathT, "Exp", doubleT), "exp ({0})" },
+            { GetMethod (mathT, "Log", doubleT), "log ({0})" },
+            { GetMethod (mathT, "Sqrt", doubleT), "sqrt ({0})" },
         };
 
         private static Dictionary<ExpressionType, string> _operators = new Dictionary<ExpressionType, string>

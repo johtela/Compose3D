@@ -10,7 +10,6 @@
 		public int X; 
 		public int Y; 
 		public int Z; 
-
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (int x, int y, int z)
 		{	
@@ -18,7 +17,6 @@
 			Y = y; 
 			Z = z; 
 		}
-
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (int value)
 		{	
@@ -26,7 +24,6 @@
 			Y = value; 
 			Z = value; 
 		}
-
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (Vec2i vec, int z)
 		{	
@@ -92,30 +89,10 @@
 		{
 			return X * other.X + Y * other.Y + Z * other.Z;
 		}
-
-		[GLFunction ("pow ({0})")]
-		public Vec3i Pow (Vec3i other)
-		{
-			return new Vec3i (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y), GLMath.Pow (Z, other.Z));
-		}
-
-		[GLFunction ("clamp ({0})")]
-		public Vec3i Clamp (int min, int max)
-		{
-			return new Vec3i (X.Clamp (min, max), Y.Clamp (min, max), Z.Clamp (min, max));
-		}
-
-		[GLFunction ("reflect ({0})")]
-		public Vec3i Reflect (Vec3i along)
-		{
-			return Subtract (along.Multiply (2 * Dot (along)));
-		}
-
 		public bool Equals (Vec3i other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
 		}
-
 		public int Dimensions
 		{
 			get { return 3; }
@@ -144,7 +121,6 @@
 				}
 			} 
 		}
-
 		public Vec3i this[Coord x, Coord y, Coord z]
 		{
 			get { return new Vec3i (this[(int)x], this[(int)y], this[(int)z]); }

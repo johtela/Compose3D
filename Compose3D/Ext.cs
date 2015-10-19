@@ -165,9 +165,9 @@ namespace Compose3D
             return EnumerateCombinations (vector.Map (project), new T[vector.Length], 0);
         }
 
-        public static string SeparateWith (this IEnumerable<string> lines, string separator)
+        public static string SeparateWith<T> (this IEnumerable<T> lines, string separator)
         {
-            return lines.Any () ? lines.Aggregate ((s1, s2) => s1 + separator + s2) : "";
+            return lines.Any () ? lines.Select (l => l.ToString ()).Aggregate ((s1, s2) => s1 + separator + s2) : "";
         }
 
 		public static IEnumerable<T> MinimumItems<T, U> (this IEnumerable<T> items, Func<T, U> selector)

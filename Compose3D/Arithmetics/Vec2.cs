@@ -9,21 +9,18 @@
     { 
 		public float X; 
 		public float Y; 
-
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (float x, float y)
 		{	
 			X = x; 
 			Y = y; 
 		}
-
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (float value)
 		{	
 			X = value; 
 			Y = value; 
 		}
-
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (Vec2 vec)
 		{	
@@ -86,30 +83,10 @@
 		{
 			return X * other.X + Y * other.Y;
 		}
-
-		[GLFunction ("pow ({0})")]
-		public Vec2 Pow (Vec2 other)
-		{
-			return new Vec2 (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y));
-		}
-
-		[GLFunction ("clamp ({0})")]
-		public Vec2 Clamp (float min, float max)
-		{
-			return new Vec2 (X.Clamp (min, max), Y.Clamp (min, max));
-		}
-
-		[GLFunction ("reflect ({0})")]
-		public Vec2 Reflect (Vec2 along)
-		{
-			return Subtract (along.Multiply (2 * Dot (along)));
-		}
-
 		public bool Equals (Vec2 other)
 		{
 			return X == other.X && Y == other.Y;
 		}
-
 		public int Dimensions
 		{
 			get { return 2; }
@@ -136,7 +113,6 @@
 				}
 			} 
 		}
-
 		public Vec2 this[Coord x, Coord y]
 		{
 			get { return new Vec2 (this[(int)x], this[(int)y]); }
@@ -146,7 +122,7 @@
 				this[(int)y] = value.Y; 
 			}
 		}
-					
+
 		public float LengthSquared
 		{
 			get { return X * X + Y * Y; }

@@ -61,7 +61,9 @@
 			geometry.Normals.Color (VertexColor.White);
 			var mesh1 = new Mesh<Vertex> (geometry)
 				.OffsetOrientAndScale (new Vec3 (15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
-			var mesh2 = new Mesh<Vertex> (geometry.Color (VertexColor.Chrome))
+			var geometry2 = Geometries.Pipe ().Color (VertexColor.Chrome);
+			geometry2.Normals.Color (VertexColor.White);
+			var mesh2 = new Mesh<Vertex> (geometry2)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh1, mesh2);
@@ -115,7 +117,7 @@
 
 			React.By<Vec3> (RotateView)
 				.Map<MouseMoveEventArgs, Vec3> (e =>
-					new Vec3 (e.YDelta.ToRadians () / 2f, e.XDelta.ToRadians () / 2f, 0f))
+					new Vec3 (e.YDelta.Radians () / 2f, e.XDelta.Radians () / 2f, 0f))
 				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this);
 

@@ -62,7 +62,7 @@
 			var res = new Mat4 (1f);
 			for (int i = 0; i < 10; i++)
 			{
-				res = Mat.RotationX<Mat4> (10f.ToRadians ()) * Mat.Translation<Mat4> (0f, 0f, -10f) * res;
+				res = Mat.RotationX<Mat4> (10f.Radians ()) * Mat.Translation<Mat4> (0f, 0f, -10f) * res;
 				yield return res;
 			}
 		}
@@ -75,7 +75,7 @@
 
 		public static Geometry<Vertex> Arrow ()
 		{
-			return Circular<Vertex>.Circle (10f, 10f.ToRadians ())
+			return Circular<Vertex>.Circle (10f, 10f.Radians ())
 				.Stretch (1, false, false, true, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
@@ -83,7 +83,7 @@
 
 		public static Geometry<Vertex> Pipe ()
 		{
-            return Circular<Vertex>.Pie (10f, 10f, 10f.ToRadians (), 0f, MathHelper.Pi)
+            return Circular<Vertex>.Pie (10f, 10f, 10f.Radians (), 0f, MathHelper.Pi)
                 .Hollow (1.2f, 1.2f)
                 .Extrude (10f, true, true)
                 .Center ();

@@ -43,18 +43,6 @@
 		[GLFunction ("dot ({0})")]
 <#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
 
-		[GLFunction ("pow ({0})")]
-<#+ 	BinaryFunc (dim, vecType, "Pow", "Numeric.Pow", ", ");#>
-
-		[GLFunction ("clamp ({0})")]
-<#+		Scalar2 (dim, vecType, type, "Clamp", "{0}.Clamp ({1}, {2})", "min", "max", ", ");#>
-
-		[GLFunction ("reflect ({0})")]
-		public <#= vecType #> Reflect (<#= vecType #> along)
-		{
-			return Subtract (along.Multiply (2 * Dot (along)));
-		}
-
 <#+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && "); #>
 
 <#+		Indexer(dim, type); #>
@@ -300,13 +288,6 @@ void Scalar(int dim, string vecType, string scalarType, string name, string oper
 #>		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
 		{
 			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} scalar", comp, oper)) #>);
-		}
-<#+ } 
-
-void Scalar2(int dim, string vecType, string scalarType, string name, string format, string arg1, string arg2, string delim) { 
-#>		public <#= vecType #> <#= name #> (<#= scalarType #> <#= arg1 #>, <#= scalarType #> <#= arg2 #>)
-		{
-			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format(format, comp, arg1, arg2)) #>);
 		}
 <#+ } 
 

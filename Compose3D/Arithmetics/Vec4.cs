@@ -11,7 +11,6 @@
 		public float Y; 
 		public float Z; 
 		public float W; 
-
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float x, float y, float z, float w)
 		{	
@@ -20,7 +19,6 @@
 			Z = z; 
 			W = w; 
 		}
-
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float value)
 		{	
@@ -29,7 +27,6 @@
 			Z = value; 
 			W = value; 
 		}
-
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (Vec2 vec, float z, float w)
 		{	
@@ -98,30 +95,10 @@
 		{
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
-
-		[GLFunction ("pow ({0})")]
-		public Vec4 Pow (Vec4 other)
-		{
-			return new Vec4 (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y), GLMath.Pow (Z, other.Z), GLMath.Pow (W, other.W));
-		}
-
-		[GLFunction ("clamp ({0})")]
-		public Vec4 Clamp (float min, float max)
-		{
-			return new Vec4 (X.Clamp (min, max), Y.Clamp (min, max), Z.Clamp (min, max), W.Clamp (min, max));
-		}
-
-		[GLFunction ("reflect ({0})")]
-		public Vec4 Reflect (Vec4 along)
-		{
-			return Subtract (along.Multiply (2 * Dot (along)));
-		}
-
 		public bool Equals (Vec4 other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
-
 		public int Dimensions
 		{
 			get { return 4; }
@@ -152,7 +129,6 @@
 				}
 			} 
 		}
-
 		public Vec4 this[Coord x, Coord y, Coord z, Coord w]
 		{
 			get { return new Vec4 (this[(int)x], this[(int)y], this[(int)z], this[(int)w]); }

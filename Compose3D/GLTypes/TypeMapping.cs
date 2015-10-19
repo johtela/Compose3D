@@ -31,7 +31,9 @@
             { GetMethod (mathT, "Min", floatT, floatT), "min ({0})" },
             { GetMethod (mathT, "Min", doubleT, doubleT), "min ({0})" },
             { GetMethod (mathT, "Max", floatT, floatT), "max ({0})" },
-            { GetMethod (mathT, "Max", doubleT, doubleT), "max ({0})" }
+            { GetMethod (mathT, "Max", doubleT, doubleT), "max ({0})" },
+            { GetMethod (floatT, "IsNaN", floatT), "isnan ({0})" },
+            { GetMethod (doubleT, "IsNaN", doubleT), "isnan ({0})" }
         };
 
         private static Dictionary<ExpressionType, string> _operators = new Dictionary<ExpressionType, string>

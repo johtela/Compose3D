@@ -96,7 +96,7 @@
 		[GLFunction ("pow ({0})")]
 		public Vec3i Pow (Vec3i other)
 		{
-			return new Vec3i (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y), Numeric.Pow (Z, other.Z));
+			return new Vec3i (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y), GLMath.Pow (Z, other.Z));
 		}
 
 		[GLFunction ("clamp ({0})")]

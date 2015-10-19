@@ -102,7 +102,7 @@
 		[GLFunction ("pow ({0})")]
 		public Vec4 Pow (Vec4 other)
 		{
-			return new Vec4 (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y), Numeric.Pow (Z, other.Z), Numeric.Pow (W, other.W));
+			return new Vec4 (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y), GLMath.Pow (Z, other.Z), GLMath.Pow (W, other.W));
 		}
 
 		[GLFunction ("clamp ({0})")]

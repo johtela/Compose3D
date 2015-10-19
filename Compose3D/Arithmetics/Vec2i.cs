@@ -90,7 +90,7 @@
 		[GLFunction ("pow ({0})")]
 		public Vec2i Pow (Vec2i other)
 		{
-			return new Vec2i (Numeric.Pow (X, other.X), Numeric.Pow (Y, other.Y));
+			return new Vec2i (GLMath.Pow (X, other.X), GLMath.Pow (Y, other.Y));
 		}
 
 		[GLFunction ("clamp ({0})")]

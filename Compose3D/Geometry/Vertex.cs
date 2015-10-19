@@ -1,9 +1,8 @@
 ﻿namespace Compose3D.Geometry
 {
 	using Arithmetics;
-	using System;
+    using Textures;
 	using System.Collections.Generic;
-	using System.Linq;
 
 	/// <summary>
 	/// Interface for objects with 3D position data.
@@ -45,6 +44,8 @@
             vertex.Position = position;
             vertex.Normal = normal;
             vertex.Tag = tag;
+            if (vertex is ITextured)
+                (vertex as ITextured).TexturePos = new Vec2 (float.NaN, float.NaN);
             return vertex;
         }
 
@@ -52,22 +53,6 @@
             where V : struct, IVertex
         {
             return New<V> (position, normal, 0);
-        }
-
-        public static V New<V> (Vec3 position, Vec3 normal, IVertexColor vertColor, int tag)
-            where V : struct, IVertex, IVertexColor
-        {
-            var vertex = New<V> (position, normal, tag);
-            vertex.Diffuse = vertColor.Diffuse;
-            vertex.Specular = vertColor.Specular;
-            vertex.Shininess = vertColor.Shininess;
-            return vertex;
-        }
-
-        public static V New<V> (Vec3 position, Vec3 normal, IVertexColor vertColor)
-            where V : struct, IVertex, IVertexColor
-        {
-            return New<V> (position, normal, vertColor, 0);
         }
 
         public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)

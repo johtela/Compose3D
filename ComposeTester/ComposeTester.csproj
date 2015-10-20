@@ -76,4 +76,9 @@
       <Name>LinqCheck</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Textures\Tulips.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

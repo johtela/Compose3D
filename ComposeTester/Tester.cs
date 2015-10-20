@@ -5,12 +5,14 @@
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
+	using Compose3D.Textures;
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using System;
 	using System.Linq;
+	using System.Drawing;
 
 	public class TestWindow : GameWindow
 	{
@@ -57,6 +59,11 @@
 			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.005f, 0.005f);
 			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.005f, 0.005f);
 
+			var texture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams ()
+			{
+				{ TextureParameterName.TextureMagFilter, All.Linear },
+				{ TextureParameterName.TextureMinFilter, All.Linear }
+			});
 			var geometry = Geometries.Pipe ().Color (VertexColor.Brass);
 			geometry.Normals.Color (VertexColor.White);
 			var mesh1 = new Mesh<Vertex> (geometry)

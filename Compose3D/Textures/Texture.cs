@@ -3,7 +3,7 @@
 	using GLTypes;
 	using OpenTK.Graphics.OpenGL;
 	using System;
-	using System.Collections.Generic;
+	using System.IO;
 	using System.Drawing;
 
 	public class TextureParams : Params<TextureParameterName, object> { }
@@ -35,7 +35,7 @@
 		{
 			foreach (var param in parameters)
 			{
-				if (param.Item2 is int)
+				if (param.Item2 is int || param.Item2.GetType ().IsEnum)
 					GL.TexParameter (_target, param.Item1, (int)param.Item2);
 				else if (param.Item2 is float)
 					GL.TexParameter (_target, param.Item1, (float)param.Item2);
@@ -58,6 +58,13 @@
 			{
 				bitmap.UnlockBits (bitmapData);
 			}
+		}
+
+		public static Texture FromFile (string path, TextureParams parameters)
+		{
+			if (!File.Exists (path))
+				throw new GLError ("Path to texture file does not exist: " + path);
+			return FromBitmap (new Bitmap (path), parameters);
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

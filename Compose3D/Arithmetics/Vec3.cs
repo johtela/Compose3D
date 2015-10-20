@@ -7,9 +7,12 @@
 	[GLType ("vec3")]
     public struct Vec3 : IVec<Vec3, float>
     { 
-		public float X; 
-		public float Y; 
-		public float Z; 
+		[GLField ("x")]
+        public float X; 
+		[GLField ("y")]
+        public float Y; 
+		[GLField ("z")]
+        public float Z; 
 		[GLConstructor ("vec3 ({0})")]
 		public Vec3 (float x, float y, float z)
 		{	

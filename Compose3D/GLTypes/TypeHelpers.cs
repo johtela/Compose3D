@@ -75,6 +75,12 @@
             return type.IsDefined (typeof (GLStruct), true);
         }
 
+		public static string GetGLFieldName (this MemberInfo mi)
+		{
+			var attr = GetAttribute<GLFieldAttribute> (mi);
+			return attr == null ? mi.Name : attr.Name;
+		}
+
         public static IEnumerable<FieldInfo> GetGLFields (this Type type)
         {
             return type.GetFields (_bindingFlags);

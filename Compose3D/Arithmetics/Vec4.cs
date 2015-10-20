@@ -7,10 +7,14 @@
 	[GLType ("vec4")]
     public struct Vec4 : IVec<Vec4, float>
     { 
-		public float X; 
-		public float Y; 
-		public float Z; 
-		public float W; 
+		[GLField ("x")]
+        public float X; 
+		[GLField ("y")]
+        public float Y; 
+		[GLField ("z")]
+        public float Z; 
+		[GLField ("w")]
+        public float W; 
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float x, float y, float z, float w)
 		{	

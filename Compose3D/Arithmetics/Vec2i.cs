@@ -7,8 +7,10 @@
 	[GLType ("ivec2")]
     public struct Vec2i : IVec<Vec2i, int>
     { 
-		public int X; 
-		public int Y; 
+		[GLField ("x")]
+        public int X; 
+		[GLField ("y")]
+        public int Y; 
 		[GLConstructor ("ivec2 ({0})")]
 		public Vec2i (int x, int y)
 		{	

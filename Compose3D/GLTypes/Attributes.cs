@@ -34,6 +34,18 @@
         }
     }
 
+	[AttributeUsage (AttributeTargets.Field)]
+	public class GLFieldAttribute : Attribute
+	{
+		public string Name;
+
+		public GLFieldAttribute (string name) 
+		{ 
+			Name = name;
+		}
+	}
+
+
     public class GLAttribute : Attribute
     {
         public string Syntax;

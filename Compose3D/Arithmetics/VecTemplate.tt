@@ -179,7 +179,8 @@ void ComponentStatements(int dim, Func<string, string> map) {
 
 void ComponentFields(int dim, string type) { 
 	foreach (var comp in Components(dim)) {  
-#>		public <#= type #> <#= comp #>; 
+#>		[GLField ("<#= comp.ToLower() #>")]
+        public <#= type #> <#= comp #>; 
 <#+ }
 }
  

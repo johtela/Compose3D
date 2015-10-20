@@ -210,28 +210,25 @@
                 {
                     var attr = be.Method.GetGLAttribute ();
                     return "(" + string.Format (
-                        attr != null ? attr.Syntax : TypeMapping.Operators (be.NodeType),
+                        attr != null ? attr.Syntax : TypeMapping.Operator (be.NodeType),
                         ExprToGLSL (be.Left), ExprToGLSL (be.Right)) + ")";
 
                 }) ??
                 expr.Match<UnaryExpression, string> (ue =>
                 {
                     var attr = ue.Method.GetGLAttribute ();
-                    return string.Format (attr != null ? attr.Syntax : TypeMapping.Operators (ue.NodeType), 
+                    return string.Format (attr != null ? attr.Syntax : TypeMapping.Operator (ue.NodeType), 
                         ExprToGLSL (ue.Operand));
                 }) ??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
                     var attr = mc.Method.GetGLAttribute ();
-					if (attr == null)
-						return mc.Method.Name != "get_Item" ? null :
-							string.Format ("{0}.{1}", ExprToGLSL (mc.Object), 
-								mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (""));
-					else 
-					{
-						var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
-						return string.Format (attr.Syntax, args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
-					}
+					if (attr == null && mc.Method.Name == "get_Item")
+						return string.Format ("{0}.{1}", ExprToGLSL (mc.Object),
+							mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (""));
+					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
+					return string.Format (attr != null ? attr.Syntax : TypeMapping.Function (mc.Method),
+						args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
 				expr.Match<InvocationExpression, string> (ie => 
 				{
@@ -250,8 +247,8 @@
                     var attr = me.Member.GetGLAttribute ();
                     return attr != null ?
                         string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Expression.Type.IsGLStruct () ?
-                            string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.Name) :
+                        me.Expression.Type.IsGLType () ?
+                            string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
                             me.Member.Name;
                 }) ??
                 expr.Match<NewExpression, string> (ne =>

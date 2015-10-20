@@ -86,6 +86,7 @@
 			internal Vec3 vertexDiffuse;
 			internal Vec3 vertexSpecular;
 			internal float vertexShininess;
+			internal Vec2 texturePosition;
 		}
 
 		[GLStruct ("DirLight")]
@@ -128,6 +129,7 @@
 			internal Uniform<DirLight> directionalLight;
 			[GLArray (4)]
 			internal Uniform<PointLight[]> pointLights;
+			internal Uniform<Sampler2D> sampler;
 		}
 
 		/// <summary>
@@ -225,7 +227,8 @@
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
 					vertexSpecular = v.specularColor,
-					vertexShininess = v.shininess
+					vertexShininess = v.shininess,
+					texturePosition = v.texturePos
 				}
 			);
 		}
@@ -235,22 +238,25 @@
 			return GLShader.Create 
 			(
 				ShaderType.FragmentShader, () =>
-
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
-				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal)
+				let textSet = !(float.IsNaN (f.texturePosition.X) && float.IsNaN (f.texturePosition.Y))
+				let fragDiffuse = textSet ? 
+					(!u.sampler).Texture (f.texturePosition)[Coord.x, Coord.y, Coord.z] : 
+					f.vertexDiffuse
+				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate
 				(
 					new Vec3 (0f),
 					(spec, pl) =>
 						pl.intensity == new Vec3 (0f) ?
 							spec :
-							spec + CalcPointLight (pl, f.vertexPosition, f.vertexNormal, f.vertexDiffuse,
+							spec + CalcPointLight (pl, f.vertexPosition, f.vertexNormal, fragDiffuse,
 								f.vertexSpecular, f.vertexShininess)
 				)
 				select new 
 				{
-					outputColor = CalcGlobalLight (!u.globalLighting, f.vertexDiffuse, diffuse + specular)
+					outputColor = CalcGlobalLight (!u.globalLighting, fragDiffuse, diffuse + specular)
 				}
 			);
 		}

@@ -10,7 +10,7 @@
 
 	public class Texture
 	{
-		private TextureTarget _target;
+		internal TextureTarget _target;
 		internal int _glTexture;
 
 		public Texture (TextureTarget target, int glTexture)
@@ -33,6 +33,8 @@
 
 		private void SetParameters (TextureParams parameters)
 		{
+			if (parameters == null)
+				return;
 			foreach (var param in parameters)
 			{
 				if (param.Item2 is int || param.Item2.GetType ().IsEnum)
@@ -63,7 +65,7 @@
 		public static Texture FromFile (string path, TextureParams parameters)
 		{
 			if (!File.Exists (path))
-				throw new GLError ("Path to texture file does not exist: " + path);
+				throw new GLError ("Could not find texture file: " + path);
 			return FromBitmap (new Bitmap (path), parameters);
 		}
 

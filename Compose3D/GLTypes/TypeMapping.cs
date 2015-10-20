@@ -9,7 +9,8 @@
 
     public static class TypeMapping
     {
-        private static Type floatT = typeof (float);
+		private static Type boolT = typeof (bool);
+		private static Type floatT = typeof (float);
         private static Type doubleT = typeof (double);
 		private static Type intT = typeof (int);
         private static Type mathT = typeof (Math);
@@ -25,6 +26,7 @@
 
         private static Dictionary<Type, string> _types = new Dictionary<Type, string> ()
         {
+            { boolT, "bool" },
             { floatT, "float" },
 			{ doubleT, "double " },
 			{ intT, "int" }
@@ -62,16 +64,20 @@
 
         private static Dictionary<ExpressionType, string> _operators = new Dictionary<ExpressionType, string>
         {
-            { ExpressionType.Add, "{0} + {1}"},
-            { ExpressionType.Subtract, "{0} - {1}"},
-            { ExpressionType.Multiply, "{0} * {1}"},
-            { ExpressionType.Divide, "{0} / {1}"},
+            { ExpressionType.Add, "{0} + {1}" },
+            { ExpressionType.Subtract, "{0} - {1}" },
+            { ExpressionType.Multiply, "{0} * {1}" },
+            { ExpressionType.Divide, "{0} / {1}" },
             { ExpressionType.Negate, "-{0}"},
-            { ExpressionType.Equal, "{0} == {1}"},
-            { ExpressionType.LessThan, "{0} < {1}"},
-            { ExpressionType.LessThanOrEqual, "{0} <= {1}"},
-            { ExpressionType.GreaterThan, "{0} > {1}"},
-            { ExpressionType.GreaterThanOrEqual, "{0} >= {1}"}
+            { ExpressionType.Equal, "{0} == {1}" },
+            { ExpressionType.NotEqual, "{0} != {1}" },
+            { ExpressionType.LessThan, "{0} < {1}" },
+            { ExpressionType.LessThanOrEqual, "{0} <= {1}" },
+            { ExpressionType.GreaterThan, "{0} > {1}" },
+            { ExpressionType.GreaterThanOrEqual, "{0} >= {1}" },
+            { ExpressionType.AndAlso, "{0} && {1}" },
+            { ExpressionType.OrElse, "{0} || {1}" },
+            { ExpressionType.Not, "!{0}" }
         };
  
         public static string Type (Type type)
@@ -90,7 +96,7 @@
 			return result;
         }
 
-        public static string Operators (ExpressionType et)
+        public static string Operator (ExpressionType et)
         {
 			string result;
 			if (!_operators.TryGetValue (et, out result))

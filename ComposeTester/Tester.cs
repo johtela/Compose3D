@@ -37,7 +37,7 @@
 		public void Init ()
 		{
 			SetupOpenGL ();
-			SetupLights ();
+			InitializeUniforms ();
 			SetupReactions ();
 		}
 
@@ -59,25 +59,25 @@
 			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.005f, 0.005f);
 			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.005f, 0.005f);
 
-			var texture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams ()
+			var texture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			{
-				{ TextureParameterName.TextureMagFilter, All.Linear },
-				{ TextureParameterName.TextureMinFilter, All.Linear }
+				{ TextureParameterName.TextureBaseLevel, 0 },
+				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry = Geometries.Pipe ().Color (VertexColor.Brass);
-			geometry.Normals.Color (VertexColor.White);
-			var mesh1 = new Mesh<Vertex> (geometry)
+			var geometry = Quadrilateral<Vertex>.Rectangle (10f, 10f).Color (VertexColor.White);
+			geometry.ApplyTextureCoordinates<Vertex> (new Mat4 (1f), 0f, new Vec2 (0f), new Vec2 (1f));
+			var mesh1 = new Mesh<Vertex> (geometry, texture)
 				.OffsetOrientAndScale (new Vec3 (15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
-			var geometry2 = Geometries.Pipe ().Color (VertexColor.Chrome);
+			var geometry2 = Geometries.Arrow ().Color (VertexColor.Brass);
 			geometry2.Normals.Color (VertexColor.White);
 			var mesh2 = new Mesh<Vertex> (geometry2)
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (MathHelper.Pi, 0f, 0f), new Vec3 (1f));
 
 			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh1, mesh2);
 			return root;
 		}
 
-		private void SetupLights ()
+		private void InitializeUniforms ()
 		{
 			var numPointLights = 0;
 			var pointLights = new Shaders.PointLight[4];
@@ -106,12 +106,19 @@
 						quadraticAttenuation = pointLight.QuadraticAttenuation
 					}
 			);
-			_uniforms.pointLights &= pointLights;
 			for (int i = numPointLights; i < 4; i++)
 			{
 				pointLights[i].position = new Vec3 (0f);
 				pointLights[i].intensity = new Vec3 (0f);
 			}
+			_uniforms.pointLights &= pointLights;
+			_uniforms.sampler &= new Sampler2D (0, new SamplerParams ()
+			{
+				{ SamplerParameterName.TextureMagFilter, All.Linear },
+				{ SamplerParameterName.TextureMinFilter, All.Linear },
+				{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
+				{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
+			});
 		}
 
 		private void SetupReactions ()
@@ -144,10 +151,16 @@
 			_sceneGraph.Traverse<Mesh<Vertex>> (
 				(mesh, mat) =>
 				{
+					if (mesh.Textures.Length > 0)
+						(!_uniforms.sampler).Bind (mesh.Textures[0]);
+
 					_uniforms.worldMatrix &= mat;
 					_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
 					_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
 					_program.DrawNormals<Vertex> (mesh.NormalBuffer);
+
+					if (mesh.Textures.Length > 0)
+						(!_uniforms.sampler).Unbind (mesh.Textures[0]);
 				}
 			);
 			SwapBuffers ();

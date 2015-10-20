@@ -25,11 +25,26 @@
 			SetParameters (parameters);
 		}
 
+		public void Bind (Texture texture)
+		{
+			GL.ActiveTexture (TextureUnit.Texture0 + _texUnit);
+			GL.BindTexture (texture._target, texture._glTexture);
+			GL.BindSampler (_texUnit, _glSampler);
+		}
+
+		public void Unbind (Texture texture)
+		{
+			GL.BindSampler (_texUnit, 0);
+			GL.BindTexture (texture._target, 0);
+		}
+
 		private void SetParameters (SamplerParams parameters)
 		{
+			if (parameters == null)
+				return;
 			foreach (var param in parameters)
 			{
-				if (param.Item2 is int)
+				if (param.Item2 is int || param.Item2.GetType ().IsEnum)
 					GL.SamplerParameter (_glSampler, param.Item1, (int)param.Item2);
 				else if (param.Item2 is float)
 					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);

@@ -12,7 +12,7 @@
 	using OpenTK.Input;
 	using System;
 	using System.Linq;
-	using System.Drawing;
+	using LinqCheck;
 
 	public class TestWindow : GameWindow
 	{
@@ -55,26 +55,30 @@
 
 		private SceneNode CreateSceneGraph ()
 		{
-			var dirLight = new DirectionalLight (new Vec3 (0.1f), new Vec3 (-1f, 1f, 1f));
-			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.005f, 0.005f);
-			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.005f, 0.005f);
+			var dirLight = new DirectionalLight (new Vec3 (0.2f), new Vec3 (-1f, 1f, 1f));
+			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.001f, 0.001f);
+			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.001f, 0.001f);
 
 			var texture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			{
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry = Quadrilateral<Vertex>.Rectangle (10f, 10f).Color (VertexColor.White);
-			geometry.ApplyTextureCoordinates<Vertex> (new Mat4 (1f), 0f, new Vec2 (0f), new Vec2 (1f));
+			var geometry = Volume.Cube<Vertex> (30f, 20f, 1f).Color (VertexColor.White);
+			geometry.ApplyTextureCoordinates<Vertex> (new Mat4 (1f), 1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (geometry, texture)
 				.OffsetOrientAndScale (new Vec3 (15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
-			var geometry2 = Geometries.Arrow ().Color (VertexColor.Brass);
-			geometry2.Normals.Color (VertexColor.White);
-			var mesh2 = new Mesh<Vertex> (geometry2)
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (MathHelper.Pi, 0f, 0f), new Vec3 (1f));
 
-			var root = new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, mesh1, mesh2);
-			return root;
+			var geometry2 = Geometries.Pipe ().Color (VertexColor.Brass);
+			geometry2.Normals.Color (VertexColor.White);
+			geometry2.ApplyTextureCoordinates<Vertex> (
+				Mat.RotationX<Mat4> (MathHelper.PiOver2), 
+				0.1f, new Vec2 (0f), new Vec2 (1f));
+			var mesh2 = new Mesh<Vertex> (geometry2, texture)
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+
+			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
+				mesh1, mesh2);
 		}
 
 		private void InitializeUniforms ()
@@ -195,8 +199,8 @@
 			wnd.Init ();
 			wnd.Run ();
 			//Tester.RunTestsTimed (
-			//    new VecTests (),
-			//    new MatTests ());
+			//	new VecTests (),
+			//	new MatTests ());
 			////new PerformanceTests ());
 			//Console.ReadLine ();
 		}

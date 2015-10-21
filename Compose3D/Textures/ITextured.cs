@@ -80,7 +80,7 @@
 				if (pv.Normal.Dot (invView) >= minCosAngle)
                     verts[i].TexturePos = new Vec2 (
                         (pv.Position.X - bbox.Left) * scaleX + minPos.X,
-                        (pv.Position.Y - bbox.Bottom) * scaleY + minPos.Y);
+                        1 - ((pv.Position.Y - bbox.Bottom) * scaleY + minPos.Y));
             }
         }
     }

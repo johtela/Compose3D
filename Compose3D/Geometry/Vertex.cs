@@ -35,6 +35,12 @@
 		int Tag { get; set; }
 	}
 
+	public interface IVertexInitializer<V>
+		where V : struct, IVertex
+	{
+		void Initialize (ref V vertex);
+	}
+
 	public static class VertexHelpers
 	{
         public static V New<V>(Vec3 position, Vec3 normal, int tag)
@@ -44,8 +50,8 @@
             vertex.Position = position;
             vertex.Normal = normal;
             vertex.Tag = tag;
-            if (vertex is ITextured)
-                (vertex as ITextured).TexturePos = new Vec2 (float.NaN, float.NaN);
+            if (vertex is IVertexInitializer<V>)
+                (vertex as IVertexInitializer<V>).Initialize (ref vertex);
             return vertex;
         }
 

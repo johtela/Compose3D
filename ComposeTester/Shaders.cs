@@ -10,7 +10,7 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Vertex : IVertex, IVertexColor, ITextured
+	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor, ITextured
 	{
 		internal Vec3 position;
         internal Vec3 normal;
@@ -68,7 +68,23 @@
 			set { tag = value; }
 		}
 
-		public override string ToString ()
+		void IVertexInitializer<Vertex>.Initialize (ref Vertex vertex)
+		{
+			vertex.texturePos = new Vec2 (float.NaN);
+		}
+
+		public override bool Equals (object obj)
+		{
+			if (!(obj is Vertex))
+				return false;
+			var other = (Vertex)obj;
+			return (position == other.position) && (normal == other.normal) && (diffuseColor == other.diffuseColor) &&
+				(specularColor == other.specularColor) && (shininess == other.shininess) && (tag == other.tag) &&
+				((float.IsNaN (texturePos.X) && float.IsNaN (texturePos.Y) &&
+				float.IsNaN (other.texturePos.X) && float.IsNaN (other.texturePos.Y)) || (texturePos == other.texturePos));
+	}
+
+	public override string ToString ()
 		{
 			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, SpecularColor={2}, Normal={3}, Tag={4}]", 
 				position, diffuseColor, specularColor, normal, tag);

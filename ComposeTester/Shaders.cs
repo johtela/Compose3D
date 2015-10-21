@@ -70,21 +70,10 @@
 
 		void IVertexInitializer<Vertex>.Initialize (ref Vertex vertex)
 		{
-			vertex.texturePos = new Vec2 (float.NaN);
+			vertex.texturePos = new Vec2 (float.PositiveInfinity);
 		}
 
-		public override bool Equals (object obj)
-		{
-			if (!(obj is Vertex))
-				return false;
-			var other = (Vertex)obj;
-			return (position == other.position) && (normal == other.normal) && (diffuseColor == other.diffuseColor) &&
-				(specularColor == other.specularColor) && (shininess == other.shininess) && (tag == other.tag) &&
-				((float.IsNaN (texturePos.X) && float.IsNaN (texturePos.Y) &&
-				float.IsNaN (other.texturePos.X) && float.IsNaN (other.texturePos.Y)) || (texturePos == other.texturePos));
-	}
-
-	public override string ToString ()
+		public override string ToString ()
 		{
 			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, SpecularColor={2}, Normal={3}, Tag={4}]", 
 				position, diffuseColor, specularColor, normal, tag);
@@ -143,9 +132,8 @@
 			internal Uniform<Mat3> normalMatrix;
 			internal Uniform<GlobalLight> globalLighting;
 			internal Uniform<DirLight> directionalLight;
-			[GLArray (4)]
-			internal Uniform<PointLight[]> pointLights;
-			internal Uniform<Sampler2D> sampler;
+			[GLArray (4)] internal Uniform<PointLight[]> pointLights;
+			[GLArray (4)] internal Uniform<Sampler2D[]> samplers;
 		}
 
 		/// <summary>
@@ -256,9 +244,12 @@
 				ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<Fragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
-				let textSet = !(float.IsNaN (f.texturePosition.X) && float.IsNaN (f.texturePosition.Y))
-				let fragDiffuse = textSet ? 
-					(!u.sampler).Texture (f.texturePosition)[Coord.x, Coord.y, Coord.z] : 
+				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
+				let fragDiffuse =
+					samplerNo == 0 ? (!u.samplers)[0].Texture (f.texturePosition)[Coord.x, Coord.y, Coord.z] :
+					samplerNo == 1 ? (!u.samplers)[1].Texture (f.texturePosition - new Vec2 (10f))[Coord.x, Coord.y, Coord.z] :
+					samplerNo == 2 ? (!u.samplers)[2].Texture (f.texturePosition - new Vec2 (20f))[Coord.x, Coord.y, Coord.z] :
+					samplerNo == 3 ? (!u.samplers)[3].Texture (f.texturePosition - new Vec2 (30f))[Coord.x, Coord.y, Coord.z] :
 					f.vertexDiffuse
 				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate

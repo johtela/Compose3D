@@ -3,6 +3,7 @@
 	using GLTypes;
 	using System.Collections.Generic;
 	using OpenTK.Graphics.OpenGL;
+	using System;
 
 	public class SamplerParams : Params<SamplerParameterName, object> { }
 
@@ -38,6 +39,26 @@
 			GL.BindTexture (texture._target, 0);
 		}
 
+		public static void Bind (Sampler[] samplers, Texture[] textures)
+		{
+			CheckEnoughSamplers (samplers, textures);
+			for (int i = 0; i < textures.Length; i++)
+				samplers[i].Bind (textures[i]);
+		}
+
+		public static void Unbind (Sampler[] samplers, Texture[] textures)
+		{
+			CheckEnoughSamplers (samplers, textures);
+			for (int i = 0; i < textures.Length; i++)
+				samplers[i].Unbind (textures[i]);
+		}
+
+		private static void CheckEnoughSamplers (Sampler[] samplers, Texture[] textures)
+		{
+			if (textures.Length > samplers.Length)
+				throw new ArgumentException ("The number of textures exceeds the number of samplers");
+		}
+
 		private void SetParameters (SamplerParams parameters)
 		{
 			if (parameters == null)
@@ -49,7 +70,7 @@
 				else if (param.Item2 is float)
 					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);
 				else
-					throw new GLError ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
+					throw new ArgumentException ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
 			}
 		}
 	}

@@ -18,6 +18,24 @@
 			return (float)Math.Ceiling (value);
 		}
 
+		[GLFunction ("trunc ({0})")]
+		public static float Truncate (this float value)
+		{
+			return (float)Math.Truncate (value);
+		}
+
+		[GLFunction ("fract ({0})")]
+		public static float Fraction (this float value)
+		{
+			return value - Truncate (value);
+		}
+
+		[GLFunction ("fract ({0})")]
+		public static double Fraction (this double value)
+		{
+			return value - Math.Truncate (value);
+		}
+
 		[GLFunction ("clamp ({0})")]
 		public static float Clamp (this float value, float min, float max)
 		{

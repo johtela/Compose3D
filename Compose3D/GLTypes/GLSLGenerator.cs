@@ -217,8 +217,10 @@
                 expr.Match<UnaryExpression, string> (ue =>
                 {
                     var attr = ue.Method.GetGLAttribute ();
-                    return string.Format (attr != null ? attr.Syntax : TypeMapping.Operator (ue.NodeType), 
-                        ExprToGLSL (ue.Operand));
+                    return string.Format (attr != null ? attr.Syntax :
+ 						ue.NodeType == ExpressionType.Convert ?
+							string.Format ("{0} ({1})", TypeMapping.Type (ue.Type), ExprToGLSL (ue.Operand)) :
+							TypeMapping.Operator (ue.NodeType), ExprToGLSL (ue.Operand));
                 }) ??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {

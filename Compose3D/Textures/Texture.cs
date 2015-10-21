@@ -42,7 +42,7 @@
 				else if (param.Item2 is float)
 					GL.TexParameter (_target, param.Item1, (float)param.Item2);
 				else
-					throw new GLError ("Unsupported texture parameter Item2 type: " + param.Item2.GetType ());
+					throw new ArgumentException ("Unsupported texture parameter Item2 type: " + param.Item2.GetType ());
 			}
 		}
 
@@ -65,7 +65,7 @@
 		public static Texture FromFile (string path, TextureParams parameters)
 		{
 			if (!File.Exists (path))
-				throw new GLError ("Could not find texture file: " + path);
+				throw new ArgumentException ("Could not find texture file: " + path);
 			return FromBitmap (new Bitmap (path), parameters);
 		}
 
@@ -82,7 +82,7 @@
 				case System.Drawing.Imaging.PixelFormat.Format48bppRgb: return PixelInternalFormat.Rgb16;
 				case System.Drawing.Imaging.PixelFormat.Format64bppPArgb:
 				case System.Drawing.Imaging.PixelFormat.Format64bppArgb: return PixelInternalFormat.Rgba16;
-				default: throw new GLError ("Unsupported pixel format: " + pixelFormat.ToString ());
+				default: throw new ArgumentException ("Unsupported pixel format: " + pixelFormat.ToString ());
 			}
 		}
 
@@ -99,7 +99,7 @@
 				case System.Drawing.Imaging.PixelFormat.Format48bppRgb: return PixelFormat.Bgr;
 				case System.Drawing.Imaging.PixelFormat.Format64bppPArgb:
 				case System.Drawing.Imaging.PixelFormat.Format64bppArgb: return PixelFormat.Bgra;
-				default: throw new GLError ("Unsupported pixel format: " + pixelFormat.ToString ());
+				default: throw new ArgumentException ("Unsupported pixel format: " + pixelFormat.ToString ());
 			}
 		}
 	}

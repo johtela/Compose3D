@@ -23,7 +23,13 @@
 			{ typeof(Vec3), (u, o) => GL.Uniform3 (u, 1, Vec.ToArray<Vec3, float> ((Vec3)o)) },
 			{ typeof(Vec4), (u, o) => GL.Uniform4 (u, 1, Vec.ToArray<Vec4, float> ((Vec4)o)) },
 			{ typeof(Mat3), (u, o) => GL.UniformMatrix3 (u, 1, false, Mat.ToArray<Mat3, float> ((Mat3)o)) },
-			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) }
+			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) },
+			{ typeof(Sampler1D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler1DShadow), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler2D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler2DShadow), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler3D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(SamplerCube), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) }
 		};
 
         private int _glUniform;
@@ -80,11 +86,6 @@
                         var glUnif = map.Item2;
                         _setters[field.Type] (glUnif, field.Getter (value));
                     }
-				else if (type.IsSubclassOf (typeof (Sampler)))
-				{
-					var texUnit = ((Sampler)((object)value))._texUnit;
-					GL.Uniform1 (uniform._glUniform, texUnit);
-				}
                 else
                     _setters[type] (uniform._glUniform, (object)value);
                 uniform._value = value;

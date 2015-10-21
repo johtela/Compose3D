@@ -1,10 +1,14 @@
 ﻿namespace Compose3D.Textures
 {
-    using Arithmetics;
-    using Geometry;
-    using System.Collections.Generic;
-    using System.Linq;
+	using Arithmetics;
+	using Geometry;
+	using OpenTK;
+	using System.Collections.Generic;
+	using System.Linq;
 
+	/// <summary>
+	/// Interface for textured vertices.
+	/// </summary>
     public interface ITextured
     {
         /// <summary>
@@ -65,7 +69,7 @@
 		/// of the applied texture viewport.</param>
 		/// <typeparam name="V">The vertex type. Must implement the IVertex and ITextured interfaces.</typeparam>
 		public static void ApplyTextureCoordinates<V> (this Geometry<V> geometry, Mat4 projection, float minCosAngle,
-			Vec2 minPos, Vec2 maxPos) where V : struct, IVertex, ITextured
+			 Vec2 minPos, Vec2 maxPos) where V : struct, IVertex, ITextured
         {
             var projected = geometry.Transform (projection);
             var range = maxPos - minPos;
@@ -80,8 +84,44 @@
 				if (pv.Normal.Dot (invView) >= minCosAngle)
                     verts[i].TexturePos = new Vec2 (
                         (pv.Position.X - bbox.Left) * scaleX + minPos.X,
-                        1 - ((pv.Position.Y - bbox.Bottom) * scaleY + minPos.Y));
+                        1 - ((pv.Position.Y - bbox.Bottom) * scaleY) + minPos.Y);
             }
         }
-    }
+
+		public static void ApplyTextureFront<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, new Mat4 (1f), minCosAngle, minPos, maxPos);
+		}
+
+		public static void ApplyTextureBack<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (MathHelper.Pi), minCosAngle, minPos, maxPos);
+		}
+
+		public static void ApplyTextureLeft<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (MathHelper.PiOver2), minCosAngle, minPos, maxPos);
+		}
+
+		public static void ApplyTextureRight<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
+		}
+
+		public static void ApplyTextureTop<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (MathHelper.PiOver2), minCosAngle, minPos, maxPos);
+		}
+		
+		public static void ApplyTextureBottom<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
+			 where V : struct, IVertex, ITextured
+		{
+			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
+		}
+	}
 }

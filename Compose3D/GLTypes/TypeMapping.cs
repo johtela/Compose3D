@@ -41,6 +41,7 @@
             { GetMethod (mathT, "Sign", intT), "sign ({0})" },
             { GetMethod (mathT, "Floor", doubleT), "floor ({0})" },
             { GetMethod (mathT, "Ceiling", doubleT), "ceil ({0})" },
+            { GetMethod (mathT, "Truncate", doubleT), "trunc ({0})" },
             { GetMethod (mathT, "Min", floatT, floatT), "min ({0})" },
             { GetMethod (mathT, "Min", doubleT, doubleT), "min ({0})" },
             { GetMethod (mathT, "Min", intT, intT), "min ({0})" },
@@ -77,7 +78,8 @@
             { ExpressionType.GreaterThanOrEqual, "{0} >= {1}" },
             { ExpressionType.AndAlso, "{0} && {1}" },
             { ExpressionType.OrElse, "{0} || {1}" },
-            { ExpressionType.Not, "!{0}" }
+            { ExpressionType.Not, "!{0}" },
+            { ExpressionType.ArrayIndex, "{0} [{1}]" }
         };
  
         public static string Type (Type type)

@@ -74,10 +74,10 @@
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry2 = Geometries.Pipe ().Color (VertexColor.Brass);
+			var geometry2 = Geometries.House ().Color (VertexColor.Brass);
 			geometry2.Normals.Color (VertexColor.White);
-			geometry2.ApplyTextureTop<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-			geometry2.ApplyTextureBottom<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
+			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
+			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
 			var mesh2 = new Mesh<Vertex> (geometry2, tulipTexture, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 

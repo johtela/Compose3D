@@ -81,13 +81,7 @@
 			get
 			{
 				if (_boundingBox == null)
-				{
-					if (Vertices.Length < 1)
-						throw new GeometryError ("Geometry must contain at least one vertex");
-					_boundingBox = new BBox (Vertices[0].Position);
-					for (int i = 1; i < Vertices.Length; i++)
-						_boundingBox += Vertices[i].Position;
-				}
+					_boundingBox = BBox.FromPositions (Vertices.Select (v => v.Position));
 				return _boundingBox;
 			}
 		}

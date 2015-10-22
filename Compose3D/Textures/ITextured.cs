@@ -73,16 +73,16 @@
         {
             var projected = geometry.Transform (projection);
             var range = maxPos - minPos;
-            var bbox = projected.BoundingBox;
+			var invView = new Vec3 (0f, 0f, 1f);
+            var bbox = BBox.FromPositions (projected.Vertices.Where (
+				v => v.Normal.Dot (invView) >= minCosAngle).Select (v => v.Position));
             var scaleX = range.X / bbox.Size.X;
             var scaleY = range.Y / bbox.Size.Y;
-			var invView = new Vec3 (0f, 0f, 1f);
-            var verts = geometry.Vertices;
-            for (int i = 0; i < verts.Length; i++)
+            for (int i = 0; i < geometry.Vertices.Length; i++)
             {
                 var pv = projected.Vertices[i];
 				if (pv.Normal.Dot (invView) >= minCosAngle)
-                    verts[i].TexturePos = new Vec2 (
+					geometry.Vertices[i].TexturePos = new Vec2 (
                         (pv.Position.X - bbox.Left) * scaleX + minPos.X,
                         1 - ((pv.Position.Y - bbox.Bottom) * scaleY) + minPos.Y);
             }

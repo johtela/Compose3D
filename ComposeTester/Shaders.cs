@@ -10,7 +10,7 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor, ITextured
+	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, ITextured
 	{
 		internal Vec3 position;
         internal Vec3 normal;
@@ -21,25 +21,25 @@
         [OmitInGlsl]
         internal int tag;
 
-        Vec3 IPositional.Position
+		Vec3 IPositional<Vec3>.Position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-        Vec3 IVertexColor.Diffuse
+		Vec3 IVertexColor<Vec3>.Diffuse
 		{
 			get { return diffuseColor; }
 			set { diffuseColor = value; }
 		}
 
-        Vec3 IVertexColor.Specular
+		Vec3 IVertexColor<Vec3>.Specular
 		{
 			get { return specularColor; }
 			set { specularColor = value; }
 		}
 
-        float IVertexColor.Shininess
+		float IVertexColor<Vec3>.Shininess
         {
             get { return shininess; }
             set { shininess = value; }
@@ -215,17 +215,13 @@
 				)
 			);
 
-		public static readonly Func<Sampler2D, Vec2, Vec3, Vec3> GetFragmentDiffuse =
+		public static readonly Func<Sampler2D, Vec2, Vec3> TextureColor =
 			GLShader.Function
 			(
-				() => GetFragmentDiffuse,
+				() => TextureColor,
 
-				(Sampler2D sampler, Vec2 texturePos, Vec3 other) =>
-				Shader.Evaluate
-				(
-					from textColor in sampler.Texture (texturePos).ToShader ()
-					select textColor == new Vec4 (0f, 0f, 0f, 1f) ? other : textColor[Coord.x, Coord.y, Coord.z]
-				)
+				(Sampler2D sampler, Vec2 texturePos) =>
+					sampler.Texture (texturePos)[Coord.x, Coord.y, Coord.z]
 			);
 
 		public static GLShader VertexShader ()
@@ -259,10 +255,10 @@
 				from u in Shader.Uniforms<Uniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
-					samplerNo == 0 ? GetFragmentDiffuse ((!u.samplers)[0], f.texturePosition, f.vertexDiffuse) :
-					samplerNo == 1 ? GetFragmentDiffuse ((!u.samplers)[1], f.texturePosition - new Vec2 (10f), f.vertexDiffuse) :
-					samplerNo == 2 ? GetFragmentDiffuse ((!u.samplers)[2], f.texturePosition - new Vec2 (20f), f.vertexDiffuse) :
-					samplerNo == 3 ? GetFragmentDiffuse ((!u.samplers)[3], f.texturePosition - new Vec2 (30f), f.vertexDiffuse) :
+					samplerNo == 0 ? TextureColor ((!u.samplers)[0], f.texturePosition) :
+					samplerNo == 1 ? TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
+					samplerNo == 2 ? TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
+					samplerNo == 3 ? TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
 				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate

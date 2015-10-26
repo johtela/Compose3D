@@ -1,16 +1,17 @@
 ﻿namespace Compose3D.Geometry
 {
+	using Arithmetics;
 	using System.Collections.Generic;
 	using System.Linq;
 
 	internal class Simplified<V> : Wrapper<V> where V : struct, IVertex
 	{
-		private Octree<V, int> _octree;
+		private Octree<V, int, Vec3> _octree;
 
 		public Simplified (Geometry<V> geometry)
 			: base (geometry)
 		{
-			_octree = new Octree<V, int> ();
+			_octree = new Octree<V, int, Vec3> ();
 		}
 
 		protected override IEnumerable<V> GenerateVertices ()

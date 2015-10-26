@@ -5,7 +5,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
-	public class Octree<P, T> where P : IPositional
+	public class Octree<P, T, V> 
+		where P : IPositional<V>
+		where V : struct, IVec<V, float>
     {
         private class Node
         {

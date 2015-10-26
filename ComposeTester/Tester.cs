@@ -66,7 +66,7 @@
 					{ TextureParameterName.TextureBaseLevel, 0 },
 					{ TextureParameterName.TextureMaxLevel, 0 }
 				});
-			var geometry = Volume.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor.Black);
+			var geometry = Volume.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
 			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
@@ -76,8 +76,8 @@
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry2 = Geometries.House ().Color (VertexColor.Brass);
-			geometry2.Normals.Color (VertexColor.White);
+			var geometry2 = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+			geometry2.Normals.Color (VertexColor<Vec3>.White);
 			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
 			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
 			var mesh2 = new Mesh<Vertex> (geometry2, tulipTexture, plasticTexture)

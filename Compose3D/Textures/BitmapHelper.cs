@@ -25,7 +25,7 @@
 			var stringFormat = new StringFormat ();
 			stringFormat.Alignment = StringAlignment.Center;
 			stringFormat.LineAlignment = StringAlignment.Center;
-			return TextToBitmap (text, width, height, PixelFormat.Format24bppRgb, font, brush, stringFormat);
+			return TextToBitmap (text, width, height, PixelFormat.Format32bppArgb, font, brush, stringFormat);
 		}
 	}
 }

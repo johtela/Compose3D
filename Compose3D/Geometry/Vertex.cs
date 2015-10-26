@@ -5,14 +5,14 @@
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// Interface for objects with 3D position data.
+	/// Interface for objects with any dimensional position data.
 	/// </summary>
-	public interface IPositional
+	public interface IPositional<V> where V : struct, IVec<V, float>
 	{
 		/// <summary>
 		/// Position of the object.
 		/// </summary>
-		Vec3 Position { get; set; }
+		V Position { get; set; }
 	}
 
     /// <summary>
@@ -22,7 +22,7 @@
     /// All Vertex structures need to implement this interface. Through it
     /// geometry generators can set vertex attributes.
     /// </description>
-    public interface IVertex : IPositional
+	public interface IVertex : IPositional<Vec3>
 	{
 		/// <summary>
 		/// The normal of the vertex.

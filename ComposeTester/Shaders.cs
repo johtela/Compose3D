@@ -145,11 +145,11 @@
 				() => CalcDirLight,
 
 				(DirLight dirLight, Vec3 normal) => 
-					Shader.Evaluate 
-					(
-						from cosAngle in normal.Dot (dirLight.direction).ToShader ()
-						select dirLight.intensity * cosAngle.Clamp (0f, 1f)
-					)
+				Shader.Evaluate 
+				(
+					from cosAngle in normal.Dot (dirLight.direction).ToShader ()
+					select dirLight.intensity * cosAngle.Clamp (0f, 1f)
+				)
 			);
 
 		/// <summary>
@@ -174,18 +174,18 @@
 				() => CalcPointLight,
 
 				(PointLight pointLight, Vec3 position, Vec3 normal, Vec3 diffuse, Vec3 specular, float shininess) =>
-					Shader.Evaluate
-					(
-						from vecToLight in (pointLight.position - position).ToShader ()
-						let lightVec = vecToLight.Normalized
-						let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-						let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
-						let viewDir = -position.Normalized
-						let halfAngle = (lightVec + viewDir).Normalized
-						let blinn = cosAngle == 0f ? 0f :
-						   normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
-						select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn)
-					)
+				Shader.Evaluate
+				(
+					from vecToLight in (pointLight.position - position).ToShader ()
+					let lightVec = vecToLight.Normalized
+					let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
+					let attenIntensity = CalcAttenuation (pointLight, vecToLight.Length) * pointLight.intensity
+					let viewDir = -position.Normalized
+					let halfAngle = (lightVec + viewDir).Normalized
+					let blinn = cosAngle == 0f ? 0f :
+					   normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
+					select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn)
+				)
 			);
 
 //		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
@@ -206,13 +206,26 @@
 				() => CalcGlobalLight,
 
 				(GlobalLight globalLight, Vec3 diffuse, Vec3 other) =>
-					Shader.Evaluate
-					(
-						from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
-						let maxInten = globalLight.maxintensity
-						let ambient = diffuse * globalLight.ambientLightIntensity
-						select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f)
-					)
+				Shader.Evaluate
+				(
+					from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
+					let maxInten = globalLight.maxintensity
+					let ambient = diffuse * globalLight.ambientLightIntensity
+					select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f)
+				)
+			);
+
+		public static readonly Func<Sampler2D, Vec2, Vec3, Vec3> GetFragmentDiffuse =
+			GLShader.Function
+			(
+				() => GetFragmentDiffuse,
+
+				(Sampler2D sampler, Vec2 texturePos, Vec3 other) =>
+				Shader.Evaluate
+				(
+					from textColor in sampler.Texture (texturePos).ToShader ()
+					select textColor == new Vec4 (0f, 0f, 0f, 1f) ? other : textColor[Coord.x, Coord.y, Coord.z]
+				)
 			);
 
 		public static GLShader VertexShader ()
@@ -246,10 +259,10 @@
 				from u in Shader.Uniforms<Uniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
-					samplerNo == 0 ? (!u.samplers)[0].Texture (f.texturePosition)[Coord.x, Coord.y, Coord.z] :
-					samplerNo == 1 ? (!u.samplers)[1].Texture (f.texturePosition - new Vec2 (10f))[Coord.x, Coord.y, Coord.z] :
-					samplerNo == 2 ? (!u.samplers)[2].Texture (f.texturePosition - new Vec2 (20f))[Coord.x, Coord.y, Coord.z] :
-					samplerNo == 3 ? (!u.samplers)[3].Texture (f.texturePosition - new Vec2 (30f))[Coord.x, Coord.y, Coord.z] :
+					samplerNo == 0 ? GetFragmentDiffuse ((!u.samplers)[0], f.texturePosition, f.vertexDiffuse) :
+					samplerNo == 1 ? GetFragmentDiffuse ((!u.samplers)[1], f.texturePosition - new Vec2 (10f), f.vertexDiffuse) :
+					samplerNo == 2 ? GetFragmentDiffuse ((!u.samplers)[2], f.texturePosition - new Vec2 (20f), f.vertexDiffuse) :
+					samplerNo == 3 ? GetFragmentDiffuse ((!u.samplers)[3], f.texturePosition - new Vec2 (30f), f.vertexDiffuse) :
 					f.vertexDiffuse
 				let diffuse = CalcDirLight (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate

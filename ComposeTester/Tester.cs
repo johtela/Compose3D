@@ -59,15 +59,17 @@
 			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.001f, 0.001f);
 			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.001f, 0.001f);
 
-			var tulipTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
-			{
-				{ TextureParameterName.TextureBaseLevel, 0 },
-				{ TextureParameterName.TextureMaxLevel, 0 }
-			});
-			var geometry = Volume.Cube<Vertex> (30f, 20f, 1f).Color (VertexColor.White);
+			var tulipTexture = Texture.FromBitmap (
+				"This is a test".TextToBitmapCentered (1024, 1024, 100),
+				new TextureParams () 
+				{
+					{ TextureParameterName.TextureBaseLevel, 0 },
+					{ TextureParameterName.TextureMaxLevel, 0 }
+				});
+			var geometry = Volume.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor.Black);
 			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
-				.OffsetOrientAndScale (new Vec3 (15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
 			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
 			{

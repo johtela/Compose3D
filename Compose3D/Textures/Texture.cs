@@ -12,54 +12,93 @@
 	{
 		internal TextureTarget _target;
 		internal int _glTexture;
+		private bool _bound;
 
-		public Texture (TextureTarget target, int glTexture)
+		public Texture (TextureTarget target)
 		{
 			_target = target;
-			_glTexture = glTexture;
+			_glTexture = GL.GenTexture ();
 		}
 
 		public Texture (TextureTarget target, int level, PixelInternalFormat internalFormat,
 			int width, int height, PixelFormat format, PixelType type, IntPtr pixels, 
 			TextureParams parameters)
+			: this (target)
 		{
-			_target = target;
-			_glTexture = GL.GenTexture ();
-			GL.BindTexture (target, _glTexture);
-			GL.TexImage2D (target, level, internalFormat, width, height, 0, format, type, pixels);
-			SetParameters (parameters);
-			GL.BindTexture (target, 0);
+			BindTexture (() =>
+			{
+				GL.TexImage2D (target, level, internalFormat, width, height, 0, format, type, pixels);
+				SetParameters (parameters);
+			});
 		}
 
-		private void SetParameters (TextureParams parameters)
+		private void BindTexture (Action action)
 		{
-			if (parameters == null)
-				return;
-			foreach (var param in parameters)
+			if (_bound)
+				action ();
+			else
 			{
-				if (param.Item2 is int || param.Item2.GetType ().IsEnum)
-					GL.TexParameter (_target, param.Item1, (int)param.Item2);
-				else if (param.Item2 is float)
-					GL.TexParameter (_target, param.Item1, (float)param.Item2);
-				else
-					throw new ArgumentException ("Unsupported texture parameter Item2 type: " + param.Item2.GetType ());
+				GL.BindTexture (_target, _glTexture);
+				try
+				{
+					_bound = true;
+					action ();
+				}
+				finally
+				{
+					GL.BindTexture (_target, 0);
+					_bound = false;
+				}
 			}
+		}
+
+		public void SetParameters (TextureParams parameters)
+		{
+			BindTexture (() =>
+			{
+				if (parameters == null)
+					return;
+				foreach (var param in parameters)
+				{
+					if (param.Item2 is int || param.Item2.GetType ().IsEnum)
+						GL.TexParameter (_target, param.Item1, (int)param.Item2);
+					else if (param.Item2 is float)
+						GL.TexParameter (_target, param.Item1, (float)param.Item2);
+					else
+						throw new ArgumentException ("Unsupported texture parameter Item2 type: " + 
+							param.Item2.GetType ());
+				}
+			});
+		}
+
+		public void LoadBitmap (Bitmap bitmap)
+		{
+			BindTexture (() =>
+			{
+				var bitmapData = bitmap.LockBits (new Rectangle (0, 0, bitmap.Width, bitmap.Height),
+					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+				try
+				{
+					GL.TexImage2D (_target, 0, MapPixelInternalFormat (bitmap.PixelFormat), 
+						bitmap.Width, bitmap.Height, 0, MapPixelFormat (bitmap.PixelFormat), 
+						PixelType.UnsignedByte, bitmapData.Scan0);
+				}
+				finally
+				{
+					bitmap.UnlockBits (bitmapData);
+				}
+			});
 		}
 
 		public static Texture FromBitmap (Bitmap bitmap, TextureParams parameters)
 		{
-			var bitmapData = bitmap.LockBits (new Rectangle (0, 0, bitmap.Width, bitmap.Height),
-				System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
-			try
+			var result = new Texture (TextureTarget.Texture2D);
+			result.BindTexture (() =>
 			{
-				return new Texture (TextureTarget.Texture2D, 0, MapPixelInternalFormat (bitmap.PixelFormat),
-					bitmap.Width, bitmap.Height, MapPixelFormat (bitmap.PixelFormat), PixelType.UnsignedByte,
-					bitmapData.Scan0, parameters);
-			}
-			finally
-			{
-				bitmap.UnlockBits (bitmapData);
-			}
+				result.LoadBitmap (bitmap);
+				result.SetParameters (parameters);
+			});
+			return result;
 		}
 
 		public static Texture FromFile (string path, TextureParams parameters)

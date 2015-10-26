@@ -172,6 +172,20 @@
 			return vec.Map3<V, int> (min, max, GLMath.Clamp);
 		}
 
+		[GLFunction ("mix ({0})")]
+		public static V Mix<V> (this V vec, V other, V interPos)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map3<V, float> (other, interPos, GLMath.Mix);
+		}
+
+		[GLFunction ("mix ({0})")]
+		public static V Mix<V> (this V vec, V other, float interPos)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map2<V, float> (other, (x, y) => GLMath.Mix (x, y, interPos));
+		}
+
 		[GLFunction ("step ({0})")]
 		public static V Step<V> (float edge, V vec)
 			where V : struct, IVec<V, float>

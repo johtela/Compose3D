@@ -180,6 +180,7 @@
     </Compile>
     <Compile Include="Textures\Sampler.cs" />
     <Compile Include="Textures\Texture.cs" />
+    <Compile Include="Textures\BitmapHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

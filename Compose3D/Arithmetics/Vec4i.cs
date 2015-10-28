@@ -15,6 +15,7 @@
         public int Z; 
 		[GLField ("w")]
         public int W; 
+
 		[GLConstructor ("ivec4 ({0})")]
 		public Vec4i (int x, int y, int z, int w)
 		{	
@@ -23,6 +24,7 @@
 			Z = z; 
 			W = w; 
 		}
+
 		[GLConstructor ("ivec4 ({0})")]
 		public Vec4i (int value)
 		{	
@@ -31,6 +33,7 @@
 			Z = value; 
 			W = value; 
 		}
+
 		[GLConstructor ("ivec4 ({0})")]
 		public Vec4i (Vec2i vec, int z, int w)
 		{	
@@ -59,7 +62,7 @@
 		}
 
 		[GLUnaryOperator ("-{0}")]
-		public Vec4i Negate ()
+		public Vec4i Invert ()
 		{
 			return new Vec4i (-X, -Y, -Z, -W);
 		}
@@ -99,10 +102,12 @@
 		{
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
+
 		public bool Equals (Vec4i other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
+
 		public int Dimensions
 		{
 			get { return 4; }
@@ -133,6 +138,7 @@
 				}
 			} 
 		}
+
 		public Vec4i this[Coord x, Coord y, Coord z, Coord w]
 		{
 			get { return new Vec4i (this[(int)x], this[(int)y], this[(int)z], this[(int)w]); }
@@ -205,7 +211,7 @@
 		[GLUnaryOperator ("-{0}")]
         public static Vec4i operator - (Vec4i vec)
         {
-            return vec.Negate ();
+            return vec.Invert ();
         }
 
 		[GLBinaryOperator ("{0} - {1}")]

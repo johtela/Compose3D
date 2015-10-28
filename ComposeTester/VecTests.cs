@@ -33,7 +33,7 @@
         {
             var prop = from vec1 in Prop.Choose<V> ()
                        from vec2 in Prop.Choose<V> ()
-                       let neg = vec2.Negate ()
+                       let neg = vec2.Invert ()
                        select new { vec1, vec2, neg };
 
             prop.Label ("{0}: vec1 - vec1 = [ 0 ... ]", typeof(V).Name)

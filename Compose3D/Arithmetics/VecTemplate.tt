@@ -23,7 +23,7 @@
 <#+		for (int i = 2; i <= 4; i++)
 			CopyConstructor (dim, type, suffix, i); #>
 		[GLUnaryOperator ("-{0}")]
-<#+		Unary (dim, vecType, "Negate", "-", ", "); #>
+<#+		Unary (dim, vecType, "Invert", "-", ", "); #>
 
 		[GLBinaryOperator ("{0} + {1}")]
 <#+		Binary (dim, vecType, "Add", "+", ", "); #>
@@ -88,7 +88,7 @@
 		[GLUnaryOperator ("-{0}")]
         public static <#= vecType #> operator - (<#= vecType #> vec)
         {
-            return vec.Negate ();
+            return vec.Invert ();
         }
 
 		[GLBinaryOperator ("{0} - {1}")]

@@ -11,18 +11,21 @@
         public float X; 
 		[GLField ("y")]
         public float Y; 
+
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (float x, float y)
 		{	
 			X = x; 
 			Y = y; 
 		}
+
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (float value)
 		{	
 			X = value; 
 			Y = value; 
 		}
+
 		[GLConstructor ("vec2 ({0})")]
 		public Vec2 (Vec2 vec)
 		{	
@@ -45,7 +48,7 @@
 		}
 
 		[GLUnaryOperator ("-{0}")]
-		public Vec2 Negate ()
+		public Vec2 Invert ()
 		{
 			return new Vec2 (-X, -Y);
 		}
@@ -85,10 +88,12 @@
 		{
 			return X * other.X + Y * other.Y;
 		}
+
 		public bool Equals (Vec2 other)
 		{
 			return X == other.X && Y == other.Y;
 		}
+
 		public int Dimensions
 		{
 			get { return 2; }
@@ -115,6 +120,7 @@
 				}
 			} 
 		}
+
 		public Vec2 this[Coord x, Coord y]
 		{
 			get { return new Vec2 (this[(int)x], this[(int)y]); }
@@ -164,7 +170,7 @@
 		[GLUnaryOperator ("-{0}")]
         public static Vec2 operator - (Vec2 vec)
         {
-            return vec.Negate ();
+            return vec.Invert ();
         }
 
 		[GLBinaryOperator ("{0} - {1}")]

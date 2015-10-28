@@ -158,37 +158,37 @@
 		}
 
 		[GLFunction ("sin ({0})")]
-		public static float Sin (float angle)
+		public static float Sin (this float angle)
 		{
 			return (float)Math.Sin (angle);
 		}
 
 		[GLFunction ("cos ({0})")]
-		public static float Cos (float angle)
+		public static float Cos (this float angle)
 		{
 			return (float)Math.Cos (angle);
 		}
 
 		[GLFunction ("tan ({0})")]
-		public static float Tan (float angle)
+		public static float Tan (this float angle)
 		{
 			return (float)Math.Tan (angle);
 		}
 
 		[GLFunction ("asin ({0})")]
-		public static float Asin (float x)
+		public static float Asin (this float x)
 		{
 			return (float)Math.Asin (x);
 		}
 
 		[GLFunction ("acos ({0})")]
-		public static float Acos (float x)
+		public static float Acos (this float x)
 		{
 			return (float)Math.Acos (x);
 		}
 
 		[GLFunction ("atan ({0})")]
-		public static float Atan (float y_over_x)
+		public static float Atan (this float y_over_x)
 		{
 			return (float)Math.Atan (y_over_x);
 		}

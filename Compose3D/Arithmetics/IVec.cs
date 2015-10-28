@@ -6,7 +6,7 @@
         where V : struct, IVec<V, T>
         where T : struct, IEquatable<T>
     {
-        V Negate ();
+        V Invert ();
         V Add (V other);
         V Subtract (V other);
         V Multiply (T scalar);

@@ -181,6 +181,8 @@
     <Compile Include="Textures\Sampler.cs" />
     <Compile Include="Textures\Texture.cs" />
     <Compile Include="Textures\BitmapHelper.cs" />
+    <Compile Include="Arithmetics\Quat.cs" />
+    <Compile Include="Arithmetics\IQuat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

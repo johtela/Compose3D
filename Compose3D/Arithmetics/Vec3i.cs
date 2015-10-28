@@ -13,6 +13,7 @@
         public int Y; 
 		[GLField ("z")]
         public int Z; 
+
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (int x, int y, int z)
 		{	
@@ -20,6 +21,7 @@
 			Y = y; 
 			Z = z; 
 		}
+
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (int value)
 		{	
@@ -27,6 +29,7 @@
 			Y = value; 
 			Z = value; 
 		}
+
 		[GLConstructor ("ivec3 ({0})")]
 		public Vec3i (Vec2i vec, int z)
 		{	
@@ -52,7 +55,7 @@
 		}
 
 		[GLUnaryOperator ("-{0}")]
-		public Vec3i Negate ()
+		public Vec3i Invert ()
 		{
 			return new Vec3i (-X, -Y, -Z);
 		}
@@ -92,10 +95,12 @@
 		{
 			return X * other.X + Y * other.Y + Z * other.Z;
 		}
+
 		public bool Equals (Vec3i other)
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
 		}
+
 		public int Dimensions
 		{
 			get { return 3; }
@@ -124,6 +129,7 @@
 				}
 			} 
 		}
+
 		public Vec3i this[Coord x, Coord y, Coord z]
 		{
 			get { return new Vec3i (this[(int)x], this[(int)y], this[(int)z]); }
@@ -184,7 +190,7 @@
 		[GLUnaryOperator ("-{0}")]
         public static Vec3i operator - (Vec3i vec)
         {
-            return vec.Negate ();
+            return vec.Invert ();
         }
 
 		[GLBinaryOperator ("{0} - {1}")]

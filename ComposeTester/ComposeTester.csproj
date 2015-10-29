@@ -49,6 +49,7 @@
     <Compile Include="VecTests.cs" />
     <Compile Include="Shaders.cs" />
     <Compile Include="Geometries.cs" />
+    <Compile Include="QuatTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Fragment.glsl">

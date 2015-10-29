@@ -6,27 +6,27 @@
 	{
 		private const float LERP_THRESHOLD = 0.99f;
 
-		public Vec3 Vec;
+		public Vec3 Uvec;
 		public float W;
 		public static readonly Quat Identity = new Quat (new Vec3 (0f), 1f);
 
 		public Quat (Vec3 vec, float w)
 		{
-			Vec = vec;
+			Uvec = vec;
 			W = w;
 		}
 
 		public Quat (float x, float y, float z, float w)
 		{
-			Vec.X = x;
-			Vec.Y = y;
-			Vec.Z = z;
+			Uvec.X = x;
+			Uvec.Y = y;
+			Uvec.Z = z;
 			W = w;
 		}
 
 		public Vec4 ToVec4 ()
 		{
-			return new Vec4 (Vec.X, Vec.Y, Vec.Z, W);
+			return new Vec4 (Uvec.X, Uvec.Y, Uvec.Z, W);
 		}
 
 		public static Quat FromVec4 (Vec4 vec)
@@ -45,17 +45,22 @@
 			return new Quat (normaxis * halfangle.Sin (), halfangle.Cos ());
 		}
 
+		public V ToVector<V> () where V : struct, IVec<V, float>
+		{
+			return Vec.FromArray<V, float> (Uvec.X, Uvec.Y, Uvec.Z, W);
+		}
+
 		public M ToMatrix<M> () where M : struct, ISquareMat<M, float>
 		{
-			var xx = Vec.X * Vec.X;
-			var xy = Vec.X * Vec.Y;
-			var xz = Vec.X * Vec.Z;
-			var xw = Vec.X * W;
-			var yy = Vec.Y * Vec.Y;
-			var yz = Vec.Y * Vec.Z;
-			var yw = Vec.Y * W;
-			var zz = Vec.Z * Vec.Z;
-			var zw = Vec.Z * W;
+			var xx = Uvec.X * Uvec.X;
+			var xy = Uvec.X * Uvec.Y;
+			var xz = Uvec.X * Uvec.Z;
+			var xw = Uvec.X * W;
+			var yy = Uvec.Y * Uvec.Y;
+			var yz = Uvec.Y * Uvec.Z;
+			var yw = Uvec.Y * W;
+			var zz = Uvec.Z * Uvec.Z;
+			var zw = Uvec.Z * W;
 
 			var res = Mat.Identity<M> ();
 			res [0, 0] = 1 - 2 * (yy + zz);
@@ -72,18 +77,23 @@
 
 		public Quat Invert ()
 		{
-			return new Quat (Vec, -W);
+			return new Quat (Uvec, -W);
 		}
 
 		public Quat Conjugate ()
 		{
-			return new Quat (-Vec, W);
+			return new Quat (-Uvec, W);
 		}
 
 		public Quat Multiply (Quat other)
 		{
-			return new Quat (other.W * Vec + W * other.Vec + Vec.Cross (other.Vec),
-				W * other.W + Vec.Dot (other.Vec));
+			return new Quat (other.W * Uvec + W * other.Uvec + Uvec.Cross (other.Uvec),
+				W * other.W + Uvec.Dot (other.Uvec));
+		}
+
+		public Vec3 RotateVec (Vec3 vec)
+		{
+			return (this * new Quat (vec, 0f) * Conjugate ()).Uvec;
 		}
 
 		public Quat Lerp (Quat other, float interPos)
@@ -106,17 +116,26 @@
 
 		public float Length
 		{
-			get { return ToVec4 ().Length; }
+			get { return LengthSquared.Sqrt (); }
 		}
 
 		public float LengthSquared
 		{
-			get { return ToVec4 ().LengthSquared; }
+			get { return Uvec.LengthSquared + W * W; }
+		}
+
+		public bool IsNormalized
+		{
+			get { return LengthSquared.ApproxEquals (1f); }
 		}
 
 		public Quat Normalized
 		{
-			get { return FromVec4 (ToVec4 ().Normalized); }
+			get 
+			{ 
+				var len = Length;
+				return new Quat (Uvec / len, W / len);
+			}
 		}
 
 		public static implicit operator Vec4 (Quat quat)
@@ -156,19 +175,33 @@
 
 		public override int GetHashCode ()
 		{
-			return Vec.GetHashCode () ^ W.GetHashCode ();
+			return Uvec.GetHashCode () ^ W.GetHashCode ();
 		}
 
 		public override string ToString ()
 		{
-			return string.Format ("[ {0} {1} ]", Vec, W);
+			return string.Format ("[ {0} {1} ]", Uvec, W);
 		}
 
 		#region IEquatable implementation
 
 		public bool Equals (Quat other)
 		{
-			return Vec == other.Vec && W == other.W;
+			return Uvec == other.Uvec && W == other.W;
+		}
+
+		#endregion
+
+		#region IQuat<Quat, float> implementation
+
+		Quat IQuat<Quat, float>.FromAxisAngle (float x, float y, float z, float angle)
+		{
+			return FromAxisAngle (new Vec3 (x, y, z), angle);
+		}
+
+		Quat IQuat<Quat, float>.Identity 
+		{
+			get { return Identity; }
 		}
 
 		#endregion

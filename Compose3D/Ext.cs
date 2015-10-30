@@ -51,6 +51,15 @@ namespace Compose3D
             return x.ApproxEquals (y, 0.000001f);
         }
 
+		public static bool ApproxEquals<T> (this T x, T y)
+			where T : struct, IEquatable<T>
+		{
+			if (typeof(T) == typeof (float))
+				return ApproxEquals ((float)((object)x), (float)((object)y));
+			else
+				throw new ArgumentException ("This method is only defined for floats.");
+		}
+
         #endregion
 
         #region Extensions for 1-dimensional arrays

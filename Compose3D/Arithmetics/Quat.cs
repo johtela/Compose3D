@@ -88,10 +88,15 @@
 		public Quat Multiply (Quat other)
 		{
 			return new Quat (other.W * Uvec + W * other.Uvec + Uvec.Cross (other.Uvec),
-				W * other.W + Uvec.Dot (other.Uvec));
+				W * other.W - Uvec.Dot (other.Uvec));
 		}
 
-		public Vec3 RotateVec (Vec3 vec)
+		public V RotateVec<V> (V vec) where V : struct, IVec<V, float>
+		{
+			return (this * new Quat (vec[0], vec[1], vec[2], 0f) * Conjugate ()).ToVector<V> ();
+		}
+
+		public Vec3 RotateVec3 (Vec3 vec)
 		{
 			return (this * new Quat (vec, 0f) * Conjugate ()).Uvec;
 		}
@@ -126,7 +131,7 @@
 
 		public bool IsNormalized
 		{
-			get { return LengthSquared.ApproxEquals (1f); }
+			get { return LengthSquared.ApproxEquals (1f, 0.001f); }
 		}
 
 		public Quat Normalized

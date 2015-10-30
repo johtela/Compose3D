@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+	using Compose3D;
     using Compose3D.Arithmetics;
     using LinqCheck;
 
@@ -53,7 +54,24 @@
 				.Check (p => p.prod.IsNormalized);
 		}
 
-		public void CheckMatrixConversion<Q, T, V, M>()
+		public void CheckRotatingVec<Q, T, V> ()
+			where Q : struct, IQuat<Q, T>
+			where T : struct, IEquatable<T>
+			where V : struct, IVec<V, T>
+		{
+			var prop =
+				from quat in Prop.Choose<Q> ()
+				from vec in Prop.Choose<V> ()
+				let vecLen = vec.Length
+				let rotVec = quat.RotateVec (vec)
+				let rotVecLen = rotVec.Length
+				select new { quat, vec, vecLen, rotVec, rotVecLen };
+
+			prop.Label ("{0}: | quat * vec | = | vec |", typeof (Q).Name)
+				.Check (p => p.vecLen.ApproxEquals (p.rotVecLen));
+		}
+
+		public void CheckMatrixConversion<Q, T, V, M> ()
 			where Q : struct, IQuat<Q, T>
 			where T : struct, IEquatable<T>
 			where V : struct, IVec<V, T>
@@ -69,7 +87,22 @@
 				select new { quat, vec, vecLen, mat, transVec, transVecLen };
 
 			prop.Label ("{0}: quat = mat => | mat * vec | = | vec |", typeof (Q).Name)
-				.Check (p => p.vecLen.Equals (p.transVecLen));
+				.Check (p => p.vecLen.ApproxEquals (p.transVecLen));
+		}
+
+		public void CheckLerping<Q> (Func<Q, Q, float, Q> lerpFunc)
+			where Q : struct, IQuat<Q, float>
+		{
+			var prop =
+				from quat1 in Prop.Choose<Q> ()
+				from quat2 in Prop.Choose<Q> ()
+				from alpha in Prop.ForAll (Gen.Choose (0.0, 1.0).ToFloat ())
+				let lerp = lerpFunc (quat1, quat2, alpha)
+				let len = lerp.Length
+				select new { quat1, quat2, alpha, lerp, len };
+
+			prop.Label ("{0}: | lerp (quat1, quat2) | = 1", typeof (Q).Name)
+				.Check (p => p.lerp.IsNormalized);
 		}
 
 		[Test]
@@ -84,5 +117,18 @@
 		{
 			CheckMatrixConversion<Quat, float, Vec3, Mat3> ();
 		}
-    }
+
+		[Test]
+		public void TestVecRotation ()
+		{
+			CheckRotatingVec<Quat, float, Vec3> ();
+		}
+
+		[Test]
+		public void TestLerping ()
+		{
+			CheckLerping<Quat> ((q1, q2, a) => q1.Lerp (q2, a));
+			CheckLerping<Quat> ((q1, q2, a) => q1.Slerp (q2, a));
+		}
+	}
 }

@@ -1,10 +1,7 @@
 ﻿namespace ComposeTester
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using Compose3D;
     using Compose3D.Arithmetics;
     using LinqCheck;
 
@@ -56,11 +53,36 @@
 				.Check (p => p.prod.IsNormalized);
 		}
 
+		public void CheckMatrixConversion<Q, T, V, M>()
+			where Q : struct, IQuat<Q, T>
+			where T : struct, IEquatable<T>
+			where V : struct, IVec<V, T>
+			where M : struct, ISquareMat<M, T>
+		{
+			var prop =
+				from quat in Prop.Choose<Q> ()
+				from vec in Prop.Choose<V> ()
+				let vecLen = vec.Length
+				let mat = quat.ToMatrix<M> ()
+				let transVec = mat.Multiply (vec)
+				let transVecLen = transVec.Length
+				select new { quat, vec, vecLen, mat, transVec, transVecLen };
+
+			prop.Label ("{0}: quat = mat => | mat * vec | = | vec |", typeof (Q).Name)
+				.Check (p => p.vecLen.Equals (p.transVecLen));
+		}
+
 		[Test]
 		public void TestMultiplication ()
         {
 			CheckMultWithIdentity<Quat, float> ();
 			CheckMultiplication<Quat, float> ();
         }
+
+		[Test]
+		public void TestMatrixConversion ()
+		{
+			CheckMatrixConversion<Quat, float, Vec3, Mat3> ();
+		}
     }
 }

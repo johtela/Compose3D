@@ -7,16 +7,16 @@
 
     public abstract class Primitive<V> : Geometry<V> where V : struct, IVertex
     {
-        private Func<Geometry<V>, V[]> _generateVertices;
+		private V[] _vertices;
 
-        protected Primitive (Func<Geometry<V>, V[]> generateVertices)
+		protected Primitive (V[] vertices)
         {
-            _generateVertices = generateVertices;
+			_vertices = vertices;
         }
 
         protected override IEnumerable<V> GenerateVertices ()
         {
-            return _generateVertices (this);
+			return _vertices;
         }
     }
 }

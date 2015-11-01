@@ -9,8 +9,8 @@
     {
 		bool _fullArc;
 
-		private Circular (Func<Geometry<V>, V[]> generateVertices, bool fullArc)
-            : base (generateVertices)
+		private Circular (V[] vertices, bool fullArc)
+			: base (vertices)
         {
 			_fullArc = fullArc;
 		}
@@ -25,19 +25,16 @@
 				endAngle += MathHelper.TwoPi;
 			var vertCount = (int)Math.Ceiling ((endAngle - startAngle) / stepAngle) + (fullArc ? 1 : 2);
             var normal = new Vec3 (0f, 0f, 1f);
-			return new Circular<V> (e =>
+			var vertices = new V[vertCount];
+			vertices [0] = VertexHelpers.New<V> (new Vec3 (0f), normal);
+			var angle = startAngle;
+			for (var i = 1; i < vertCount; i++)
 			{
-				var vertices = new V[vertCount];
-				vertices [0] = VertexHelpers.New<V> (new Vec3 (0f), normal);
-				var angle = startAngle;
-				for (var i = 1; i < vertCount; i++)
-				{
-					var pos = new Vec3 (width * (float)Math.Cos (angle), height * (float)Math.Sin (angle), 0f);
-					vertices [i] = VertexHelpers.New<V> (pos, normal);
-					angle = Math.Min (angle + stepAngle, endAngle);
-				}
-				return vertices;
-			}, fullArc);
+				var pos = new Vec3 (width * (float)Math.Cos (angle), height * (float)Math.Sin (angle), 0f);
+				vertices [i] = VertexHelpers.New<V> (pos, normal);
+				angle = Math.Min (angle + stepAngle, endAngle);
+			}
+			return new Circular<V> (vertices, fullArc);
         }
 
         public static Circular<V> Ellipse (float width, float height, float stepAngle)

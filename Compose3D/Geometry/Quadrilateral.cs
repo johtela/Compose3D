@@ -1,21 +1,19 @@
 ﻿namespace Compose3D.Geometry
 {
     using Arithmetics;
-    using Textures;
 	using System;
     using System.Collections.Generic;
 
 	public class Quadrilateral<V> : Primitive<V> where V : struct, IVertex
 	{
-		private Quadrilateral (Func<Geometry<V>, V[]> generateVertices)
-            : base (generateVertices)
+		private Quadrilateral (V[] vertices) : base (vertices)
         { }
 
         public static Quadrilateral<V> FromVertices (params V[] vertices)
 		{
 			if (vertices.Length != 4)
 				throw new GeometryError ("Quadrilaterals must have four vertices");
-			return new Quadrilateral<V> (q => vertices);
+			return new Quadrilateral<V> (vertices);
 		}
 
 		public static Quadrilateral<V> Rectangle (float width, float height)
@@ -38,15 +36,12 @@
 			var topLeft = bottomLeft + topLeftOffset;
 			var bottom = -top;
 			var normal = new Vec3 (0f, 0f, 1f);
-			return new Quadrilateral<V> (q =>
+			return new Quadrilateral<V> (new V[] 
 			{
-				return new V[] 
-				{
-					VertexHelpers.New<V> (new Vec3 (topRight, top, 0f), normal),
-                    VertexHelpers.New<V> (new Vec3 (bottomRight, bottom, 0f), normal),
-                    VertexHelpers.New<V> (new Vec3 (bottomLeft, bottom, 0f), normal),
-                    VertexHelpers.New<V> (new Vec3 (topLeft, top, 0f), normal)
-				};
+				VertexHelpers.New<V> (new Vec3 (topRight, top, 0f), normal),
+                VertexHelpers.New<V> (new Vec3 (bottomRight, bottom, 0f), normal),
+                VertexHelpers.New<V> (new Vec3 (bottomLeft, bottom, 0f), normal),
+                VertexHelpers.New<V> (new Vec3 (topLeft, top, 0f), normal)
 			});
 		}
 

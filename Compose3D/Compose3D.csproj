@@ -183,6 +183,7 @@
     <Compile Include="Textures\BitmapHelper.cs" />
     <Compile Include="Arithmetics\Quat.cs" />
     <Compile Include="Arithmetics\IQuat.cs" />
+    <Compile Include="Geometry\Polygon.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Arithmetics\Mat2.tt">

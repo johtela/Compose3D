@@ -8,15 +8,14 @@
 
 	public class Triangle<V> : Primitive<V> where V : struct, IVertex
 	{
-		private Triangle (Func<Geometry<V>, V[]> generateVertices)
-            : base (generateVertices)
+		private Triangle (V[] vertices) : base (vertices)
         { }
 
         public static Triangle<V> FromVertices (params V[] vertices)
 		{
 			if (vertices.Length != 3)
 				throw new GeometryError ("Triangles must have three vertices");
-			return new Triangle<V> (t => vertices);
+			return new Triangle<V> (vertices);
 		}
 			
 		public static Triangle<V> Equilateral (float width)
@@ -33,14 +32,11 @@
 		public static Triangle<V> Scalene (float leftOffset, float rightOffset, float height)
 		{
 			var normal = new Vec3 (0f, 0f, 1f);
- 			return new Triangle<V> (q =>
+ 			return new Triangle<V> (new V[] 
 			{
-				return new V[] 
-				{
-                    VertexHelpers.New<V> (new Vec3 (0f, height, 0f), normal),
-                    VertexHelpers.New<V> (new Vec3 (rightOffset, 0f, 0f), normal),
-                    VertexHelpers.New<V> (new Vec3 (leftOffset, 0f, 0f), normal)
-				};
+                VertexHelpers.New<V> (new Vec3 (0f, height, 0f), normal),
+                VertexHelpers.New<V> (new Vec3 (rightOffset, 0f, 0f), normal),
+                VertexHelpers.New<V> (new Vec3 (leftOffset, 0f, 0f), normal)
 			});
 		}
 

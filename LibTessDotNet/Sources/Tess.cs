@@ -488,6 +488,7 @@ namespace LibTessDotNet
                 if (v._n != MeshUtils.Undef)
                 {
                     // Store coordinate
+                    int n = v._n;
                     _vertices[v._n].Position = v._coords;
                     _vertices[v._n].Data = v._data;
                 }

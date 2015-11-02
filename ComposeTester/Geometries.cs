@@ -1,5 +1,6 @@
 ﻿namespace ComposeTester
 {
+	using Compose3D;
 	using Compose3D.Arithmetics;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
@@ -89,9 +90,17 @@
                 .Center ();
 		}
 
-		public static Geometry<Vertex> Polygon ()
+		public static Geometry<Vertex> SineS ()
 		{
-			return Polygon<Vertex>.FromVec2s (new Vec2 (0f, 0f), new Vec2 (0f, 0f));
+			var piOver2 = MathHelper.PiOver2;
+			var step = MathHelper.PiOver4;
+			var contour =
+				(from x in Ext.Range (-piOver2, piOver2, step)
+				 select new Vec2 (x, x.Sin () + 1f))
+				.Concat (
+				from x in Ext.Range (piOver2, -piOver2, -step)
+				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
+			return Polygon<Vertex>.FromVec2s (contour);
 		}
 	}
 }

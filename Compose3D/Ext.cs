@@ -193,6 +193,12 @@ namespace Compose3D
 			return items.Where (i => selector (i).Equals (max));
 		}
 
+		public static IEnumerable<float> Range (float start, float end, float step)
+		{
+			for (float val = start; step > 0 ? val <= end : val >= end; val += step)
+				yield return val;
+		}
+
         #endregion        
         
         #region Map & Fold

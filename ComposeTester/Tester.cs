@@ -76,12 +76,12 @@
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry2 = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+			var geometry2 = Geometries.SineS ().Color (VertexColor<Vec3>.Brass);
 			geometry2.Normals.Color (VertexColor<Vec3>.White);
-			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
-			var mesh2 = new Mesh<Vertex> (geometry2, tulipTexture, plasticTexture)
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+			//geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
+			//geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
+			var mesh2 = new Mesh<Vertex> (geometry2)
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, mesh2);

@@ -2,6 +2,7 @@
 {
 	using Arithmetics;
 	using System.Collections.Generic;
+	using System.Linq;
 
 	public class Polygon<V> : Primitive<V> where V : struct, IVertex
 	{
@@ -23,8 +24,8 @@
 				cv.Position.Z = v.Position.Z;
 				return cv;
 			}), 
-			LibTessDotNet.ContourOrientation.Clockwise);
-			tess.Tessellate (LibTessDotNet.WindingRule.EvenOdd, LibTessDotNet.ElementType.Polygons, 3);
+			LibTessDotNet.ContourOrientation.Original);
+			tess.Tessellate (LibTessDotNet.WindingRule.Positive, LibTessDotNet.ElementType.Polygons, 3);
 			return new Polygon<V> (vertices, tess.Elements);
 		}
 
@@ -35,7 +36,7 @@
 
 		protected override IEnumerable<int> GenerateIndices ()
 		{
-			return _indices;
+			return _indices.Reverse ();
 		}
 	}
 }

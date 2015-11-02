@@ -79,7 +79,7 @@
 				.Stretch (1, false, false, true, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
 				.Center ();
-		}	
+		}
 
 		public static Geometry<Vertex> Pipe ()
 		{
@@ -87,6 +87,11 @@
                 .Hollow (1.2f, 1.2f)
                 .Extrude (10f, true, true)
                 .Center ();
+		}
+
+		public static Geometry<Vertex> Polygon ()
+		{
+			return Polygon<Vertex>.FromVec2s (new Vec2 (0f, 0f), new Vec2 (0f, 0f));
 		}
 	}
 }

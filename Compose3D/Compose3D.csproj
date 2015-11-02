@@ -277,4 +277,10 @@
       <LastGenOutput>Sampler3D.cs</LastGenOutput>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LibTessDotNet\LibTessDotNet.csproj">
+      <Project>{5ee39029-873a-45a0-9259-2198bf8729f4}</Project>
+      <Name>LibTessDotNet</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

@@ -60,7 +60,6 @@
       <DependentUpon>Mat4.tt</DependentUpon>
     </Compile>
     <Compile Include="Arithmetics\Mat.cs" />
-    <Compile Include="Arithmetics\MathExt.cs" />
     <Compile Include="Arithmetics\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -276,11 +275,5 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler3D.cs</LastGenOutput>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LibTessDotNet\LibTessDotNet.csproj">
-      <Project>{5ee39029-873a-45a0-9259-2198bf8729f4}</Project>
-      <Name>LibTessDotNet</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>

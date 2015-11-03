@@ -7,7 +7,7 @@
 
     public abstract class Primitive<V> : Geometry<V> where V : struct, IVertex
     {
-		private V[] _vertices;
+		protected V[] _vertices;
 
 		protected Primitive (V[] vertices)
         {

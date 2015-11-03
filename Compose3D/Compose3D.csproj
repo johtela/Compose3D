@@ -93,6 +93,7 @@
       <DependentUpon>Vec3.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry\Circular.cs" />
+    <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="Geometry\Octree.cs" />

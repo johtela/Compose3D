@@ -92,15 +92,15 @@
 
 		public static Geometry<Vertex> SineS ()
 		{
-			var piOver2 = MathHelper.PiOver2;
-			var step = MathHelper.PiOver4;
+			var range = MathHelper.PiOver2;
+			var step = MathHelper.Pi / 12f;
 			var contour =
-				(from x in Ext.Range (-piOver2, piOver2, step)
+				(from x in Ext.Range (-range, range, step)
 				 select new Vec2 (x, x.Sin () + 1f))
 				.Concat (
-				from x in Ext.Range (piOver2, -piOver2, -step)
+				from x in Ext.Range (range, -range, -step)
 				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
-			return Polygon<Vertex>.FromVec2s (contour);
+			return Polygon<Vertex>.FromVec2s (contour).Extrude (2f, true, true);
 		}
 	}
 }

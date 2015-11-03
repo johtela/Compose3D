@@ -93,7 +93,7 @@
 		public static Geometry<Vertex> SineS ()
 		{
 			var range = MathHelper.PiOver2;
-			var step = MathHelper.Pi / 12f;
+			var step = MathHelper.Pi / 20f;
 			var contour =
 				(from x in Ext.Range (-range, range, step)
 				 select new Vec2 (x, x.Sin () + 1f))

@@ -8,86 +8,132 @@
 
 	public static class Tesselator<V> where V : struct, IVertex 
 	{
-		private class TessVertex
+		private class TessVertex : IEnumerable<TessVertex>
 		{
+			public TessVertex Next;
+			public TessVertex Previous;
+
 			public int Index;
 			public float Angle;
 			public bool IsEar;
 
-			public bool IsConvex
-			{
-				get { return Angle < MathHelper.Pi; }
-			}
-
 			public bool IsReflex
 			{
-				get { return !IsConvex; }
+				get { return Angle >= MathHelper.Pi; }
+			}
+
+			public static TessVertex FromEnumerable (IEnumerable<TessVertex> e)
+			{
+				var first = e.First ();
+				var prev = first;
+
+				foreach (var tv in e.Skip (1))
+				{
+					prev.Next = tv;
+					tv.Previous = prev;
+					prev = tv;
+				}
+				prev.Next = first;
+				first.Previous = prev;
+				return first;
+			}
+
+			public void Delete ()
+			{
+				Previous.Next = Next;
+				Next.Previous = Previous;
+			}
+
+			public IEnumerator<TessVertex> GetEnumerator ()
+			{
+				var curr = this;
+				do
+				{
+					yield return curr;
+					curr = curr.Next;
+				} 
+				while (curr != this);
+			}
+
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator ()
+			{
+				return GetEnumerator ();
 			}
 		}
 
 		public static int[] TesselatePolygon (V[] vertices)
 		{
-			var result = new int[(vertices.Length - 2) * 3];
+			var count = vertices.Length;
+			var result = new int[(count - 2) * 3];
 			var resInd = 0;
-			var tessVerts =
-				(from i in Enumerable.Range (0, vertices.Length)
-				 select new TessVertex () { Index = i }).ToList ();
+			var tessVerts = TessVertex.FromEnumerable (
+				from i in Enumerable.Range (0, count)
+				select new TessVertex () { Index = i });
 
-			for (int i = 0; i < tessVerts.Count; i++)
-				tessVerts[i].Angle = VertexAngle (i, tessVerts, vertices);
+			foreach (var tv in tessVerts)
+				UpdateVertexAngle (tv, vertices);
 
-			for (int i = 0; i < tessVerts.Count; i++)
-				tessVerts[i].IsEar = IsEar (i, tessVerts, vertices);
+			foreach (var tv in tessVerts)
+				UpdateIsEar (tv, vertices);
 
-			while (tessVerts.Count > 3)
+			while (count > 3)
 			{
 				var curr = FindMinimumEar (tessVerts);
-				var prev = PrevIndex (curr, tessVerts);
-				var next = NextIndex (curr, tessVerts);
-				result[resInd++] = tessVerts[prev].Index;
-				result[resInd++] = tessVerts[curr].Index;
-				result[resInd++] = tessVerts[next].Index;
-				tessVerts.RemoveAt (curr);
-				if (curr == 0) prev--;
-				if (next != 0) next--;
-				tessVerts[prev].Angle = VertexAngle (prev, tessVerts, vertices);
-				tessVerts[next].Angle = VertexAngle (next, tessVerts, vertices);
-				tessVerts[prev].IsEar = IsEar (prev, tessVerts, vertices);
-				tessVerts[next].IsEar = IsEar (next, tessVerts, vertices);
+				var prev = curr.Previous;
+				var next = curr.Next;
+				result[resInd++] = prev.Index;
+				result[resInd++] = curr.Index;
+				result[resInd++] = next.Index;
+				curr.Delete ();
+				UpdateVertexAngle (prev, vertices);
+				UpdateVertexAngle (next, vertices);
+				UpdateIsEar (prev, vertices);
+				UpdateIsEar (next, vertices);
+				tessVerts = next;
+				count--;
 			}
-			for (int i = 0; i < 3; i++)
-				result[resInd++] = tessVerts[i].Index;
+			foreach (var tv in tessVerts)
+				result[resInd++] = tv.Index;
+
 			return result;
 		}
 
-		private static int PrevIndex (int index, List<TessVertex> tessVerts)
+		private static void UpdateVertexAngle (TessVertex tessVert, V[] vertices)
 		{
-			var res = index - 1;
-			return res < 0 ? tessVerts.Count + res : res;
+			tessVert.Angle = AngleBetweenEdges (
+				tessVert.Previous.Index, tessVert.Index, tessVert.Next.Index, vertices);
 		}
 
-		private static int NextIndex (int index, List<TessVertex> tessVerts)
+		private static void UpdateIsEar (TessVertex current, V[] vertices)
 		{
-			return (index + 1) % tessVerts.Count;
+			if (current.IsReflex)
+				current.IsEar = false;
+			else
+			{
+				var prev = current.Previous;
+				var next = current.Next;
+				var p0 = vertices[prev.Index].Position;
+				var p1 = vertices[current.Index].Position;
+				var p2 = vertices[next.Index].Position;
+
+				current.IsEar = current.Where (v => v != current && v != prev && v != next && v.IsReflex)
+					.All (cv => !PointInTriangle (vertices[cv.Index].Position, p0, p1, p2));
+			}
 		}
 
-		private static TessVertex PrevVertex (int index, List<TessVertex> tessVerts)
+		private static TessVertex FindMinimumEar (TessVertex first)
 		{
-			return tessVerts[PrevIndex (index, tessVerts)];
+			var minAngle = MathHelper.TwoPi;
+			var res = first;
+			foreach (var vert in first)
+				if (vert.IsEar && vert.Angle < minAngle)
+				{
+					minAngle = vert.Angle;
+					res = vert;
+				}
+			return res;
 		}
-
-		private static TessVertex NextVertex (int index, List<TessVertex> tessVerts)
-		{
-			return tessVerts[NextIndex (index, tessVerts)];
-		}
-
-		private static float VertexAngle (int index, List<TessVertex> tessVerts, V[] vertices)
-		{
-			return AngleBetweenEdges (
-				PrevVertex (index, tessVerts).Index, tessVerts[index].Index, NextVertex (index, tessVerts).Index,
-				vertices);
-		}
-
+	
 		private static float AngleBetweenEdges (int prev, int current, int next, V[] vertices)
 		{
 			var vec1 = vertices[prev].Position - vertices[current].Position;
@@ -104,38 +150,6 @@
 				return false;
 			var A = (-p1.Y * p2.X + p0.Y * (-p1.X + p2.X) + p0.X * (p1.Y - p2.Y) + p1.X * p2.Y);
 			return (s + t) < A;
-		}
-
-		private static bool IsEar (int index, List<TessVertex> tessVerts, V[] vertices)
-		{
-			var current = tessVerts[index];
-			if (current.IsReflex)
-				return false;
-
-			var prev = PrevVertex (index, tessVerts);
-			var next = NextVertex (index, tessVerts);
-			var p0 = vertices[prev.Index].Position;
-			var p1 = vertices[current.Index].Position;
-			var p2 = vertices[next.Index].Position;
-
-			return tessVerts.Where (v => v != current && v != prev && v != next && v.IsReflex)
-				.All (cv => !PointInTriangle (vertices[cv.Index].Position, p0, p1, p2));
-		}
-
-		private static int FindMinimumEar (List<TessVertex> tessVerts)
-		{
-			var minAngle = MathHelper.TwoPi;
-			var res = -1;
-			for (int i = 0; i < tessVerts.Count; i++)
-			{
-				var vert = tessVerts[i];
-				if (vert.IsEar && vert.Angle < minAngle)
-				{
-					minAngle = vert.Angle;
-					res = i;
-				}
-			}
-			return res;
 		}
 	}
 }

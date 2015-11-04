@@ -13,9 +13,9 @@
 	{
 		public static Geometry<Vertex> Hammer ()
 		{
-			var cube1 = Volume.Cube<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f);
-			var cube2 = Volume.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f);
-			var cube3 = Volume.Cube<Vertex> (1f, 1f, 2f);
+			var cube1 = Solids.Cube<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f);
+			var cube2 = Solids.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f);
+			var cube3 = Solids.Cube<Vertex> (1f, 1f, 2f);
 			return Composite.Create (Stacking.StackRight (cube1, cube2, cube3)
 				.Align (Alignment.None, Alignment.Center, Alignment.Center)).Center ();
 		}
@@ -100,7 +100,8 @@
 				.Concat (
 				from x in Ext.Range (range, -range, -step)
 				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
-			return Polygon<Vertex>.FromVec2s (contour).Extrude (2f, true, true);
+			return Polygon<Vertex>.FromVec2s (contour)
+				.Extrude (2f, true, true);
 		}
 	}
 }

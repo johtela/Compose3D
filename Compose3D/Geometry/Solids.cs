@@ -6,7 +6,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class Volume
+    public static class Solids
 	{
 		#region Edges
 
@@ -102,6 +102,11 @@
 			return vec1.Cross (vec2).Normalized;
 		}
 
+		private static Vec3 SmoothenNormal (Vec3 normal, Vec3 adjacentNormal)
+		{
+			return normal.Dot (adjacentNormal) > 0.75f ? (normal + adjacentNormal).Normalized : normal;
+		}
+
 		#endregion
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
@@ -143,10 +148,11 @@
 						var frontNextNormal = CalculateNormal (vertices, backVertices, nextEdge.Index1, nextEdge.Index2);
 						var backPrevNormal = CalculateNormal (backVertices, vertices, prevEdge.Index2, prevEdge.Index1);
 						var backNextNormal = CalculateNormal (backVertices, vertices, nextEdge.Index2, nextEdge.Index1);
-						frontNormal1 = (frontNormal1 + frontPrevNormal).Normalized;
-						frontNormal2 = (frontNormal2 + frontNextNormal).Normalized;
-						backNormal1 = (backNormal1 + backPrevNormal).Normalized;
-						backNormal2 = (backNormal2 + backNextNormal).Normalized;
+						
+						frontNormal1 = SmoothenNormal (frontNormal1, frontPrevNormal);
+						frontNormal2 = SmoothenNormal (frontNormal2, frontNextNormal);
+						backNormal1 = SmoothenNormal (backNormal1, backPrevNormal);
+						backNormal2 = SmoothenNormal (backNormal2, backNextNormal);
 					}
 					geometries[i] = Quadrilateral<V>.FromVertices (
 						SideVertex (vertices[edge.Index2], frontNormal2),

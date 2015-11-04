@@ -129,7 +129,7 @@
     <Compile Include="GLTypes\GLSLGenerator.cs" />
     <Compile Include="GLTypes\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
-    <Compile Include="Geometry\Volume.cs" />
+    <Compile Include="Geometry\Solids.cs" />
     <Compile Include="Geometry\Vertex.cs" />
     <Compile Include="Geometry\ReverseIndices.cs" />
     <Compile Include="Geometry\Wrapper.cs" />

@@ -179,18 +179,42 @@ namespace Compose3D
             return lines.Any () ? lines.Select (l => l.ToString ()).Aggregate ((s1, s2) => s1 + separator + s2) : "";
         }
 
-		public static IEnumerable<T> MinimumItems<T, U> (this IEnumerable<T> items, Func<T, U> selector)
-			where U : IEquatable<U>
+		public static IEnumerable<T> MinimumItems<T> (this IEnumerable<T> items, Func<T, float> selector)
 		{
-			var min = items.Min (selector);
-			return items.Where (i => selector (i).Equals (min));
+			var res =  new List<T> ();
+			var min = float.MaxValue;
+			foreach (var item in items)
+			{
+				var value = selector (item);
+				if (value < min)
+				{
+					min = value;
+					res.Clear ();
+					res.Add (item);
+				}
+				else if (value == min)
+					res.Add (item);
+			}
+			return res;
 		}
 
-		public static IEnumerable<T> MaximumItems<T, U> (this IEnumerable<T> items, Func<T, U> selector)
-			where U : IEquatable<U>
+		public static IEnumerable<T> MaximumItems<T> (this IEnumerable<T> items, Func<T, float> selector)
 		{
-			var max = items.Max (selector);
-			return items.Where (i => selector (i).Equals (max));
+			var res = new List<T> ();
+			var max = float.MinValue;
+			foreach (var item in items)
+			{
+				var value = selector (item);
+				if (value > max)
+				{
+					max = value;
+					res.Clear ();
+					res.Add (item);
+				}
+				else if (value == max)
+					res.Add (item);
+			}
+			return res;
 		}
 
 		public static IEnumerable<float> Range (float start, float end, float step)

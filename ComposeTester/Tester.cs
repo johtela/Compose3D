@@ -66,7 +66,7 @@
 					{ TextureParameterName.TextureBaseLevel, 0 },
 					{ TextureParameterName.TextureMaxLevel, 0 }
 				});
-			var geometry = Volume.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
+			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
 			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
@@ -78,8 +78,8 @@
 			});
 			var geometry2 = Geometries.SineS ().Color (VertexColor<Vec3>.Brass);
 			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
-			var mesh2 = new Mesh<Vertex> (geometry2, tulipTexture, plasticTexture)
+			//geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
+			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 

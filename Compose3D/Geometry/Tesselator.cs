@@ -78,7 +78,7 @@
 
 			while (count > 3)
 			{
-				var curr = FindMinimumEar (tessVerts);
+				var curr = tessVerts.Where (v => v.IsEar).MinimumItems (v => v.Angle).First ();
 				var prev = curr.Previous;
 				var next = curr.Next;
 				result[resInd++] = prev.Index;
@@ -121,19 +121,6 @@
 			}
 		}
 
-		private static TessVertex FindMinimumEar (TessVertex first)
-		{
-			var minAngle = MathHelper.TwoPi;
-			var res = first;
-			foreach (var vert in first)
-				if (vert.IsEar && vert.Angle < minAngle)
-				{
-					minAngle = vert.Angle;
-					res = vert;
-				}
-			return res;
-		}
-	
 		private static float AngleBetweenEdges (int prev, int current, int next, V[] vertices)
 		{
 			var vec1 = vertices[prev].Position - vertices[current].Position;

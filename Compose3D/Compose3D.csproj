@@ -156,6 +156,7 @@
     </Compile>
     <Compile Include="Maths\Quat.cs" />
     <Compile Include="Maths\IQuat.cs" />
+    <Compile Include="Maths\BSpline.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

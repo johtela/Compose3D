@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenTK;
-using Compose3D.Arithmetics;
+using Compose3D.Maths;
 using LinqCheck;
 
 namespace ComposeTester

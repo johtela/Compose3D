@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using Arithmetics;
+    using Compose3D.Maths;
 	using Textures;
     using OpenTK.Graphics.OpenGL;
     using System;

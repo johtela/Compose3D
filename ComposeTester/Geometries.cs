@@ -1,7 +1,7 @@
 ﻿namespace ComposeTester
 {
 	using Compose3D;
-	using Compose3D.Arithmetics;
+	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
 	using OpenTK;

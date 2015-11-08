@@ -3,7 +3,7 @@
 	using System;
 	using OpenTK;
 	using OpenTK.Input;
-	using Arithmetics;
+	using Compose3D.Maths;
 
 	public static class Mouse
 	{

@@ -3,7 +3,7 @@ namespace Compose3D.Geometry
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Arithmetics;
+    using Compose3D.Maths;
 
     /// <summary>
     /// Enumeration that describes the alignment between two bounding box.

@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.Textures
 {
-	using Arithmetics;
+	using Compose3D.Maths;
 	using Geometry;
 	using OpenTK;
 	using System.Collections.Generic;

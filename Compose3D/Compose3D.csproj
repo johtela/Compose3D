@@ -40,58 +40,6 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arithmetics\Coord.cs" />
-    <Compile Include="Arithmetics\IMat.cs" />
-    <Compile Include="Arithmetics\ISquareMat.cs" />
-    <Compile Include="Arithmetics\IVec.cs" />
-    <Compile Include="Arithmetics\Mat2.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mat2.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\Mat3.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mat3.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\Mat4.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mat4.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\Mat.cs" />
-    <Compile Include="Arithmetics\MatTemplate.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatTemplate.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\GLMath.cs" />
-    <Compile Include="Arithmetics\Vec.cs" />
-    <Compile Include="Arithmetics\Vec4i.cs">
-      <DependentUpon>Vec4i.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Arithmetics\Vec3i.cs">
-      <DependentUpon>Vec3i.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Arithmetics\Vec2i.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Vec2i.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\Vec4.cs">
-      <DependentUpon>Vec4.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Arithmetics\Vec3.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Vec3.tt</DependentUpon>
-    </Compile>
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
@@ -109,16 +57,6 @@
     <Compile Include="GLTypes\VBO.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
     <Compile Include="Geometry\Geometry.cs" />
-    <Compile Include="Arithmetics\Vec2.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Vec2.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Arithmetics\VecTemplate.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VecTemplate.tt</DependentUpon>
-    </Compile>
     <Compile Include="Params.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ext.cs" />
@@ -181,42 +119,45 @@
     <Compile Include="Textures\Sampler.cs" />
     <Compile Include="Textures\Texture.cs" />
     <Compile Include="Textures\BitmapHelper.cs" />
-    <Compile Include="Arithmetics\Quat.cs" />
-    <Compile Include="Arithmetics\IQuat.cs" />
     <Compile Include="Geometry\Polygon.cs" />
+    <Compile Include="Maths\Coord.cs" />
+    <Compile Include="Maths\IMat.cs" />
+    <Compile Include="Maths\ISquareMat.cs" />
+    <Compile Include="Maths\IVec.cs" />
+    <Compile Include="Maths\Mat2.cs">
+      <DependentUpon>Mat2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Mat3.cs">
+      <DependentUpon>Mat3.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Mat4.cs">
+      <DependentUpon>Mat4.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Mat.cs" />
+    <Compile Include="Maths\GLMath.cs" />
+    <Compile Include="Maths\Vec.cs" />
+    <Compile Include="Maths\Vec4i.cs">
+      <DependentUpon>Vec4i.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Vec3i.cs">
+      <DependentUpon>Vec3i.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Vec2i.cs">
+      <DependentUpon>Vec2i.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Vec4.cs">
+      <DependentUpon>Vec4.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Vec3.cs">
+      <DependentUpon>Vec3.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Vec2.cs">
+      <DependentUpon>Vec2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Maths\Quat.cs" />
+    <Compile Include="Maths\IQuat.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Arithmetics\Mat2.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Mat2.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\Mat3.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Mat3.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\Mat4.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Mat4.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\MatTemplate.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MatTemplate.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\Vec2.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec2.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\Vec4.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec4.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\Vec3.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec3.cs</LastGenOutput>
-    </None>
-    <None Include="Arithmetics\VecTemplate.tt">
-      <LastGenOutput>VecTemplate.cs</LastGenOutput>
-    </None>
     <None Include="packages.config" />
     <None Include="Textures\SamplerCube.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -230,6 +171,49 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler2DShadow.cs</LastGenOutput>
     </None>
+    <None Include="Maths\Mat2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat2.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Mat3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat3.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Mat4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat4.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\MatTemplate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MatTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\VecTemplate.tt">
+      <LastGenOutput>VecTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec2i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2i.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec3i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3i.cs</LastGenOutput>
+    </None>
+    <None Include="Maths\Vec4i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4i.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -242,24 +226,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <None Include="Arithmetics\Vec2i.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec2i.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Arithmetics\Vec3i.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec3i.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Arithmetics\Vec4i.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vec4i.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
   <ItemGroup>
     <None Include="Textures\SamplerTemplate.tt" />
   </ItemGroup>

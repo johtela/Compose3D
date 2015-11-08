@@ -1,95 +1,95 @@
-﻿namespace Compose3D.Arithmetics
+﻿namespace Compose3D.Maths
 {
     using System;
     using System.Text;
 	using GLTypes;
 
-	[GLType ("vec2")]
-    public struct Vec2 : IVec<Vec2, float>
+	[GLType ("ivec2")]
+    public struct Vec2i : IVec<Vec2i, int>
     { 
 		[GLField ("x")]
-        public float X; 
+        public int X; 
 		[GLField ("y")]
-        public float Y; 
+        public int Y; 
 
-		[GLConstructor ("vec2 ({0})")]
-		public Vec2 (float x, float y)
+		[GLConstructor ("ivec2 ({0})")]
+		public Vec2i (int x, int y)
 		{	
 			X = x; 
 			Y = y; 
 		}
 
-		[GLConstructor ("vec2 ({0})")]
-		public Vec2 (float value)
+		[GLConstructor ("ivec2 ({0})")]
+		public Vec2i (int value)
 		{	
 			X = value; 
 			Y = value; 
 		}
 
-		[GLConstructor ("vec2 ({0})")]
-		public Vec2 (Vec2 vec)
+		[GLConstructor ("ivec2 ({0})")]
+		public Vec2i (Vec2i vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 		}
 
-		[GLConstructor ("vec2 ({0})")]
-		public Vec2 (Vec3 vec)
+		[GLConstructor ("ivec2 ({0})")]
+		public Vec2i (Vec3i vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 		}
 
-		[GLConstructor ("vec2 ({0})")]
-		public Vec2 (Vec4 vec)
+		[GLConstructor ("ivec2 ({0})")]
+		public Vec2i (Vec4i vec)
 		{	
 			X = vec.X; 
 			Y = vec.Y; 
 		}
 
 		[GLUnaryOperator ("-{0}")]
-		public Vec2 Invert ()
+		public Vec2i Invert ()
 		{
-			return new Vec2 (-X, -Y);
+			return new Vec2i (-X, -Y);
 		}
 
 		[GLBinaryOperator ("{0} + {1}")]
-		public Vec2 Add (Vec2 other)
+		public Vec2i Add (Vec2i other)
 		{
-			return new Vec2 (X + other.X, Y + other.Y);
+			return new Vec2i (X + other.X, Y + other.Y);
 		}
 
 		[GLBinaryOperator ("{0} - {1}")]
-		public Vec2 Subtract (Vec2 other)
+		public Vec2i Subtract (Vec2i other)
 		{
-			return new Vec2 (X - other.X, Y - other.Y);
+			return new Vec2i (X - other.X, Y - other.Y);
 		}
 
 		[GLBinaryOperator ("{0} * {1}")]
-		public Vec2 Multiply (Vec2 other)
+		public Vec2i Multiply (Vec2i other)
 		{
-			return new Vec2 (X * other.X, Y * other.Y);
+			return new Vec2i (X * other.X, Y * other.Y);
 		}
 
 		[GLBinaryOperator ("{0} * {1}")]
-		public Vec2 Multiply (float scalar)
+		public Vec2i Multiply (int scalar)
 		{
-			return new Vec2 (X * scalar, Y * scalar);
+			return new Vec2i (X * scalar, Y * scalar);
 		}
 
 		[GLBinaryOperator ("{0} / {1}")]
-		public Vec2 Divide (float scalar)
+		public Vec2i Divide (int scalar)
 		{
-			return new Vec2 (X / scalar, Y / scalar);
+			return new Vec2i (X / scalar, Y / scalar);
 		}
 
 		[GLFunction ("dot ({0})")]
-		public float Dot (Vec2 other)
+		public int Dot (Vec2i other)
 		{
 			return X * other.X + Y * other.Y;
 		}
 
-		public bool Equals (Vec2 other)
+		public bool Equals (Vec2i other)
 		{
 			return X == other.X && Y == other.Y;
 		}
@@ -99,7 +99,7 @@
 			get { return 2; }
 		}
 
-		public float this[int index]
+		public int this[int index]
 		{
 			get
 			{
@@ -121,9 +121,9 @@
 			} 
 		}
 
-		public Vec2 this[Coord x, Coord y]
+		public Vec2i this[Coord x, Coord y]
 		{
-			get { return new Vec2 (this[(int)x], this[(int)y]); }
+			get { return new Vec2i (this[(int)x], this[(int)y]); }
 			set
 			{
 				this[(int)x] = value.X; 
@@ -131,26 +131,26 @@
 			}
 		}
 
-		public float LengthSquared
+		public int LengthSquared
 		{
 			get { return X * X + Y * Y; }
 		}
 
 		[GLFunction ("length ({0})")]
-		public float Length
+		public int Length
 		{
-			get { return (float)Math.Sqrt (LengthSquared); }
+			get { return (int)Math.Sqrt (LengthSquared); }
 		}
 
 		[GLFunction ("normalize ({0})")]
-		public Vec2 Normalized
+		public Vec2i Normalized
 		{
 			get { return Divide (Length); }
 		}
 
 		public override bool Equals (object obj)
 		{
-            return obj is Vec2 && Equals ((Vec2)obj);
+            return obj is Vec2i && Equals ((Vec2i)obj);
 		}
 
         public override int GetHashCode ()
@@ -168,55 +168,55 @@
         }
 
 		[GLUnaryOperator ("-{0}")]
-        public static Vec2 operator - (Vec2 vec)
+        public static Vec2i operator - (Vec2i vec)
         {
             return vec.Invert ();
         }
 
 		[GLBinaryOperator ("{0} - {1}")]
-        public static Vec2 operator - (Vec2 left, Vec2 right)
+        public static Vec2i operator - (Vec2i left, Vec2i right)
         {
             return left.Subtract (right);
         }
 
 		[GLBinaryOperator ("{0} * {1}")]
-        public static Vec2 operator * (float scalar, Vec2 vec)
+        public static Vec2i operator * (int scalar, Vec2i vec)
         {
             return vec.Multiply (scalar);
         }
 
 		[GLBinaryOperator ("{0} * {1}")]
-        public static Vec2 operator * (Vec2 vec, float scalar)
+        public static Vec2i operator * (Vec2i vec, int scalar)
         {
             return vec.Multiply (scalar);
         }
 
 		[GLBinaryOperator ("{0} * {1}")]
-        public static Vec2 operator * (Vec2 vec, Vec2 scale)
+        public static Vec2i operator * (Vec2i vec, Vec2i scale)
         {
             return vec.Multiply (scale);
         }
 
 		[GLBinaryOperator ("{0} / {1}")]
-        public static Vec2 operator / (Vec2 vec, float scalar)
+        public static Vec2i operator / (Vec2i vec, int scalar)
         {
             return vec.Divide (scalar);
         }
 
 		[GLBinaryOperator ("{0} + {1}")]
-        public static Vec2 operator + (Vec2 left, Vec2 right)
+        public static Vec2i operator + (Vec2i left, Vec2i right)
         {
             return left.Add (right);
         }
 
 		[GLBinaryOperator ("{0} == {1}")]
-        public static bool operator == (Vec2 left, Vec2 right)
+        public static bool operator == (Vec2i left, Vec2i right)
         {
             return left.Equals (right);
         }
 
 		[GLBinaryOperator ("{0} != {1}")]
-        public static bool operator != (Vec2 left, Vec2 right)
+        public static bool operator != (Vec2i left, Vec2i right)
         {
             return !left.Equals (right);
         }

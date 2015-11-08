@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using Compose3D;
-    using Compose3D.Arithmetics;
+    using Compose3D.Maths;
     using LinqCheck;
 
     public class VecTests

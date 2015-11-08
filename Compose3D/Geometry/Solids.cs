@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
     using System;
-    using Arithmetics;
+    using Compose3D.Maths;
     using Textures;
     using System.Collections.Generic;
     using System.Linq;

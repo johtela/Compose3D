@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.Geometry
 {
-	using Arithmetics;
+	using Compose3D.Maths;
     using Textures;
 	using System.Collections.Generic;
 

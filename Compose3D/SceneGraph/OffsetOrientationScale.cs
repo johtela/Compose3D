@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using Arithmetics;
+	using Compose3D.Maths;
 	using Geometry;
 	using System;
 

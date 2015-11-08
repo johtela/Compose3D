@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Arithmetics
+﻿namespace Compose3D.Maths
 {
     using System;
 	using GLTypes;

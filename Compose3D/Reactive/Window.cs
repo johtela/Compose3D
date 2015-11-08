@@ -2,7 +2,7 @@
 {
 	using System;
 	using OpenTK;
-	using Arithmetics;
+	using Compose3D.Maths;
 
 	public static class Window
 	{

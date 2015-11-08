@@ -3,7 +3,7 @@
     using System;
     using System.Linq;
 	using Compose3D;
-    using Compose3D.Arithmetics;
+    using Compose3D.Maths;
     using LinqCheck;
 
 	public class QuatTests

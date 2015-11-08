@@ -2,7 +2,7 @@
 namespace Compose3D.Textures
 {
 	using System.Collections.Generic;
-    using Arithmetics;
+    using Compose3D.Maths;
 	using GLTypes;
 	using OpenTK.Graphics.OpenGL;
 

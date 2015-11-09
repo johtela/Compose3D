@@ -32,8 +32,8 @@
 
 		public V Evaluate (float value)
 		{
-			var result = default (V);
-			for (int i = 0; i < ControlPoints.Length; i++)
+			var result = ControlPoints [0].Multiply (Basis (PolynomialDegree, 0, value));
+			for (int i = 1; i < ControlPoints.Length; i++)
 				result = result.Add (ControlPoints [i].Multiply (Basis (PolynomialDegree, i, value)));
 			return result;
 		}
@@ -42,12 +42,12 @@
 		{
 			var len = controlPoints.Length;
 			var knots = new float[len + degree + 1];
-			var start = degree / 2;
+			var start = (degree / 2) + 1;
 			var curr = 0;
 			while (curr < start)
-				knots [curr++] = 0f;
+				knots [curr++] = 1f;
 			while (curr < knots.Length)
-				knots [curr++] = Math.Min (curr - start, len);
+				knots [curr++] = Math.Min (curr - start, len - 1);
 			return new BSpline<V> (degree, controlPoints, knots);
 		}
 	}

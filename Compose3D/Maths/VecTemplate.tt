@@ -5,7 +5,7 @@
 #><#+ void Vec(int dim, string type, string suffix) { 
 	
 	var vecType = "Vec" + dim + suffix;
-#>namespace Compose3D.Arithmetics
+#>namespace Compose3D.Maths
 {
     using System;
     using System.Text;

@@ -103,6 +103,19 @@
 			return Polygon<Vertex>.FromVec2s (contour)
 				.Extrude (2f, true, true);
 		}
+
+		public static Path<Vertex, Vec3> Curve ()
+		{
+			var spline = BSpline<Vec3>.FromControlPoints (2,
+				new Vec3 (0f, -2f, 0f),
+				new Vec3 (-2f, 0f, 0f),
+				new Vec3 (0f, 2f, 0f),
+				new Vec3 (2f, 0f, 0f),
+				new Vec3 (0f, -2f, 0f));
+			var path = Path<Vertex, Vec3>.FromBSpline (spline, 20);
+			path.Vertices.Color (VertexColor<Vec3>.White);
+			return path;
+		}
 	}
 }
 

@@ -45,12 +45,6 @@
 
 		private static void SetupOpenGL ()
 		{
-			GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Back);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Enable (EnableCap.DepthTest);
-			GL.DepthMask (true);
-			GL.DepthFunc (DepthFunction.Less);
 		}
 
 		private SceneNode CreateSceneGraph ()
@@ -82,10 +76,11 @@
 			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
 
-			//var lineSeg1 = new LineSegment<Vertex> ();
+			var lineSeg = new LineSegment<Vertex> (Geometries.Curve ())
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1);
+				mesh1, mesh2, lineSeg);
 		}
 
 		private void InitializeUniforms ()
@@ -95,20 +90,20 @@
 
 			_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
 			(
-				(globalLight, mat) =>
+				(globalLight, mat, nmat) =>
 					_uniforms.globalLighting &= new Shaders.GlobalLight ()
 					{
 						ambientLightIntensity = globalLight.AmbientLightIntensity,
 						maxintensity = globalLight.MaxIntensity,
 						inverseGamma = 1f / globalLight.GammaCorrection
 					},
-				(dirLight, mat) =>
+				(dirLight, mat, nmat) =>
 					_uniforms.directionalLight &= new Shaders.DirLight ()
 					{
 						direction = dirLight.Direction,
 						intensity = dirLight.Intensity
 					},
-				(pointLight, mat) =>
+				(pointLight, mat, nmat) =>
 					pointLights[numPointLights++] = new Shaders.PointLight
 					{
 						position = pointLight.Position,
@@ -163,15 +158,27 @@
 		{
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			_sceneGraph.Traverse<Mesh<Vertex>> (
-				(mesh, mat) =>
+			GL.Enable (EnableCap.CullFace);
+			GL.CullFace (CullFaceMode.Back);
+			GL.FrontFace (FrontFaceDirection.Cw);
+			GL.Enable (EnableCap.DepthTest);
+			GL.DepthMask (true);
+			GL.DepthFunc (DepthFunction.Less);
+			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<Vertex>> (
+				(mesh, mat, nmat) =>
 				{
 					Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 					_uniforms.worldMatrix &= mat;
-					_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
+					_uniforms.normalMatrix &= nmat ;
 					_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
 					_program.DrawNormals<Vertex> (mesh.NormalBuffer);
 					Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
+				},
+				(lines, mat, nmat) =>
+				{
+					_uniforms.worldMatrix &= mat;
+					_uniforms.normalMatrix &= nmat;
+					_program.DrawLinePath<Vertex> (lines.VertexBuffer);
 				}
 			);
 			SwapBuffers ();

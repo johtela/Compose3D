@@ -18,7 +18,7 @@
 		{
 			var vertices = new P[numVertices];
 			var curr = spline.Knots.First ();
-			var step = (float)(spline.Knots.Last () - curr) / numVertices;
+			var step = (float)(spline.Knots.Last () - curr) / (numVertices - 1);
 
 			for (int i = 0; i < numVertices; i++)
 			{

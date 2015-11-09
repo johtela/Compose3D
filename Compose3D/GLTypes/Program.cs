@@ -71,5 +71,12 @@
 			GL.DrawArrays (PrimitiveType.Lines, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 		}
+
+		public void DrawLinePath<V> (VBO<V> vertices) where V : struct, IVertex
+		{
+			BindVertices (vertices);
+			GL.DrawArrays (PrimitiveType.LineStrip, 0, vertices._count);
+			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+		}
 	}
 }

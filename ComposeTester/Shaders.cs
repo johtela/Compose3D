@@ -145,11 +145,7 @@
 				() => CalcDirLight,
 
 				(DirLight dirLight, Vec3 normal) => 
-				Shader.Evaluate 
-				(
-					from cosAngle in normal.Dot (dirLight.direction).ToShader ()
-					select dirLight.intensity * cosAngle.Clamp (0f, 1f)
-				)
+					(dirLight.intensity * normal.Dot (dirLight.direction)).Clamp (0f, 1f)
 			);
 
 		/// <summary>

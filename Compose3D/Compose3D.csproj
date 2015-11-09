@@ -41,7 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Geometry\Circular.cs" />
+    <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
+    <Compile Include="Maths\MatTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="Geometry\Octree.cs" />
@@ -82,6 +88,7 @@
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
     <Compile Include="SceneGraph\OffsetOrientationScale.cs" />
+    <Compile Include="SceneGraph\LineSegment.cs" />
     <Compile Include="SceneGraph\Scene.cs" />
     <Compile Include="SceneGraph\SceneNode.cs" />
     <Compile Include="SceneGraph\Transformation.cs" />

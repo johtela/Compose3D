@@ -82,14 +82,4 @@
             });
         }
     }
-
-    public class SceneNode<S> : SceneNode
-    {
-        public S Data { private get; set; }
-
-        public SceneNode (S data)
-        {
-            Data = data;
-        }
-    }
 }

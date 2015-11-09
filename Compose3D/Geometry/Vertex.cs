@@ -5,7 +5,7 @@
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// Interface for objects with any dimensional position data.
+	/// Interface for objects with any position data.
 	/// </summary>
 	public interface IPositional<V> where V : struct, IVec<V, float>
 	{
@@ -15,20 +15,26 @@
 		V Position { get; set; }
 	}
 
-    /// <summary>
-    /// Interface that is used to access mandatory vertex attributes.
-    /// </summary>
-    /// <description>
-    /// All Vertex structures need to implement this interface. Through it
-    /// geometry generators can set vertex attributes.
-    /// </description>
-	public interface IVertex : IPositional<Vec3>
+	/// <summary>
+	/// Interface for objects with normals.
+	/// </summary>
+	public interface IPlanar<V> where V : struct, IVec<V, float>
 	{
 		/// <summary>
-		/// The normal of the vertex.
+		/// The normal of the object.
 		/// </summary>
 		Vec3 Normal { get; set; }
+	}
 
+	/// <summary>
+	/// Interface that is used to access mandatory vertex attributes.
+	/// </summary>
+	/// <description>
+	/// All Vertex structures need to implement this interface. Through it
+	/// geometry generators can set vertex attributes.
+	/// </description>
+	public interface IVertex : IPositional<Vec3>, IPlanar<Vec3>
+	{
 		/// <summary>
 		/// Tag can be used to identify a vertex.
 		/// </summary>

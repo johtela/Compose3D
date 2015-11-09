@@ -27,25 +27,25 @@
 			set { position = value; }
 		}
 
-		Vec3 IVertexColor<Vec3>.Diffuse
+		Vec3 IDiffuseColor<Vec3>.Diffuse
 		{
 			get { return diffuseColor; }
 			set { diffuseColor = value; }
 		}
 
-		Vec3 IVertexColor<Vec3>.Specular
+		Vec3 ISpecularColor<Vec3>.Specular
 		{
 			get { return specularColor; }
 			set { specularColor = value; }
 		}
 
-		float IVertexColor<Vec3>.Shininess
+		float ISpecularColor<Vec3>.Shininess
         {
             get { return shininess; }
             set { shininess = value; }
         }
 
-        Vec3 IVertex.Normal
+        Vec3 IPlanar<Vec3>.Normal
 		{
 			get { return normal; }
 			set 

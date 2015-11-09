@@ -1,0 +1,386 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+ void Mat(int cols, int rows, string type, string suffix) { 
+	
+	var square = rows == cols;
+	var matType = MatType (cols, rows, type, suffix);
+	var glType = GLType (cols, rows, type, suffix);
+	var vecType = "Vec" + rows + suffix;
+#>
+namespace Compose3D.Arithmetics
+{
+    using System;
+    using System.Text;
+	using GLTypes;
+
+	[GLType ("<#= glType #>")]
+    public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>
+    { 
+<#+		ColumnFields (cols, vecType); #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+		BasicConstructor (cols, matType, vecType);
+		for (int rc = 2; rc <= 4; rc++) { #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+			CopyConstructor (cols, rows, type, suffix, rc, rc);
+        }
+		SingleValueConstructor (cols, rows, type, matType, vecType); #>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+		AllValuesConstructor (cols, rows, type, matType, vecType);
+		Indexers (cols, rows, type, vecType); #>
+		[GLBinaryOperator ("{0} + {1}")]
+<#+		Binary (cols, matType, "Add", "+", ", "); #>
+		[GLBinaryOperator ("{0} - {1}")]
+<#+		Binary (cols, matType, "Subtract", "-", ", "); #>
+		[GLBinaryOperator ("{0} * {1}")]
+<#+		Scalar (cols, matType, type, "Multiply", "*", ", "); #>
+		[GLBinaryOperator ("{0} / {1}")]
+<#+		Scalar (cols, matType, type, "Divide", "/", ", ");
+#>
+        public V Multiply<V> (V vec) where V : struct, IVec<V, float>, IEquatable<V>
+        {
+            if (vec.Dimensions != Columns)
+                throw new ArgumentException (
+					string.Format ("Cannot multiply {0}x{1} matrix with {2}D vector", Columns, Rows, vec.Dimensions), "vec");
+            var res = default (V); 
+<#+			var i = 0;
+			foreach (var sum in VectorMultiply(cols, rows, (c, r) => string.Format("{0} * vec[{1}]", Component(c, r), c)))
+			{
+#>			res[<#= i++ #>] = <#= sum #>;
+<#+			}
+#>			return res;
+        }
+
+<#+		BinaryScalar (cols, matType, "bool", "Equals", "==", " && "); 
+		if (square) { #>
+		[GLBinaryOperator ("{0} * {1}")]
+        public <#= matType #> Multiply (<#= matType #> mat)
+        {
+            return this * mat;
+        }
+
+		[GLFunction ("transpose ({0})")]
+        public <#= matType #> Transposed
+        {
+            get { return Mat.Transpose<<#= matType #>, <#= type #>> (this); }
+        }
+
+		[GLFunction ("determinant ({0})")]
+        public <#= type #> Determinant
+        {
+            get { return Mat.Determinant (this); }
+        }
+
+		[GLFunction ("inverse ({0})")]
+        public <#= matType #> Inverse
+        {
+            get { return Mat.Inverse (this); }
+        }
+<#+		} #>
+
+		public override bool Equals (object obj)
+		{
+            return obj is <#= matType #> && Equals ((<#= matType #>)obj);
+		}
+
+        public override int GetHashCode ()
+        {
+			return <#= ColumnList(cols, " ^ ", col => col + ".GetHashCode ()") #>;
+        }
+
+        public override string ToString ()
+        {
+            var sb = new StringBuilder ();
+            sb.AppendLine ();
+            for (int r = 0; r < <#= rows #>; r++)
+            {
+                sb.Append ("[");
+                for (int c = 0; c < <#= cols #>; c++)
+                    sb.AppendFormat (" {0}", this[c, r]);
+                sb.AppendLine (" ]");
+            }
+            return sb.ToString ();
+        }
+
+		[GLBinaryOperator ("{0} - {1}")]
+       public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
+        {
+            return left.Subtract (right);
+        }
+
+		[GLBinaryOperator ("{0} * {1}")]
+        public static <#= matType #> operator * (<#= type #> scalar, <#= matType #> mat)
+        {
+            return mat.Multiply (scalar);
+        }
+
+		[GLBinaryOperator ("{0} * {1}")]
+        public static <#= matType #> operator * (<#= matType #> mat, <#= type #> scalar)
+        {
+            return mat.Multiply (scalar);
+        }
+
+		[GLBinaryOperator ("{0} * {1}")]
+        public static <#= matType #> operator * (<#= matType #> left, <#= matType #> right)
+        {
+			return new <#= matType #> (
+				<#= Delimiterize(MatrixMultiply(cols, rows, 
+				(c, r, k) => string.Format("left.{0} * right.{1}", Component(k, r), Component(c, k))), ",\r\n				") #>);
+        }
+
+		[GLBinaryOperator ("{0} * {1}")]
+        public static <#= vecType #> operator * (<#= matType #> mat, <#= vecType #> vec)
+        {
+			return new <#= vecType #> (
+				<#= Delimiterize(VectorMultiply(cols, rows, 
+				(c, r) => string.Format("mat.{0} * vec.{1}", Component(c, r), Row(c))), ",\r\n				") #>);
+        }
+
+		[GLBinaryOperator ("{0} / {1}")]
+        public static <#= matType #> operator / (<#= matType #> mat, <#= type #> scalar)
+        {
+            return mat.Divide (scalar);
+        }
+
+		[GLBinaryOperator ("{0} + {1}")]
+        public static <#= matType #> operator + (<#= matType #> left, <#= matType #> right)
+        {
+            return left.Add (right);
+        }
+
+        public static bool operator == (<#= matType #> left, <#= matType #> right)
+        {
+            return left.Equals (right);
+        }
+
+        public static bool operator != (<#= matType #> left, <#= matType #> right)
+        {
+            return !left.Equals (right);
+        }
+	}
+}
+<#+ 
+}
+
+string MatType (int cols, int rows, string type, string suffix)
+{
+	return cols == rows ? string.Format("Mat{0}{1}", cols, suffix) : string.Format("Mat{0}x{1}{2}", cols, rows, suffix);
+}
+
+string GLType (int cols, int rows, string type, string suffix)
+{
+	return cols == rows ? string.Format("{0}mat{1}", suffix, cols) : string.Format("{0}matx{1}x{2}", suffix, cols, rows);
+}
+
+string Column(int i) {
+	return "Column" + i;
+}
+
+string Row(int i) {
+    switch (i)
+    {
+        case 0 : return "X";
+        case 1 : return "Y";
+        case 2 : return "Z";
+        case 3 : return "W";
+        default : throw new ArgumentOutOfRangeException("i");
+    }
+}
+
+IEnumerable<string> Columns(int dim) {
+	return from i in Enumerable.Range(0, dim)
+		   select Column(i);
+}
+
+string Component(int col, int row) {
+	return Column(col) + "." + Row(row);
+}
+
+string Delimiterize(IEnumerable<string> values, string delimeter) {
+	return values.Aggregate((s1, s2) => s1 + delimeter + s2);
+}
+
+string ColumnList(int cols, string delimiter, Func<string, string> map) {
+	return Delimiterize(Columns(cols).Select(map), delimiter);
+}
+
+string ColumnArgumentList(int cols, string vecType) {
+	return ColumnList(cols, ", ", col => vecType + " " + col.ToLower());
+}
+
+void ComponentArguments(int cols, int rows, string type) {
+    for (int c = 0; c < cols; c++)
+    {
+		Write ("\t\t\t");
+        for (int r = 0; r < rows; r++)
+			Write (string.Format("{0} m{1}{2}{3}", type, c, r, !(c == cols - 1 && r == rows - 1) ? ", " : ""));
+		if (c != cols - 1)
+			WriteLine("");
+    }
+}
+
+void ColumnStatements(int cols, Func<string, string> map) {
+	foreach (var col in Columns(cols)) {  
+#><#= map(col) #>; 
+<#+ }
+}
+
+void ColumnFields(int cols, string vecType) { 
+	foreach (var col in Columns(cols)) {  
+#>		public <#= vecType #> <#= col #>; 
+<#+ }
+	WriteLine("");
+}
+
+void BasicConstructor(int cols, string matType, string vecType) { #>
+		public <#= matType #> (<#= ColumnArgumentList(cols, vecType) #>)
+		{
+<#+	ColumnStatements(cols, s => string.Format("			{0} = {1}", s, s.ToLower())); #>
+		}
+
+ <#+ }
+
+string IdentityColumnValues (int col, int startRow, int rows, string value) {
+	return Delimiterize(Enumerable.Range(startRow, rows - startRow).Select(r => r == col ? value : "0"), ", ");
+}
+
+string ColumnValues (int col, int rows) {
+	return Delimiterize(Enumerable.Range(0, rows).Select(r => string.Format("m{0}{1}", col, r)), ", ");
+}
+
+
+void SingleValueConstructor(int cols, int rows, string type, string matType, string vecType) { #>
+		public <#= matType #> (<#= type #> value)
+		{	
+<#+ var col = 0;
+	ColumnStatements(cols, s => string.Format("			{0} = new {1} ({2})", 
+		s, vecType, IdentityColumnValues(col++, 0, rows, "value"))); #>
+		}
+
+ <#+ }
+
+void AllValuesConstructor(int cols, int rows, string type, string matType, string vecType) { #>
+		public <#= matType #> (
+<#+ ComponentArguments(cols, rows, type); #>)
+		{	
+<#+ var col = 0;
+	ColumnStatements(cols, s => string.Format("			{0} = new {1} ({2})", 
+		s, vecType, ColumnValues(col++, rows))); #>
+		}
+
+ <#+ }
+
+void CopyConstructor(int cols, int rows, string type, string suffix, int otherCols, int otherRows) { #>
+		public <#= MatType(cols, rows, type, suffix) #> (<#= MatType(otherCols, otherRows, type, suffix) #> mat)
+		{	
+<#+	for (int c = 0; c < cols; c++) {
+		if (c < otherCols) {
+#>			Column<#= c #> = new Vec<#= rows + suffix #> (mat.Column<#= c #><#= 
+				rows > otherRows ? ", " + IdentityColumnValues(c, otherRows, rows, "1f") : ""  #>);
+<#+		}
+		else {
+#>			Column<#= c #> = new Vec<#= rows + suffix #> (<#= IdentityColumnValues(c, 0, rows, "1") #>);
+<#+	    }
+	}
+#>		}
+
+<#+ }
+ 
+void Indexers(int cols, int rows, string type, string vecType) { #>
+		public int Columns
+		{
+			get { return <#= cols #>; }
+		}
+
+		public int Rows
+		{
+			get { return <#= rows #>; }
+		}
+
+		public <#= vecType #> this[int column]
+		{
+			get
+			{
+				switch (column)
+				{	<#+ foreach (int i in Enumerable.Range(0, cols)) { #>         
+					case <#= i.ToString() #>: return <#= Column(i) #>; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("column");
+				}
+			} 
+			set
+			{
+				switch (column)
+				{	<#+ foreach (int i in Enumerable.Range(0, cols)) { #>         
+					case <#= i.ToString() #>: <#= Column(i) #> = value; break; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("column");
+				}
+			} 
+		}
+
+		public <#= type #> this[int column, int row]
+		{
+			get { return this[column][row]; }
+			set 
+            { 
+				switch (column)
+				{	<#+ foreach (int i in Enumerable.Range(0, cols)) { #>         
+					case <#= i.ToString() #>: <#= Column(i) #>[row] = value; break; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("column");
+				}
+            }
+		} 
+					
+<#+ } 
+
+void Binary(int cols, string matType, string name, string oper, string delim) { #>
+		public <#= matType #> <#= name #> (<#= matType #> other)
+		{
+			return new <#= matType #> (<#= ColumnList(cols, delim, col => string.Format("{0} {1} other.{0}", col, oper)) #>);
+		}
+
+<#+ } 
+
+void Scalar(int cols, string matType, string scalarType, string name, string oper, string delim) { #>
+		public <#= matType #> <#= name #> (<#= scalarType #> scalar)
+		{
+			return new <#= matType #> (<#= ColumnList(cols, delim, col => string.Format("{0} {1} scalar", col, oper)) #>);
+		}
+
+<#+ } 
+
+void BinaryScalar(int cols, string matType, string scalarType, string name, string oper, string delim) { #>
+		public <#= scalarType #> <#= name #> (<#= matType #> other)
+		{
+			return <#= ColumnList(cols, delim, col => string.Format("{0} {1} other.{0}", col, oper)) #>;
+		}
+
+<#+ } 
+
+IEnumerable<string> VectorMultiply(int cols, int rows, Func<int, int, string> mult)
+{
+	for (int r = 0; r < rows; r++)
+    {
+		var sum = mult(0, r);
+        for (int c = 1; c < cols; c++)
+			 sum = sum + " + " + mult(c, r);
+		yield return sum;
+    }	
+}
+
+IEnumerable<string> MatrixMultiply(int cols, int rows, Func<int, int, int, string> mult)
+{
+    for (int c = 0; c < cols; c++)
+		for (int r = 0; r < rows; r++)
+		{
+			var sum = mult(c, r, 0);
+			for (int k = 1; k < cols; k++)
+				 sum = sum + " + " + mult(c, r, k);
+			yield return sum;
+		}	
+}
+
+#>

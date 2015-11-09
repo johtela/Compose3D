@@ -5,12 +5,20 @@ namespace Compose3D.Geometry
     using System.Collections.Generic;
     using System.Linq;
 
-	public interface IVertexColor<V> where V : struct, IVec<V, float>
-    {
-        V Diffuse { get; set; }
-        V Specular { get; set; }
+	public interface IDiffuseColor<V> where V : struct, IVec<V, float>
+	{
+		V Diffuse { get; set; }
+	}
+
+	public interface ISpecularColor<V> where V : struct, IVec<V, float>
+	{
+		V Specular { get; set; }
 		float Shininess { get; set; }
-    }
+	}
+
+	public interface IVertexColor<V> : IDiffuseColor<V>, ISpecularColor<V>
+		where V : struct, IVec<V, float>
+    { }
 
 	public static class VertexColor<V> where V : struct, IVec<V, float>
 	{
@@ -75,7 +83,7 @@ namespace Compose3D.Geometry
 	public static class ColorHelper
 	{
 		public static void Color<TVert, V> (this TVert[] vertices, IVertexColor<V> color)
-			where TVert : struct, IVertex, IVertexColor<V>
+			where TVert : struct, IVertexColor<V>
 			where V : struct, IVec<V, float>
         {
             for (int i = 0; i < vertices.Length; i++)

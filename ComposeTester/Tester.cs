@@ -82,8 +82,10 @@
 			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
 
+			//var lineSeg1 = new LineSegment<Vertex> ();
+
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1, mesh2);
+				mesh1);
 		}
 
 		private void InitializeUniforms ()

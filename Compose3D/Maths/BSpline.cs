@@ -25,8 +25,8 @@
 				var ki1 = Knots [index + 1];
 				var kid0 = Knots [index + degree];
 				var kid1 = Knots [index + degree + 1];
-				return ((value - ki0) / (kid0 - ki0)) * Basis (degree - 1, index, value) +
-					((kid1 - value) / (kid1 - ki1)) * Basis (degree - 1, index + 1, value);
+				return (kid0 == ki0 ? 0f : ((value - ki0) / (kid0 - ki0)) * Basis (degree - 1, index, value)) +
+					(kid1 == ki1 ? 0f : ((kid1 - value) / (kid1 - ki1)) * Basis (degree - 1, index + 1, value));
 			}
 		}
 

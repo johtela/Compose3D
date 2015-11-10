@@ -6,6 +6,7 @@
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
+	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK;
 	using OpenTK.Graphics;
@@ -19,6 +20,7 @@
 	{
 		// OpenGL objects
 		private Program _program;
+		private	Program _passthrough;
 		private ExampleShaders.Uniforms _uniforms;
 
 		// Scene graph
@@ -33,20 +35,23 @@
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
+
+			_passthrough = new Program (GLShader.Create (ShaderType.VertexShader, () =>
+				from v in Shader.Inputs<PathNode> ()
+				select new Fragment () 
+				{
+					gl_Position = new Vec4 (v.position, 0f, 1f)
+				}), 
+				FragmentShaders.WhiteOutput ());
 		}
 
 		public void Init ()
 		{
-			SetupOpenGL ();
 			InitializeUniforms ();
 			SetupReactions ();
 		}
 
 		#region Setup
-
-		private static void SetupOpenGL ()
-		{
-		}
 
 		private SceneNode CreateSceneGraph ()
 		{
@@ -77,8 +82,7 @@
 			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
 
-			var lineSeg = new LineSegment<Vertex> (Geometries.Curve ())
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
+			var lineSeg = new LineSegment<PathNode, Vec2> (Geometries.Curve ());
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, mesh2, lineSeg);
@@ -87,49 +91,52 @@
 		private void InitializeUniforms ()
 		{
 			var numPointLights = 0;
-			var pointLights = new Compose3D.Shaders.PointLight[4];
+			var pointLights = new Lighting.PointLight[4];
 
-			_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
-			(
-				(globalLight, mat, nmat) =>
-					_uniforms.globalLighting &= new Compose3D.Shaders.GlobalLight ()
+			using (_program.Scope ())
+			{
+				_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
+				(
+					(globalLight, mat, nmat) =>
+					_uniforms.globalLighting &= new Lighting.GlobalLight () 
 					{
 						ambientLightIntensity = globalLight.AmbientLightIntensity,
 						maxintensity = globalLight.MaxIntensity,
 						inverseGamma = 1f / globalLight.GammaCorrection
 					},
-				(dirLight, mat, nmat) =>
-					_uniforms.directionalLight &= new Compose3D.Shaders.DirectionalLight ()
+					(dirLight, mat, nmat) =>
+					_uniforms.directionalLight &= new Lighting.DirectionalLight () 
 					{
 						direction = dirLight.Direction,
 						intensity = dirLight.Intensity
 					},
-				(pointLight, mat, nmat) =>
-					pointLights[numPointLights++] = new Compose3D.Shaders.PointLight
+					(pointLight, mat, nmat) =>
+					pointLights [numPointLights++] = new Lighting.PointLight 
 					{
 						position = pointLight.Position,
 						intensity = pointLight.Intensity,
 						linearAttenuation = pointLight.LinearAttenuation,
 						quadraticAttenuation = pointLight.QuadraticAttenuation
 					}
-			);
-			for (int i = numPointLights; i < 4; i++)
-			{
-				pointLights[i].position = new Vec3 (0f);
-				pointLights[i].intensity = new Vec3 (0f);
-			}
-			_uniforms.pointLights &= pointLights;
-
-			var samplers = new Sampler2D[4];
-			for (int i = 0; i < samplers.Length; i++)
-				samplers[i] = new Sampler2D (i, new SamplerParams ()
+				);
+				for (int i = numPointLights; i < 4; i++)
 				{
-					{ SamplerParameterName.TextureMagFilter, All.Linear },
-					{ SamplerParameterName.TextureMinFilter, All.Linear },
-					{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
-				});
-			_uniforms.samplers &= samplers;
+					pointLights [i].position = new Vec3 (0f);
+					pointLights [i].intensity = new Vec3 (0f);
+				}
+				_uniforms.pointLights &= pointLights;
+
+				var samplers = new Sampler2D[4];
+				for (int i = 0; i < samplers.Length; i++)
+					samplers [i] = new Sampler2D (i, new SamplerParams () 
+					{
+						{ SamplerParameterName.TextureMagFilter, All.Linear },
+						{ SamplerParameterName.TextureMinFilter, All.Linear },
+						{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
+						{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
+					});
+				_uniforms.samplers &= samplers;
+			}
 		}
 
 		private void SetupReactions ()
@@ -165,21 +172,25 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
-			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<Vertex>> (
+			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<PathNode, Vec2>> (
 				(mesh, mat, nmat) =>
 				{
-					Sampler.Bind (!_uniforms.samplers, mesh.Textures);
-					_uniforms.worldMatrix &= mat;
-					_uniforms.normalMatrix &= nmat ;
-					_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
-					_program.DrawNormals<Vertex> (mesh.NormalBuffer);
-					Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
+					using ( _program.Scope ())
+					{
+						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
+						_uniforms.worldMatrix &= mat;
+						_uniforms.normalMatrix &= nmat ;
+						_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
+						_program.DrawNormals<Vertex> (mesh.NormalBuffer);
+						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
+					}
 				},
 				(lines, mat, nmat) =>
 				{
-					_uniforms.worldMatrix &= mat;
-					_uniforms.normalMatrix &= nmat;
-					_program.DrawLinePath<Vertex> (lines.VertexBuffer);
+					using (_passthrough.Scope ())
+					{
+						_passthrough.DrawLinePath<PathNode> (lines.VertexBuffer);
+					}
 				}
 			);
 			SwapBuffers ();
@@ -187,9 +198,12 @@
 
 		private void ResizeViewport (Vec2 size)
 		{
-			_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
+			using (_program.Scope ())
+			{
+				_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
 				Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
-			GL.Viewport (ClientSize);
+				GL.Viewport (ClientSize);
+			}
 		}
 
 		private void RotateView (Vec3 rot)

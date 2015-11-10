@@ -3,11 +3,28 @@
     using System;
     using System.Runtime.InteropServices;
     using OpenTK.Graphics.OpenGL;
+	using Compose3D.Maths;
     using Compose3D.Geometry;
     using System.Reflection;
 
 	public class Program
 	{
+		private class UsingScope : IDisposable
+		{
+			private Program _program;
+
+			public UsingScope (Program program)
+			{
+				_program = program;
+				_program.Use ();
+			}
+
+			public void Dispose ()
+			{
+				_program.Release ();
+			}
+		}
+
 		internal int _glProgram;
 
 		public Program (int glProgram)
@@ -24,9 +41,23 @@
 			var log = GL.GetProgramInfoLog (_glProgram);
 			if (log.ToUpper ().Contains ("ERROR:"))
 				throw new GLError (string.Format ("Program linking error:\n{0}", log));
-			GL.UseProgram (_glProgram);
             GC.Collect ();
         }
+
+		public void Use ()
+		{
+			GL.UseProgram (_glProgram);
+		}
+
+		public void Release ()
+		{
+			GL.UseProgram (0);
+		}
+
+		public IDisposable Scope ()
+		{
+			return new UsingScope (this);
+		}
 
         public Uniform<T> GetUniform<T> (string name)
         {
@@ -39,7 +70,7 @@
                 field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field));
         }
 
-		void BindVertices<V> (VBO<V> vertices) where V : struct, IVertex
+		void BindVertices<V> (VBO<V> vertices) where V : struct
 		{
 			var recSize = Marshal.SizeOf (typeof(V));
 			var offset = 0;
@@ -56,7 +87,7 @@
 			}
 		}
 
-		public void DrawTriangles<V> (VBO<V> vertices, VBO<int> indices) where V : struct, IVertex
+		public void DrawTriangles<V> (VBO<V> vertices, VBO<int> indices) where V : struct
 		{
 			BindVertices (vertices);
 			GL.BindBuffer (BufferTarget.ElementArrayBuffer, indices._glvbo);
@@ -65,14 +96,15 @@
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 		}
 
-		public void DrawNormals<V> (VBO<V> vertices) where V : struct, IVertex
+		public void DrawNormals<V> (VBO<V> vertices) where V : struct
 		{
 			BindVertices (vertices);
 			GL.DrawArrays (PrimitiveType.Lines, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+			GL.UseProgram (0);
 		}
 
-		public void DrawLinePath<V> (VBO<V> vertices) where V : struct, IVertex
+		public void DrawLinePath<V> (VBO<V> vertices) where V : struct
 		{
 			BindVertices (vertices);
 			GL.DrawArrays (PrimitiveType.LineStrip, 0, vertices._count);

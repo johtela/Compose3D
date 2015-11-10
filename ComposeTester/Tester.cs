@@ -1,5 +1,6 @@
 ﻿namespace ComposeTester
 {
+	using Compose3D;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
@@ -18,7 +19,7 @@
 	{
 		// OpenGL objects
 		private Program _program;
-		private Shaders.Uniforms _uniforms;
+		private ExampleShaders.Uniforms _uniforms;
 
 		// Scene graph
 		private SceneNode _sceneGraph;
@@ -30,8 +31,8 @@
 			_sceneGraph = CreateSceneGraph ();
 			_positions = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().ToArray ();
 
-			_program = new Program (Shaders.VertexShader (), Shaders.FragmentShader ());
-			_program.InitializeUniforms (_uniforms = new Shaders.Uniforms ());
+			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
+			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
 		}
 
 		public void Init ()
@@ -86,25 +87,25 @@
 		private void InitializeUniforms ()
 		{
 			var numPointLights = 0;
-			var pointLights = new Shaders.PointLight[4];
+			var pointLights = new Compose3D.Shaders.PointLight[4];
 
 			_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
 			(
 				(globalLight, mat, nmat) =>
-					_uniforms.globalLighting &= new Shaders.GlobalLight ()
+					_uniforms.globalLighting &= new Compose3D.Shaders.GlobalLight ()
 					{
 						ambientLightIntensity = globalLight.AmbientLightIntensity,
 						maxintensity = globalLight.MaxIntensity,
 						inverseGamma = 1f / globalLight.GammaCorrection
 					},
 				(dirLight, mat, nmat) =>
-					_uniforms.directionalLight &= new Shaders.DirLight ()
+					_uniforms.directionalLight &= new Compose3D.Shaders.DirectionalLight ()
 					{
 						direction = dirLight.Direction,
 						intensity = dirLight.Intensity
 					},
 				(pointLight, mat, nmat) =>
-					pointLights[numPointLights++] = new Shaders.PointLight
+					pointLights[numPointLights++] = new Compose3D.Shaders.PointLight
 					{
 						position = pointLight.Position,
 						intensity = pointLight.Intensity,

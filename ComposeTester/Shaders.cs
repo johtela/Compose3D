@@ -3,6 +3,7 @@
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
+	using Compose3D.Shaders;
     using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
 	using System;
@@ -80,58 +81,15 @@
 		}
 	}
 
-	public static class Shaders
+	public static class ExampleShaders
 	{
-		public class Fragment
-		{
-			[Builtin]
-			internal Vec4 gl_Position;
-			internal Vec3 vertexPosition;
-			internal Vec3 vertexNormal;
-			internal Vec3 vertexDiffuse;
-			internal Vec3 vertexSpecular;
-			internal float vertexShininess;
-			internal Vec2 texturePosition;
-		}
-
-		[GLStruct ("DirLight")]
-		public struct DirLight
-		{
-			internal Vec3 intensity;
-			internal Vec3 direction;
-		}
-
-		[GLStruct ("PointLight")]
-		public struct PointLight
-		{
-			internal Vec3 position;
-			internal Vec3 intensity;
-			internal float linearAttenuation, quadraticAttenuation;
-		}
-
-		[GLStruct ("SpotLight")]
-		public struct SpotLight
-		{
-			internal PointLight pointLight;
-			internal Vec3 direction;
-			internal float cosSpotCutoff, spotExponent;
-		}
-
-		[GLStruct ("GlobalLight")]
-		public struct GlobalLight
-		{
-			internal Vec3 ambientLightIntensity;
-			internal float maxintensity;
-			internal float inverseGamma;
-		}
-
 		public class Uniforms
 		{
 			internal Uniform<Mat4> worldMatrix;
 			internal Uniform<Mat4> perspectiveMatrix;
 			internal Uniform<Mat3> normalMatrix;
 			internal Uniform<GlobalLight> globalLighting;
-			internal Uniform<DirLight> directionalLight;
+			internal Uniform<DirectionalLight> directionalLight;
 			[GLArray (4)] internal Uniform<PointLight[]> pointLights;
 			[GLArray (4)] internal Uniform<Sampler2D[]> samplers;
 		}
@@ -139,12 +97,12 @@
 		/// <summary>
 		/// The calculate intensity of the directional light.
 		/// </summary>
-		public static readonly Func<DirLight, Vec3, Vec3> CalcDirLight =
+		public static readonly Func<DirectionalLight, Vec3, Vec3> CalcDirLight =
 			GLShader.Function 
 			(
 				() => CalcDirLight,
 
-				(DirLight dirLight, Vec3 normal) => 
+				(DirectionalLight dirLight, Vec3 normal) => 
 					(dirLight.intensity * normal.Dot (dirLight.direction)).Clamp (0f, 1f)
 			);
 
@@ -229,7 +187,7 @@
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				select new Fragment ()
+				select new TexturedFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * worldPos,
 					vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
@@ -247,7 +205,7 @@
 			return GLShader.Create 
 			(
 				ShaderType.FragmentShader, () =>
-				from f in Shader.Inputs<Fragment> ()
+				from f in Shader.Inputs<TexturedFragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =

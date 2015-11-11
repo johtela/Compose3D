@@ -38,7 +38,8 @@
 		}
 
 		/// <summary>
-		/// The calculate intensity of the directional light.
+		/// Calculate intensity of a directional light given light source and
+		/// a vertex normal.
 		/// </summary>
 		public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
 			GLShader.Function 
@@ -50,7 +51,8 @@
 			);
 
 		/// <summary>
-		/// Calculate attenuation of a point light.
+		/// Calculate attenuation of a point light given the light source and distance
+		/// to the vertex.
 		/// </summary>
 		public static readonly Func<PointLight, float, float> Attenuation = 
 			GLShader.Function 
@@ -63,7 +65,8 @@
 			);
 
 		/// <summary>
-		/// Calculate intensity of a point light.
+		/// Calculate intensity of a point light given the light source and the vertex position,
+		/// normal, and color attributes. Uses Blinn shading for specular highlights.
 		/// </summary>
 		public static readonly Func<PointLight, Vec3, Vec3, Vec3, Vec3, float, Vec3> PointLightIntensity =
 			GLShader.Function
@@ -85,18 +88,22 @@
 				)
 			);
 
-		//		public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight = 
-		//			GLShader.Function (() => CalcSpotLight,
-		//				(spotLight, position) => 
-		//				(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
-		//				 let dist = vecToLight.Length
-		//				 let lightDir = vecToLight.Normalized
-		//				 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
-		//				 let cosAngle = (-lightDir).Dot (spotLight.direction)
-		//				 select spotLight.pointLight.intensity *
-		//				     (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
-		//				.Evaluate ());
+		//public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight =
+		//	GLShader.Function (() => CalcSpotLight,
+		//		(spotLight, position) =>
+		//		(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
+		//		 let dist = vecToLight.Length
+		//		 let lightDir = vecToLight.Normalized
+		//		 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
+		//		 let cosAngle = (-lightDir).Dot (spotLight.direction)
+		//		 select spotLight.pointLight.intensity *
+		//			 (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
+		//		.Evaluate ());
 
+		/// <summary>
+		/// Calculate the global light intensity given the global lightin parameters
+		/// and the diffuse and other color coefficents of a vertex.
+		/// </summary>
 		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3> GlobalLightIntensity =
 			GLShader.Function
 			(
@@ -112,6 +119,10 @@
 				)
 			);
 
+		/// <summary>
+		/// Use this module. This function needs to be called once for static field initialization of
+		/// this class.
+		/// </summary>
 		public static void Use () { }
 	}
 }

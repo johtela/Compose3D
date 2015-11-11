@@ -84,7 +84,7 @@
 
 			var lineSeg = new LineSegment<PathNode, Vec2> (Geometries.Curve ());
 
-			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
+			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.0f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, mesh2, lineSeg);
 		}
 
@@ -180,8 +180,8 @@
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
-						_program.DrawTriangles<Vertex> (mesh.VertexBuffer, mesh.IndexBuffer);
-						_program.DrawNormals<Vertex> (mesh.NormalBuffer);
+						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
+						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},
@@ -189,7 +189,7 @@
 				{
 					using (_passthrough.Scope ())
 					{
-						_passthrough.DrawLinePath<PathNode> (lines.VertexBuffer);
+						_passthrough.DrawLinePath (lines.VertexBuffer);
 					}
 				}
 			);

@@ -104,15 +104,13 @@
 				.Extrude (2f, true, true);
 		}
 
-		public static Path<PathNode, Vec2> Curve ()
+		public static Path<PathNode, Vec3> Curve ()
 		{
-			var spline = BSpline<Vec2>.FromControlPoints (2,
-				new Vec2 (0f, -1f),
-				new Vec2 (-1f, 0f),
-				new Vec2 (0f, 1f),
-				new Vec2 (1f, 0f),
-				new Vec2 (0f, -1f));
-			var path = Path<PathNode, Vec2>.FromBSpline (spline, 100);
+			var spline = BSpline<Vec3>.FromControlPoints (2,
+				             new Vec3 (0f, -1f, 0f),
+				             new Vec3 (-1f, 0f, 0f),
+				             new Vec3 (0f, 1f, 0f));
+			var path = Path<PathNode, Vec3>.FromBSpline (spline, 15);
 			return path;
 		}
 	}

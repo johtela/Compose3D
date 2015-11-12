@@ -97,9 +97,8 @@
 		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
 			where V : struct, IVertex
 		{
-			var vec1 = vertices [index1].Position - vertices [index2].Position;
-			var vec2 = vertices [index1].Position - backVertices [index1].Position;
-			return vec1.Cross (vec2).Normalized;
+			return vertices [index1].Position.CalculateNormal (
+				vertices [index2].Position, backVertices [index1].Position);
 		}
 
 		private static Vec3 SmoothenNormal (Vec3 normal, Vec3 adjacentNormal)

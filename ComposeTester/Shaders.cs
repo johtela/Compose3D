@@ -11,11 +11,11 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct PathNode : IPositional<Vec2>
+	public struct PathNode : IPositional<Vec3>
 	{
-		internal Vec2 position;
+		internal Vec3 position;
 
-		Vec2 IPositional<Vec2>.Position
+		Vec3 IPositional<Vec3>.Position
 		{
 			get { return position; }
 			set { position = value; }

@@ -40,7 +40,7 @@
 				from v in Shader.Inputs<PathNode> ()
 				select new Fragment () 
 				{
-					gl_Position = new Vec4 (v.position, 0f, 1f)
+					gl_Position = new Vec4 (v.position, 1f)
 				}), 
 				FragmentShaders.WhiteOutput ());
 		}
@@ -66,12 +66,21 @@
 					{ TextureParameterName.TextureBaseLevel, 0 },
 					{ TextureParameterName.TextureMaxLevel, 0 }
 				});
-			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
-			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
-			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
-				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
+//			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
+//			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
+//			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
+//				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
+			var curve = Geometries.Curve ();
+			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
+
+			var geometry = Lathe<Vertex>.Turn (curve, Axis.Y, new Vec3 (-1f, 0f, 0f), 
+				MathHelper.PiOver6, 0f, MathHelper.TwoPi)
+				.Color (VertexColor<Vec3>.White);
+			var mesh1 = new Mesh<Vertex> (geometry)
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -5f), new Vec3 (0f), new Vec3 (1f));
+
+			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			{
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
@@ -81,8 +90,6 @@
 			//geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
 			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
-
-			var lineSeg = new LineSegment<PathNode, Vec2> (Geometries.Curve ());
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.0f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, mesh2, lineSeg);
@@ -172,7 +179,8 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
-			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<PathNode, Vec2>> (
+			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<PathNode, Vec3>> 
+			(
 				(mesh, mat, nmat) =>
 				{
 					using ( _program.Scope ())

@@ -7,12 +7,12 @@
 
     public class Circular<V> : Primitive<V> where V : struct, IVertex
     {
-		bool _fullArc;
+		bool _fullCircle;
 
-		private Circular (V[] vertices, bool fullArc)
+		private Circular (V[] vertices, bool fullCircle)
 			: base (vertices)
         {
-			_fullArc = fullArc;
+			_fullCircle = fullCircle;
 		}
 
         public static Circular<V> Pie (float width, float height, float stepAngle, 
@@ -20,10 +20,10 @@
         {
             if (startAngle > endAngle)
                 throw new ArgumentException ("Start angle must be bigger than end angle");
-			var fullArc = startAngle == endAngle;
-			if (fullArc)
+			var fullCircle = startAngle == endAngle;
+			if (fullCircle)
 				endAngle += MathHelper.TwoPi;
-			var vertCount = (int)Math.Ceiling ((endAngle - startAngle) / stepAngle) + (fullArc ? 1 : 2);
+			var vertCount = (int)Math.Ceiling ((endAngle - startAngle) / stepAngle) + (fullCircle ? 1 : 2);
             var normal = new Vec3 (0f, 0f, 1f);
 			var vertices = new V[vertCount];
 			vertices [0] = VertexHelpers.New<V> (new Vec3 (0f), normal);
@@ -34,7 +34,7 @@
 				vertices [i] = VertexHelpers.New<V> (pos, normal);
 				angle = Math.Min (angle + stepAngle, endAngle);
 			}
-			return new Circular<V> (vertices, fullArc);
+			return new Circular<V> (vertices, fullCircle);
         }
 
         public static Circular<V> Ellipse (float width, float height, float stepAngle)
@@ -65,7 +65,7 @@
                 yield return i;
                 yield return i - 1; 
 			}
-			if (_fullArc)
+			if (_fullCircle)
 			{
 				yield return 0;
 				yield return 1; 

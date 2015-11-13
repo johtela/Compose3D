@@ -107,11 +107,11 @@
 		public static Path<PathNode, Vec3> Curve ()
 		{
 			var spline = BSpline<Vec3>.FromControlPoints (2,
-				             new Vec3 (0.999999f, -1f, 0f),
+				             new Vec3 (1f, -1f, 0f),
 				             new Vec3 (0f, -1f, 0f),
 							 new Vec3 (-1f, 0f, 0f),
 							 new Vec3 (0f, 1f, 0f),
-							 new Vec3 (0.999999f, 0f, 0f));
+							 new Vec3 (1f, 0f, 0f));
 			var path = Path<PathNode, Vec3>.FromBSpline (spline, 20);
 			return path;
 		}

@@ -32,7 +32,7 @@
 				var pos2 = Positions (path, turnAxis, angle, offset);
 				for (int j = 0; j < pathLen - 1; j++)
 				{
-					var normal = pos1[j].CalculateNormal (pos2[j], pos1[j + 1]);
+					var normal = pos1[j].CalculateNormal (pos2[j + 1], pos1[j + 1]);
 					vertices[vertInd++] = VertexHelpers.New<V> (pos1[j], normal);
 					vertices[vertInd++] = VertexHelpers.New<V> (pos1[j + 1], normal);
 					vertices[vertInd++] = VertexHelpers.New<V> (pos2[j + 1], normal);

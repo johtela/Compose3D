@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Geometry
 {
+	using System;
 	using System.Linq;
 	using Maths;
 
@@ -18,12 +19,13 @@
 		{
 			var vertices = new P[numVertices];
 			var curr = spline.Knots.First ();
-			var step = (float)(spline.Knots.Last () - curr) / (numVertices - 1);
+			var last = spline.Knots.Last () - 0.000001f;
+			var step = (float)(last - curr) / (numVertices - 1);
 
 			for (int i = 0; i < numVertices; i++)
 			{
 				vertices[i].Position = spline.Evaluate (curr);
-				curr += step;
+				curr = Math.Min (curr + step, last);
 			}
 			return new Path<P, V> (vertices);
 		}

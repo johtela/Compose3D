@@ -39,9 +39,9 @@
 			return OffsetOrientAndScale (node, new Vec3 (0f), orientation, new Vec3 (1f));
 		}
 
-		public static SceneNode Scale (this SceneNode node, Vec3 orientation)
+		public static SceneNode Scale (this SceneNode node, Vec3 factor)
 		{
-			return OffsetOrientAndScale (node, new Vec3 (0f), orientation, new Vec3 (1f));
+			return OffsetOrientAndScale (node, new Vec3 (0f), factor, new Vec3 (1f));
 		}
 	}
 }

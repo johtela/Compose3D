@@ -78,7 +78,7 @@
 				MathHelper.PiOver6, 0f, MathHelper.TwoPi)
 				.Color (VertexColor<Vec3>.White);
 			var mesh1 = new Mesh<Vertex> (geometry)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -5f), new Vec3 (0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (10f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
 			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			{

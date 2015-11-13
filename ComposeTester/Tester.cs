@@ -75,7 +75,7 @@
 			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
 
 			var geometry = Lathe<Vertex>.Turn (curve, Axis.Y, new Vec3 (-1f, 0f, 0f), 
-				MathHelper.PiOver6, 0f, MathHelper.TwoPi)
+				MathHelper.Pi / 10f, 0f, MathHelper.TwoPi)
 				.Color (VertexColor<Vec3>.Brass);
 			var mesh1 = new Mesh<Vertex> (geometry)
 				.OffsetOrientAndScale (new Vec3 (10f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));

@@ -72,6 +72,11 @@
 			return res;
 		}
 
+		public static Vec3 CalculateNormal (this Vec3 position, Vec3 adjacentPos1, Vec3 adjacentPos2)
+		{
+			return (adjacentPos1 - position).Cross (adjacentPos2 - position).Normalized;
+		}
+
 		[GLFunction ("cross ({0})")]
 		public static Vec3 Cross (this Vec3 v1, Vec3 v2)
 		{

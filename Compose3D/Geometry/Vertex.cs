@@ -117,11 +117,6 @@
 					return false;
 			return true;
 		}
-
-		public static Vec3 CalculateNormal (this Vec3 position, Vec3 adjacentPos1, Vec3 adjacentPos2)
-		{
-			return (adjacentPos1 - position).Cross (adjacentPos2 - position).Normalized;
-		}
 	}
 }
 

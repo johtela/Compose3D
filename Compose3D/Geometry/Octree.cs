@@ -13,7 +13,7 @@
         {
 			public readonly Node[] Children;
 			public readonly P Positional;
-			public readonly T Data;
+			public T Data;
 
 			public Node (P positional, T data)
             {
@@ -25,17 +25,17 @@
 
 		private Node _root;
 
-		private int ChooseChild (Node node, P positional)
+		private int ChooseChild (Node node, V position)
 		{
 			var result = 0;
-			for (int i = 0; i < positional.Position.Dimensions; i++)
-				result |= (positional.Position [i] >= node.Positional.Position [i] ? 1 : 0) << i;
+			for (int i = 0; i < position.Dimensions; i++)
+				result |= (position [i] >= node.Positional.Position [i] ? 1 : 0) << i;
 			return result;
 		}
 
 		private Node FindParentNode (Node node, P positional, out int index)
 		{
-			index = ChooseChild (node, positional);
+			index = ChooseChild (node, positional.Position);
 			var child = node.Children [index]; 
 			return child == null ? node : FindParentNode (child, positional, out index);
 		}
@@ -44,9 +44,26 @@
 		{
 			if (node.Positional.Equals (positional))
 				return node;
-			var pos = ChooseChild (node, positional);
-			var child = node.Children [pos]; 
+			var child = node.Children [ChooseChild (node, positional.Position)]; 
 			return child == null ? null : FindNode (child, positional);
+		}
+		
+		private IEnumerable<Node> FindNodesWithPosition (Node node, V position)
+		{
+			if (Vec.ApproxEquals (node.Positional.Position, position))
+				yield return node;
+			var child = node.Children [ChooseChild (node, position)]; 
+			if (child != null)
+				foreach (var childNode in FindNodesWithPosition (child, position))
+					yield return childNode;
+		}
+
+		private Node GetNode (P positional)
+		{
+			var node = FindNode (_root, positional);
+			if (node == null)
+				throw new KeyNotFoundException ("Positional not found");
+			return node;
 		}
 
 		public bool Add (P positional, T data)
@@ -76,16 +93,17 @@
 			value = result ? node.Data : default (T);
 			return result;
 		}
+		
+		public IEnumerable<Tuple<P, T>> FindByPosition (V position)
+		{
+			return from node in FindNodesWithPosition (_root, position)
+			       select Tuple.Create (node.Positional, node.Data);
+		}
 
 		public T this[P positional]
 		{
-			get 
-			{
-				var node = FindNode (_root, positional);
-				if (node == null)
-					throw new KeyNotFoundException ("Positional not found");
-				return node.Data;
-			}
+			get { return GetNode (positional).Data; }
+			set { GetNode (positional).Data = value; }
 		}
     }
 }

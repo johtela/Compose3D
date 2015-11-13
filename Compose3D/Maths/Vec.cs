@@ -25,13 +25,20 @@
             return res;
         }
 
-        public static bool ApproxEquals<V> (V vec, V other)
+		public static bool ApproxEquals<V> (V vec, V other, float epsilon)
             where V : struct, IVec<V, float>
         {
             for (int i = 0; i < vec.Dimensions; i++)
-                if (!vec[i].ApproxEquals (other[i])) return false;
+				if (!vec[i].ApproxEquals (other[i], epsilon)) return false;
             return true;
         }
+
+		public static bool ApproxEquals<V> (V vec, V other)
+			where V : struct, IVec<V, float>
+		{
+			return ApproxEquals (vec, other, 0.000001f);
+		}
+
 
         public static V With<V, T> (this V vec, int i, T value)
             where V : struct, IVec<V, T>

@@ -189,7 +189,7 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-						_program.DrawNormals (mesh.NormalBuffer);
+//						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

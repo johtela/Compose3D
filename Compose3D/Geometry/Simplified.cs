@@ -40,10 +40,6 @@
 							_octree [dupl.Item1] = resCnt;
 							reduced [dupl.Item2].Normal = new Vec3 (0f);
 						}
-						else
-						{
-							
-						}
 					}
 					vert.Normal = normal.Normalized;
 					result [resCnt++] = vert;

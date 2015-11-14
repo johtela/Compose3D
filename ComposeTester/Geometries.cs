@@ -101,7 +101,8 @@
 				from x in Ext.Range (range, -range, -step)
 				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
 			return Polygon<Vertex>.FromVec2s (contour)
-				.Extrude (2f, true, true);
+				.Extrude (2f, true, false)
+				.Smoothen (0.9f);
 		}
 
 		public static Path<PathNode, Vec3> Curve ()

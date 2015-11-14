@@ -19,17 +19,21 @@
 			var pathLen = path.Vertices.Length;
 			if (pathLen < 2)
 				throw new ArgumentException ("Path must contain at least two positions");
-			if (startAngle == endAngle)
+			var fullCircle = startAngle == endAngle;
+			if (fullCircle)
 				endAngle += MathHelper.TwoPi;
 			var radialCount = (int)Math.Ceiling ((endAngle - startAngle) / stepAngle) * 2;
 			var vertices = new V [radialCount * (pathLen - 1) * 2];
 			var angle = startAngle;
 			var vertInd = 0;
+			var pos1 = Positions (path, turnAxis, angle, offset);
+			var firstPos = pos1;
 			for (var i = 0; i < radialCount; i += 2)
 			{
-				var pos1 = Positions (path, turnAxis, angle, offset);
 				angle = Math.Min (angle + stepAngle, endAngle);
-				var pos2 = Positions (path, turnAxis, angle, offset);
+				var pos2 = fullCircle && i == radialCount - 2 ? 
+					firstPos : 
+					Positions (path, turnAxis, angle, offset);
 				for (int j = 0; j < pathLen - 1; j++)
 				{
 					var normal = pos1[j].CalculateNormal (pos2[j + 1], pos1[j + 1]);
@@ -38,6 +42,7 @@
 					vertices[vertInd++] = VertexHelpers.New<V> (pos2[j + 1], normal);
 					vertices[vertInd++] = VertexHelpers.New<V> (pos2[j], normal);
 				}
+				pos1 = pos2;
 			}
 			return new Lathe<V> (vertices);
 

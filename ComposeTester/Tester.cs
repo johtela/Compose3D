@@ -74,8 +74,7 @@
 			var curve = Geometries.Curve ();
 			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
 
-			var geometry = Lathe<Vertex>.Turn (curve, Axis.Y, new Vec3 (-1f, 0f, 0f), 
-				MathHelper.Pi / 12, 0f, MathHelper.TwoPi)
+			var geometry = Lathe<Vertex>.Turn (curve, Axis.Y, new Vec3 (-1f, 0f, 0f), MathHelper.Pi / 12, 0f, 0f)
 				.Smoothen (0.9f)
 				.Color (VertexColor<Vec3>.Brass);
 			var mesh1 = new Mesh<Vertex> (geometry)
@@ -190,7 +189,7 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-						_program.DrawNormals (mesh.NormalBuffer);
+//						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

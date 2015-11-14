@@ -101,6 +101,7 @@
 				vertices [index2].Position, backVertices [index1].Position);
 		}
 
+		// TODO: Remove smoothenining because we have more general modifier now in Simplified.
 		private static Vec3 SmoothenNormal (Vec3 normal, Vec3 adjacentNormal)
 		{
 			return normal.Dot (adjacentNormal) > 0.75f ? (normal + adjacentNormal).Normalized : normal;

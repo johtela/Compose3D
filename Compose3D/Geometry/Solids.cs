@@ -84,16 +84,6 @@
 			return edges.Except (innerEdges);
 		}
 
-		private static Edge FindPreviousEdge (Edge[] edges, Edge edge)
-		{
-			return edges.Single (e => e.Index2 == edge.Index1);
-		}
-
-		private static Edge FindNextEdge (Edge[] edges, Edge edge)
-		{
-			return edges.Single (e => e.Index1 == edge.Index2);
-		}
-
 		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
 			where V : struct, IVertex
 		{
@@ -101,17 +91,11 @@
 				vertices [index2].Position, backVertices [index1].Position);
 		}
 
-		// TODO: Remove smoothenining because we have more general modifier now in Simplified.
-		private static Vec3 SmoothenNormal (Vec3 normal, Vec3 adjacentNormal)
-		{
-			return normal.Dot (adjacentNormal) > 0.75f ? (normal + adjacentNormal).Normalized : normal;
-		}
-
 		#endregion
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
-			bool includeFrontFace, bool includeBackFace, bool smoothNormals, 
-			IEnumerable<Mat4> transforms) where V : struct, IVertex
+			bool includeFrontFace, bool includeBackFace, IEnumerable<Mat4> transforms) 
+			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
 			if (!vertices.All (v => v.Position.Z == 0f))
@@ -140,20 +124,6 @@
 					var frontNormal2 = frontNormal1;
 					var backNormal1 = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
 					var backNormal2 = backNormal1;
-					if (smoothNormals)
-					{
-						var prevEdge = FindPreviousEdge (outerEdges, edge);
-						var nextEdge = FindNextEdge (outerEdges, edge);
-						var frontPrevNormal = CalculateNormal (vertices, backVertices, prevEdge.Index1, prevEdge.Index2);
-						var frontNextNormal = CalculateNormal (vertices, backVertices, nextEdge.Index1, nextEdge.Index2);
-						var backPrevNormal = CalculateNormal (backVertices, vertices, prevEdge.Index2, prevEdge.Index1);
-						var backNextNormal = CalculateNormal (backVertices, vertices, nextEdge.Index2, nextEdge.Index1);
-						
-						frontNormal1 = SmoothenNormal (frontNormal1, frontPrevNormal);
-						frontNormal2 = SmoothenNormal (frontNormal2, frontNextNormal);
-						backNormal1 = SmoothenNormal (backNormal1, backPrevNormal);
-						backNormal2 = SmoothenNormal (backNormal2, backNextNormal);
-					}
 					geometries[i] = Quadrilateral<V>.FromVertices (
 						SideVertex (vertices[edge.Index2], frontNormal2),
 						SideVertex (vertices[edge.Index1], frontNormal1),
@@ -168,22 +138,22 @@
 		}
 
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 
-			bool includeBackFace, bool smooth) where V : struct, IVertex
+			bool includeBackFace) where V : struct, IVertex
 		{
-			return frontFace.Stretch (1, true, includeBackFace, smooth, 
+			return frontFace.Stretch (1, true, includeBackFace, 
 				new Mat4[] { Mat.Translation<Mat4> (0f, 0f, -depth) });
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
 			where V : struct, IVertex
 		{
-			return frontFace.Extrude (depth, true, false);
+			return frontFace.Extrude (depth, true);
 		}
 
 		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
 			where V : struct, IVertex
 		{
-			return frontFace.Center ().Stretch (1, false, false, false, 
+			return frontFace.Center ().Stretch (1, false, false,  
 				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
 		}
 

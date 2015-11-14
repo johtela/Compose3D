@@ -42,7 +42,7 @@
 			int roofSnapTag, int gableTopTag)
 		{
 			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z)
-				.Extrude (12f, false, false).Rotate (MathHelper.PiOver2, 0f, 0f);
+				.Extrude (12f, false).Rotate (MathHelper.PiOver2, 0f, 0f);
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
 			return wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
@@ -71,22 +71,26 @@
 		public static Geometry<Vertex> Tube ()
 		{
 			return Circular<Vertex>.Circle (10f)
-				.Stretch (10, true, true, true, TubeTransforms ()).Center ();
+				.Stretch (10, true, true, TubeTransforms ())
+				.Smoothen (0.9f)
+				.Center ();
 		}
 
 		public static Geometry<Vertex> Arrow ()
 		{
 			return Circular<Vertex>.Circle (10f, 10f.Radians ())
-				.Stretch (1, false, false, true, 
+				.Stretch (1, false, false, 
 					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
+				.Smoothen (0.9f)
 				.Center ();
 		}
 
 		public static Geometry<Vertex> Pipe ()
 		{
-            return Circular<Vertex>.Pie (10f, 10f, 10f.Radians (), 0f, MathHelper.Pi)
+			return Circular<Vertex>.Pie (10f, 10f, 10f.Radians (), 0f, MathHelper.Pi)
                 .Hollow (1.2f, 1.2f)
-                .Extrude (10f, true, true)
+                .Extrude (10f, true)
+				.Smoothen (0.9f)
                 .Center ();
 		}
 
@@ -101,7 +105,7 @@
 				from x in Ext.Range (range, -range, -step)
 				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
 			return Polygon<Vertex>.FromVec2s (contour)
-				.Extrude (2f, true, false)
+				.Extrude (2f, true)
 				.Smoothen (0.9f);
 		}
 

@@ -85,11 +85,11 @@
 				{ TextureParameterName.TextureBaseLevel, 0 },
 				{ TextureParameterName.TextureMaxLevel, 0 }
 			});
-			var geometry2 = Geometries.SineS ().Color (VertexColor<Vec3>.Brass);
-			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
+			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
+//			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
 			//geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
 			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (10f));
+				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.0f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, mesh2, lineSeg);
@@ -189,7 +189,7 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-//						_program.DrawNormals (mesh.NormalBuffer);
+						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

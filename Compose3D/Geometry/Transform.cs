@@ -13,7 +13,7 @@
 			: base (geometry)
 		{
 			_matrix = matrix;
-            _normalMatrix = new Mat3(_matrix);
+			_normalMatrix = new Mat3(_matrix).Inverse.Transposed;
 		}
 
 		protected override IEnumerable<V> GenerateVertices ()

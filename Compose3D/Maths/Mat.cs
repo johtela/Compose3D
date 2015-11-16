@@ -204,7 +204,7 @@
 
         public static Vec3 Transform (this Mat4 mat, Vec3 point)
         {
-            return new Vec3 (mat * new Vec4 (point, 0f));
+			return new Vec3 (mat * new Vec4 (point, 1f));
         }
 
         /// <summary>

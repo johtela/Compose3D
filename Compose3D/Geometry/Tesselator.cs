@@ -64,6 +64,8 @@
 		public static int[] TesselatePolygon (V[] vertices)
 		{
 			var count = vertices.Length;
+			if (count < 3)
+				throw new ArgumentException ("Tesselator needs at least 3 vertices");
 			var result = new int[(count - 2) * 3];
 			var resInd = 0;
 			var tessVerts = TessVertex.FromEnumerable (

@@ -15,14 +15,22 @@
 			_indices = indices;
 		}
 
+		public static Polygon<V> FromVertices (IEnumerable<V> vertices)
+		{
+			var path = vertices.RemoveConsequtiveDuplicates ().ToArray ();
+			if (path.Length < 3)
+				throw new ArgumentException ("Polygon must contain at least 3 unique vertices");
+			return new Polygon<V> (path, Tesselator<V>.TesselatePolygon (path));
+		}
+
 		public static Polygon<V> FromVertices (params V[] vertices)
 		{
-			return new Polygon<V> (vertices, Tesselator<V>.TesselatePolygon (vertices));
+			return Polygon<V>.FromVertices (vertices as IEnumerable<V>);
 		}
 
 		public static Polygon<V> FromVec2s (params Vec2[] vectors)
 		{
-			return FromVertices (vectors.Map (vec => VertexHelpers.New<V> (new Vec3 (vec, 0f), new Vec3 (0f, 0f, 1f))));
+			return FromVertices (vectors.Select (vec => VertexHelpers.New<V> (new Vec3 (vec, 0f), new Vec3 (0f, 0f, 1f))));
 		}
 
 		protected override IEnumerable<int> GenerateIndices ()

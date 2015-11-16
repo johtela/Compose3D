@@ -59,13 +59,13 @@
 			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.001f, 0.001f);
 			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.001f, 0.001f);
 
-			var tulipTexture = Texture.FromBitmap (
-				"This is a test".TextToBitmapCentered (1024, 1024, 100),
-				new TextureParams () 
-				{
-					{ TextureParameterName.TextureBaseLevel, 0 },
-					{ TextureParameterName.TextureMaxLevel, 0 }
-				});
+//			var textTexture = Texture.FromBitmap (
+//				"This is a test".TextToBitmapCentered (1024, 1024, 100),
+//				new TextureParams () 
+//				{
+//					{ TextureParameterName.TextureBaseLevel, 0 },
+//					{ TextureParameterName.TextureMaxLevel, 0 }
+//				});
 //			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
 //			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
@@ -74,25 +74,34 @@
 			var curve = Geometries.Curve ();
 			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
 
-			var geometry = Lathe<Vertex>.Turn (curve, Axis.Y, new Vec3 (-1f, 0f, 0f), MathHelper.Pi / 12, 0f, 0f)
-				.Smoothen (0.9f)
-				.Color (VertexColor<Vec3>.Brass);
-			var mesh1 = new Mesh<Vertex> (geometry)
-				.OffsetOrientAndScale (new Vec3 (10f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
+			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 8f, 0f, 0f)
+				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f))
+				.Rotate (0f, -90f.Radians (), 0f);
+			
+			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Frontmost ().Reverse ()
+				.Select (v => v.With (v.position, new Vec3 (0f, 0f, 1f))))
+				.Extrude (0.5f, false);
+			var fighter = Composite.Create (Stacking.StackForward (nose, fuselage))
+				.Smoothen (0.8f)
+				.Color (VertexColor<Vec3>.Chrome);
+				
+			
+			var mesh1 = new Mesh<Vertex> (fighter)
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
-			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
-			{
-				{ TextureParameterName.TextureBaseLevel, 0 },
-				{ TextureParameterName.TextureMaxLevel, 0 }
-			});
-			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
+//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
+//			{
+//				{ TextureParameterName.TextureBaseLevel, 0 },
+//				{ TextureParameterName.TextureMaxLevel, 0 }
+//			});
+//			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
 //			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-			//geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
-			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
-				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+//			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
+//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
+//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
-			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.0f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1, mesh2, lineSeg);
+			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
+				mesh1, lineSeg);
 		}
 
 		private void InitializeUniforms ()

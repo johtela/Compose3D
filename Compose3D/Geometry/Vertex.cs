@@ -1,9 +1,10 @@
 ﻿namespace Compose3D.Geometry
 {
-	using Compose3D.Maths;
+	using Maths;
     using Textures;
 	using System.Collections.Generic;
-
+	using System.Linq;
+	
 	/// <summary>
 	/// Interface for objects with any position data.
 	/// </summary>
@@ -66,6 +67,14 @@
         {
             return New<V> (position, normal, 0);
         }
+
+		public static V With<V>(this V vertex, Vec3 position, Vec3 normal)
+			where V : struct, IVertex
+		{
+			vertex.Position = position;
+			vertex.Normal = normal;
+			return vertex;
+		}
 
         public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
 			where V : struct, IVertex

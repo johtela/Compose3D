@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
+	using Maths;
     using System;
-    using Compose3D.Maths;
     using Textures;
     using System.Collections.Generic;
     using System.Linq;
@@ -98,7 +98,8 @@
 			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
-			if (!vertices.All (v => v.Position.Z == 0f))
+			var zplane = vertices [0].Position.Z;
+			if (!vertices.All (v => v.Position.Z == zplane))
 				throw new ArgumentException ("Geometry is not on completely on the XY-plane.", "frontFace");
 
 			var edges = GetEdges (frontFace).ToArray ();
@@ -115,20 +116,19 @@
             {
 				if (!txenum.MoveNext ())
 					throw new GeometryError ("Transforms exhausted prematurely.");
-				backFace = frontFace.Scale (1f, 1f, -1f).Transform (txenum.Current);
+				backFace = frontFace.ManipulateVertices (v => true, 
+					v => v.With (txenum.Current.Transform (v.Position), -v.Normal));
 				var backVertices = backFace.Vertices;
                 for (var j = 0; j < outerEdges.Length; i++, j++)
                 {
                     var edge = outerEdges[j];
-					var frontNormal1 = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
-					var frontNormal2 = frontNormal1;
-					var backNormal1 = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
-					var backNormal2 = backNormal1;
+					var frontNormal = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
+					var backNormal = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
 					geometries[i] = Quadrilateral<V>.FromVertices (
-						SideVertex (vertices[edge.Index2], frontNormal2),
-						SideVertex (vertices[edge.Index1], frontNormal1),
-						SideVertex (backFace.Vertices[edge.Index1], backNormal1),
-						SideVertex (backFace.Vertices[edge.Index2], backNormal2));
+						SideVertex (vertices[edge.Index2], frontNormal),
+						SideVertex (vertices[edge.Index1], frontNormal),
+						SideVertex (backFace.Vertices[edge.Index1], backNormal),
+						SideVertex (backFace.Vertices[edge.Index2], backNormal));
                 }
                 vertices = backFace.Vertices;
             }

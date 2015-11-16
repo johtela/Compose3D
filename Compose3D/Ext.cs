@@ -232,7 +232,20 @@ namespace Compose3D
 			for (float val = start; step > 0 ? val <= end : val >= end; val += step)
 				yield return val;
 		}
-
+		
+		public static IEnumerable<T> RemoveConsequtiveDuplicates<T> (this IEnumerable<T> items)
+		{
+			if (!items.Any ())
+				yield break;
+			var prev = items.First ();
+			foreach (var item in items.Skip (1))
+			{
+				if (!item.Equals (prev))
+					yield return item;
+				prev = item;
+			}
+		}
+		
         #endregion        
         
         #region Map & Fold

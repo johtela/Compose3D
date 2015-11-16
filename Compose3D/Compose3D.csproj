@@ -167,6 +167,7 @@
     <Compile Include="Maths\BSpline.cs" />
     <Compile Include="Shaders\FragmentShaders.cs" />
     <Compile Include="Geometry\Lathe.cs" />
+    <Compile Include="Geometry\VertexManipulator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

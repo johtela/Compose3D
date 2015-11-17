@@ -41,7 +41,9 @@
 		public static BSpline<V> FromControlPoints (int degree, params V[] controlPoints)
 		{
 			var len = controlPoints.Length;
-			var knots = new float[len + degree + 1];
+			if (len < 2)
+				throw new ArgumentException ("You must give at least two control points.", "controlPoints");
+            var knots = new float[len + degree + 1];
 			var start = (degree / 2) + 1;
 			var curr = 0;
 			while (curr < start)

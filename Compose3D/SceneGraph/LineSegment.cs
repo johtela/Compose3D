@@ -23,7 +23,7 @@
 			get
 			{
 				if (_vertexBuffer == null)
-					_vertexBuffer = new VBO<P> (Path.Vertices, BufferTarget.ArrayBuffer);
+					_vertexBuffer = new VBO<P> (Path.Nodes, BufferTarget.ArrayBuffer);
 				return _vertexBuffer;
 			}
 		}

@@ -17,9 +17,11 @@
 
 		public static Polygon<V> FromVertices (IEnumerable<V> vertices)
 		{
-			var path = vertices.RemoveConsequtiveDuplicates ().ToArray ();
+			var path = vertices.Distinct ().ToArray ();
 			if (path.Length < 3)
-				throw new ArgumentException ("Polygon must contain at least 3 unique vertices");
+				throw new ArgumentException (
+					@"Polygon must contain at least 3 unique vertices. 
+					Duplicate vertices are removed from the list automatically.", "vertices");
 			return new Polygon<V> (path, Tesselator<V>.TesselatePolygon (path));
 		}
 

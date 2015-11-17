@@ -81,6 +81,9 @@
 
 		public static Vec3 CalculateNormal (this Vec3 position, Vec3 adjacentPos1, Vec3 adjacentPos2)
 		{
+			if (position == adjacentPos1 || position == adjacentPos2 || adjacentPos1 == adjacentPos2)
+				throw new ArgumentException (
+					"The positions need to be unique in oreder to calculate the normal correctly.");
 			return (adjacentPos1 - position).Cross (adjacentPos2 - position).Normalized;
 		}
 

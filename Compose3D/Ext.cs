@@ -235,13 +235,15 @@ namespace Compose3D
 		
 		public static IEnumerable<T> RemoveConsequtiveDuplicates<T> (this IEnumerable<T> items)
 		{
-			if (!items.Any ())
-				yield break;
-			var prev = items.First ();
-			foreach (var item in items.Skip (1))
+			var prev = default (T);
+			var first = true;
+			foreach (var item in items)
 			{
-				if (!item.Equals (prev))
+				if (first || !item.Equals (prev))
+				{
 					yield return item;
+					first = false;
+				}
 				prev = item;
 			}
 		}

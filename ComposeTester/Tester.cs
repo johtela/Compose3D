@@ -72,9 +72,8 @@
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
 			var curve = Geometries.Curve ();
-			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
 
-			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 8f, 0f, 0f)
+			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 10f, 0f, 0f)
 				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
 			
 			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Rightmost ().Reverse ()
@@ -84,22 +83,26 @@
 				.Rotate (0f, 90f.Radians (), 0f)
 				.Smoothen (0.8f)
 				.Color (VertexColor<Vec3>.Chrome);
-			
+
+			var path = Path<PathNode, Vec3>.FromVec3s (fighter.Vertices.Backmost ().Select (
+				v => new Vec3 (v.position.X, v.position.Y, 0f)).Distinct ());
+			var lineSeg = new LineSegment<PathNode, Vec3> (path);
+
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
-//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
-//			{
-//				{ TextureParameterName.TextureBaseLevel, 0 },
-//				{ TextureParameterName.TextureMaxLevel, 0 }
-//			});
-//			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
-//			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-//			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
-//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
-//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
+			//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
+			//			{
+			//				{ TextureParameterName.TextureBaseLevel, 0 },
+			//				{ TextureParameterName.TextureMaxLevel, 0 }
+			//			});
+			//			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
+			//			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
+			//			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
+			//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
+			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
-			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
+			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
 				mesh1, lineSeg);
 		}
 

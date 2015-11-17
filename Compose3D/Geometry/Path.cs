@@ -21,6 +21,21 @@
 			Nodes = uniqNodes;
 		}
 
+		public Path<P, V> Close ()
+		{
+			return new Path<P, V> (Nodes.Concat (new P[] { Nodes[0] }));
+		}
+
+		public bool IsClosed
+		{
+			get { return Nodes.First ().Position.Equals (Nodes.Last ().Position); }
+		}
+
+		public static Path<P, V> FromVec3s (IEnumerable<V> positions)
+		{
+			return new Path<P, V> (positions.Select (p => new P () { Position = p }));
+		}
+
 		public static Path<P, V> FromBSpline (BSpline<V> spline, int numNodes)
 		{
 			var nodes = new P[numNodes];
@@ -44,11 +59,6 @@
 		public static Path<P, V> operator + (Path<P, V> path1, P node)
 		{
 			return new Path<P, V> (path1.Nodes.Concat (new P[] { node }));
-		}
-
-		public Path<P, V> Close ()
-		{
-			return new Path<P, V> (Nodes.Concat (new P[] { Nodes[0] }));
 		}
 	}
 }

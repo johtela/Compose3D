@@ -75,16 +75,15 @@
 			var lineSeg = new LineSegment<PathNode, Vec3> (curve);
 
 			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 8f, 0f, 0f)
-				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f))
-				.Rotate (0f, -90f.Radians (), 0f);
+				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
 			
-			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Frontmost ().Reverse ()
-				.Select (v => v.With (v.position, new Vec3 (0f, 0f, 1f))))
+			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Rightmost ().Reverse ()
+				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
 				.Extrude (0.5f, false);
-			var fighter = Composite.Create (Stacking.StackForward (nose, fuselage))
+			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
+				.Rotate (0f, 90f.Radians (), 0f)
 				.Smoothen (0.8f)
 				.Color (VertexColor<Vec3>.Chrome);
-				
 			
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));

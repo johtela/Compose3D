@@ -16,9 +16,8 @@
 			var uniqNodes = nodes.RemoveConsequtiveDuplicates ().ToArray ();
 			if (uniqNodes.Length < 2)
 				throw new ArgumentException (
-					@"Path must contain at least two vertices.
-					Consequtive duplicate vertices are removed automatically.", 
-					"vertices");
+					"Path must contain at least two vertices. Consequtive duplicate vertices " + 
+					"are removed automatically.", "vertices");
 			Nodes = uniqNodes;
 		}
 

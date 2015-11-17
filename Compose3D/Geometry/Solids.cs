@@ -2,7 +2,6 @@
 {
 	using Maths;
     using System;
-    using Textures;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -98,9 +97,11 @@
 			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
-			var zplane = vertices [0].Position.Z;
-			if (!vertices.All (v => v.Position.Z == zplane))
-				throw new ArgumentException ("Geometry is not on completely on the XY-plane.", "frontFace");
+			var firstNormal = vertices[0].Normal;
+			if (!(VertexHelpers.AreCoplanar (vertices) && vertices.All (v => v.Normal == firstNormal)))
+				throw new ArgumentException (
+					"Geometry is not on completely on the same plane. Also all the normals need to " +
+					"point towards the same direction.", "frontFace");
 
 			var edges = GetEdges (frontFace).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
@@ -115,7 +116,7 @@
 			for (var t = 0; t < repeatCount; t++)
             {
 				if (!txenum.MoveNext ())
-					throw new GeometryError ("Transforms exhausted prematurely.");
+					throw new ArgumentException ("Transforms enumerable exhausted prematurely.", "transforms");
 				backFace = frontFace.ManipulateVertices (v => true, 
 					v => v.With (txenum.Current.Transform (v.Position), -v.Normal));
 				var backVertices = backFace.Vertices;
@@ -140,8 +141,12 @@
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 
 			bool includeBackFace) where V : struct, IVertex
 		{
+			if (depth <= 0f)
+				throw new ArgumentException (
+					"Depth of the extrusion needs to be greater than zero.", "depth");
+			var offs = -frontFace.Vertices[0].Normal * depth;
 			return frontFace.Stretch (1, true, includeBackFace, 
-				new Mat4[] { Mat.Translation<Mat4> (0f, 0f, -depth) });
+				new Mat4[] { Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) });
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
@@ -153,6 +158,11 @@
 		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
 			where V : struct, IVertex
 		{
+			var z = frontFace.Vertices.First ().Position.Z;
+			if (!frontFace.Vertices.All (v => v.Position.Z == z))
+				throw new ArgumentException (
+					"All the vertices need to be on the XY-plane. I.e. they need to have the " +
+					"same Z-coordinate.", "frontFace");
 			return frontFace.Center ().Stretch (1, false, false,  
 				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
 		}
@@ -164,4 +174,3 @@
 		}
 	}
 }
-

@@ -16,8 +16,8 @@
 		{
 			if (startAngle > endAngle)
 				throw new ArgumentException (
-					@"Start angle must be less or equal than the end angle.	If you want to spin 
-					the path full circle, set the startAngle and endAngle to the same value.", 
+					"Start angle must be less or equal than the end angle.If you want to turn " +
+					"the path a full circle, set the startAngle and endAngle to the same value.", 
 					"startAngle");
 			var pathLen = path.Nodes.Length;
 			var fullCircle = startAngle == endAngle;

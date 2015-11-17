@@ -1,4 +1,4 @@
-﻿namespace Compose3D.GLTypes
+﻿namespace Compose3D.Shaders
 {
 	using System;
 

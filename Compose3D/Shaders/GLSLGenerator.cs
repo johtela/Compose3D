@@ -1,6 +1,7 @@
-﻿namespace Compose3D.GLTypes
+﻿namespace Compose3D.Shaders
 {
     using Compose3D;
+	using GLTypes;
     using OpenTK.Graphics.OpenGL;
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Compose3D.GLTypes
+﻿namespace Compose3D.Shaders
 {
 	using System;
 	using System.Linq;
@@ -8,6 +8,7 @@
 	using System.Collections.Generic;
 	using System.Text;
 	using System.Globalization;
+	using GLTypes;
 
 	public delegate T Shader<T> (ShaderState state); 
 

@@ -21,6 +21,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\Compose3D.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,7 +53,6 @@
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="Geometry\Octree.cs" />
-    <Compile Include="GLTypes\ParsingHelpers.cs" />
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\Attributes.cs" />
@@ -68,9 +69,6 @@
     <Compile Include="Ext.cs" />
     <Compile Include="Geometry\BBox.cs" />
     <Compile Include="GLTypes\GLShader.cs" />
-    <Compile Include="GLTypes\Shader.cs" />
-    <Compile Include="GLTypes\ShaderState.cs" />
-    <Compile Include="GLTypes\GLSLGenerator.cs" />
     <Compile Include="GLTypes\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
     <Compile Include="Geometry\Solids.cs" />
@@ -168,6 +166,10 @@
     <Compile Include="Shaders\FragmentShaders.cs" />
     <Compile Include="Geometry\Lathe.cs" />
     <Compile Include="Geometry\VertexManipulator.cs" />
+    <Compile Include="Shaders\Shader.cs" />
+    <Compile Include="Shaders\ShaderState.cs" />
+    <Compile Include="Shaders\ParsingHelpers.cs" />
+    <Compile Include="Shaders\GLSLGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

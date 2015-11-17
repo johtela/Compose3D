@@ -74,18 +74,21 @@
 			var curve = Geometries.Curve ();
 
 			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 10f, 0f, 0f)
-				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
+				.ManipulateVertices (
+					v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
 			
 			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Rightmost ().Reverse ()
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
 				.Extrude (0.5f, false);
 			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
 				.Rotate (0f, 90f.Radians (), 0f)
-				.Smoothen (0.8f)
+//				.Smoothen (0.8f)
 				.Color (VertexColor<Vec3>.Chrome);
 
-			var path = Path<PathNode, Vec3>.FromVec3s (fighter.Vertices.Backmost ().Select (
-				v => new Vec3 (v.position.X, v.position.Y, 0f)).Distinct ());
+			var path = Path<PathNode, Vec3>.FromVec3s (
+				fighter.Vertices.Backmost ().Facing (FaceDir.Back).Select (
+					v => new Vec3 (v.position.X, v.position.Y, 0f)))
+				.Close ();
 			var lineSeg = new LineSegment<PathNode, Vec3> (path);
 
 			var mesh1 = new Mesh<Vertex> (fighter)

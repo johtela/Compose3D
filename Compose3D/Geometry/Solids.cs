@@ -98,7 +98,7 @@
 		{
 			var vertices = frontFace.Vertices;
 			var firstNormal = vertices[0].Normal;
-			if (!(VertexHelpers.AreCoplanar (vertices) && vertices.All (v => v.Normal == firstNormal)))
+			if (!(vertices.AreCoplanar () && vertices.All (v => v.Normal == firstNormal)))
 				throw new ArgumentException (
 					"Geometry is not on completely on the same plane. Also all the normals need to " +
 					"point towards the same direction.", "frontFace");

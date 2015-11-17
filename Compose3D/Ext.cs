@@ -147,6 +147,13 @@ namespace Compose3D
 			enumerator.MoveNext ();
 			return enumerator.Current;
 		}
+		
+		public static T Next<T> (ref IEnumerable<T> enumerable)
+		{
+			var result = enumerable.First ();
+			enumerable = enumerable.Skip (1);
+			return result;
+		}
 
         public static IEnumerable<T> Prepend<T> (this IEnumerable<T> enumerable, T item)
         {

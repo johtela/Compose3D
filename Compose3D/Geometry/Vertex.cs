@@ -48,6 +48,16 @@
 		void Initialize (ref V vertex);
 	}
 
+	public static class FaceDir
+	{
+		public static Vec3 Left = new Vec3 (-1f, 0f, 0f);
+		public static Vec3 Right = new Vec3 (1f, 0f, 0f);
+		public static Vec3 Down = new Vec3 (0f, -1f, 0f);
+		public static Vec3 Up = new Vec3 (0f, 1f, 0f);
+		public static Vec3 Back = new Vec3 (0f, 0f, -1f);
+		public static Vec3 Front = new Vec3 (0f, 0f, 1f);
+	}
+
 	public static class VertexHelpers
 	{
         public static V New<V>(Vec3 position, Vec3 normal, int tag)
@@ -111,20 +121,23 @@
 		{
 			return vertices.MaximumItems (v => v.Position.Z);
 		}
-
-		public static bool AreCoplanar<V> (params V[] vertices) where V : struct, IVertex
+		
+		public static IEnumerable<V> Facing<V> (this IEnumerable<V> vertices, Vec3 direction)
+			where V : struct, IVertex
 		{
-			if (vertices.Length < 4)
+			return vertices.Where (v => v.Normal.Dot (direction).ApproxEquals (1f, 0.1f));
+		}
+		
+		public static bool AreCoplanar<V> (this IEnumerable<V> vertices) where V : struct, IVertex
+		{
+			if (vertices.Count () < 4)
 				return true;
-			var first = vertices [0].Position;
-			var ab = vertices [1].Position - first;
-			var ac = vertices [2].Position - first;
+			var first = Ext.Next (ref vertices).Position;
+			var ab = Ext.Next (ref vertices).Position - first;
+			var ac = Ext.Next (ref vertices).Position - first;
 			var normal = ab.Cross (ac);
 
-			for (int i = 3; i < vertices.Length; i++)
-				if (!normal.Dot (vertices [i].Position - first).ApproxEquals (0f, 0.1f))
-					return false;
-			return true;
+			return vertices.All (v => normal.Dot (v.Position - first).ApproxEquals (0f, 0.1f));
 		}
 	}
 }

@@ -10,10 +10,14 @@ namespace Compose3D.Geometry
     /// </summary>
     public enum Alignment
     {
-        None,		/// No alignment
-        Negative,	/// Align along faces with the smaller coordinates.
-        Center, 	/// Align along the center of the bounding boxes.
-        Positive	/// Align along the faces with greater coordinates.
+		/// No alignment
+        None,
+		/// Align along faces with the smaller coordinates.
+        Negative,
+		/// Align along the center of the bounding boxes.
+        Center,
+		/// Align along the faces with greater coordinates.
+        Positive
     }
 
     /// <summary>

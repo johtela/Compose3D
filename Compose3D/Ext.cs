@@ -81,6 +81,12 @@ namespace Compose3D
 		{
 			return array[array.Length - 1];
 		}
+		
+		public static IEnumerable<T> Slice<T> (this T[] array, int start, int length)
+		{
+			for (int i = start; i < array.Length; i++)
+				yield return array [i];
+		}
 
         #endregion
 

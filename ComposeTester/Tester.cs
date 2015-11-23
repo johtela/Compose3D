@@ -82,7 +82,7 @@
 				.Extrude (0.5f, false);
 			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
 				.Rotate (0f, 90f.Radians (), 0f)
-//				.Smoothen (0.8f)
+				.Smoothen (0.8f)
 				.Color (VertexColor<Vec3>.Chrome);
 
 			var path = Path<PathNode, Vec3>.FromVec3s (

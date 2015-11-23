@@ -50,6 +50,33 @@
 			}
 			return new Path<P, V> (nodes);
 		}
+		
+		public Path<P, V> MatchNodesWith (Path<P, V> other)
+		{
+			var len = Nodes.Length;
+			if (other.Nodes.Length != len)
+				throw new ArgumentException ("Paths must have same number of nodes", "other");
+			if (!(IsClosed && other.IsClosed))
+				throw new ArgumentException ("Paths must be closed in order to match their nodes");
+			len--;
+			
+			var best = float.PositiveInfinity;
+			var first = 0;
+			for (int i = 0; i < len; i++)
+			{
+				var curr = 0f;
+				var nodePos = Nodes [i].Position; 
+				for (int j = 0; j < len; j++)
+					curr += nodePos.Subtract (other.Nodes [j % len].Position).LengthSquared;
+				if (curr < best)
+				{
+					best = curr;
+					first = i;
+				}
+			}
+			return new Path<P, V> (Nodes.Slice (first, len - first)
+				.Concat (Nodes.Slice (0, first + 1)));
+		}
 
 		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)
 		{

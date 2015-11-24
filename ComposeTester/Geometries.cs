@@ -13,7 +13,7 @@
 	{
 		public static Geometry<Vertex> Hammer ()
 		{
-			var cube1 = Solids.Cube<Vertex> (1f, 1.5f, 2f).Rotate (0f, MathHelper.PiOver2, 0f);
+			var cube1 = Solids.Cube<Vertex> (1f, 1.5f, 2f).RotateY (MathHelper.PiOver2);
 			var cube2 = Solids.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f);
 			var cube3 = Solids.Cube<Vertex> (1f, 1f, 2f);
 			return Composite.Create (Stacking.StackRight (cube1, cube2, cube3)
@@ -24,7 +24,7 @@
 		{
 			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f);
 			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
-			var leftPane = trapezoid.Extrude (30f).Rotate (0f, 0f, MathHelper.PiOver4);
+			var leftPane = trapezoid.Extrude (30f).RotateZ (MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
 			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
 		}
@@ -42,7 +42,7 @@
 			int roofSnapTag, int gableTopTag)
 		{
 			var walls = Quadrilateral<Vertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z)
-				.Extrude (12f, false).Rotate (MathHelper.PiOver2, 0f, 0f);
+				.Extrude (12f, false).RotateX (MathHelper.PiOver2);
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
 			return wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
@@ -109,14 +109,22 @@
 				.Smoothen (0.9f);
 		}
 
-		public static Path<PathNode, Vec3> Curve ()
+		public static Path<PathNode, Vec3> NoseProfile ()
 		{
 			var spline = BSpline<Vec3>.FromControlPoints (2,
 				new Vec3 (-1f, -0f, 0f),
 				new Vec3 (0f, 0.5f, 0f),
 				new Vec3 (1f, 0.6f, 0f));
-			var path = Path<PathNode, Vec3>.FromBSpline (spline, 8);
-			return path;
+			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
+		}
+
+		public static Path<PathNode, Vec3> FuselageCrossSection ()
+		{
+			var spline = BSpline<Vec3>.FromControlPoints (2,
+				new Vec3 (-1f, -0f, 0f),
+				new Vec3 (0f, 0.5f, 0f),
+				new Vec3 (1f, 0.6f, 0f));
+			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
 		}
 	}
 }

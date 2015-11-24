@@ -30,7 +30,7 @@
 				previous = new BBox (
 					new Vec3 (matrix * new Vec4 (current.Min, 1f)), 
 					new Vec3 (matrix * new Vec4 (current.Max, 1f)));
-				return Geometry.Transform (geom, matrix);
+				return geom.Transform (matrix);
 			});
 			return geometries.Take (1).Concat (stackedGeometries);
 		}

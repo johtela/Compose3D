@@ -71,7 +71,7 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			var curve = Geometries.Curve ();
+			var curve = Geometries.NoseProfile ();
 
 			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 10f, 0f, 0f)
 				.ManipulateVertices (
@@ -81,11 +81,11 @@
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
 				.Extrude (0.5f, false);
 			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
-				.Rotate (0f, 90f.Radians (), 0f)
+				.RotateY (90f.Radians ())
 				.Smoothen (0.8f)
 				.Color (VertexColor<Vec3>.Chrome);
 
-			var path = Path<PathNode, Vec3>.FromVec3s (
+			var path = Path<PathNode, Vec3>.FromVecs (
 				fighter.Vertices.Backmost ().Facing (FaceDir.Back).Select (
 					v => new Vec3 (v.position.X, v.position.Y, 0f)))
 				.Close ();

@@ -31,7 +31,7 @@
 			get { return Nodes.First ().Position.Equals (Nodes.Last ().Position); }
 		}
 
-		public static Path<P, V> FromVec3s (IEnumerable<V> positions)
+		public static Path<P, V> FromVecs (IEnumerable<V> positions)
 		{
 			return new Path<P, V> (positions.Select (p => new P () { Position = p }));
 		}
@@ -51,9 +51,18 @@
 			return new Path<P, V> (nodes);
 		}
 		
+		public Path<P, V> Transform<M> (M matrix) where M : struct, IMat<M, float>
+		{
+			return FromVecs (Nodes.Select (n => matrix.Multiply (n.Position)));
+		}
+		
+		
+		
 		public Path<P, V> MatchNodesWith (Path<P, V> other)
 		{
-			CheckPathsCanBeMatched (other);
+			CheckSameLengthWith (other);
+			if (!(IsClosed && other.IsClosed))
+				throw new ArgumentException ("Paths must be closed in order to match their nodes");
 			int len = Nodes.Length - 1;
 
 			var best = float.PositiveInfinity;
@@ -74,18 +83,16 @@
 				.Concat (Nodes.Slice (0, first + 1)));
 		}
 
-		private void CheckPathsCanBeMatched (Path<P, V> other)
+		private void CheckSameLengthWith (Path<P, V> other)
 		{
 			if (other.Nodes.Length != Nodes.Length)
 				throw new ArgumentException ("Paths must have same number of nodes", "other");
-			if (!(IsClosed && other.IsClosed))
-				throw new ArgumentException ("Paths must be closed in order to match their nodes");
 		}
 
 		public Path<P, V> MorphWith (Path<P, V> other, float interPos)
 		{
-			CheckPathsCanBeMatched (other);
-
+			CheckSameLengthWith (other);
+			return FromVecs (Nodes.Zip (other.Nodes, (n1, n2) => n1.Position.Mix (n2.Position, interPos)));
 		}
 
 		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)

@@ -36,7 +36,8 @@
 	/// <description>
 	/// Complex geometries are created by composing simple primitives together.
 	/// </description>
-	public abstract class Geometry<V> where V : struct, IVertex
+	public abstract class Geometry<V> : ITransformable<Geometry<V>, Mat4> 
+		where V : struct, IVertex
 	{
 		private static int _lastTag;
 		private BBox _boundingBox;
@@ -123,6 +124,15 @@
 		{
 			return Vertices.First (v => v.Tag == tag);
 		}
+
+		#region ITransformable implementation
+
+		public Geometry<V> Transform (Mat4 matrix)
+		{
+			return new Transform<V> (this, matrix);
+		}
+
+		#endregion
 	}
 
 	/// <summary>
@@ -134,35 +144,6 @@
 			where V : struct, IVertex
 		{
 			return new ReverseIndices<V> (geometry);
-		}
-
-		public static Geometry<V> Transform<V> (this Geometry<V> geometry, Mat4 matrix) 
-			where V : struct, IVertex
-		{
-			return new Transform<V> (geometry, matrix);
-		}
-
-		public static Geometry<V> Translate<V> (this Geometry<V> geometry, float offsetX, float offsetY, float offsetZ)
-			where V : struct, IVertex
-		{
-			var matrix = Mat.Translation<Mat4> (offsetX, offsetY, offsetZ);
-			return Transform (geometry, matrix);
-		}
-
-		public static Geometry<V> Scale<V> (this Geometry<V> geometry, float factorX, float factorY, float factorZ)
-			where V : struct, IVertex
-		{
-			var matrix = Mat.Scaling<Mat4> (factorX, factorY, factorZ);
-			return Transform (geometry, matrix);
-		}
-
-			public static Geometry<V> Rotate<V> (this Geometry<V> geometry, float angleX, float angleY, float angleZ)
-			where V : struct, IVertex
-		{
-			var matrix = Mat.RotationZ<Mat4> (angleZ);
-			if (angleX != 0.0f) matrix *= Mat.RotationX<Mat4> (angleX);
-			if (angleY != 0.0f) matrix *= Mat.RotationY<Mat4> (angleY);
-			return Transform (geometry, matrix);
 		}
 
 		public static Geometry<V> ReflectX<V> (this Geometry<V> geometry)
@@ -186,7 +167,7 @@
 		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex
 		{
 			var center = geometry.BoundingBox.Center;
-			return Translate (geometry, -center.X, -center.Y, -center.Z);
+			return geometry.Translate (-center.X, -center.Y, -center.Z);
 		}
 
 		private static Vec3 GetSnapOffset (Vec3 pos, Vec3 snapToPos, Axes snapAxes)
@@ -205,7 +186,7 @@
 			where V : struct, IVertex
 		{
 			var offset = GetSnapOffset (vertex.Position, snapToVertex.Position, snapAxes);
-			return Translate (geometry, offset.X, offset.Y, offset.Z);
+			return geometry.Translate (offset.X, offset.Y, offset.Z);
 		}
 	}
 }

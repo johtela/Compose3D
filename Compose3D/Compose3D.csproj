@@ -127,9 +127,6 @@
     <Compile Include="Textures\BitmapHelper.cs" />
     <Compile Include="Geometry\Polygon.cs" />
     <Compile Include="Maths\Coord.cs" />
-    <Compile Include="Maths\IMat.cs" />
-    <Compile Include="Maths\ISquareMat.cs" />
-    <Compile Include="Maths\IVec.cs" />
     <Compile Include="Maths\Mat2.cs">
       <DependentUpon>Mat2.tt</DependentUpon>
     </Compile>
@@ -170,6 +167,7 @@
     <Compile Include="Shaders\ShaderState.cs" />
     <Compile Include="Shaders\ParsingHelpers.cs" />
     <Compile Include="Shaders\GLSLGenerator.cs" />
+    <Compile Include="Geometry\Transformable.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

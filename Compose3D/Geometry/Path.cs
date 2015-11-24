@@ -53,21 +53,17 @@
 		
 		public Path<P, V> MatchNodesWith (Path<P, V> other)
 		{
-			var len = Nodes.Length;
-			if (other.Nodes.Length != len)
-				throw new ArgumentException ("Paths must have same number of nodes", "other");
-			if (!(IsClosed && other.IsClosed))
-				throw new ArgumentException ("Paths must be closed in order to match their nodes");
-			len--;
-			
+			CheckPathsCanBeMatched (other);
+			int len = Nodes.Length - 1;
+
 			var best = float.PositiveInfinity;
 			var first = 0;
 			for (int i = 0; i < len; i++)
 			{
 				var curr = 0f;
-				var nodePos = Nodes [i].Position; 
+				var nodePos = Nodes[i].Position;
 				for (int j = 0; j < len; j++)
-					curr += nodePos.Subtract (other.Nodes [j % len].Position).LengthSquared;
+					curr += nodePos.Subtract (other.Nodes[j % len].Position).LengthSquared;
 				if (curr < best)
 				{
 					best = curr;
@@ -76,6 +72,20 @@
 			}
 			return new Path<P, V> (Nodes.Slice (first, len - first)
 				.Concat (Nodes.Slice (0, first + 1)));
+		}
+
+		private void CheckPathsCanBeMatched (Path<P, V> other)
+		{
+			if (other.Nodes.Length != Nodes.Length)
+				throw new ArgumentException ("Paths must have same number of nodes", "other");
+			if (!(IsClosed && other.IsClosed))
+				throw new ArgumentException ("Paths must be closed in order to match their nodes");
+		}
+
+		public Path<P, V> MorphWith (Path<P, V> other, float interPos)
+		{
+			CheckPathsCanBeMatched (other);
+
 		}
 
 		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)

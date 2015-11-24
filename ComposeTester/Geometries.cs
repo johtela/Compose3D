@@ -114,17 +114,20 @@
 			var spline = BSpline<Vec3>.FromControlPoints (2,
 				new Vec3 (-1f, -0f, 0f),
 				new Vec3 (0f, 0.5f, 0f),
-				new Vec3 (1f, 0.6f, 0f));
+				new Vec3 (1f, 0.6f, 0f) );
 			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
 		}
 
-		public static Path<PathNode, Vec3> FuselageCrossSection ()
+		public static Path<PathNode, Vec3> FuselageCrossSection (int nodeCount)
 		{
 			var spline = BSpline<Vec3>.FromControlPoints (2,
-				new Vec3 (-1f, -0f, 0f),
-				new Vec3 (0f, 0.5f, 0f),
-				new Vec3 (1f, 0.6f, 0f));
-			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
+				new Vec3 (-1f, 0f, 0f),
+				new Vec3 (0f, 1.2f, 0f),
+				new Vec3 (1f, 0f, 0f));
+			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 3) + Path<PathNode, Vec3>.FromVecs (
+				new Vec3 (1f, -0.2f, 0f),
+				new Vec3 (-1f, -0.2f, 0f),
+				new Vec3 (-1f, -0f, 0f));
 		}
 	}
 }

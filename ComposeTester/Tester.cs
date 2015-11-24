@@ -71,15 +71,14 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			var curve = Geometries.NoseProfile ();
-
-			var nose = Lathe<Vertex>.Turn (curve, Axis.X, new Vec3 (0f), MathHelper.Pi / 10f, 0f, 0f)
+			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), 
+				MathHelper.Pi / 20f, 0f, 0f)
 				.ManipulateVertices (
 					v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
 			
 			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Rightmost ().Reverse ()
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
-				.Extrude (0.5f, false);
+				.Extrude (1f, false);
 			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
 				.RotateY (90f.Radians ())
 				.Smoothen (0.8f)
@@ -91,6 +90,9 @@
 				.Close ();
 			var lineSeg = new LineSegment<PathNode, Vec3> (path);
 
+			var fuselageXSection = new LineSegment<PathNode, Vec3> (
+				Geometries.FuselageCrossSection (path.Nodes.Length)); 
+			
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
@@ -106,7 +108,7 @@
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1, lineSeg);
+				mesh1, lineSeg, fuselageXSection);
 		}
 
 		private void InitializeUniforms ()

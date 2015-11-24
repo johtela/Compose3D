@@ -227,9 +227,14 @@
                 new Vec4 (-(right + left) * invWidth, -(top + bottom) * invHeight, -(zFar + zNear) * invDepth, 1f));
         }
 
-        public static Vec3 Transform (this Mat4 mat, Vec3 point)
+		public static V Transform<V> (this Mat4 mat, V point)
+			where V : struct, IVec<V, float>
         {
-			return new Vec3 (mat * new Vec4 (point, 1f));
+			var v = new Vec4 (1f);
+			for (int i = 0; i < point.Dimensions; i++)
+				v [i] = point [i];
+			v = mat * v;
+			return Vec.FromArray<V, float> (v.X, v.Y, v.Z, v.W);
         }
 
         /// <summary>

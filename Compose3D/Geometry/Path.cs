@@ -5,7 +5,7 @@
 	using System.Linq;
 	using Maths;
 
-	public class Path<P, V> 
+	public class Path<P, V> : ITransformable<Path<P, V>, Mat4>
 		where P : struct, IPositional<V>
 		where V : struct, IVec<V, float>
 	{
@@ -36,6 +36,11 @@
 			return new Path<P, V> (positions.Select (p => new P () { Position = p }));
 		}
 
+		public static Path<P, V> FromVecs (params V[] positions)
+		{
+			return FromVecs ((IEnumerable<V>)positions);
+		}
+		
 		public static Path<P, V> FromBSpline (BSpline<V> spline, int numNodes)
 		{
 			var nodes = new P[numNodes];
@@ -51,12 +56,10 @@
 			return new Path<P, V> (nodes);
 		}
 		
-		public Path<P, V> Transform<M> (M matrix) where M : struct, IMat<M, float>
+		public Path<P, V> Transform (Mat4 matrix)
 		{
-			return FromVecs (Nodes.Select (n => matrix.Multiply (n.Position)));
+			return FromVecs (Nodes.Select (n => matrix.Transform (n.Position)));
 		}
-		
-		
 		
 		public Path<P, V> MatchNodesWith (Path<P, V> other)
 		{

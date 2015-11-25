@@ -61,6 +61,11 @@
 			return FromVecs (Nodes.Select (n => matrix.Transform (n.Position)));
 		}
 		
+		public Path<P, V> ReverseWinding ()
+		{
+			return new Path<P, V> (Nodes.Reverse ());
+		}
+		
 		public Path<P, V> MatchNodesWith (Path<P, V> other)
 		{
 			CheckSameLengthWith (other);

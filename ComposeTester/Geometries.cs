@@ -23,7 +23,7 @@
 		private static Geometry<Vertex> Roof (out int tag)
 		{
 			var trapezoid = Quadrilateral<Vertex>.Trapezoid (20f, 1f, 0f, 1f);
-			tag = trapezoid.TagVertex (trapezoid.Vertices.Bottommost ().Rightmost ().Single ());
+			tag = trapezoid.TagVertex (trapezoid.Vertices.Furthest (Dir3D.Down).Furthest (Dir3D.Right).Single ());
 			var leftPane = trapezoid.Extrude (30f).RotateZ (MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
 			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
@@ -33,7 +33,7 @@
 		{
 			var gableHeight = roof.BoundingBox.Size.Y * 0.85f;
 			var frontGable = Triangle<Vertex>.Isosceles (2 * gableHeight, gableHeight);
-			tag = frontGable.TagVertex (frontGable.Vertices.Topmost ().Single ());
+			tag = frontGable.TagVertex (frontGable.Vertices.Furthest (Dir3D.Up).Single ());
 			var backGable = frontGable.ReflectZ ().Translate (0f, 0f, -roof.BoundingBox.Size.Z * 0.9f);
 			return Composite.Create (frontGable, backGable);
 		}
@@ -118,16 +118,20 @@
 			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
 		}
 
-		public static Path<PathNode, Vec3> FuselageCrossSection (int nodeCount)
+		public static Path<PathNode, Vec3> FuselageCrossSection (Vec3 start, float top, int nodeCount)
 		{
-			var spline = BSpline<Vec3>.FromControlPoints (2,
-				new Vec3 (-1f, 0f, 0f),
-				new Vec3 (0f, 1.2f, 0f),
-				new Vec3 (1f, 0f, 0f));
-			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 3) + Path<PathNode, Vec3>.FromVecs (
-				new Vec3 (1f, -0.2f, 0f),
-				new Vec3 (-1f, -0.2f, 0f),
-				new Vec3 (-1f, -0f, 0f));
+			start *= new Vec3 (1.5f, 1f, 1f);
+			var cPoints = new Vec3[]
+			{
+				start, 
+				new Vec3 (start.X, top * 0.4f, 0f),
+				new Vec3 (start.X * 0.5f, top * 0.8f, 0f),
+			};
+			var spline = BSpline<Vec3>.FromControlPoints (2, 
+				cPoints.Append (new Vec3 (0f, top * 1.5f, 0f))
+				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
+				.ToArray ());
+			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);
 		}
 	}
 }

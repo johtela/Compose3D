@@ -8,6 +8,7 @@
 		where M : struct, ISquareMat<M, float>
 	{
 		T Transform (M matrix);
+		T ReverseWinding ();
 	}
 	
 	public static class Transformable
@@ -46,6 +47,28 @@
 		{
 			return transformable.Transform (Mat.RotationZ<M> (angle));
 		}
+
+		public static T ReflectX<T, M> (this ITransformable<T, M> transformable)
+			where T : ITransformable<T, M>
+			where M : struct, ISquareMat<M, float>
+		{
+			return transformable.Scale (-1f, 1f, 1f).ReverseWinding ();
+		}
+
+		public static T ReflectY<T, M> (this ITransformable<T, M> transformable)
+			where T : ITransformable<T, M>
+			where M : struct, ISquareMat<M, float>
+		{
+			return transformable.Scale (1f, -1f, 1f).ReverseWinding ();
+		}
+
+		public static T ReflectZ<T, M> (this ITransformable<T, M> transformable)
+			where T : ITransformable<T, M>
+			where M : struct, ISquareMat<M, float>
+		{
+			return transformable.Scale (1f, 1f, -1f).ReverseWinding ();
+		}
+
 	}
 }
 

@@ -131,6 +131,11 @@
 		{
 			return new Transform<V> (this, matrix);
 		}
+		
+		public Geometry<V> ReverseWinding ()
+		{
+			return new ReverseIndices<V> (this);			
+		}
 
 		#endregion
 	}
@@ -140,30 +145,6 @@
 	/// </summary>
 	public static class Geometry
 	{
-		public static Geometry<V> ReverseIndices<V> (this Geometry<V> geometry) 
-			where V : struct, IVertex
-		{
-			return new ReverseIndices<V> (geometry);
-		}
-
-		public static Geometry<V> ReflectX<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
-		{
-			return geometry.Scale (-1f, 1f, 1f).ReverseIndices ();
-		}
-
-		public static Geometry<V> ReflectY<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
-		{
-			return geometry.Scale (1f, -1f, 1f).ReverseIndices ();
-		}
-
-		public static Geometry<V> ReflectZ<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
-		{
-			return geometry.Scale (1f, 1f, -1f).ReverseIndices ();
-		}
-
 		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex
 		{
 			var center = geometry.BoundingBox.Center;

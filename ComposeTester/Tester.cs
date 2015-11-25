@@ -76,7 +76,7 @@
 				.ManipulateVertices (
 					v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
 			
-			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Rightmost ().Reverse ()
+			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Furthest (Dir3D.Right).Reverse ()
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
 				.Extrude (1f, false);
 			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
@@ -85,17 +85,25 @@
 				.Color (VertexColor<Vec3>.Chrome);
 
 			var path = Path<PathNode, Vec3>.FromVecs (
-				fighter.Vertices.Backmost ().Facing (FaceDir.Back).Select (
-					v => new Vec3 (v.position.X, v.position.Y, 0f)))
+				fighter.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
+				.Where (v => v.position.Y >= -0.1f)
+				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
 				.Close ();
 			var lineSeg = new LineSegment<PathNode, Vec3> (path);
 
 			var fuselageXSection = new LineSegment<PathNode, Vec3> (
-				Geometries.FuselageCrossSection (path.Nodes.Length)); 
+				Geometries.FuselageCrossSection (
+					path.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ().position, 
+					path.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
+					path.Nodes.Length)
+				.Close ()); 
 			
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
+//			var mesh1 = new Mesh<Vertex> (Geometries.House ().Color (VertexColor<Vec3>.Bronze))
+//				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
+			
 			//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			//			{
 			//				{ TextureParameterName.TextureBaseLevel, 0 },

@@ -134,7 +134,7 @@
                 vertices = backFace.Vertices;
             }
             if (includeBackFace)
-				geometries[i++] = backFace.ReverseIndices ();
+				geometries[i++] = backFace.ReverseWinding ();
             return Composite.Create (geometries);
 		}
 

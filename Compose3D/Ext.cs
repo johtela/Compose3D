@@ -168,6 +168,13 @@ namespace Compose3D
                 yield return i;
         }
 
+		public static IEnumerable<T> Append<T> (this IEnumerable<T> enumerable, T item)
+		{
+			foreach (T i in enumerable)
+				yield return i;
+			yield return item;
+		}
+
         public static IEnumerable<T> Repeat<T> (this IEnumerable<T> enumerable)
 		{
 			while (true)

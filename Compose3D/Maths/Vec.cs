@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Maths
 {
     using System;
+	using System.Linq;
 	using GLTypes;
 
 	public interface IVec<V, T> : IEquatable<V>
@@ -67,6 +68,16 @@
             res[i] = value;
             return res;
         }
+		
+		public static float Sum<V> (this V vec)
+			where V : struct, IVec<V, float>
+		{
+			var res = vec [0];
+			for (int i = 1; i < vec.Dimensions; i++)
+				res += vec [i];
+			return res;
+		}
+		
 
 		public static V Map<V, T> (this V vec, Func<T, T> map)
 			where V : struct, IVec<V, T>

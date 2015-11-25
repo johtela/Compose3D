@@ -24,7 +24,7 @@
 		/// <summary>
 		/// The normal of the object.
 		/// </summary>
-		Vec3 Normal { get; set; }
+		V Normal { get; set; }
 	}
 
 	/// <summary>
@@ -48,7 +48,7 @@
 		void Initialize (ref V vertex);
 	}
 
-	public static class FaceDir
+	public static class Dir3D
 	{
 		public static Vec3 Left = new Vec3 (-1f, 0f, 0f);
 		public static Vec3 Right = new Vec3 (1f, 0f, 0f);
@@ -86,44 +86,16 @@
 			return vertex;
 		}
 
-        public static IEnumerable<V> Leftmost<V> (this IEnumerable<V> vertices)
-			where V : struct, IVertex
+		public static IEnumerable<P> Furthest<P, V> (this IEnumerable<P> vertices, V direction)
+			where P : struct, IPositional<V>
+			where V : struct, IVec<V, float>
 		{
-			return vertices.MinimumItems (v => v.Position.X);
-		}
-
-		public static IEnumerable<V> Rightmost<V>  (this IEnumerable<V> vertices)
-			where V : struct, IVertex
-		{
-			return vertices.MaximumItems (v => v.Position.X);
-		}
-
-		public static IEnumerable<V> Bottommost<V>  (this IEnumerable<V> vertices)
-			where V : struct, IVertex
-		{
-			return vertices.MinimumItems (v => v.Position.Y);
-		}
-
-		public static IEnumerable<V> Topmost<V>  (this IEnumerable<V> vertices)
-			where V : struct, IVertex
-		{
-			return vertices.MaximumItems (v => v.Position.Y);
-		}
-
-		public static IEnumerable<V> Backmost<V>  (this IEnumerable<V> vertices)
-			where V : struct, IVertex
-		{
-			return vertices.MinimumItems (v => v.Position.Z);
-		}
-
-		public static IEnumerable<V> Frontmost<V>  (this IEnumerable<V> vertices)
-			where V : struct, IVertex
-		{
-			return vertices.MaximumItems (v => v.Position.Z);
+			return vertices.MaximumItems (v => v.Position.Multiply (direction).Sum ());
 		}
 		
-		public static IEnumerable<V> Facing<V> (this IEnumerable<V> vertices, Vec3 direction)
-			where V : struct, IVertex
+		public static IEnumerable<P> Facing<P, V> (this IEnumerable<P> vertices, V direction)
+			where P : struct, IPlanar<V>
+			where V : struct, IVec<V, float>
 		{
 			return vertices.Where (v => v.Normal.Dot (direction).ApproxEquals (1f, 0.1f));
 		}
@@ -141,4 +113,3 @@
 		}
 	}
 }
-

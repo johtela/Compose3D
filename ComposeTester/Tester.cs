@@ -90,8 +90,7 @@
 			
 			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Furthest (Dir3D.Right).Reverse ()
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
-//				.Extrude (1f, true);
-				.Stretch (new Mat4[] { Mat.Translation<Mat4> (-1f, 0f, 0f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f) }, 
+				.Stretch (new Mat4[] { Mat.Translation<Mat4> (-1.2f, 0f, 0f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f) }, 
                		false, true)
 				.ReflectX ();
 			fuselage = Composite.Create (Stacking.StackRight (nose, fuselage))
@@ -99,7 +98,7 @@
 
 			var path = Path<PathNode, Vec3>.FromVecs (
 				fuselage.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
-				.Where (v => v.position.Y >= -0.1f)
+				.Where (v => v.position.Y >= -0.2f)
 				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
 				.Close ().ReverseWinding ();
 			
@@ -121,7 +120,8 @@
 				path.MorphWith (fuselageXSection, 0.25f).Translate (0f, 0f, -0.5f),
 				path.MorphWith (fuselageXSection, 0.5f).Translate (0f, 0f, -1f),
 				path.MorphWith (fuselageXSection, 0.75f).Translate (0f, 0f, -1.5f),
-				fuselageXSection.Translate (0f, 0f, -2f)
+				fuselageXSection.Translate (0f, 0f, -2f),
+				fuselageXSection.Translate (0f, 0f, -4f)
 			};
 			var lineSegments = paths.Select (p => new LineSegment<PathNode, Vec3> (p));
 			var hull = paths.Extrude<Vertex, PathNode> (false, true);

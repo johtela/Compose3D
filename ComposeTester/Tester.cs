@@ -36,13 +36,25 @@
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
 
-			_passthrough = new Program (GLShader.Create (ShaderType.VertexShader, () =>
-				from v in Shader.Inputs<PathNode> ()
-				select new Fragment () 
-				{
-					gl_Position = new Vec4 (v.position, 1f)
-				}), 
-				FragmentShaders.WhiteOutput ());
+			_passthrough = new Program (
+				GLShader.Create (ShaderType.VertexShader, 
+					() =>
+					from v in Shader.Inputs<PathNode> ()
+					select new ColoredFragment ()
+					{
+						gl_Position = new Vec4 (v.position, 1f),
+						vertexDiffuse = v.color
+					} 
+				),
+				GLShader.Create (ShaderType.FragmentShader, 
+					() =>
+					from f in Shader.Inputs<ColoredFragment> ()
+					select new 
+					{
+						outputColor = f.vertexDiffuse
+					}
+				)
+			);
 		}
 
 		public void Init ()
@@ -88,15 +100,25 @@
 				fighter.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
 				.Where (v => v.position.Y >= -0.1f)
 				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
-				.Close ();
-			var lineSeg = new LineSegment<PathNode, Vec3> (path);
+				.Close ().ReverseWinding ();
+			
+			var botLeftCorner = path.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
+			
+			var fuselageXSection = Geometries.FuselageCrossSection (
+				botLeftCorner.position, 
+				path.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
+				path.Nodes.Length).Close ();
 
-			var fuselageXSection = new LineSegment<PathNode, Vec3> (
-				Geometries.FuselageCrossSection (
-					path.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ().position, 
-					path.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
-					path.Nodes.Length)
-				.Close ()); 
+			path = path.RenumberNodes (path.Nodes.IndexOf (botLeftCorner));
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
+			path.Nodes.Color (graySlide);
+			fuselageXSection.Nodes.Color (graySlide);
+			
+			var lineSeg1 = new LineSegment<PathNode, Vec3> (path);
+			var lineSeg2 = new LineSegment<PathNode, Vec3> (fuselageXSection);
+			var lineSeg3 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.25f));
+			var lineSeg4 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.5f));
+			var lineSeg5 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.75f));
 			
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
@@ -116,7 +138,7 @@
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1, lineSeg, fuselageXSection);
+				mesh1, lineSeg1, lineSeg2, lineSeg3, lineSeg4, lineSeg5);
 		}
 
 		private void InitializeUniforms ()

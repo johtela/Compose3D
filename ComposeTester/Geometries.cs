@@ -120,7 +120,7 @@
 
 		public static Path<PathNode, Vec3> FuselageCrossSection (Vec3 start, float top, int nodeCount)
 		{
-			start *= new Vec3 (1.5f, 1f, 1f);
+			start *= new Vec3 (1.3f, 1f, 1f);
 			var cPoints = new Vec3[]
 			{
 				start, 

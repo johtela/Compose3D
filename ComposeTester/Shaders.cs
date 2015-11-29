@@ -11,14 +11,26 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct PathNode : IPositional<Vec3>
+	public struct PathNode : IPositional<Vec3>, IDiffuseColor<Vec3>
 	{
 		internal Vec3 position;
+		internal Vec3 color;
 
 		Vec3 IPositional<Vec3>.Position
 		{
 			get { return position; }
 			set { position = value; }
+		}
+
+		Vec3 IDiffuseColor<Vec3>.Diffuse
+		{
+			get { return color; }
+			set { color = value; }
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("PathNode: Position={0}, Diffuse={1}", position, color);
 		}
 	}
 

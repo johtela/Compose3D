@@ -82,6 +82,23 @@ namespace Compose3D.Geometry
 
 	public static class ColorHelper
 	{
+		public static void Color<TVert, V> (this TVert[] vertices, V color)
+			where TVert : struct, IDiffuseColor<V> 
+			where V : struct, IVec<V, float>
+		{
+			for (int i = 0; i < vertices.Length; i++)
+				vertices[i].Diffuse = color;
+		}
+
+		public static void Color<TVert, V> (this TVert[] vertices, IEnumerable<V> colors)
+			where TVert : struct, IDiffuseColor<V> 
+			where V : struct, IVec<V, float>
+		{
+			var e = colors.GetEnumerator ();
+			for (int i = 0; i < vertices.Length && e.MoveNext (); i++)
+				vertices [i].Diffuse = e.Current;
+		}
+
 		public static void Color<TVert, V> (this TVert[] vertices, IVertexColor<V> color)
 			where TVert : struct, IVertexColor<V>
 			where V : struct, IVec<V, float>

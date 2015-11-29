@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Maths
 {
     using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using GLTypes;
 
@@ -59,7 +60,6 @@
 			return ApproxEquals (vec, other, 0.000001f);
 		}
 
-
         public static V With<V, T> (this V vec, int i, T value)
             where V : struct, IVec<V, T>
             where T : struct, IEquatable<T>
@@ -78,6 +78,14 @@
 			return res;
 		}
 		
+		public static IEnumerable<V> Interpolate<V> (this V from, V to, int steps)
+			where V : struct, IVec<V, float>
+		{
+			var step = 1f / steps;
+			var f = 0f;
+			for (int i = 0; i < steps; i++, f += step)
+				yield return from.Mix (to, f);
+		}
 
 		public static V Map<V, T> (this V vec, Func<T, T> map)
 			where V : struct, IVec<V, T>

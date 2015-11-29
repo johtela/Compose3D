@@ -10,12 +10,15 @@
 		{
 			switch (axis)
 			{
-			case Axis.X: 
-				return Mat.Translation<Mat4> ((previous.Right - current.Left) * (float)direction, 0f, 0f);
-			case Axis.Y: 
-				return Mat.Translation<Mat4> (0f, (previous.Top - current.Bottom) * (float)direction, 0f);
-			default: 
-				return Mat.Translation<Mat4> (0f, 0f, (previous.Front - current.Back) * (float)direction);
+				case Axis.X: 
+					return Mat.Translation<Mat4> (direction == AxisDirection.Positive ? 
+						previous.Right - current.Left : previous.Left - current.Right, 0f, 0f);
+				case Axis.Y: 
+					return Mat.Translation<Mat4> (0f, direction == AxisDirection.Positive ? 
+						previous.Top - current.Bottom : previous.Bottom - current.Top, 0f);
+				default: 
+					return Mat.Translation<Mat4> (0f, 0f, direction == AxisDirection.Positive ? 
+						previous.Front - current.Back : previous.Back - current.Front);
 			}
 		}
 

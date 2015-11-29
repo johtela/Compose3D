@@ -100,7 +100,8 @@
 			return vertices.Where (v => v.Normal.Dot (direction).ApproxEquals (1f, 0.1f));
 		}
 		
-		public static bool AreCoplanar<V> (this IEnumerable<V> vertices) where V : struct, IVertex
+		public static bool AreCoplanar<P> (this IEnumerable<P> vertices) 
+			where P : struct, IPositional<Vec3>
 		{
 			if (vertices.Count () < 4)
 				return true;

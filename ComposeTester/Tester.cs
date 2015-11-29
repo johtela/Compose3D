@@ -42,7 +42,7 @@
 					from v in Shader.Inputs<PathNode> ()
 					select new ColoredFragment ()
 					{
-						gl_Position = new Vec4 (v.position, 1f),
+						gl_Position = new Vec4 (v.position.X, v.position.Y, -1f, 1f),
 						vertexDiffuse = v.color
 					} 
 				),
@@ -90,14 +90,15 @@
 			
 			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Furthest (Dir3D.Right).Reverse ()
 				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
-				.Extrude (1f, false);
-			var fighter = Composite.Create (Stacking.StackRight (nose, fuselage))
-				.RotateY (90f.Radians ())
-				.Smoothen (0.8f)
-				.Color (VertexColor<Vec3>.Chrome);
+//				.Extrude (1f, true);
+				.Stretch (new Mat4[] { Mat.Translation<Mat4> (-1f, 0f, 0f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f) }, 
+               		false, true)
+				.ReflectX ();
+			fuselage = Composite.Create (Stacking.StackRight (nose, fuselage))
+				.RotateY (90f.Radians ());
 
 			var path = Path<PathNode, Vec3>.FromVecs (
-				fighter.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
+				fuselage.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
 				.Where (v => v.position.Y >= -0.1f)
 				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
 				.Close ().ReverseWinding ();
@@ -114,17 +115,26 @@
 			path.Nodes.Color (graySlide);
 			fuselageXSection.Nodes.Color (graySlide);
 			
-			var lineSeg1 = new LineSegment<PathNode, Vec3> (path);
-			var lineSeg2 = new LineSegment<PathNode, Vec3> (fuselageXSection);
-			var lineSeg3 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.25f));
-			var lineSeg4 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.5f));
-			var lineSeg5 = new LineSegment<PathNode, Vec3> (path.MorphWith (fuselageXSection, 0.75f));
+			var paths = new Path<PathNode, Vec3>[]
+			{
+				path,
+				path.MorphWith (fuselageXSection, 0.25f).Translate (0f, 0f, -0.5f),
+				path.MorphWith (fuselageXSection, 0.5f).Translate (0f, 0f, -1f),
+				path.MorphWith (fuselageXSection, 0.75f).Translate (0f, 0f, -1.5f),
+				fuselageXSection.Translate (0f, 0f, -2f)
+			};
+			var lineSegments = paths.Select (p => new LineSegment<PathNode, Vec3> (p));
+			var hull = paths.Extrude<Vertex, PathNode> (false, true);
 			
+			var fighter = Composite.Create (Stacking.StackBackward (fuselage, hull))
+				.Smoothen (0.8f)
+				.Color (VertexColor<Vec3>.Chrome)
+				.Center ();
 			var mesh1 = new Mesh<Vertex> (fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 
-//			var mesh1 = new Mesh<Vertex> (Geometries.House ().Color (VertexColor<Vec3>.Bronze))
-//				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
+//			var mesh1 = new Mesh<Vertex> (hull)
+//				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
 			
 			//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
 			//			{
@@ -137,8 +147,8 @@
 			//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
-			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (dirLight, pointLight1, pointLight2, 
-				mesh1, lineSeg1, lineSeg2, lineSeg3, lineSeg4, lineSeg5);
+			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
+				new SceneNode[] { dirLight, pointLight1, pointLight2, mesh1 }.Concat (lineSegments));
 		}
 
 		private void InitializeUniforms ()

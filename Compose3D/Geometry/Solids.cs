@@ -68,6 +68,12 @@
 				yield return new Edge (indices [i + 2], indices [i]);
 			}
 		}
+		
+		private static IEnumerable<Edge> GetEdges<P> (Path<P, Vec3> path)
+			where P : struct, IPositional<Vec3>
+		{
+			return Enumerable.Range (1, path.Nodes.Length - 1).Select (i => new Edge (i - 1, i));
+		}
 
 		private static IEnumerable<Edge> DetermineOuterEdges (Edge[] edges)
 		{
@@ -92,8 +98,8 @@
 
 		#endregion
 
-		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, int repeatCount, 
-			bool includeFrontFace, bool includeBackFace, IEnumerable<Mat4> transforms) 
+		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, IEnumerable<Mat4> transforms,
+			bool includeFrontFace, bool includeBackFace) 
 			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
@@ -105,33 +111,20 @@
 
 			var edges = GetEdges (frontFace).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
-			var geometries = new Geometry<V> [(outerEdges.Length * repeatCount)
+			var geometries = new Geometry<V> [(outerEdges.Length * transforms.Count ())
 			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
 			var backFace = frontFace;
             var i = 0;
-			var txenum = transforms.GetEnumerator ();
 			if (includeFrontFace)
             	geometries[i++] = frontFace;
 
-			for (var t = 0; t < repeatCount; t++)
+			foreach (var transform in transforms)
             {
-				if (!txenum.MoveNext ())
-					throw new ArgumentException ("Transforms enumerable exhausted prematurely.", "transforms");
 				backFace = frontFace.ManipulateVertices (v => true, 
-					v => v.With (txenum.Current.Transform (v.Position), -v.Normal));
+					v => v.With (transform.Transform (v.Position), -v.Normal));
 				var backVertices = backFace.Vertices;
-                for (var j = 0; j < outerEdges.Length; i++, j++)
-                {
-                    var edge = outerEdges[j];
-					var frontNormal = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
-					var backNormal = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
-					geometries[i] = Quadrilateral<V>.FromVertices (
-						SideVertex (vertices[edge.Index2], frontNormal),
-						SideVertex (vertices[edge.Index1], frontNormal),
-						SideVertex (backFace.Vertices[edge.Index1], backNormal),
-						SideVertex (backFace.Vertices[edge.Index2], backNormal));
-                }
-                vertices = backFace.Vertices;
+				i = ExtrudeOut (geometries, i, vertices, backVertices, outerEdges); 
+                vertices = backVertices;
             }
             if (includeBackFace)
 				geometries[i++] = backFace.ReverseWinding ();
@@ -145,8 +138,8 @@
 				throw new ArgumentException (
 					"Depth of the extrusion needs to be greater than zero.", "depth");
 			var offs = -frontFace.Vertices[0].Normal * depth;
-			return frontFace.Stretch (1, true, includeBackFace, 
-				new Mat4[] { Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) });
+			return frontFace.Stretch (new Mat4[] { Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) },
+				true, includeBackFace);
 		}
 
 		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
@@ -155,7 +148,7 @@
 			return frontFace.Extrude (depth, true);
 		}
 
-		public static Geometry<V> Hollow<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
+		public static Geometry<V> Inset<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
 			where V : struct, IVertex
 		{
 			var z = frontFace.Vertices.First ().Position.Z;
@@ -163,8 +156,67 @@
 				throw new ArgumentException (
 					"All the vertices need to be on the XY-plane. I.e. they need to have the " +
 					"same Z-coordinate.", "frontFace");
-			return frontFace.Center ().Stretch (1, false, false,  
-				new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) }).Simplify ();
+			return frontFace.Center ().Stretch (new Mat4[] { Mat.Scaling<Mat4> (scaleX, scaleY) },
+				false, false).Simplify ();
+		}
+
+		private static V[] GetVertices<V, P> (Path<P, Vec3> path, bool flipNormal)
+			where V : struct, IVertex
+			where P : struct, IPositional<Vec3>
+		{
+			var nodes = path.Nodes;
+			var normal = nodes [1].Position.CalculateNormal (nodes [0].Position, nodes [2].Position);
+			if (flipNormal)
+				normal = -normal;
+			return nodes.Select (n => VertexHelpers.New<V> (n.Position, normal)).ToArray ();
+		}
+		
+		private static int ExtrudeOut<V> (Geometry<V>[] geometries, int i, V[] vertices, V[] backVertices,
+			Edge[] outerEdges) where V : struct, IVertex
+		{
+			for (var j = 0; j < outerEdges.Length; j++)
+			{
+				var edge = outerEdges[j];
+				var frontNormal = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
+				var backNormal = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
+				geometries[i++] = Quadrilateral<V>.FromVertices (
+					SideVertex (vertices[edge.Index2], frontNormal),
+					SideVertex (vertices[edge.Index1], frontNormal),
+					SideVertex (backVertices[edge.Index1], backNormal),
+					SideVertex (backVertices[edge.Index2], backNormal));
+			}
+			return i;
+		}
+		
+		public static Geometry<V> Extrude<V, P> (this IEnumerable<Path<P, Vec3>> paths,
+			bool includeFrontFace, bool includeBackFace)
+			where V : struct, IVertex
+			where P : struct, IPositional<Vec3>
+		{
+			
+			var frontFace = paths.First ();
+			if (!paths.All (p => 
+				p.Nodes.Length >= 3 && p.Nodes.Length == frontFace.Nodes.Length && p.Nodes.AreCoplanar ()))
+				throw new ArgumentException ("The paths must contain at least 3 vertices, " +
+					"all the paths must contain the same number of vertices, " +
+					"and the nodes of the paths must be coplanar.", "paths");
+			var vertices = GetVertices<V, P> (frontFace, false);
+			var outerEdges = GetEdges (frontFace).ToArray ();
+			var geometries = new Geometry<V> [(outerEdges.Length * (paths.Count () - 1)) + 
+				BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
+			var i = 0;
+			if (includeFrontFace)
+				geometries[i++] = Polygon<V>.FromVertices (vertices);
+
+			foreach (var backFace  in paths.Skip (1))
+			{
+				var backVertices = GetVertices<V, P> (backFace, true);
+				i = ExtrudeOut (geometries, i, vertices, backVertices, outerEdges); 
+				vertices = backVertices;
+			}
+			if (includeBackFace)
+				geometries[i++] = Polygon<V>.FromVertices (vertices).ReverseWinding ();
+			return Composite.Create (geometries);
 		}
 
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 

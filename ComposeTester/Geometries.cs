@@ -71,7 +71,7 @@
 		public static Geometry<Vertex> Tube ()
 		{
 			return Circular<Vertex>.Circle (10f)
-				.Stretch (10, true, true, TubeTransforms ())
+				.Stretch (TubeTransforms (), true, true)
 				.Smoothen (0.9f)
 				.Center ();
 		}
@@ -79,8 +79,7 @@
 		public static Geometry<Vertex> Arrow ()
 		{
 			return Circular<Vertex>.Circle (10f, 10f.Radians ())
-				.Stretch (1, false, false, 
-					new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) })
+				.Stretch (new Mat4[] { Mat.Scaling<Mat4> (0.01f, 0.01f) * Mat.Translation<Mat4> (0f, 0f, -30f) }, false, false)
 				.Smoothen (0.9f)
 				.Center ();
 		}
@@ -88,7 +87,7 @@
 		public static Geometry<Vertex> Pipe ()
 		{
 			return Circular<Vertex>.Pie (10f, 10f, 10f.Radians (), 0f, MathHelper.Pi)
-                .Hollow (1.2f, 1.2f)
+                .Inset (1.2f, 1.2f)
                 .Extrude (10f, true)
 				.Smoothen (0.9f)
                 .Center ();
@@ -120,7 +119,7 @@
 
 		public static Path<PathNode, Vec3> FuselageCrossSection (Vec3 start, float top, int nodeCount)
 		{
-			start *= new Vec3 (1.3f, 1f, 1f);
+			start *= new Vec3 (1.75f, 1f, 1f);
 			var cPoints = new Vec3[]
 			{
 				start, 

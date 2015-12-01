@@ -96,38 +96,34 @@
 			fuselage = Composite.Create (Stacking.StackRight (nose, fuselage))
 				.RotateY (90f.Radians ());
 
-			var path = Path<PathNode, Vec3>.FromVecs (
+			var noseXSection = Path<PathNode, Vec3>.FromVecs (
 				fuselage.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
 				.Where (v => v.position.Y >= -0.2f)
 				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
 				.Close ().ReverseWinding ();
 			
-			var botLeftCorner = path.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
+			var botLeftCorner = noseXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
 			
 			var fuselageXSection = Geometries.FuselageCrossSection (
 				botLeftCorner.position, 
-				path.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
-				path.Nodes.Length).Close ();
+				noseXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
+				noseXSection.Nodes.Length).Close ();
 
-			path = path.RenumberNodes (path.Nodes.IndexOf (botLeftCorner));
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
-			path.Nodes.Color (graySlide);
+			noseXSection = noseXSection.RenumberNodes (noseXSection.Nodes.IndexOf (botLeftCorner));
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), noseXSection.Nodes.Length);
+			noseXSection.Nodes.Color (graySlide);
 			fuselageXSection.Nodes.Color (graySlide);
 			
-			var paths = new Path<PathNode, Vec3>[]
-			{
-				path,
-				path.MorphWith (fuselageXSection, 0.25f).Translate (0f, 0f, -0.5f),
-				path.MorphWith (fuselageXSection, 0.5f).Translate (0f, 0f, -1f),
-				path.MorphWith (fuselageXSection, 0.75f).Translate (0f, 0f, -1.5f),
-				fuselageXSection.Translate (0f, 0f, -2f),
-				fuselageXSection.Translate (0f, 0f, -4f)
-			};
+			var transforms = Ext.Range (0f, -2f, -0.5f).Select (z => Mat.Translation<Mat4> (0f, 0f, z));
+			var paths = Ext.Append (
+				noseXSection.MorphTo (fuselageXSection, transforms),
+				fuselageXSection.Translate (0f, 0f, -4f));
+			
 			var lineSegments = paths.Select (p => new LineSegment<PathNode, Vec3> (p));
 			var hull = paths.Extrude<Vertex, PathNode> (false, true);
 			
 			var fighter = Composite.Create (Stacking.StackBackward (fuselage, hull))
-				.Smoothen (0.8f)
+				.Smoothen (0.95f)
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();
 			var mesh1 = new Mesh<Vertex> (fighter)

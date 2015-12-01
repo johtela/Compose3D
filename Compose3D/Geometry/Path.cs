@@ -92,6 +92,18 @@
 			return new Path<P, V> (Nodes.Zip (other.Nodes, 
 				(n1, n2) => WithPosition (n1, n1.Position.Mix (n2.Position, interPos))));
 		}
+		
+		public IEnumerable<Path<P, V>> MorphTo (Path<P, V> other, IEnumerable<Mat4> transforms)
+		{
+			var step = 1f / transforms.Count ();
+			var curr = 0f;
+			
+			foreach (var transform in transforms)
+			{
+				yield return MorphWith (other, curr).Transform (transform);
+				curr += step;
+			}
+		}
 
 		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)
 		{

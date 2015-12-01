@@ -117,17 +117,17 @@
 			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
 		}
 
-		public static Path<PathNode, Vec3> FuselageCrossSection (Vec3 start, float top, int nodeCount)
+		public static Path<PathNode, Vec3> HullCrossSection (Vec3 start, float top, int nodeCount)
 		{
-			start *= new Vec3 (1.75f, 1f, 1f);
+			start *= new Vec3 (2f, 1f, 1f);
 			var cPoints = new Vec3[]
 			{
 				start, 
-				new Vec3 (start.X, top * 0.4f, 0f),
-				new Vec3 (start.X * 0.5f, top * 0.8f, 0f),
+				new Vec3 (start.X, top * 0.4f, start.Z),
+				new Vec3 (start.X * 0.5f, top * 0.8f, start.Z),
 			};
 			var spline = BSpline<Vec3>.FromControlPoints (2, 
-				cPoints.Append (new Vec3 (0f, top * 1.5f, 0f))
+				cPoints.Append (new Vec3 (0f, top * 1.5f, start.Z))
 				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
 				.ToArray ());
 			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);

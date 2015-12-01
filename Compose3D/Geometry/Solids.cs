@@ -96,6 +96,34 @@
 				vertices [index2].Position, backVertices [index1].Position);
 		}
 
+		private static V[] GetVertices<V, P> (Path<P, Vec3> path, bool flipNormal)
+			where V : struct, IVertex
+			where P : struct, IPositional<Vec3>
+		{
+			var nodes = path.Nodes;
+			var normal = nodes [1].Position.CalculateNormal (nodes [0].Position, nodes [2].Position);
+			if (flipNormal)
+				normal = -normal;
+			return nodes.Select (n => VertexHelpers.New<V> (n.Position, normal)).ToArray ();
+		}
+
+		private static int ExtrudeOut<V> (Geometry<V>[] geometries, int i, V[] vertices, V[] backVertices,
+			Edge[] outerEdges) where V : struct, IVertex
+		{
+			for (var j = 0; j < outerEdges.Length; j++)
+			{
+				var edge = outerEdges[j];
+				var frontNormal = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
+				var backNormal = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
+				geometries[i++] = Quadrilateral<V>.FromVertices (
+					SideVertex (vertices[edge.Index2], frontNormal),
+					SideVertex (vertices[edge.Index1], frontNormal),
+					SideVertex (backVertices[edge.Index1], backNormal),
+					SideVertex (backVertices[edge.Index2], backNormal));
+			}
+			return i;
+		}
+
 		#endregion
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, IEnumerable<Mat4> transforms,
@@ -160,34 +188,6 @@
 				false, false).Simplify ();
 		}
 
-		private static V[] GetVertices<V, P> (Path<P, Vec3> path, bool flipNormal)
-			where V : struct, IVertex
-			where P : struct, IPositional<Vec3>
-		{
-			var nodes = path.Nodes;
-			var normal = nodes [1].Position.CalculateNormal (nodes [0].Position, nodes [2].Position);
-			if (flipNormal)
-				normal = -normal;
-			return nodes.Select (n => VertexHelpers.New<V> (n.Position, normal)).ToArray ();
-		}
-		
-		private static int ExtrudeOut<V> (Geometry<V>[] geometries, int i, V[] vertices, V[] backVertices,
-			Edge[] outerEdges) where V : struct, IVertex
-		{
-			for (var j = 0; j < outerEdges.Length; j++)
-			{
-				var edge = outerEdges[j];
-				var frontNormal = CalculateNormal (vertices, backVertices, edge.Index1, edge.Index2);
-				var backNormal = CalculateNormal (backVertices, vertices, edge.Index2, edge.Index1);
-				geometries[i++] = Quadrilateral<V>.FromVertices (
-					SideVertex (vertices[edge.Index2], frontNormal),
-					SideVertex (vertices[edge.Index1], frontNormal),
-					SideVertex (backVertices[edge.Index1], backNormal),
-					SideVertex (backVertices[edge.Index2], backNormal));
-			}
-			return i;
-		}
-		
 		public static Geometry<V> Extrude<V, P> (this IEnumerable<Path<P, Vec3>> paths,
 			bool includeFrontFace, bool includeBackFace)
 			where V : struct, IVertex
@@ -195,11 +195,13 @@
 		{
 			
 			var frontFace = paths.First ();
-			if (!paths.All (p => 
-				p.Nodes.Length >= 3 && p.Nodes.Length == frontFace.Nodes.Length && p.Nodes.AreCoplanar ()))
-				throw new ArgumentException ("The paths must contain at least 3 vertices, " +
-					"all the paths must contain the same number of vertices, " +
-					"and the nodes of the paths must be coplanar.", "paths");
+			if (!paths.All (p => p.Nodes.Length >= 3))
+				throw new ArgumentException ("All the paths must contain at least 3 vertices.", "paths");
+			if (!paths.All (p => p.Nodes.Length == frontFace.Nodes.Length))
+				throw new ArgumentException ("All the paths must contain the same number of vertices.", "paths");
+			if (!paths.All (p => p.Nodes.AreCoplanar ()))
+				throw new ArgumentException ("The nodes of the paths must be coplanar.", "paths");
+			
 			var vertices = GetVertices<V, P> (frontFace, false);
 			var outerEdges = GetEdges (frontFace).ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * (paths.Count () - 1)) + 
@@ -219,6 +221,13 @@
 			return Composite.Create (geometries);
 		}
 
+		public static Geometry<V> Extrude<V, P> (bool includeFrontFace, bool includeBackFace, params Path<P, Vec3>[] paths)
+			where V : struct, IVertex
+			where P : struct, IPositional<Vec3>
+		{
+			return paths.Extrude<V, P> (includeFrontFace, includeBackFace);
+		}
+			
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 
 			where V : struct, IVertex
 		{

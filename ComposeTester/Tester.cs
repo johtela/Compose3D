@@ -83,47 +83,48 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), 
-				MathHelper.Pi / 20f, 0f, 0f)
-				.ManipulateVertices (
-					v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f));
-			
-			var fuselage = Polygon<Vertex>.FromVertices (nose.Vertices.Furthest (Dir3D.Right).Reverse ()
-				.Select (v => v.With (v.position, new Vec3 (1f, 0f, 0f))))
-				.Stretch (new Mat4[] { Mat.Translation<Mat4> (-1.2f, 0f, 0f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f) }, 
-               		false, true)
-				.ReflectX ();
-			fuselage = Composite.Create (Stacking.StackRight (nose, fuselage))
+			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), MathHelper.Pi / 12f, 0f, 0f)
+				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f))
 				.RotateY (90f.Radians ());
-
+			
 			var noseXSection = Path<PathNode, Vec3>.FromVecs (
-				fuselage.Vertices.Furthest (Dir3D.Back).Facing (Dir3D.Back)
-				.Where (v => v.position.Y >= -0.2f)
-				.Select (v => new Vec3 (v.position.X, v.position.Y, 0f)))
-				.Close ().ReverseWinding ();
-			
-			var botLeftCorner = noseXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
-			
-			var fuselageXSection = Geometries.FuselageCrossSection (
-				botLeftCorner.position, 
-				noseXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
-				noseXSection.Nodes.Length).Close ();
+				from v in nose.Vertices.Furthest (Dir3D.Back)
+				select v.position);
 
-			noseXSection = noseXSection.RenumberNodes (noseXSection.Nodes.IndexOf (botLeftCorner));
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), noseXSection.Nodes.Length);
-			noseXSection.Nodes.Color (graySlide);
+			var fuselage = Solids.Extrude<Vertex, PathNode> (false, false, noseXSection, 
+               noseXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1.2f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f)));
+			
+			fuselage = Composite.Create (Stacking.StackBackward (nose, fuselage));
+			var fuselageXSection = Path<PathNode, Vec3>.FromVecs (
+				from v in fuselage.Vertices.Furthest (Dir3D.Back)
+				where v.position.Y >= -0.2f
+				select v.position).Close ();
+
+			var botLeftCorner = fuselageXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
+			fuselageXSection = fuselageXSection.RenumberNodes (fuselageXSection.Nodes.IndexOf (botLeftCorner));
+			
+			var hullXSection = Geometries.HullCrossSection (
+				botLeftCorner.position, 
+				fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
+				fuselageXSection.Nodes.Length)
+				.Close ();
+
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), fuselageXSection.Nodes.Length);
 			fuselageXSection.Nodes.Color (graySlide);
+			hullXSection.Nodes.Color (graySlide);
 			
-			var transforms = Ext.Range (0f, -2f, -0.5f).Select (z => Mat.Translation<Mat4> (0f, 0f, z));
+			var transforms = from z in Ext.Range (0f, -2f, -0.5f)
+			                 select Mat.Translation<Mat4> (0f, 0f, z);
 			var paths = Ext.Append (
-				noseXSection.MorphTo (fuselageXSection, transforms),
-				fuselageXSection.Translate (0f, 0f, -4f));
+				fuselageXSection.MorphTo (hullXSection, transforms),
+				hullXSection.Translate (0f, 0f, -4f));
 			
-			var lineSegments = paths.Select (p => new LineSegment<PathNode, Vec3> (p));
+			var lineSegments = from p in paths
+			                   select new LineSegment<PathNode, Vec3> (p);
 			var hull = paths.Extrude<Vertex, PathNode> (false, true);
 			
 			var fighter = Composite.Create (Stacking.StackBackward (fuselage, hull))
-				.Smoothen (0.95f)
+				.Smoothen (0.85f)
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();
 			var mesh1 = new Mesh<Vertex> (fighter)
@@ -144,7 +145,9 @@
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
-				new SceneNode[] { dirLight, pointLight1, pointLight2, mesh1 }.Concat (lineSegments));
+				new SceneNode[] { dirLight, pointLight1, pointLight2, mesh1 } 
+					.Concat (lineSegments)
+			);
 		}
 
 		private void InitializeUniforms ()

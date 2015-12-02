@@ -84,7 +84,7 @@
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
 			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), MathHelper.Pi / 12f, 0f, 0f)
-				.ManipulateVertices (v => v.position.Y < 0f, Manipulators.Scale<Vertex> (1f, 0.6f, 1f))
+				.ManipulateVertices (Manipulators.Scale<Vertex> (1f, 0.6f, 1f).Where (v => v.position.Y < 0f))
 				.RotateY (90f.Radians ());
 			
 			var noseXSection = Path<PathNode, Vec3>.FromVecs (

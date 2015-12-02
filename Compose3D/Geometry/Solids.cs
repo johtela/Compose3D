@@ -148,8 +148,7 @@
 
 			foreach (var transform in transforms)
             {
-				backFace = frontFace.ManipulateVertices (v => true, 
-					v => v.With (transform.Transform (v.Position), -v.Normal));
+				backFace = frontFace.ManipulateVertices (v => v.With (transform.Transform (v.Position), -v.Normal));
 				var backVertices = backFace.Vertices;
 				i = ExtrudeOut (geometries, i, vertices, backVertices, outerEdges); 
                 vertices = backVertices;

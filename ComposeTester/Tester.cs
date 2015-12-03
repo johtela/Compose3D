@@ -121,10 +121,18 @@
 				var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
 
 			var intakeXSection = Geometries.IntakeCrossSection (botLeftCorner.position,
-				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 16).Close ();
+				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 16);
 			graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), intakeXSection.Nodes.Length);
 			intakeXSection.Nodes.Color (graySlide);
-			var intake = intakeXSection.Inset<PathNode, Vertex> (0.9f, 0.9f);
+			
+			var intakeTransforms = 
+				from s in Ext.Range (1f, 1f, 0.5f)
+				select Mat.Translation<Mat4> (0f, 0f, -s) * 
+				Mat.ScalingAround<Mat4, Vec3> (new Vec3 (0f, botLeftCorner.position.Y, 0f), s * 1.45f, s * 1.45f, 1f);
+			
+			var intake = intakeXSection
+				.Inset<PathNode, Vertex> (0.9f, 0.9f)
+				.Stretch (intakeTransforms, true, false);
 
 			var lineSegments = from p in new Path<PathNode, Vec3> [] { intakeXSection }
 			                   select new LineSegment<PathNode, Vec3> (p);
@@ -250,7 +258,7 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-						//_program.DrawNormals (mesh.NormalBuffer);
+//						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

@@ -75,7 +75,7 @@
 		public static Geometry<V> Simplify<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return new Simplified<V> (geometry, 0f);
+			return new Simplified<V> (geometry, 1f);
 		}
 
 		public static Geometry<V> Smoothen<V> (this Geometry<V> geometry, float minSmoothAngle)

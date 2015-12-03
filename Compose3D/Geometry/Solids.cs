@@ -131,11 +131,11 @@
 			where V : struct, IVertex
 		{
 			var vertices = frontFace.Vertices;
+			if (!vertices.AreCoplanar ())
+				throw new ArgumentException ("Geometry is not on completely on the same plane.", "frontFace");
 			var firstNormal = vertices[0].Normal;
-			if (!(vertices.AreCoplanar () && vertices.All (v => v.Normal == firstNormal)))
-				throw new ArgumentException (
-					"Geometry is not on completely on the same plane. Also all the normals need to " +
-					"point towards the same direction.", "frontFace");
+			if (!vertices.All (v => Vec.ApproxEquals (v.Normal, firstNormal)))
+				throw new ArgumentException ("All the normals need to point towards the same direction.", "frontFace");
 
 			var edges = GetEdges (frontFace).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
@@ -237,8 +237,9 @@
 					"All the nodes of the path need to be on the XY-plane. I.e. they need to have the " +
 					"same Z-coordinate.", "path");
 
-			return Extrude<V, P> (new Path<P, Vec3>[] { path, path.Scale (scaleX, scaleY) },
-				false, false).Simplify ();
+			return Extrude<V, P> (new Path<P, Vec3>[] { path, path.Scale (scaleX, scaleY) }, false, false)
+				.ManipulateVertices (v => v.With (v.Position, new Vec3 (0f, 0f, 1f)))
+				.Simplify ();
 		}
 
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 

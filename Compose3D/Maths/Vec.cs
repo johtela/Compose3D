@@ -50,7 +50,8 @@
             where V : struct, IVec<V, float>
         {
             for (int i = 0; i < vec.Dimensions; i++)
-				if (!vec[i].ApproxEquals (other[i], epsilon)) return false;
+				if (!vec[i].ApproxEquals (other[i], epsilon)) 
+					return false;
             return true;
         }
 

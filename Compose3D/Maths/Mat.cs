@@ -146,6 +146,15 @@
             return res;
         }
 
+		public static M ScalingAround<M, V> (V vec, params float[] factors)
+			where M : struct, ISquareMat<M, float>
+			where V : struct, IVec<V, float>
+		{
+			return Translation<M> (vec.ToArray<V, float> ())
+				.Multiply (Scaling<M> (factors))
+				.Multiply (Translation<M> (vec.Multiply (-1f).ToArray<V, float> ()));
+		}
+
         public static M RotationX<M> (float alpha)
             where M : struct, ISquareMat<M, float>
         {

@@ -226,7 +226,21 @@
 		{
 			return paths.Extrude<V, P> (includeFrontFace, includeBackFace);
 		}
-			
+
+		public static Geometry<V> Inset<P, V> (this Path<P, Vec3> path, float scaleX, float scaleY)
+			where V : struct, IVertex
+			where P : struct, IPositional<Vec3>
+		{
+			var z = path.Nodes.First ().Position.Z;
+			if (!path.Nodes.All (p => p.Position.Z.ApproxEquals(z)))
+				throw new ArgumentException (
+					"All the nodes of the path need to be on the XY-plane. I.e. they need to have the " +
+					"same Z-coordinate.", "path");
+
+			return Extrude<V, P> (new Path<P, Vec3>[] { path, path.Scale (scaleX, scaleY) },
+				false, false).Simplify ();
+		}
+
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 
 			where V : struct, IVertex
 		{

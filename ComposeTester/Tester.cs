@@ -83,7 +83,7 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), MathHelper.Pi / 12f, 0f, 0f)
+			var nose = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), MathHelper.Pi / 13f, 0f, 0f)
 				.ManipulateVertices (Manipulators.Scale<Vertex> (1f, 0.6f, 1f).Where (v => v.position.Y < 0f))
 				.RotateY (90f.Radians ());
 			
@@ -113,22 +113,28 @@
 			fuselageXSection.Nodes.Color (graySlide);
 			hullXSection.Nodes.Color (graySlide);
 			
-			var transforms = from z in Ext.Range (0f, -2f, -0.5f)
+			var transforms = from z in Ext.Range (0f, -2f, -0.25f)
 			                 select Mat.Translation<Mat4> (0f, 0f, z);
-			var paths = Ext.Append (
+			var hullPaths = Ext.Append (
 				fuselageXSection.MorphTo (hullXSection, transforms),
 				hullXSection.Translate (0f, 0f, -4f));
-			
-			var lineSegments = from p in paths
+				var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
+
+			var intakeXSection = Geometries.IntakeCrossSection (botLeftCorner.position,
+				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 16).Close ();
+			graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), intakeXSection.Nodes.Length);
+			intakeXSection.Nodes.Color (graySlide);
+			var intake = intakeXSection.Inset<PathNode, Vertex> (0.9f, 0.9f);
+
+			var lineSegments = from p in new Path<PathNode, Vec3> [] { intakeXSection }
 			                   select new LineSegment<PathNode, Vec3> (p);
-			var hull = paths.Extrude<Vertex, PathNode> (false, true);
 			
-			var fighter = Composite.Create (Stacking.StackBackward (fuselage, hull))
+			var fighter = Composite.Create (Ext.Append (Stacking.StackBackward (fuselage, hull), intake))
 				.Smoothen (0.85f)
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();
 			var mesh1 = new Mesh<Vertex> (fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (5f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
 //				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
@@ -244,7 +250,7 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-//						_program.DrawNormals (mesh.NormalBuffer);
+						//_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

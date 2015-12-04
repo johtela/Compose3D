@@ -130,7 +130,7 @@
 				cPoints.Append (new Vec3 (0f, top * 1.5f, start.Z))
 				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
 				.ToArray ());
-			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);
+			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount);
 		}
 
 		public static Path<PathNode, Vec3> IntakeCrossSection (Vec3 start, float bottom, int nodeCount)
@@ -139,10 +139,10 @@
 			{
 				start,
 				new Vec3 (start.X, bottom * 0.8f, start.Z),
-				new Vec3 (start.X * 0.5f, bottom, start.Z),
+				new Vec3 (start.X * 0.2f, bottom, start.Z),
 			};
 			var spline = BSpline<Vec3>.FromControlPoints (2,
-				cPoints.Append (new Vec3 (0f, bottom * 1.1f, start.Z))
+				cPoints.Append (new Vec3 (0f, bottom * 1.0f, start.Z))
 				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
 				.ToArray ());
 			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);

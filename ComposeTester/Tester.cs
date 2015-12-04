@@ -101,13 +101,13 @@
 				select v.position).Close ();
 
 			var botLeftCorner = fuselageXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
-			fuselageXSection = fuselageXSection.RenumberNodes (fuselageXSection.Nodes.IndexOf (botLeftCorner));
-			
+			fuselageXSection = fuselageXSection.RenumberNodes (fuselageXSection.Nodes.IndexOf (botLeftCorner)).Open ();
+
 			var hullXSection = Geometries.HullCrossSection (
-				botLeftCorner.position, 
-				fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 
-				fuselageXSection.Nodes.Length)
-				.Close ();
+				botLeftCorner.position,
+				fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y,
+				fuselageXSection.Nodes.Length);
+				//.Close ();
 
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), fuselageXSection.Nodes.Length);
 			fuselageXSection.Nodes.Color (graySlide);
@@ -121,7 +121,7 @@
 				var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
 
 			var intakeXSection = Geometries.IntakeCrossSection (botLeftCorner.position,
-				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 16);
+				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 20);
 			graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), intakeXSection.Nodes.Length);
 			intakeXSection.Nodes.Color (graySlide);
 			

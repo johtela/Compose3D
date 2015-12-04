@@ -26,6 +26,11 @@
 			return new Path<P, V> (Nodes.Concat (new P[] { Nodes[0] }));
 		}
 
+		public Path<P, V> Open ()
+		{
+			return IsClosed ? new Path<P, V> (Nodes.Take (Nodes.Length - 1)) : this;
+		}
+
 		public bool IsClosed
 		{
 			get { return Nodes.First ().Position.Equals (Nodes.Last ().Position); }

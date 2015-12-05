@@ -272,6 +272,11 @@ namespace Compose3D
 				prev = item;
 			}
 		}
+
+		public static IEnumerable<T> Enumerate<T> (params T[] items)
+		{
+			return items;
+		}
 		
         #endregion        
         

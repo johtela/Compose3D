@@ -92,13 +92,17 @@
 				select v.position);
 
 			var fuselage = Solids.Extrude<Vertex, PathNode> (false, false, noseXSection, 
-               noseXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1.2f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f)));
+               noseXSection.Transform (Mat.Translation<Mat4> (0f, 0, -1f) * Mat.Scaling<Mat4> (1f, 1.1f, 1.1f)));
 			
 			fuselage = Composite.Create (Stacking.StackBackward (nose, fuselage));
 			var fuselageXSection = Path<PathNode, Vec3>.FromVecs (
 				from v in fuselage.Vertices.Furthest (Dir3D.Back)
 				where v.position.Y >= -0.2f
 				select v.position).Close ();
+			var pivotPoint = fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position;
+			fuselage = fuselage.ManipulateVertices (Manipulators.Transform<Vertex> (
+				Mat.RotationX<Mat4> (5f.Radians ()).RelativeTo (pivotPoint))
+				.Where (v => v.position.Z > pivotPoint.Z));
 
 			var botLeftCorner = fuselageXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
 			fuselageXSection = fuselageXSection.RenumberNodes (fuselageXSection.Nodes.IndexOf (botLeftCorner)).Open ();
@@ -107,7 +111,6 @@
 				botLeftCorner.position,
 				fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y,
 				fuselageXSection.Nodes.Length);
-				//.Close ();
 
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), fuselageXSection.Nodes.Length);
 			fuselageXSection.Nodes.Color (graySlide);
@@ -118,7 +121,7 @@
 			var hullPaths = Ext.Append (
 				fuselageXSection.MorphTo (hullXSection, transforms),
 				hullXSection.Translate (0f, 0f, -4f));
-				var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
+			var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
 
 			var intakeXSection = Geometries.IntakeCrossSection (botLeftCorner.position,
 				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 20);
@@ -126,19 +129,28 @@
 			intakeXSection.Nodes.Color (graySlide);
 			
 			var intakeTransforms = 
-				from s in Ext.Range (1f, 1f, 0.5f)
+				from s in Ext.Range (0.25f, 1f, 0.25f)
 				select Mat.Translation<Mat4> (0f, 0f, -s) * 
-				Mat.ScalingAround<Mat4, Vec3> (new Vec3 (0f, botLeftCorner.position.Y, 0f), s * 1.45f, s * 1.45f, 1f);
+					Mat.Scaling<Mat4> (1f + (0.45f * s), 1f + (0.25f * s.Sqrt ()), 1f)
+						.RelativeTo (new Vec3 (0f, botLeftCorner.position.Y, 0f));
 			
 			var intake = intakeXSection
 				.Inset<PathNode, Vertex> (0.9f, 0.9f)
 				.Stretch (intakeTransforms, true, false);
 
+			var bellyXSection = Path<PathNode, Vec3>.FromVecs (
+				from v in fuselage.Vertices.Furthest (Dir3D.Back)
+				where v.position.Y < -0.2f
+				select v.position);
+			var belly = Ext.Enumerate (bellyXSection, bellyXSection.Transform (
+					Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)))
+				.Extrude<Vertex, PathNode> (false, false);
+
 			var lineSegments = from p in new Path<PathNode, Vec3> [] { intakeXSection }
 			                   select new LineSegment<PathNode, Vec3> (p);
 			
-			var fighter = Composite.Create (Ext.Append (Stacking.StackBackward (fuselage, hull), intake))
-				.Smoothen (0.85f)
+			var fighter = Composite.Create (Stacking.StackBackward (fuselage, hull).Concat (Ext.Enumerate (intake, belly)))
+				.Smoothen (0.85f) 
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();
 			var mesh1 = new Mesh<Vertex> (fighter)

@@ -64,13 +64,22 @@
 			return Transform<V> (Mat.Scaling<Mat4> (factorX, factorY, factorZ));
 		}
 
-		public static Manipulator<V> Rotate<V> (float angleX, float angleY, float angleZ) 
+		public static Manipulator<V> RotateX<V> (float angle) 
 			where V : struct, IVertex
 		{
-			var matrix = Mat.RotationZ<Mat4> (angleZ);
-			if (angleX != 0.0f) matrix *= Mat.RotationX<Mat4> (angleX);
-			if (angleY != 0.0f) matrix *= Mat.RotationY<Mat4> (angleY);
-			return Transform<V> (matrix);
+			return Transform<V> (Mat.RotationX<Mat4> (angle));
+		}
+
+		public static Manipulator<V> RotateY<V> (float angle)
+			where V : struct, IVertex
+		{
+			return Transform<V> (Mat.RotationY<Mat4> (angle));
+		}
+	
+		public static Manipulator<V> RotateZ<V> (float angle)
+			where V : struct, IVertex
+		{
+			return Transform<V> (Mat.RotationZ<Mat4> (angle));
 		}
 	}
 }

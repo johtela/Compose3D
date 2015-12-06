@@ -138,11 +138,11 @@
 			var cPoints = new Vec3[]
 			{
 				start,
-				new Vec3 (start.X * 1.1f, bottom * 0.8f, start.Z),
-				new Vec3 (start.X * 0.8f, bottom * 1.2f, start.Z),
+				new Vec3 (start.X * 1.1f, bottom * 0.6f, start.Z),
+				new Vec3 (start.X * 0.8f, bottom * 1.0f, start.Z),
 			};
 			var spline = BSpline<Vec3>.FromControlPoints (2,
-				cPoints.Append (new Vec3 (0f, bottom * 1.4f, start.Z))
+				cPoints.Append (new Vec3 (0f, bottom * 1.2f, start.Z))
 				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
 				.ToArray ());
 			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);

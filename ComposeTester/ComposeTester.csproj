@@ -42,6 +42,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FighterGeometry.cs" />
     <Compile Include="MatTests.cs" />
     <Compile Include="PerformanceTests.cs" />
     <Compile Include="Tester.cs" />

@@ -9,77 +9,165 @@
 	using System.Linq;
 	using OpenTK;
 
-	public static class FighterGeometry
+	public class FighterGeometry<V, P>
+		where V : struct, IVertex, IVertexColor<Vec3>
+		where P : struct, IPositional<Vec3>, IDiffuseColor<Vec3>
 	{
-		public static Geometry<Vertex> Fighter (out IEnumerable<LineSegment<PathNode, Vec3>> lineSegments)
+		public readonly Geometry<V> Fighter;
+		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
+
+        private class Nose
 		{
-			var noseCone = Lathe<Vertex>.Turn (Geometries.NoseProfile (), Axis.X, new Vec3 (0f), MathHelper.Pi / 13f, 0f, 0f)
-				.ManipulateVertices (Manipulators.Scale<Vertex> (1f, 0.6f, 1f).Where (v => v.position.Y < 0f))
-				.RotateY (90f.Radians ());
+			public readonly Path<P, Vec3> Profile;
+			public readonly Geometry<V> Cone;
+			public readonly Path<P, Vec3> XSection;
 
-			var noseXSection = Path<PathNode, Vec3>.FromVecs (
-				from v in noseCone.Vertices.Furthest (Dir3D.Back)
-				select v.position);
+			public Nose ()
+			{
+				var spline = BSpline<Vec3>.FromControlPoints (2,
+					new Vec3 (-1f, -0f, 0f),
+					new Vec3 (0f, 0.5f, 0f),
+					new Vec3 (1f, 0.6f, 0f));
+				Profile = Path<P, Vec3>.FromBSpline (spline, 8);
 
-			var cockpitFuselage = Solids.Extrude<Vertex, PathNode> (false, false, noseXSection,
-			   noseXSection.Transform (Mat.Translation<Mat4> (0f, 0, -1.2f) * Mat.Scaling<Mat4> (1f, 1.2f, 1.2f)));
+				Cone = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.Pi / 13f, 0f, 0f)
+					.ManipulateVertices (Manipulators.Scale<V> (1f, 0.6f, 1f).Where (v => v.Position.Y < 0f))
+					.RotateY (90f.Radians ());
 
-			cockpitFuselage = Composite.Create (Stacking.StackBackward (noseCone, cockpitFuselage));
-			var fuselageXSection = Path<PathNode, Vec3>.FromVecs (
-				from v in cockpitFuselage.Vertices.Furthest (Dir3D.Back)
-				where v.position.Y >= -0.2f
-				select v.position).Close ();
-			var pivotPoint = fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position;
-			cockpitFuselage = cockpitFuselage.ManipulateVertices (Manipulators.Transform<Vertex> (
-				Mat.RotationX<Mat4> (5f.Radians ()).RelativeTo (pivotPoint))
-				.Where (v => v.position.Z > pivotPoint.Z));
+				XSection = Path<P, Vec3>.FromVecs (
+					from v in Cone.Vertices.Furthest (Dir3D.Back)
+					select v.Position);
+			}
+		}
 
-			var botLeftCorner = fuselageXSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
-			fuselageXSection = fuselageXSection.RenumberNodes (fuselageXSection.Nodes.IndexOf (botLeftCorner)).Open ();
+		private class CockpitFuselage
+		{
+			public readonly Geometry<V> Fuselage;
+			public readonly Path<P, Vec3> XSection;
+			public readonly P XSectionStart;
 
-			var mainFuselageXSection = Geometries.HullCrossSection (
-				botLeftCorner.position,
-				fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y,
-				fuselageXSection.Nodes.Length);
+			public CockpitFuselage (Nose nose)
+			{
+				Fuselage = Solids.Extrude<V, P> (false, false, nose.XSection,
+				   nose.XSection.Transform (Mat.Translation<Mat4> (0f, 0, -1.2f) * Mat.Scaling<Mat4> (1f, 1.2f, 1.2f)));
 
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), fuselageXSection.Nodes.Length);
-			fuselageXSection.Nodes.Color (graySlide);
-			mainFuselageXSection.Nodes.Color (graySlide);
+				Fuselage = Composite.Create (Stacking.StackBackward (nose.Cone, Fuselage));
+				XSection = Path<P, Vec3>.FromVecs (
+					from v in Fuselage.Vertices.Furthest (Dir3D.Back)
+					where v.Position.Y >= -0.2f
+					select v.Position).Close ();
+				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().Position;
+				Fuselage = Fuselage.ManipulateVertices (Manipulators.Transform<V> (
+					Mat.RotationX<Mat4> (5f.Radians ()).RelativeTo (pivotPoint))
+					.Where (v => v.Position.Z > pivotPoint.Z));
 
-			var transforms = from z in Ext.Range (0f, -2f, -0.25f)
-							 select Mat.Translation<Mat4> (0f, 0f, z);
-			var hullPaths = Ext.Append (
-				fuselageXSection.MorphTo (mainFuselageXSection, transforms),
-				mainFuselageXSection.Translate (0f, 0f, -4f));
-			var hull = hullPaths.Extrude<Vertex, PathNode> (false, true);
+				XSectionStart = XSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
+				XSection = XSection.RenumberNodes (XSection.Nodes.IndexOf (XSectionStart)).Open ();
+			}
+		}
 
-			var intakeXSection = Geometries.IntakeCrossSection (botLeftCorner.position,
-				-fuselageXSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 20);
-			graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), intakeXSection.Nodes.Length);
-			intakeXSection.Nodes.Color (graySlide);
+		private class MainFuselage
+		{
+			public readonly Geometry<V> Fuselage;
+			public readonly Path<P, Vec3> XSection;
 
-			var intakeTransforms =
-				from s in Ext.Range (0.25f, 1f, 0.25f)
-				select Mat.Translation<Mat4> (0f, 0f, -s) *
-					Mat.Scaling<Mat4> (1f + (0.45f * s), 1f + (0.25f * s.Sqrt ()), 1f)
-						.RelativeTo (new Vec3 (0f, botLeftCorner.position.Y, 0f));
+			public MainFuselage (CockpitFuselage cockpitFuselage)
+			{
+				XSection = CrossSection (
+					cockpitFuselage.XSectionStart.Position,
+					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y,
+					cockpitFuselage.XSection.Nodes.Length);
 
-			var intake = intakeXSection
-				.Inset<PathNode, Vertex> (0.9f, 0.9f)
-				.Stretch (intakeTransforms, true, false);
+				var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), cockpitFuselage.XSection.Nodes.Length);
+				cockpitFuselage.XSection.Nodes.Color (graySlide);
+				XSection.Nodes.Color (graySlide);
 
-			var bellyXSection = Path<PathNode, Vec3>.FromVecs (
-				from v in cockpitFuselage.Vertices.Furthest (Dir3D.Back)
-				where v.position.Y < -0.2f
-				select v.position);
-			var belly = Ext.Enumerate (bellyXSection, bellyXSection.Transform (
-					Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)))
-				.Extrude<Vertex, PathNode> (false, false);
+				var transforms = from z in Ext.Range (0f, -2f, -0.25f)
+								 select Mat.Translation<Mat4> (0f, 0f, z);
+				var paths = Ext.Append (
+					cockpitFuselage.XSection.MorphTo (XSection, transforms),
+					XSection.Translate (0f, 0f, -4f));
+				Fuselage = paths.Extrude<V, P> (false, true);
+			}
 
-			lineSegments = from p in new Path<PathNode, Vec3>[] { intakeXSection }
-						   select new LineSegment<PathNode, Vec3> (p);
+			private Path<P, Vec3> CrossSection (Vec3 start, float top, int nodeCount)
+			{
+				start *= new Vec3 (2f, 1f, 1f);
+				var cPoints = new Vec3[]
+				{
+					start,
+					new Vec3 (start.X * 0.6f, top * 0.2f, start.Z),
+					new Vec3 (start.X * 0.5f, top * 0.8f, start.Z),
+				};
+				var spline = BSpline<Vec3>.FromControlPoints (2,
+					cPoints.Append (new Vec3 (0f, top * 1.5f, start.Z))
+					.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
+					.ToArray ());
+				return Path<P, Vec3>.FromBSpline (spline, nodeCount);
+			}
+		}
 
-			return Composite.Create (Stacking.StackBackward (cockpitFuselage, hull).Concat (Ext.Enumerate (intake, belly)))
+		private class EngineIntake
+		{
+			public readonly Geometry<V> Intake;
+			public readonly Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> BellyXSection;
+			public readonly Geometry<V> Belly;
+
+			public EngineIntake (CockpitFuselage cockpitFuselage)
+			{
+				var startNode = cockpitFuselage.XSectionStart;
+                XSection = CrossSection (startNode.Position,
+					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y, 20);
+				var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), XSection.Nodes.Length);
+				XSection.Nodes.Color (graySlide);
+
+				var transforms =
+					from s in Ext.Range (0.25f, 1f, 0.25f)
+					select Mat.Translation<Mat4> (0f, 0f, -s) *
+						Mat.Scaling<Mat4> (1f + (0.45f * s), 1f + (0.25f * s.Sqrt ()), 1f)
+							.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
+				Intake = XSection
+					.Inset<P, V> (0.9f, 0.9f)
+					.Stretch (transforms, true, false);
+
+				BellyXSection = Path<P, Vec3>.FromVecs (
+					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
+					where v.Position.Y < -0.2f
+					select v.Position);
+				Belly = Ext.Enumerate (BellyXSection, BellyXSection.Transform (
+						Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)))
+					.Extrude<V, P> (false, false);
+			}
+
+			private Path<P, Vec3> CrossSection (Vec3 start, float bottom, int nodeCount)
+			{
+				var cPoints = new Vec3[]
+				{
+				start,
+				new Vec3 (start.X * 1.1f, bottom * 0.6f, start.Z),
+				new Vec3 (start.X * 0.8f, bottom * 1.0f, start.Z),
+				};
+				var spline = BSpline<Vec3>.FromControlPoints (2,
+					cPoints.Append (new Vec3 (0f, bottom * 1.2f, start.Z))
+					.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
+					.ToArray ());
+				return Path<P, Vec3>.FromBSpline (spline, nodeCount - 1);
+			}
+		}
+
+		public FighterGeometry ()
+		{
+			var nose = new Nose ();
+			var cockpitFuselage = new CockpitFuselage (nose);
+			var mainFuselage = new MainFuselage (cockpitFuselage);
+			var intake = new EngineIntake (cockpitFuselage);
+
+			LineSegments = from p in new Path<P, Vec3>[] { intake.XSection }
+						   select new LineSegment<P, Vec3> (p);
+
+			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage).Concat (
+				Ext.Enumerate (intake.Intake, intake.Belly)))
 				.Smoothen (0.85f)
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();

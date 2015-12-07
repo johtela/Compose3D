@@ -83,10 +83,8 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-			System.Collections.Generic.IEnumerable<LineSegment<PathNode, Vec3>> lineSegments;
-			var fighter = FighterGeometry.Fighter (out lineSegments);
-			
-			var mesh1 = new Mesh<Vertex> (fighter)
+			var fighter = new FighterGeometry<Vertex, PathNode> ();
+			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (5f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
@@ -105,7 +103,7 @@
 
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
 				new SceneNode[] { dirLight, pointLight1, pointLight2, mesh1 } 
-					.Concat (lineSegments)
+					.Concat (fighter.LineSegments)
 			);
 		}
 

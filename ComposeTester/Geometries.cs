@@ -108,44 +108,5 @@
 				.Smoothen (0.9f);
 		}
 
-		public static Path<PathNode, Vec3> NoseProfile ()
-		{
-			var spline = BSpline<Vec3>.FromControlPoints (2,
-				new Vec3 (-1f, -0f, 0f),
-				new Vec3 (0f, 0.5f, 0f),
-				new Vec3 (1f, 0.6f, 0f) );
-			return Path<PathNode, Vec3>.FromBSpline (spline, 8);
-		}
-
-		public static Path<PathNode, Vec3> HullCrossSection (Vec3 start, float top, int nodeCount)
-		{
-			start *= new Vec3 (2f, 1f, 1f);
-			var cPoints = new Vec3[]
-			{
-				start, 
-				new Vec3 (start.X * 0.6f, top * 0.2f, start.Z),
-				new Vec3 (start.X * 0.5f, top * 0.8f, start.Z),
-			};
-			var spline = BSpline<Vec3>.FromControlPoints (2, 
-				cPoints.Append (new Vec3 (0f, top * 1.5f, start.Z))
-				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
-				.ToArray ());
-			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount);
-		}
-
-		public static Path<PathNode, Vec3> IntakeCrossSection (Vec3 start, float bottom, int nodeCount)
-		{
-			var cPoints = new Vec3[]
-			{
-				start,
-				new Vec3 (start.X * 1.1f, bottom * 0.6f, start.Z),
-				new Vec3 (start.X * 0.8f, bottom * 1.0f, start.Z),
-			};
-			var spline = BSpline<Vec3>.FromControlPoints (2,
-				cPoints.Append (new Vec3 (0f, bottom * 1.2f, start.Z))
-				.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
-				.ToArray ());
-			return Path<PathNode, Vec3>.FromBSpline (spline, nodeCount - 1);
-		}
 	}
 }

@@ -30,7 +30,7 @@
 					new Vec3 (1f, baseHeight, 0f));
 				Profile = Path<P, Vec3>.FromBSpline (spline, 8);
 
-				Cone = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.TwoPi / numPoints, 0f, 0f)
+				Cone = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.TwoPi / numPoints)
 					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.Position.Y < 0f))
 					.RotateY (90f.Radians ());
 

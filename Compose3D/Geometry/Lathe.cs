@@ -54,6 +54,12 @@
 
 		}
 
+		public static Lathe<V> Turn<P> (Path<P, Vec3> path, Axis turnAxis, Vec3 offset, float stepAngle)
+			where P : struct, IPositional<Vec3>
+		{
+			return Turn<P> (path, turnAxis, offset, stepAngle, 0f, 0f);
+		}
+
 		private static Vec3[] Positions<P> (Path<P, Vec3> path, Axis axis, float angle, Vec3 offset)
 			where P : struct, IPositional<Vec3>
 		{

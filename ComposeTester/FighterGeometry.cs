@@ -112,6 +112,7 @@
 		{
 			public readonly Geometry<V> Intake;
 			public readonly Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> RearXSection;
 			public readonly Path<P, Vec3> BellyXSection;
 			public readonly Geometry<V> Belly;
 
@@ -124,13 +125,15 @@
 				XSection.Nodes.Color (graySlide);
 
 				var transforms =
-					from s in Ext.Range (0.25f, 1f, 0.25f)
+					from s in Ext.Range (0.25f, 2f, 0.25f)
 					select Mat.Translation<Mat4> (0f, 0f, -s) *
-						Mat.Scaling<Mat4> (1f + (0.45f * s), 1f + (0.25f * s.Sqrt ()), 1f)
+						Mat.Scaling<Mat4> (1f + (0.25f * s), 1f + (0.25f * s.Sqrt ()), 1f)
 							.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
 				Intake = XSection
 					.Inset<P, V> (0.9f, 0.9f)
 					.Stretch (transforms, true, false);
+				RearXSection = XSection.Transform (transforms.Last ());
+				RearXSection.Nodes.Color (graySlide);
 
 				BellyXSection = Path<P, Vec3>.FromVecs (
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
@@ -157,18 +160,34 @@
 			}
 		}
 
+		private class Underside
+		{
+			public readonly Geometry<V> Geometry;
+			public Path<P, Vec3> XSection;
+
+			public Underside (EngineIntake intake)
+			{
+				XSection = intake.RearXSection.ReverseWinding ();
+				var paths =
+					from s in Ext.Range (0f, 3f, 0.25f)
+					select XSection.Translate (0f, 0f, -s);
+				Geometry = paths.Extrude<V, P> (false, false);
+			}
+		}
+
 		public FighterGeometry ()
 		{
 			var nose = new Nose (0.5f, 0.6f, 26, 0.4f);
 			var cockpitFuselage = new CockpitFuselage (nose, 1.2f, 1.2f, 3f);
 			var mainFuselage = new MainFuselage (cockpitFuselage);
 			var intake = new EngineIntake (cockpitFuselage);
-
-			LineSegments = from p in new Path<P, Vec3>[] { intake.XSection }
-						   select new LineSegment<P, Vec3> (p);
+			var underside = new Underside (intake);
+			
+			LineSegments = from p in new Path<P, Vec3>[] { underside.XSection }
+						   select new LineSegment<P, Vec3> (p.Close ());
 
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
-				.Concat (Ext.Enumerate (intake.Intake, intake.Belly)))
+				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry)))
 				.Smoothen (0.85f)
 				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();

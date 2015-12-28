@@ -240,14 +240,14 @@ namespace Compose3D
 			foreach (var item in items)
 			{
 				var value = selector (item);
-				if (value > max)
+				if (value.ApproxEquals (max))
+					res.Add (item);
+				else if (value > max)
 				{
 					max = value;
 					res.Clear ();
 					res.Add (item);
 				}
-				else if (value == max)
-					res.Add (item);
 			}
 			return res;
 		}

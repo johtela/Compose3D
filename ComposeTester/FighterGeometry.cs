@@ -126,9 +126,10 @@
 
 				var transforms =
 					from s in Ext.Range (0.25f, 2f, 0.25f)
+					let scaleFactor = 1f + (0.25f * s.Sqrt ())
 					select Mat.Translation<Mat4> (0f, 0f, -s) *
-						Mat.Scaling<Mat4> (1f + (0.25f * s), 1f + (0.25f * s.Sqrt ()), 1f)
-							.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
+						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
+						.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
 				Intake = XSection
 					.Inset<P, V> (0.9f, 0.9f)
 					.Stretch (transforms, true, false);
@@ -139,8 +140,9 @@
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
 					where v.Position.Y < -0.1f
 					select v.Position);
-				Belly = Ext.Enumerate (BellyXSection, BellyXSection.Transform (
-						Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)))
+				Belly = Ext.Enumerate (BellyXSection, 
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)),
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * Mat.Scaling<Mat4> (1.9f, 1f, 1f)))
 					.Extrude<V, P> (false, false);
 			}
 
@@ -149,8 +151,8 @@
 				var cPoints = new Vec3[]
 				{
 					start,
-					new Vec3 (start.X * 1.1f, bottom * 0.6f, start.Z),
-					new Vec3 (start.X * 0.8f, bottom * 1.0f, start.Z),
+					new Vec3 (start.X * 1.2f, bottom * 0.6f, start.Z),
+					new Vec3 (start.X * 0.8f, bottom * 1.1f, start.Z),
 				};
 				var spline = BSpline<Vec3>.FromControlPoints (2,
 					cPoints.Append (new Vec3 (0f, bottom * 1.2f, start.Z))
@@ -168,9 +170,14 @@
 			public Underside (EngineIntake intake)
 			{
 				XSection = intake.RearXSection.ReverseWinding ();
+				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 3f, 0.25f)
-					select XSection.Translate (0f, 0f, -s);
+					from s in Ext.Range (0f, 2f, 0.25f)
+					let scaleFactor = 1f - (0.03f * s * s)
+					select XSection.Transform (
+						Mat.Translation<Mat4> (0f, 0f, -s) *
+						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
+						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
 				Geometry = paths.Extrude<V, P> (false, false);
 			}
 		}

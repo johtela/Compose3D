@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Brass;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
 
         private class Nose
 		{
@@ -86,8 +86,8 @@
 								 select Mat.Translation<Mat4> (0f, 0f, z);
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
-					XSection.Translate (0f, 0f, -4f));
-				Fuselage = paths.Extrude<V, P> (false, true)
+					XSection.Translate (0f, 0f, -6f));
+				Fuselage = paths.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
 
@@ -138,9 +138,12 @@
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
 					where v.Position.Y < -0.1f
 					select v.Position);
+				var scalePoint = new Vec3 (0f, BellyXSection.Nodes.First ().Position.Y, 0f);
 				Belly = Ext.Enumerate (BellyXSection, 
-					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)),
-					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * Mat.Scaling<Mat4> (1.9f, 1f, 1f)))
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * 
+						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * 
+						Mat.Scaling<Mat4> (1.9f, 1.25f, 1f).RelativeTo (scalePoint)))
 					.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
@@ -168,11 +171,14 @@
 
 			public Underside (EngineIntake intake)
 			{
-				XSection = intake.RearXSection.ReverseWinding ();
+				XSection = new Path<P, Vec3> (
+					from n in intake.RearXSection.ReverseWinding ().Nodes
+					where n.Position.Y <= -0.2f
+					select n);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 2f, 0.25f)
-					let scaleFactor = 1f - (0.03f * s * s)
+					from s in Ext.Range (0f, 4f, 2f)
+					let scaleFactor = 1f - (0.01f * s * s)
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)

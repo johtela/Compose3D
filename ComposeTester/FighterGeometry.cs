@@ -143,7 +143,9 @@
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * 
 						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * 
-						Mat.Scaling<Mat4> (1.9f, 1.25f, 1f).RelativeTo (scalePoint)))
+						Mat.Scaling<Mat4> (1.9f, 1.25f, 1f).RelativeTo (scalePoint)),
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2.5f) * 
+						Mat.Scaling<Mat4> (1.9f, 1.3f, 1f).RelativeTo (scalePoint)))
 					.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
@@ -171,10 +173,11 @@
 
 			public Underside (EngineIntake intake)
 			{
-				XSection = new Path<P, Vec3> (
+				var nodes = 
 					from n in intake.RearXSection.ReverseWinding ().Nodes
 					where n.Position.Y <= -0.2f
-					select n);
+					select n;				
+				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
 					from s in Ext.Range (0f, 4f, 2f)

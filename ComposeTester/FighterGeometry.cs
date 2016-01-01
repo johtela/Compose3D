@@ -15,6 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Brass;
 
         private class Nose
 		{
@@ -32,7 +33,8 @@
 
 				Cone = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.TwoPi / numPoints)
 					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.Position.Y < 0f))
-					.RotateY (90f.Radians ());
+					.RotateY (90f.Radians ())
+					.Color (_color);
 
 				XSection = Path<P, Vec3>.FromVecs (
 					from v in Cone.Vertices.Furthest (Dir3D.Back)
@@ -48,7 +50,7 @@
 
 			public CockpitFuselage (Nose nose, float length, float baseScale, float bend)
 			{
-				Fuselage = Solids.Extrude<V, P> (false, false, nose.XSection,
+				Fuselage = Extrusion.Extrude<V, P> (false, false, nose.XSection,
 					nose.XSection.Transform (Mat.Translation<Mat4> (0f, 0, -length) * 
 						Mat.Scaling<Mat4> (1f, baseScale, baseScale)));
 
@@ -60,7 +62,8 @@
 				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().Position;
 				Fuselage = Fuselage.ManipulateVertices (Manipulators.Transform<V> (
 					Mat.RotationX<Mat4> (bend.Radians ()).RelativeTo (pivotPoint))
-					.Where (v => v.Position.Z > pivotPoint.Z));
+					.Where (v => v.Position.Z > pivotPoint.Z))
+					.Color (_color);
 
 				XSectionStart = XSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
 				XSection = XSection.RenumberNodes (XSection.Nodes.IndexOf (XSectionStart)).Open ();
@@ -79,16 +82,13 @@
 					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y,
 					cockpitFuselage.XSection.Nodes.Length);
 
-				var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), cockpitFuselage.XSection.Nodes.Length);
-				cockpitFuselage.XSection.Nodes.Color (graySlide);
-				XSection.Nodes.Color (graySlide);
-
 				var transforms = from z in Ext.Range (0f, -2f, -0.25f)
 								 select Mat.Translation<Mat4> (0f, 0f, z);
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
 					XSection.Translate (0f, 0f, -4f));
-				Fuselage = paths.Extrude<V, P> (false, true);
+				Fuselage = paths.Extrude<V, P> (false, true)
+					.Color (_color);
 			}
 
 			private Path<P, Vec3> CrossSection (Vec3 start, float top, int nodeCount)
@@ -97,8 +97,8 @@
 				var cPoints = new Vec3[]
 				{
 					start,
-					new Vec3 (start.X * 0.6f, top * 0.2f, start.Z),
-					new Vec3 (start.X * 0.5f, top * 0.8f, start.Z),
+					new Vec3 (start.X * 0.7f, top * 0.1f, start.Z),
+					new Vec3 (start.X * 0.6f, top * 0.7f, start.Z),
 				};
 				var spline = BSpline<Vec3>.FromControlPoints (2,
 					cPoints.Append (new Vec3 (0f, top * 1.5f, start.Z))
@@ -121,8 +121,6 @@
 				var startNode = cockpitFuselage.XSectionStart;
                 XSection = CrossSection (startNode.Position,
 					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y, 20);
-				var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), XSection.Nodes.Length);
-				XSection.Nodes.Color (graySlide);
 
 				var transforms =
 					from s in Ext.Range (0.25f, 2f, 0.25f)
@@ -132,9 +130,9 @@
 						.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
 				Intake = XSection
 					.Inset<P, V> (0.9f, 0.9f)
-					.Stretch (transforms, true, false);
+					.Stretch (transforms, true, false)
+					.Color (_color);
 				RearXSection = XSection.Transform (transforms.Last ());
-				RearXSection.Nodes.Color (graySlide);
 
 				BellyXSection = Path<P, Vec3>.FromVecs (
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
@@ -143,7 +141,8 @@
 				Belly = Ext.Enumerate (BellyXSection, 
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * Mat.Scaling<Mat4> (1.45f, 1f, 1f)),
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * Mat.Scaling<Mat4> (1.9f, 1f, 1f)))
-					.Extrude<V, P> (false, false);
+					.Extrude<V, P> (false, false)
+					.Color (_color);
 			}
 
 			private Path<P, Vec3> CrossSection (Vec3 start, float bottom, int nodeCount)
@@ -178,7 +177,35 @@
 						Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
 						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
-				Geometry = paths.Extrude<V, P> (false, false);
+				Geometry = paths.Extrude<V, P> (false, false)
+					.Color (_color);
+			}
+		}
+		
+		private class Canopy
+		{
+			public readonly Geometry<V> Geometry;
+			public Path<P, Vec3> Profile;
+			
+			public Canopy(float frontHeight, float backHeight, float bend, int numPoints)
+			{
+				var spline = BSpline<Vec3>.FromControlPoints (2,
+					new Vec3 (-1.1f, 0f, 0f),
+					new Vec3 (-1f, 0.2f, 0f),
+					new Vec3 (-0f, frontHeight, 0f),
+					new Vec3 (1f, backHeight, 0f),
+					new Vec3 (2.5f, 0.1f, 0f),
+					new Vec3 (2.5f, 0f, 0f)
+				);
+				Profile = Path<P, Vec3>.FromBSpline (spline, numPoints);
+				var angle = 100f.Radians ();
+				Geometry = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.Pi / numPoints, 
+					-angle, angle)
+					.RotateY (90f.Radians ())
+					.RotateX (bend.Radians ())
+					.Scale (0.85f, 1f, 1f)
+					.Translate (0f, 0.57f, -2.3f)
+					.Color (VertexColor<Vec3>.GreyPlastic);
 			}
 		}
 
@@ -189,14 +216,17 @@
 			var mainFuselage = new MainFuselage (cockpitFuselage);
 			var intake = new EngineIntake (cockpitFuselage);
 			var underside = new Underside (intake);
+			var canopy = new Canopy (0.6f, 0.5f, 3f, 16);
+			var path = canopy.Profile;
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
+			path.Nodes.Color (graySlide);
 			
-			LineSegments = from p in new Path<P, Vec3>[] { underside.XSection }
+			LineSegments = from p in new Path<P, Vec3>[] { path }
 						   select new LineSegment<P, Vec3> (p.Close ());
-
+			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
-				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry)))
+				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry)))
 				.Smoothen (0.85f)
-				.Color (VertexColor<Vec3>.Chrome)
 				.Center ();
 		}
 	}

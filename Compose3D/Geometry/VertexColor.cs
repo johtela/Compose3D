@@ -78,6 +78,11 @@ namespace Compose3D.Geometry
             Vec.FromArray<V, float> (0.01f, 0.01f, 0.01f),
             Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
             32f);
+
+		public static IVertexColor<V> GreyPlastic = new VertColor (
+			Vec.FromArray<V, float> (0.2f, 0.2f, 0.4f),
+			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
+			32f);
 	}
 
 	public static class ColorHelper

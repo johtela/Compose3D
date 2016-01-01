@@ -13,9 +13,9 @@
 	{
 		public static Geometry<Vertex> Hammer ()
 		{
-			var cube1 = Solids.Cube<Vertex> (1f, 1.5f, 2f).RotateY (MathHelper.PiOver2);
-			var cube2 = Solids.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f);
-			var cube3 = Solids.Cube<Vertex> (1f, 1f, 2f);
+			var cube1 = Extrusion.Cube<Vertex> (1f, 1.5f, 2f).RotateY (MathHelper.PiOver2);
+			var cube2 = Extrusion.Cube<Vertex> (1f, 1f, 1f).Scale (0.8f, 0.8f, 0.8f);
+			var cube3 = Extrusion.Cube<Vertex> (1f, 1f, 2f);
 			return Composite.Create (Stacking.StackRight (cube1, cube2, cube3)
 				.Align (Alignment.None, Alignment.Center, Alignment.Center)).Center ();
 		}

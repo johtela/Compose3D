@@ -71,7 +71,6 @@
     <Compile Include="GLTypes\GLShader.cs" />
     <Compile Include="GLTypes\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
-    <Compile Include="Geometry\Solids.cs" />
     <Compile Include="Geometry\Vertex.cs" />
     <Compile Include="Geometry\ReverseIndices.cs" />
     <Compile Include="Geometry\Wrapper.cs" />
@@ -168,6 +167,7 @@
     <Compile Include="Shaders\ParsingHelpers.cs" />
     <Compile Include="Shaders\GLSLGenerator.cs" />
     <Compile Include="Geometry\Transformable.cs" />
+    <Compile Include="Geometry\Extrusion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

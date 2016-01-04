@@ -144,7 +144,7 @@
 						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * 
 						Mat.Scaling<Mat4> (1.9f, 1.25f, 1f).RelativeTo (scalePoint)),
-					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2.5f) * 
+					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -3f) * 
 						Mat.Scaling<Mat4> (1.9f, 1.3f, 1f).RelativeTo (scalePoint)))
 					.Extrude<V, P> (false, false)
 					.Color (_color);
@@ -207,13 +207,13 @@
 					new Vec3 (2.5f, 0f, 0f)
 				);
 				Profile = Path<P, Vec3>.FromBSpline (spline, numPoints);
-				var angle = 100f.Radians ();
+				var angle = 105f.Radians ();
 				Geometry = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.Pi / numPoints, 
 					-angle, angle)
 					.RotateY (90f.Radians ())
 					.RotateX (bend.Radians ())
 					.Scale (0.85f, 1f, 1f)
-					.Translate (0f, 0.57f, -2.3f)
+					.Translate (0f, 0.6f, -2.3f)
 					.Color (VertexColor<Vec3>.GreyPlastic);
 			}
 		}
@@ -225,7 +225,7 @@
 			var mainFuselage = new MainFuselage (cockpitFuselage);
 			var intake = new EngineIntake (cockpitFuselage);
 			var underside = new Underside (intake);
-			var canopy = new Canopy (0.6f, 0.5f, 3f, 16);
+			var canopy = new Canopy (0.65f, 0.5f, 3f, 16);
 			var path = canopy.Profile;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
 			path.Nodes.Color (graySlide);

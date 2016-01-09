@@ -217,6 +217,11 @@
 					.Color (VertexColor<Vec3>.GreyPlastic);
 			}
 		}
+		
+		private class Wing
+		{
+			
+		}
 
 		public FighterGeometry ()
 		{

@@ -86,7 +86,7 @@
 								 select Mat.Translation<Mat4> (0f, 0f, z);
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
-					XSection.Translate (0f, 0f, -6f));
+					XSection.Translate (0f, 0f, -7f));
 				Fuselage = paths.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
@@ -180,11 +180,11 @@
 				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 4f, 2f)
-					let scaleFactor = 1f - (0.01f * s * s)
+					from s in Ext.Range (0f, 5f, 1f)
+					let scaleFactor = 1f - (0.005f * s * s)
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
-						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
+						Mat.Scaling<Mat4> (1f, scaleFactor, 1f)
 						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
 				Geometry = paths.Extrude<V, P> (false, false)
 					.Color (_color);
@@ -220,7 +220,33 @@
 		
 		private class Wing
 		{
+			public readonly Path<P, Vec3> Profile;
+			public readonly Geometry<V> Geometry;
+			public readonly Path<P, Vec3>[] Paths;
 			
+			public Wing (float width, float length)
+			{
+				var halfLen = length / 2f;
+				Profile = Path<P, Vec3>.FromVecs (
+					new Vec3 (-halfLen, 0f, 0f),
+					new Vec3 (halfLen, 0f, 0f),
+					new Vec3 (halfLen, -width, 0f),
+					new Vec3 (halfLen / 2f, -width, 0f),
+					new Vec3 (-halfLen, 0f, 0f));
+				
+				Paths =
+					(from s in Ext.Range (0f, 0.5f, 0.1f)
+					let factor = 1f - s * s
+					select Profile.Transform (Mat.Translation<Mat4> (0f, 0f, -0.3f * s) *
+							Mat.Scaling<Mat4> (factor, factor, 1f))).ToArray ();
+				var botHalf = Paths.Extrude<V, P> (false, true);
+				Geometry = Composite.Create (botHalf, botHalf.ReflectZ ())
+					.Transform (
+						Mat.Translation<Mat4> (0.6f, -0.21f, -6.8f) *
+						Mat.RotationY<Mat4> (MathHelper.PiOver2) *
+						Mat.RotationX<Mat4> (-MathHelper.PiOver2))
+					.Color (_color);
+			}
 		}
 
 		public FighterGeometry ()
@@ -231,15 +257,16 @@
 			var intake = new EngineIntake (cockpitFuselage);
 			var underside = new Underside (intake);
 			var canopy = new Canopy (0.65f, 0.5f, 3f, 16);
-			var path = canopy.Profile;
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
-			path.Nodes.Color (graySlide);
+			var wing = new Wing (4f, 5f);
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), wing.Profile.Nodes.Length);
+			foreach (var path in wing.Paths) 
+				path.Nodes.Color (graySlide);
 			
-			LineSegments = from p in new Path<P, Vec3>[] { path }
-						   select new LineSegment<P, Vec3> (p.Close ());
+			LineSegments = wing.Paths.Select (p => new LineSegment<P, Vec3> (p.Translate (0f, 1f, 0f)));
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
-				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry)))
+				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 
+					wing.Geometry, wing.Geometry.ReflectX ())))
 				.Smoothen (0.85f)
 				.Center ();
 		}

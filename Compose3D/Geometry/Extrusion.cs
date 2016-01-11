@@ -242,6 +242,30 @@
 				.Simplify ();
 		}
 
+		public static Geometry<V> BulgeOut<V> (this Geometry<V> plane, float depth, float flatness, 
+			float slope, int numSteps, bool includeBackFace) where V : struct, IVertex
+		{
+			if (depth <= 0f)
+				throw new ArgumentException (
+					"Depth of bulge needs to be greater than zero.", "depth");
+			if (flatness < 0 || flatness > 1)
+				throw new ArgumentException (
+					"Flatness parameter needs to be between 0 and 1.", "flatness");
+			if (slope <= 0)
+				throw new ArgumentException (
+					"Slope parameter needs to be greater than zero.", "slope");
+				
+			var step = depth / numSteps;
+			var stepVec = -plane.Vertices[0].Normal * step;
+			var scaleRange = 1f - flatness;
+			var transforms =
+				from s in Ext.Range (0, depth, step)
+				let factor = ((1f - (s / depth)) * scaleRange + flatness).Pow (slope)
+				let offs = stepVec * s
+				select Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) * Mat.Scaling<Mat4> (factor, factor, factor);
+			return plane.Stretch (transforms, true, includeBackFace);
+		}
+		
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 
 			where V : struct, IVertex
 		{

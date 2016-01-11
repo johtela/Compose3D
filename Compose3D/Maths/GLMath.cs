@@ -3,6 +3,8 @@
 	using GLTypes;
 	using OpenTK;
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 
 	public static class GLMath
 	{
@@ -197,6 +199,12 @@
 		public static float Atan2 (float y, float x)
 		{
 			return (float)Math.Atan2 (y, x);
+		}
+		
+		[GLFunction ("abs ({0})")]
+		public static float Abs (this float x)
+		{
+			return (float)Math.Abs (x);
 		}
 	}
 }

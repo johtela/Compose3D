@@ -145,6 +145,8 @@
                 res[i, i] = factors[i];
             return res;
         }
+		
+		// TODO: ScalingAlong (V vec, float[] factors)
 
         public static M RotationX<M> (float alpha)
             where M : struct, ISquareMat<M, float>

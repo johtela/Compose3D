@@ -146,7 +146,14 @@
             return res;
         }
 		
-		// TODO: ScalingAlong (V vec, float[] factors)
+		public static Mat4 ScalingAlong (Vec3 vec, Vec2 factors)
+		{
+			var rotx = GLMath.Atan2 (-vec.Y, vec.Z);
+			var roty = GLMath.Atan2 (vec.X, vec.Z);
+			return RotationX<Mat4> (rotx) * RotationY<Mat4> (roty) * 
+				Scaling<Mat4> (factors.X, factors.Y) * 
+				RotationY<Mat4> (-roty) * RotationX<Mat4> (-rotx);
+		}
 
         public static M RotationX<M> (float alpha)
             where M : struct, ISquareMat<M, float>

@@ -87,7 +87,7 @@
 			for (int i = 0; i < steps; i++, f += step)
 				yield return from.Mix (to, f);
 		}
-
+		
 		public static V Map<V, T> (this V vec, Func<T, T> map)
 			where V : struct, IVec<V, T>
 			where T : struct, IEquatable<T>

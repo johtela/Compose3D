@@ -159,7 +159,7 @@
 		}
 
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 
-			bool includeBackFace) where V : struct, IVertex
+			bool includeBackFace = true) where V : struct, IVertex
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
@@ -167,12 +167,6 @@
 			var offs = -frontFace.Vertices[0].Normal * depth;
 			return frontFace.Stretch (new Mat4[] { Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) },
 				true, includeBackFace);
-		}
-
-		public static Geometry<V> Extrude<V> (this Geometry<V> frontFace, float depth) 
-			where V : struct, IVertex
-		{
-			return frontFace.Extrude (depth, true);
 		}
 
 		public static Geometry<V> Inset<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
@@ -192,7 +186,6 @@
 			where V : struct, IVertex
 			where P : struct, IPositional<Vec3>
 		{
-			
 			var frontFace = paths.First ();
 			if (!paths.All (p => p.Nodes.Length >= 3))
 				throw new ArgumentException ("All the paths must contain at least 3 vertices.", "paths");
@@ -242,8 +235,9 @@
 				.Simplify ();
 		}
 
-		public static Geometry<V> BulgeOut<V> (this Geometry<V> plane, float depth, float flatness, 
-			float slope, int numSteps, bool includeBackFace) where V : struct, IVertex
+		public static Geometry<V> BulgeOut<V> (this Geometry<V> plane, float depth, float flatness, float slope, 
+			int numSteps, bool includeBackFace = true, Vec3 scaleAround = new Vec3 (), Axes scaleAxes = Axes.All) 
+			where V : struct, IVertex
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
@@ -254,15 +248,19 @@
 			if (slope <= 0)
 				throw new ArgumentException (
 					"Slope parameter needs to be greater than zero.", "slope");
-				
+
+			var normal = plane.Vertices[0].Normal;
 			var step = depth / numSteps;
 			var stepVec = -plane.Vertices[0].Normal * step;
 			var scaleRange = 1f - flatness;
 			var transforms =
 				from s in Ext.Range (0, depth, step)
 				let factor = ((1f - (s / depth)) * scaleRange + flatness).Pow (slope)
+				let factorx = scaleAxes.HasFlag (Axes.X) ? factor : 1f
+				let factory = scaleAxes.HasFlag (Axes.Y) ? factor : 1f
 				let offs = stepVec * s
-				select Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) * Mat.Scaling<Mat4> (factor, factor, factor);
+				select Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) * 
+					Mat.ScalingAlong (normal, new Vec2 (factorx, factory)).RelativeTo (scaleAround);
 			return plane.Stretch (transforms, true, includeBackFace);
 		}
 		

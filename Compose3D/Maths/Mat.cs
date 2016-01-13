@@ -146,7 +146,7 @@
             return res;
         }
 		
-		public static Mat4 ScalingAlong (Vec3 vec, Vec2 factors)
+		public static Mat4 ScalingPerpendicularTo (Vec3 vec, Vec2 factors)
 		{
 			var rotx = GLMath.Atan2 (-vec.Y, vec.Z);
 			var roty = GLMath.Atan2 (vec.X, vec.Z);

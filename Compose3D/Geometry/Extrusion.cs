@@ -235,33 +235,29 @@
 				.Simplify ();
 		}
 
-		public static Geometry<V> BulgeOut<V> (this Geometry<V> plane, float depth, float flatness, float slope, 
-			int numSteps, bool includeBackFace = true, Vec3 scaleAround = new Vec3 (), Axes scaleAxes = Axes.All) 
+		public static Geometry<V> ExtrudeToScale<V> (this Geometry<V> plane, float depth, float targetScale, 
+			float steepness, int numSteps, bool includeFrontFace = true, bool includeBackFace = true, 
+			Vec3 scaleAround = new Vec3 ()) 
 			where V : struct, IVertex
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
 					"Depth of bulge needs to be greater than zero.", "depth");
-			if (flatness < 0 || flatness > 1)
-				throw new ArgumentException (
-					"Flatness parameter needs to be between 0 and 1.", "flatness");
-			if (slope <= 0)
+			if (steepness <= 0)
 				throw new ArgumentException (
 					"Slope parameter needs to be greater than zero.", "slope");
 
 			var normal = plane.Vertices[0].Normal;
 			var step = depth / numSteps;
-			var stepVec = -plane.Vertices[0].Normal * step;
-			var scaleRange = 1f - flatness;
+			var scaleRange = 1f - targetScale;
+			var exponent = scaleRange < 0 ? 1f / steepness : steepness;
 			var transforms =
-				from s in Ext.Range (0, depth, step)
-				let factor = ((1f - (s / depth)) * scaleRange + flatness).Pow (slope)
-				let factorx = scaleAxes.HasFlag (Axes.X) ? factor : 1f
-				let factory = scaleAxes.HasFlag (Axes.Y) ? factor : 1f
-				let offs = stepVec * s
+				from s in Ext.Range (step, depth, step)
+				let factor = (1f - (s / depth).Pow (exponent)) * scaleRange + targetScale
+				let offs = -normal * s
 				select Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) * 
-					Mat.ScalingAlong (normal, new Vec2 (factorx, factory)).RelativeTo (scaleAround);
-			return plane.Stretch (transforms, true, includeBackFace);
+					Mat.ScalingPerpendicularTo (normal, new Vec2 (factor)).RelativeTo (scaleAround);
+			return plane.Stretch (transforms, includeFrontFace, includeBackFace);
 		}
 		
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 

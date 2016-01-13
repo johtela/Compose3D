@@ -220,29 +220,22 @@
 		
 		private class Wing
 		{
-			public readonly Path<P, Vec3> Profile;
 			public readonly Geometry<V> Geometry;
-			public readonly Path<P, Vec3>[] Paths;
 			
 			public Wing (float width, float length)
 			{
-				var halfLen = length / 2f;
-				Profile = Path<P, Vec3>.FromVecs (
-					new Vec3 (-halfLen, 0f, 0f),
-					new Vec3 (halfLen, 0f, 0f),
-					new Vec3 (halfLen, -width, 0f),
-					new Vec3 (halfLen / 2f, -width, 0f),
-					new Vec3 (-halfLen, 0f, 0f));
-				
-				Paths =
-					(from s in Ext.Range (0f, 0.5f, 0.1f)
-					let factor = 1f - s * s
-					select Profile.Transform (Mat.Translation<Mat4> (0f, 0f, -0.3f * s) *
-							Mat.Scaling<Mat4> (factor, factor, 1f))).ToArray ();
-				var botHalf = Paths.Extrude<V, P> (false, true);
-				Geometry = Composite.Create (botHalf, botHalf.ReflectZ ())
+				var botHalf = Quadrilateral<V>.Trapezoid (length, width, length * 0.75f, 0f)
+					.ExtrudeToScale (
+						depth: 0.17f, 
+						targetScale: 0.5f, 
+						steepness: 2f,
+						numSteps: 5,
+						includeFrontFace: false,
+						scaleAround: new Vec3 (0f, -width / 2f, 0f));
+				Geometry = Composite.Create (
+						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
 					.Transform (
-						Mat.Translation<Mat4> (0.6f, -0.21f, -6.8f) *
+						Mat.Translation<Mat4> (-2.8f, -0.23f, -6.9f) *
 						Mat.RotationY<Mat4> (MathHelper.PiOver2) *
 						Mat.RotationX<Mat4> (-MathHelper.PiOver2))
 					.Color (_color);
@@ -258,11 +251,11 @@
 			var underside = new Underside (intake);
 			var canopy = new Canopy (0.65f, 0.5f, 3f, 16);
 			var wing = new Wing (4f, 5f);
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), wing.Profile.Nodes.Length);
-			foreach (var path in wing.Paths) 
-				path.Nodes.Color (graySlide);
 			
-			LineSegments = wing.Paths.Select (p => new LineSegment<P, Vec3> (p.Translate (0f, 1f, 0f)));
+			var path = canopy.Profile;
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
+			path.Nodes.Color (graySlide);
+			LineSegments = Ext.Enumerate (new LineSegment<P, Vec3> (path));
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
 				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 

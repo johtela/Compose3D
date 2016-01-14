@@ -226,12 +226,12 @@
 			{
 				var botHalf = Quadrilateral<V>.Trapezoid (length, width, length * 0.75f, 0f)
 					.ExtrudeToScale (
-						depth: 0.17f, 
-						targetScale: 0.5f, 
-						steepness: 2f,
+						depth: 0.15f, 
+						targetScale: 0.75f, 
+						steepness: 3f,
 						numSteps: 5,
 						includeFrontFace: false,
-						scaleAround: new Vec3 (0f, -width / 2f, 0f));
+						scaleAround: new Vec3 (length / 4f, -width / 2f, 0f));
 				Geometry = Composite.Create (
 						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
 					.Transform (

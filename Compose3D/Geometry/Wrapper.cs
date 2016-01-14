@@ -5,7 +5,7 @@
 
 	internal class Wrapper<V> : Geometry<V> where V : struct, IVertex
 	{
-		protected Geometry<V> _geometry;
+		protected internal Geometry<V> _geometry;
 
 		public Wrapper (Geometry<V> geometry)
 		{

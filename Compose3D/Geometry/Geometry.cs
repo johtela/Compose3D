@@ -129,7 +129,13 @@
 
 		public Geometry<V> Transform (Mat4 matrix)
 		{
-			return new Transform<V> (this, matrix);
+			if (this is Transform<V>)
+			{
+				var trans = this as Transform<V>;
+				return new Transform<V> (trans._geometry, matrix * trans._matrix);
+			}
+			else
+				return new Transform<V> (this, matrix);
 		}
 		
 		public Geometry<V> ReverseWinding ()

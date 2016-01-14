@@ -6,8 +6,8 @@
 
 	internal class Transform<V> : Wrapper<V> where V : struct, IVertex
 	{
-        private Mat4 _matrix;
-        private Mat3 _normalMatrix;
+        internal Mat4 _matrix;
+        internal Mat3 _normalMatrix;
 
 		public Transform (Geometry<V> geometry, Mat4 matrix)
 			: base (geometry)

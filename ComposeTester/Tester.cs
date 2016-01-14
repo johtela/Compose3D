@@ -84,8 +84,9 @@
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (5f));
+			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+			var mesh1 = new Mesh<Vertex> (house)
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (1f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
 //				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));

@@ -170,6 +170,7 @@
     <Compile Include="Geometry\Extrusion.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Docs\Introduction.md" />
     <None Include="packages.config" />
     <None Include="Textures\SamplerCube.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

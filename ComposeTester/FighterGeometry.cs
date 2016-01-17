@@ -227,7 +227,7 @@
 				var botHalf = Quadrilateral<V>.Trapezoid (length, width, length * 0.75f, 0f)
 					.ExtrudeToScale (
 						depth: 0.15f, 
-						targetScale: 0.75f, 
+						targetScale: 0.5f, 
 						steepness: 3f,
 						numSteps: 5,
 						includeFrontFace: false,

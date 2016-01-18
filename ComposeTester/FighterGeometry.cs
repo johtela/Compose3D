@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Random;
 
         private class Nose
 		{
@@ -87,7 +87,7 @@
 								 select Mat.Translation<Mat4> (0f, 0f, z);
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
-					XSection.Translate (0f, 0f, -6f));
+					XSection.Translate (0f, 0f, -6.75f));
 				RearXSection = paths.Last ();
 				Fuselage = paths.Extrude<V, P> (false, false)
 					.Color (_color);
@@ -154,6 +154,7 @@
 
 			private Path<P, Vec3> CrossSection (Vec3 start, float bottom, int nodeCount)
 			{
+				start.Z -= 0.75f;
 				var cPoints = new Vec3[]
 				{
 					start,
@@ -183,8 +184,8 @@
 				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 4.5f, 1f)
-					let scaleFactor = 1f - (0.005f * s * s)
+					from s in Ext.Range (0f, 4f, 1f)
+					let scaleFactor = 1f - (0.005f * s.Pow (2f))
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
@@ -205,7 +206,7 @@
 			{
 				XSection = +(fuselage.RearXSection + underside.RearXSection);
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + CrossSection (underside.RearXSection));
-				var paths = Ext.Enumerate (XSection, RearXSection.Translate (0f, 0.1f, -4f));
+				var paths = Ext.Enumerate (XSection, RearXSection.Translate (0f, 0.1f, -3f));
 				Geometry = paths.Extrude<V, P> (false, true)
 					.Color (_color);
 			}
@@ -265,7 +266,7 @@
 						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
 					.RotateX (-MathHelper.PiOver2)
 					.RotateY (MathHelper.PiOver2)
-					.Translate (-2.7f, -0.23f, -6.9f)
+					.Translate (-2.7f, -0.25f, -7f)
 					.Color (_color);
 			}
 		}
@@ -279,8 +280,8 @@
 				var half = Polygon<V>.FromVec2s (
 					new Vec2 (-3.5f, 0f),
 					new Vec2 (-1.5f, 0.5f),
-					new Vec2 (0f, 2.5f),
-					new Vec2 (1f, 2.5f),
+					new Vec2 (0.25f, 2.5f),
+					new Vec2 (1.25f, 2.5f),
 					new Vec2 (0.5f, 0.5f),
 					new Vec2 (0.5f, 0f))
 					.ExtrudeToScale (
@@ -305,7 +306,7 @@
 			var intake = new EngineIntake (cockpitFuselage);
 			var underside = new Underside (intake);
 			var canopy = new Canopy (0.65f, 0.5f, 3f, 16);
-			var wing = new Wing (4f, 5f);
+			var wing = new Wing (4f, 4.5f);
 			var rear = new Rear (mainFuselage, underside);
 			var tailFin = new TailFin ();
 			

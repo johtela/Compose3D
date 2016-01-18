@@ -28,7 +28,7 @@
 		private OffsetOrientationScale[] _positions;
 
 		public TestWindow ()
-			: base (800, 600, GraphicsMode.Default, "Compose3D")
+			: base (1388, 768, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
 			_positions = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().ToArray ();
@@ -86,7 +86,7 @@
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (5f));
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (3f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
 //				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));

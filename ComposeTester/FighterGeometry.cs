@@ -87,7 +87,7 @@
 								 select Mat.Translation<Mat4> (0f, 0f, z);
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
-					XSection.Translate (0f, 0f, -7f));
+					XSection.Translate (0f, 0f, -6f));
 				RearXSection = paths.Last ();
 				Fuselage = paths.Extrude<V, P> (false, false)
 					.Color (_color);
@@ -183,11 +183,11 @@
 				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 5f, 1f)
+					from s in Ext.Range (0f, 4.5f, 1f)
 					let scaleFactor = 1f - (0.005f * s * s)
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
-						Mat.Scaling<Mat4> (1f, scaleFactor, 1f)
+						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
 						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
 				RearXSection = paths.Last ();
 				Geometry = paths.Extrude<V, P> (false, false)
@@ -204,15 +204,19 @@
 			public Rear (MainFuselage fuselage, Underside underside)
 			{
 				XSection = +(fuselage.RearXSection + underside.RearXSection);
-				RearXSection = CrossSection (XSection);
-				var paths = Ext.Enumerate (XSection, RearXSection);
+				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + CrossSection (underside.RearXSection));
+				var paths = Ext.Enumerate (XSection, RearXSection.Translate (0f, 0.1f, -4f));
 				Geometry = paths.Extrude<V, P> (false, true)
 					.Color (_color);
 			}
 
-			private Path<P, Vec3> CrossSection (Path<P, Vec3> frontXSection)
+			private Path<P, Vec3> CrossSection (Path<P, Vec3> underside)
 			{
-				return frontXSection.Translate (0f, 0f, -3f);
+				var first = underside.Nodes.First (); 
+				var width = (underside.Nodes.Last ().Position.X - first.Position.X);
+				var height = underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 1.6f;
+				var path = Path<P, Vec3>.FromPie (width, height, 160f.Radians (), 300f.Radians (), underside.Nodes.Length);
+				return path.Translate (0f, 0f, first.Position.Z);
 			}
 		}
 
@@ -261,7 +265,7 @@
 						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
 					.RotateX (-MathHelper.PiOver2)
 					.RotateY (MathHelper.PiOver2)
-					.Translate (-2.8f, -0.23f, -6.9f)
+					.Translate (-2.7f, -0.23f, -6.9f)
 					.Color (_color);
 			}
 		}
@@ -273,10 +277,10 @@
 			public TailFin ()
 			{
 				var half = Polygon<V>.FromVec2s (
-					new Vec2 (-4f, 0f),
-					new Vec2 (-2f, 0.5f),
-					new Vec2 (0f, 3f),
-					new Vec2 (1.5f, 3f),
+					new Vec2 (-3.5f, 0f),
+					new Vec2 (-1.5f, 0.5f),
+					new Vec2 (0f, 2.5f),
+					new Vec2 (1f, 2.5f),
 					new Vec2 (0.5f, 0.5f),
 					new Vec2 (0.5f, 0f))
 					.ExtrudeToScale (

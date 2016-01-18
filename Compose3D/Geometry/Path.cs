@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Maths;
+	using OpenTK;
 
 	public class Path<P, V> : ITransformable<Path<P, V>, Mat4>
 		where P : struct, IPositional<V>
@@ -61,6 +62,28 @@
 			return new Path<P, V> (nodes);
 		}
 		
+		public static Path<P, V> FromPie (float width, float height, float startAngle, float endAngle,
+			int nodeCount)
+		{
+			if (startAngle > endAngle)
+				throw new ArgumentException ("Start angle must be bigger than end angle");
+			if (startAngle == endAngle)
+				endAngle += MathHelper.TwoPi;
+			var stepAngle = (startAngle - endAngle) / (nodeCount - 1);
+			var nodes = new P[nodeCount];
+			var angle = startAngle;
+			var radiusX = width / 2f;
+			var radiusY = height / 2f;
+			for (var i = 0; i < nodeCount; i++)
+			{
+				var pos = Vec.FromArray<V, float> (
+					radiusX * (float)Math.Cos (angle), radiusY * (float)Math.Sin (angle), 0f, 0f);
+				nodes [i] = new P() { Position = pos };
+				angle = angle + stepAngle;
+			}
+			return new Path<P, V> (nodes);
+		}
+			
 		public Path<P, V> Transform (Mat4 matrix)
 		{
 			return new Path<P, V> (Nodes.Select (n => WithPosition (n, matrix.Transform (n.Position))));

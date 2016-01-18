@@ -119,5 +119,15 @@
 		{
 			return new Path<P, V> (path1.Nodes.Concat (new P[] { node }));
 		}
+
+		public static Path<P, V> operator + (Path<P, V> path)
+		{
+			return path.Close ();
+		}
+
+		public static Path<P, V> operator - (Path<P, V> path)
+		{
+			return path.Open ();
+		}
 	}
 }

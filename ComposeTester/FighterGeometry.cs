@@ -74,6 +74,7 @@
 		{
 			public readonly Geometry<V> Fuselage;
 			public readonly Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> RearXSection;
 
 			public MainFuselage (CockpitFuselage cockpitFuselage)
 			{
@@ -87,6 +88,7 @@
 				var paths = Ext.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
 					XSection.Translate (0f, 0f, -7f));
+				RearXSection = paths.Last ();
 				Fuselage = paths.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
@@ -169,7 +171,8 @@
 		private class Underside
 		{
 			public readonly Geometry<V> Geometry;
-			public Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> RearXSection;
 
 			public Underside (EngineIntake intake)
 			{
@@ -186,15 +189,37 @@
 						Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (1f, scaleFactor, 1f)
 						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
+				RearXSection = paths.Last ();
 				Geometry = paths.Extrude<V, P> (false, false)
 					.Color (_color);
 			}
 		}
-		
+
+		private class Rear
+		{
+			public readonly Geometry<V> Geometry;
+			public readonly Path<P, Vec3> XSection;
+			public readonly Path<P, Vec3> RearXSection;
+
+			public Rear (MainFuselage fuselage, Underside underside)
+			{
+				XSection = +(fuselage.RearXSection + underside.RearXSection);
+				RearXSection = CrossSection (XSection);
+				var paths = Ext.Enumerate (XSection, RearXSection);
+				Geometry = paths.Extrude<V, P> (false, true)
+					.Color (_color);
+			}
+
+			private Path<P, Vec3> CrossSection (Path<P, Vec3> frontXSection)
+			{
+				return frontXSection.Translate (0f, 0f, -3f);
+			}
+		}
+
 		private class Canopy
 		{
 			public readonly Geometry<V> Geometry;
-			public Path<P, Vec3> Profile;
+			public readonly Path<P, Vec3> Profile;
 			
 			public Canopy(float frontHeight, float backHeight, float bend, int numPoints)
 			{
@@ -234,10 +259,36 @@
 						scaleAround: new Vec3 (length / 4f, -width / 2f, 0f));
 				Geometry = Composite.Create (
 						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
-					.Transform (
-						Mat.Translation<Mat4> (-2.8f, -0.23f, -6.9f) *
-						Mat.RotationY<Mat4> (MathHelper.PiOver2) *
-						Mat.RotationX<Mat4> (-MathHelper.PiOver2))
+					.RotateX (-MathHelper.PiOver2)
+					.RotateY (MathHelper.PiOver2)
+					.Translate (-2.8f, -0.23f, -6.9f)
+					.Color (_color);
+			}
+		}
+
+		private class TailFin
+		{
+			public readonly Geometry<V> Geometry;
+
+			public TailFin ()
+			{
+				var half = Polygon<V>.FromVec2s (
+					new Vec2 (-4f, 0f),
+					new Vec2 (-2f, 0.5f),
+					new Vec2 (0f, 3f),
+					new Vec2 (1.5f, 3f),
+					new Vec2 (0.5f, 0.5f),
+					new Vec2 (0.5f, 0f))
+					.ExtrudeToScale (
+						depth: 0.15f,
+						targetScale: 0.5f,
+						steepness: 3f,
+						numSteps: 5,
+						includeFrontFace: false);
+				Geometry = Composite.Create (
+						Stacking.StackForward (half, half.ReflectZ ()))
+					.RotateY (MathHelper.PiOver2)
+					.Translate(0f, 0.9f, -13f)
 					.Color (_color);
 			}
 		}
@@ -251,15 +302,17 @@
 			var underside = new Underside (intake);
 			var canopy = new Canopy (0.65f, 0.5f, 3f, 16);
 			var wing = new Wing (4f, 5f);
+			var rear = new Rear (mainFuselage, underside);
+			var tailFin = new TailFin ();
 			
-			var path = canopy.Profile;
+			var path = rear.XSection;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
 			path.Nodes.Color (graySlide);
 			LineSegments = Ext.Enumerate (new LineSegment<P, Vec3> (path));
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
 				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 
-					wing.Geometry, wing.Geometry.ReflectX ())))
+					wing.Geometry, wing.Geometry.ReflectX (), rear.Geometry, tailFin.Geometry)))
 				.Smoothen (0.85f)
 				.Center ();
 		}

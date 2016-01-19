@@ -62,18 +62,18 @@
 			return new Path<P, V> (nodes);
 		}
 		
-		public static Path<P, V> FromPie (float width, float height, float startAngle, float endAngle,
+		public static Path<P, V> FromPie (float radiusX, float radiusY, float startAngle, float endAngle,
 			int nodeCount)
 		{
-			if (startAngle > endAngle)
-				throw new ArgumentException ("Start angle must be bigger than end angle");
+			if (radiusY <= 0f || radiusY <= 0f)
+				throw new ArgumentException ("Radiuses have to be greater than zero.");
+			//if (startAngle > endAngle)
+			//	throw new ArgumentException ("Start angle must be bigger than end angle");
 			if (startAngle == endAngle)
 				endAngle += MathHelper.TwoPi;
-			var stepAngle = (startAngle - endAngle) / (nodeCount - 1);
+			var stepAngle = (endAngle - startAngle) / (nodeCount - 1);
 			var nodes = new P[nodeCount];
 			var angle = startAngle;
-			var radiusX = width / 2f;
-			var radiusY = height / 2f;
 			for (var i = 0; i < nodeCount; i++)
 			{
 				var pos = Vec.FromArray<V, float> (

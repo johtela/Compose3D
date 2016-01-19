@@ -28,7 +28,7 @@
 		private OffsetOrientationScale[] _positions;
 
 		public TestWindow ()
-			: base (1388, 768, GraphicsMode.Default, "Compose3D")
+			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
 			_positions = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().ToArray ();

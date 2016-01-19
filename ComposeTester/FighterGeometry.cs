@@ -205,19 +205,19 @@
 			public Rear (MainFuselage fuselage, Underside underside)
 			{
 				XSection = +(fuselage.RearXSection + underside.RearXSection);
-				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + CrossSection (underside.RearXSection));
+				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + BottomXSection (underside.RearXSection));
 				var paths = Ext.Enumerate (XSection, RearXSection.Translate (0f, 0.1f, -3f));
 				Geometry = paths.Extrude<V, P> (false, true)
 					.Color (_color);
 			}
 
-			private Path<P, Vec3> CrossSection (Path<P, Vec3> underside)
+			private Path<P, Vec3> BottomXSection (Path<P, Vec3> underside)
 			{
 				var first = underside.Nodes.First (); 
-				var width = (underside.Nodes.Last ().Position.X - first.Position.X);
-				var height = underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 1.6f;
-				var path = Path<P, Vec3>.FromPie (width, height, 160f.Radians (), 300f.Radians (), underside.Nodes.Length);
-				return path.Translate (0f, 0f, first.Position.Z);
+				var radiusX = first.Position.X;
+				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 0.8f;
+				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Nodes.Length)
+					.Translate (0f, 0f, first.Position.Z);
 			}
 		}
 

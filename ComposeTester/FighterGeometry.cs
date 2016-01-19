@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Brass;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
 
         private class Nose
 		{
@@ -126,7 +126,7 @@
 
 				var transforms =
 					from s in Ext.Range (0.25f, 2f, 0.25f)
-					let scaleFactor = 1f + (0.25f * s.Sqrt ())
+					let scaleFactor = 1f + (0.25f * s.Pow (0.4f))
 					select Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
 						.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
@@ -159,10 +159,10 @@
 				{
 					start,
 					new Vec3 (start.X * 1.2f, bottom * 0.6f, start.Z),
-					new Vec3 (start.X * 0.8f, bottom * 1.1f, start.Z),
+					new Vec3 (start.X * 0.9f, bottom * 1.2f, start.Z),
 				};
 				var spline = BSpline<Vec3>.FromControlPoints (2,
-					cPoints.Append (new Vec3 (0f, bottom * 1.2f, start.Z))
+					cPoints.Append (new Vec3 (0f, bottom * 1.35f, start.Z))
 					.Concat (cPoints.Select (v => new Vec3 (-v.X, v.Y, v.Z)).Reverse ())
 					.ToArray ());
 				return Path<P, Vec3>.FromBSpline (spline, nodeCount - 1);
@@ -206,7 +206,10 @@
 			{
 				XSection = +(fuselage.RearXSection + underside.RearXSection);
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + BottomXSection (underside.RearXSection));
-				var paths = Ext.Enumerate (XSection, RearXSection.Translate (0f, 0.1f, -3f));
+				var transforms = 
+					from s in Ext.Range (0f, 3f, 1f)
+					select Mat.Translation<Mat4> (0f, s / 30f, -s);
+				var paths = XSection.MorphTo (RearXSection, transforms);
 				Geometry = paths.Extrude<V, P> (false, true)
 					.Color (_color);
 			}

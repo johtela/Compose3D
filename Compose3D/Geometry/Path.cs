@@ -67,8 +67,6 @@
 		{
 			if (radiusY <= 0f || radiusY <= 0f)
 				throw new ArgumentException ("Radiuses have to be greater than zero.");
-			//if (startAngle > endAngle)
-			//	throw new ArgumentException ("Start angle must be bigger than end angle");
 			if (startAngle == endAngle)
 				endAngle += MathHelper.TwoPi;
 			var stepAngle = (endAngle - startAngle) / (nodeCount - 1);

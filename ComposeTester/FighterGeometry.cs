@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Random;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Brass;
 
         private class Nose
 		{

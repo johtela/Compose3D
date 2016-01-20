@@ -201,23 +201,36 @@
 			public readonly Geometry<V> Geometry;
 			public readonly Path<P, Vec3> XSection;
 			public readonly Path<P, Vec3> RearXSection;
+			public readonly Path<P, Vec3> EngineXSection;
 
 			public Rear (MainFuselage fuselage, Underside underside)
 			{
 				XSection = +(fuselage.RearXSection + underside.RearXSection);
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + BottomXSection (underside.RearXSection));
 				var transforms = 
-					from s in Ext.Range (0f, 3f, 1f)
-					select Mat.Translation<Mat4> (0f, s / 30f, -s);
+					from s in Ext.Range (0f, 2.5f, 0.5f)
+					select Mat.Translation<Mat4> (0f, s / 25f, -s);
 				var paths = XSection.MorphTo (RearXSection, transforms);
-				Geometry = paths.Extrude<V, P> (false, true)
+				var rear = paths.Extrude<V, P> (false, false);
+				EngineXSection = new Path<P, Vec3> (
+					from n in paths.Last ().Nodes
+					where n.Position.X >= -0.9f && n.Position.X <= 0.9f
+					select new P () 
+					{ 
+						Position = new Vec3 (n.Position.X.Clamp (-0.78f, 0.78f), n.Position.Y, n.Position.Z)
+					})
+					.Close ();
+				var engine = Extrusion.Extrude<V, P> (false, false, EngineXSection, 
+					EngineXSection.Transform (Mat.Translation<Mat4> (0f, 0.1f, -1f) * 
+						Mat.Scaling<Mat4> (0.8f, 0.8f)));
+				Geometry = Composite.Create (rear, engine)
 					.Color (_color);
 			}
 
 			private Path<P, Vec3> BottomXSection (Path<P, Vec3> underside)
 			{
 				var first = underside.Nodes.First (); 
-				var radiusX = first.Position.X;
+				var radiusX = first.Position.X * 1.1f;
 				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 0.8f;
 				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Nodes.Length)
 					.Translate (0f, 0f, first.Position.Z);
@@ -259,7 +272,7 @@
 			{
 				var botHalf = Quadrilateral<V>.Trapezoid (length, width, length * 0.75f, 0f)
 					.ExtrudeToScale (
-						depth: 0.15f, 
+						depth: 0.1f, 
 						targetScale: 0.5f, 
 						steepness: 3f,
 						numSteps: 5,
@@ -281,14 +294,14 @@
 			public TailFin ()
 			{
 				var half = Polygon<V>.FromVec2s (
-					new Vec2 (-3.5f, 0f),
-					new Vec2 (-1.5f, 0.5f),
-					new Vec2 (0.25f, 2.5f),
-					new Vec2 (1.25f, 2.5f),
+					new Vec2 (-4f, 0f),
+					new Vec2 (-2f, 0.5f),
+					new Vec2 (-0.25f, 3f),
+					new Vec2 (1.25f, 3f),
 					new Vec2 (0.5f, 0.5f),
 					new Vec2 (0.5f, 0f))
 					.ExtrudeToScale (
-						depth: 0.15f,
+						depth: 0.1f,
 						targetScale: 0.5f,
 						steepness: 3f,
 						numSteps: 5,
@@ -313,7 +326,7 @@
 			var rear = new Rear (mainFuselage, underside);
 			var tailFin = new TailFin ();
 			
-			var path = rear.XSection;
+			var path = rear.EngineXSection;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
 			path.Nodes.Color (graySlide);
 			LineSegments = Ext.Enumerate (new LineSegment<P, Vec3> (path));

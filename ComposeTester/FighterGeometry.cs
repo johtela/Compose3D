@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.GreyPlastic;
 
         private class Nose
 		{
@@ -220,9 +220,11 @@
 						Position = new Vec3 (n.Position.X.Clamp (-0.78f, 0.78f), n.Position.Y, n.Position.Z)
 					})
 					.Close ();
-				var engine = Extrusion.Extrude<V, P> (false, false, EngineXSection, 
-					EngineXSection.Transform (Mat.Translation<Mat4> (0f, 0.1f, -1f) * 
-						Mat.Scaling<Mat4> (0.8f, 0.8f)));
+				transforms =
+					from s in Ext.Range (0f, 1f, 0.5f)
+					select Mat.Translation<Mat4> (0f, s / 10f, -s);
+				var engine = EngineXSection.MorphTo (EngineXSection.Scale (0.8f, 0.7f), transforms)
+					.Extrude<V, P> (false, true);
 				Geometry = Composite.Create (rear, engine)
 					.Color (_color);
 			}
@@ -234,6 +236,33 @@
 				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 0.8f;
 				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Nodes.Length)
 					.Translate (0f, 0f, first.Position.Z);
+			}
+		}
+
+		private class Exhaust
+		{
+			public readonly Geometry<V> Geometry;
+
+			public Exhaust (Rear rear, float length)
+			{
+				var plateSide = Quadrilateral<V>.Parallelogram (0.2f, length, 0.05f);
+				var nozzlePlate = Composite.Create (plateSide, plateSide.ReflectZ ());
+				var plateCnt = 22;
+				var plates = new Geometry<V>[plateCnt];
+				var angle = 0f;
+				for (int i = 0; i < plateCnt; i++, angle += MathHelper.TwoPi / plateCnt)
+					plates[i] = nozzlePlate
+						.Translate (0f, -length / 2f, 0f)
+						.RotateX (-100f.Radians ())
+						.Translate (0f, 0.56f, 0f)
+						.RotateZ (angle);
+				var snapToVertex = rear.Geometry.Vertices.Furthest (Dir3D.Back).Furthest (Dir3D.Up).First ();
+				var exhaust = Composite.Create (plates);
+				Geometry = exhaust
+					.Scale (1f, 1.05f, 1f)
+					.SnapVertex (exhaust.Vertices.Furthest (Dir3D.Up).First (), snapToVertex, Axes.Y | Axes.Z)
+					.Translate (0f, -0.05f, 0.02f)
+					.Color (VertexColor<Vec3>.Chrome);
 			}
 		}
 
@@ -260,7 +289,7 @@
 					.RotateX (bend.Radians ())
 					.Scale (0.85f, 1f, 1f)
 					.Translate (0f, 0.6f, -2.3f)
-					.Color (VertexColor<Vec3>.GreyPlastic);
+					.Color (VertexColor<Vec3>.BluePlastic);
 			}
 		}
 		
@@ -325,6 +354,7 @@
 			var wing = new Wing (4f, 4.5f);
 			var rear = new Rear (mainFuselage, underside);
 			var tailFin = new TailFin ();
+			var exhaust = new Exhaust (rear, 0.7f);
 			
 			var path = rear.EngineXSection;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
@@ -333,7 +363,7 @@
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
 				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 
-					wing.Geometry, wing.Geometry.ReflectX (), rear.Geometry, tailFin.Geometry)))
+					wing.Geometry, wing.Geometry.ReflectX (), rear.Geometry, tailFin.Geometry, exhaust.Geometry)))
 				.Smoothen (0.85f)
 				.Center ();
 		}

@@ -169,11 +169,17 @@
 			return result;
 		}
 
+		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, Vec3 position, V snapToVertex, Axes snapAxes)
+			where V : struct, IVertex
+		{
+			var offset = GetSnapOffset (position, snapToVertex.Position, snapAxes);
+			return geometry.Translate (offset.X, offset.Y, offset.Z);
+		}
+
 		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, V vertex, V snapToVertex, Axes snapAxes)
 			where V : struct, IVertex
 		{
-			var offset = GetSnapOffset (vertex.Position, snapToVertex.Position, snapAxes);
-			return geometry.Translate (offset.X, offset.Y, offset.Z);
+			return geometry.SnapVertex (vertex.Position, snapToVertex, snapAxes);
 		}
 	}
 }

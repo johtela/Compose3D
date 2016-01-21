@@ -80,7 +80,7 @@
             32f);
 
 		public static IVertexColor<V> GreyPlastic = new VertColor (
-			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
+			Vec.FromArray<V, float> (0.5f, 0.5f, 0.6f),
 			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
 			32f);
 

@@ -86,7 +86,7 @@
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (3f));
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (1f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
 //				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
@@ -184,7 +184,7 @@
 
 		private void Render (double time)
 		{
-			//GL.ClearColor (new Color4 (0, 50, 150, 255));
+			GL.ClearColor (new Color4 (0, 50, 150, 255));
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			GL.Enable (EnableCap.CullFace);
@@ -203,7 +203,6 @@
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= nmat ;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
-//						_program.DrawNormals (mesh.NormalBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},

@@ -245,7 +245,7 @@
 
 			public Exhaust (Rear rear, float length)
 			{
-				var plateSide = Quadrilateral<V>.Parallelogram (0.2f, length, 0.05f);
+				var plateSide = Quadrilateral<V>.Trapezoid (0.2f, length, 0.05f, 0f);
 				var nozzlePlate = Composite.Create (plateSide, plateSide.ReflectZ ());
 				var plateCnt = 22;
 				var plates = new Geometry<V>[plateCnt];

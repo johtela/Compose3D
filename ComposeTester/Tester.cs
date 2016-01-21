@@ -184,7 +184,7 @@
 
 		private void Render (double time)
 		{
-			GL.ClearColor (new Color4 (0, 50, 150, 255));
+			//GL.ClearColor (new Color4 (0, 50, 150, 255));
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			GL.Enable (EnableCap.CullFace);

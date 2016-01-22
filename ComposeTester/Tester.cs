@@ -68,8 +68,8 @@
 		private SceneNode CreateSceneGraph ()
 		{
 			var dirLight = new DirectionalLight (new Vec3 (0.2f), new Vec3 (-1f, 1f, 1f));
-			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (30f, 10f, -30f), 0.001f, 0.001f);
-			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-30f, 10f, -30f), 0.001f, 0.001f);
+			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (10f, 10f, -10f), 0.001f, 0.001f);
+			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-10f, 10f, -10f), 0.001f, 0.001f);
 
 //			var textTexture = Texture.FromBitmap (
 //				"This is a test".TextToBitmapCentered (1024, 1024, 100),
@@ -86,7 +86,7 @@
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -30f), new Vec3 (0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (0f, 0f, -10f), new Vec3 (0f), new Vec3 (1f));
 
 //			var mesh1 = new Mesh<Vertex> (hull)
 //				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
@@ -103,7 +103,7 @@
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
-				new SceneNode[] { dirLight, pointLight1, pointLight2, mesh1 } 
+				new SceneNode[] { dirLight, pointLight1, /* pointLight2, */ mesh1 } 
 					.Concat (fighter.LineSegments)
 			);
 		}

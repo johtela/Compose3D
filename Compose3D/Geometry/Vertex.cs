@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
 	using Maths;
-    using Textures;
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	
@@ -84,6 +84,32 @@
 			vertex.Position = position;
 			vertex.Normal = normal;
 			return vertex;
+		}
+
+		public static V Center<P, V> (this IEnumerable<P> vertices)
+			where P : struct, IPositional<V>
+			where V : struct, IVec<V, float>
+		{
+			var extents = vertices.Extents<P, V> ();
+			return extents.Item1.Add (extents.Item2).Divide (2f);
+		}
+
+		public static Tuple<V, V> Extents<P, V> (this IEnumerable<P> vertices)
+			where P : struct, IPositional<V>
+			where V : struct, IVec<V, float>
+		{
+			var min = Vec.FromArray<V, float> (float.PositiveInfinity.Repeat (4).ToArray ());
+			var max = Vec.FromArray<V, float> (float.NegativeInfinity.Repeat (4).ToArray ());
+
+			foreach (var pos in vertices)
+				for (int i = 0; i < min.Dimensions; i++)
+				{
+					if (min[i] > pos.Position[i])
+						min[i] = pos.Position[i];
+					if (max[i] < pos.Position[i])
+						max[i] = pos.Position[i];
+				}
+			return Tuple.Create (min, max);
 		}
 
 		public static IEnumerable<P> Furthest<P, V> (this IEnumerable<P> vertices, V direction)

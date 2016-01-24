@@ -31,7 +31,10 @@
 					new Vec3 (1f, baseHeight, 0f));
 				Profile = Path<P, Vec3>.FromBSpline (spline, 8);
 
-				Cone = Lathe<V>.Turn (Profile, Axis.X, new Vec3 (0f), MathHelper.TwoPi / numPoints)
+				Cone = Lathe<V>.Turn (Profile, 
+						turnAxis: Axis.X, 
+						offset: new Vec3 (0f), 
+						stepAngle: MathHelper.TwoPi / numPoints)
 					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.Position.Y < 0f))
 					.RotateY (90f.Radians ())
 					.Color (_color);
@@ -332,7 +335,8 @@
 						steepness: 3f,
 						numSteps: 5,
 						includeFrontFace: false,
-						scaleAround: new Vec3 (length / 4f, -width / 2f, 0f));
+						scaleAround: new Vec3 (length / 4f, -width / 2f, 0f))
+					.FilterVertices (v => !v.Facing (Dir3D.Down));
 				Geometry = Composite.Create (
 						Stacking.StackForward (botHalf, botHalf.ReflectZ ()))
 					.RotateX (-MathHelper.PiOver2)
@@ -412,7 +416,8 @@
 						targetScale: 0.7f,
 						steepness: 3f,
 						numSteps: 2,
-						includeFrontFace: false);
+						includeFrontFace: false)
+					.FilterVertices (v => !v.Facing (Dir3D.Up));
 				Geometry = Composite.Create (
 						Stacking.StackForward (half, half.ReflectZ ()))
 					.RotateY (MathHelper.PiOver2)

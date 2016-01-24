@@ -168,6 +168,7 @@
     <Compile Include="Shaders\GLSLGenerator.cs" />
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />
+    <Compile Include="Geometry\VertexFilter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />

@@ -123,7 +123,7 @@
 			where P : struct, IPlanar<V>
 			where V : struct, IVec<V, float>
 		{
-			return vertices.Where (v => v.Normal.Dot (direction).ApproxEquals (1f, 0.1f));
+			return vertices.Where (v => v.Facing (direction));
 		}
 		
 		public static bool AreCoplanar<P> (this IEnumerable<P> vertices) 

@@ -169,6 +169,7 @@
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />
     <Compile Include="Geometry\VertexFilter.cs" />
+    <Compile Include="Textures\Framebuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />

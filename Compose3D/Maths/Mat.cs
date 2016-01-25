@@ -245,6 +245,16 @@
                 new Vec4 (-(right + left) * invWidth, -(top + bottom) * invHeight, -(zFar + zNear) * invDepth, 1f));
         }
 
+		public static Mat4 LookAt (Vec3 eye, Vec3 target, Vec3 up)
+		{
+			var zaxis = (eye - target).Normalized;
+			var xaxis = up.Cross (zaxis).Normalized;
+			var yaxis = zaxis.Cross (xaxis);
+
+			return new Mat4 (new Vec4 (xaxis, 0f), new Vec4 (yaxis, 0f), new Vec4 (zaxis, 0f), new Vec4 (0f, 0f, 0f, 1f)) *
+				Mat.Translation<Mat4> (Vec.ToArray<Vec3, float> (-eye));
+		}
+
 		public static V Transform<V> (this Mat4 mat, V point)
 			where V : struct, IVec<V, float>
         {

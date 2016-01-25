@@ -15,9 +15,9 @@
 		public Mat4 Matrix { get; set; }
 		public Mat3 NormalMatrix { get; set; }
 
-		public override void Traverse<T> (Action<T, Mat4, Mat3> action, Mat4 transform, Mat3 normalTransform)
+		public override void Traverse<T> (Action<T, Mat4> action, Mat4 transform)
 		{
-			base.Traverse<T> (action, transform * Matrix, normalTransform * NormalMatrix);
+			base.Traverse<T> (action, transform * Matrix);
 		}
 	}
 }

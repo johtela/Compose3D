@@ -45,6 +45,7 @@
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
+    <Compile Include="GLTypes\GLObject.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

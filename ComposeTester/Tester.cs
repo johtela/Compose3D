@@ -117,20 +117,20 @@
 			{
 				_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
 				(
-					(globalLight, mat, nmat) =>
+					(globalLight, mat) =>
 					_uniforms.globalLighting &= new Lighting.GlobalLight () 
 					{
 						ambientLightIntensity = globalLight.AmbientLightIntensity,
 						maxintensity = globalLight.MaxIntensity,
 						inverseGamma = 1f / globalLight.GammaCorrection
 					},
-					(dirLight, mat, nmat) =>
+					(dirLight, mat) =>
 					_uniforms.directionalLight &= new Lighting.DirectionalLight () 
 					{
 						direction = dirLight.Direction,
 						intensity = dirLight.Intensity
 					},
-					(pointLight, mat, nmat) =>
+					(pointLight, mat) =>
 					pointLights [numPointLights++] = new Lighting.PointLight 
 					{
 						position = pointLight.Position,
@@ -195,18 +195,19 @@
 			GL.DepthFunc (DepthFunction.Less);
 			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<PathNode, Vec3>> 
 			(
-				(mesh, mat, nmat) =>
+				(mesh, mat) =>
 				{
 					using ( _program.Scope ())
 					{
+						mat = Mat.LookAt (new Vec3 (3f, 3f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 						_uniforms.worldMatrix &= mat;
-						_uniforms.normalMatrix &= nmat ;
+						_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					}
 				},
-				(lines, mat, nmat) =>
+				(lines, mat) =>
 				{
 					using (_passthrough.Scope ())
 					{

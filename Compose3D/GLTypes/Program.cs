@@ -3,28 +3,9 @@
     using System;
     using System.Runtime.InteropServices;
     using OpenTK.Graphics.OpenGL;
-	using Compose3D.Maths;
-    using Compose3D.Geometry;
-    using System.Reflection;
 
-	public class Program
+	public class Program : GLObject
 	{
-		private class UsingScope : IDisposable
-		{
-			private Program _program;
-
-			public UsingScope (Program program)
-			{
-				_program = program;
-				_program.Use ();
-			}
-
-			public void Dispose ()
-			{
-				_program.Release ();
-			}
-		}
-
 		internal int _glProgram;
 
 		public Program (int glProgram)
@@ -44,19 +25,14 @@
             GC.Collect ();
         }
 
-		public void Use ()
+		public override void Use ()
 		{
 			GL.UseProgram (_glProgram);
 		}
 
-		public void Release ()
+		public override void Release ()
 		{
 			GL.UseProgram (0);
-		}
-
-		public IDisposable Scope ()
-		{
-			return new UsingScope (this);
 		}
 
         public Uniform<T> GetUniform<T> (string name)

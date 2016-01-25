@@ -85,11 +85,9 @@
     <Compile Include="Reactive\Reaction.cs" />
     <Compile Include="Geometry\Primitive.cs" />
     <Compile Include="Reactive\Keyboard.cs" />
-    <Compile Include="SceneGraph\OffsetOrientationScale.cs" />
     <Compile Include="SceneGraph\LineSegment.cs" />
     <Compile Include="SceneGraph\Scene.cs" />
     <Compile Include="SceneGraph\SceneNode.cs" />
-    <Compile Include="SceneGraph\Transformation.cs" />
     <Compile Include="Shaders\Lighting.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Sampler1D.cs">
@@ -171,6 +169,8 @@
     <Compile Include="Geometry\Extrusion.cs" />
     <Compile Include="Geometry\VertexFilter.cs" />
     <Compile Include="Textures\Framebuffer.cs" />
+    <Compile Include="SceneGraph\Camera.cs" />
+    <Compile Include="SceneGraph\TransformNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />

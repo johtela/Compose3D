@@ -251,8 +251,11 @@
 			var xaxis = up.Cross (zaxis).Normalized;
 			var yaxis = zaxis.Cross (xaxis);
 
-			return new Mat4 (new Vec4 (xaxis, 0f), new Vec4 (yaxis, 0f), new Vec4 (zaxis, 0f), new Vec4 (0f, 0f, 0f, 1f)) *
-				Mat.Translation<Mat4> (Vec.ToArray<Vec3, float> (-eye));
+			return new Mat4 (
+				xaxis.X, yaxis.X, zaxis.X, 0f,
+				xaxis.Y, yaxis.Y, zaxis.Y, 0f,
+				xaxis.Z, yaxis.Z, zaxis.Z, 0f,
+				-xaxis.Dot (eye), -yaxis.Dot (eye), -zaxis.Dot (eye), 1f);
 		}
 
 		public static V Transform<V> (this Mat4 mat, V point)

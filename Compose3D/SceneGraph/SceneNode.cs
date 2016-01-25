@@ -4,6 +4,7 @@
     using Geometry;
     using System;
     using System.Collections.Generic;
+	using System.Linq;
 
     public abstract class SceneNode
     {
@@ -18,6 +19,16 @@
                 return _subNodes;
             }
         }
+		
+		public IEnumerable<SceneNode> Descendants
+		{
+			get
+			{
+				return _subNodes != null ?
+					_subNodes.SelectMany (sn => sn.Descendants).Append (this) :
+					Ext.Enumerate (this);
+			}
+		}
 
 		public virtual void Traverse<T> (Action<T, Mat4> action, Mat4 transform) 
 			where T : SceneNode

@@ -25,13 +25,13 @@
 
 		// Scene graph
 		private SceneNode _sceneGraph;
-		private OffsetOrientationScale[] _positions;
+		private TransformNode[] _positions;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.SubNodes.OfType<OffsetOrientationScale> ().ToArray ();
+			_positions = _sceneGraph.Descendants.OfType<TransformNode> ().ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -102,10 +102,9 @@
 			//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
 			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
 
+			var camera = new Camera (new Vec3 (10f, 10f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
-				new SceneNode[] { dirLight, pointLight1, /* pointLight2, */ mesh1 } 
-					.Concat (fighter.LineSegments)
-			);
+				dirLight, pointLight1, pointLight2, camera.Add (mesh1));
 		}
 
 		private void InitializeUniforms ()
@@ -139,11 +138,6 @@
 						quadraticAttenuation = pointLight.QuadraticAttenuation
 					}
 				);
-				for (int i = numPointLights; i < 4; i++)
-				{
-					pointLights [i].position = new Vec3 (0f);
-					pointLights [i].intensity = new Vec3 (0f);
-				}
 				_uniforms.pointLights &= pointLights;
 
 				var samplers = new Sampler2D[4];
@@ -199,9 +193,8 @@
 				{
 					using ( _program.Scope ())
 					{
-						mat = Mat.LookAt (new Vec3 (3f, 3f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
-						_uniforms.worldMatrix &= mat;
+						_uniforms.worldMatrix &=  mat;
 						_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
@@ -223,7 +216,7 @@
 			using (_program.Scope ())
 			{
 				_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
-				Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
+					Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
 				GL.Viewport (ClientSize);
 			}
 		}

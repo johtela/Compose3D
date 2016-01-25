@@ -19,14 +19,9 @@
             return Add (node, subNodes as IEnumerable<SceneNode>);
         }
 
-		public static SceneNode Transform (this SceneNode node, Mat4 matrix, Mat3 normalMatrix)
-		{
-			return new Transformation (matrix, normalMatrix).Add (node);
-		}
-
 		public static SceneNode OffsetOrientAndScale (this SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
 		{
-			return new OffsetOrientationScale (offset, orientation, scale).Add (node);
+			return new TransformNode (offset, orientation, scale).Add (node);
 		}
 
 		public static SceneNode Offset (this SceneNode node, Vec3 offset)

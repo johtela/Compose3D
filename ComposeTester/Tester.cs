@@ -68,7 +68,7 @@
 		private SceneNode CreateSceneGraph ()
 		{
 			var dirLight = new DirectionalLight (new Vec3 (0.2f), new Vec3 (-1f, 1f, 1f));
-			var pointLight1 = new PointLight (new Vec3 (2f), new Vec3 (10f, 10f, -10f), 0.001f, 0.001f);
+			var pointLight1 = new PointLight (new Vec3 (1f), new Vec3 (10f, 10f, 10f), 0.001f, 0.001f);
 			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-10f, 10f, -10f), 0.001f, 0.001f);
 
 //			var textTexture = Texture.FromBitmap (
@@ -83,28 +83,24 @@
 //			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
 //				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
+//			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
+//			{
+//				{ TextureParameterName.TextureBaseLevel, 0 },
+//				{ TextureParameterName.TextureMaxLevel, 0 }
+//			});
+
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+//			fighter.Fighter.ApplyTextureTop<Vertex> (0.99f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
 				.OffsetOrientAndScale (new Vec3 (0f, 0f, -10f), new Vec3 (0f), new Vec3 (1f));
 
-//			var mesh1 = new Mesh<Vertex> (hull)
-//				.OffsetOrientAndScale (new Vec3 (0f, 0f, -20f), new Vec3 (0f), new Vec3 (5f));
+			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+			var mesh2 = new Mesh<Vertex> (house)
+				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 			
-			//			var plasticTexture = Texture.FromFile ("Textures/Tulips.jpg", new TextureParams () 
-			//			{
-			//				{ TextureParameterName.TextureBaseLevel, 0 },
-			//				{ TextureParameterName.TextureMaxLevel, 0 }
-			//			});
-			//			var geometry2 = Geometries.Tube ().Color (VertexColor<Vec3>.Chrome);
-			//			geometry2.ApplyTextureFront<Vertex> (0.5f, new Vec2 (0f), new Vec2 (1f));
-			//			geometry2.ApplyTextureBack<Vertex> (0.5f, new Vec2 (10f), new Vec2 (11f));
-			//			var mesh2 = new Mesh<Vertex> (geometry2, plasticTexture)
-			//				.OffsetOrientAndScale (new Vec3 (-15f, 0f, -40f), new Vec3 (0f), new Vec3 (1f));
-
 			var camera = new Camera (new Vec3 (10f, 10f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
-				dirLight, pointLight1, pointLight2, camera.Add (mesh1));
+				dirLight, pointLight1, pointLight2, camera.Add (mesh1, mesh2));
 		}
 
 		private void InitializeUniforms ()

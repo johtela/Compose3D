@@ -211,7 +211,7 @@
 				from f in Shader.Inputs<Fragment> ()
 				select new
 				{
-					fragmentDepth = f.gl_Position.Z
+					fragmentDepth = f.gl_FragCoord.Z
 				}
 			);
 		}

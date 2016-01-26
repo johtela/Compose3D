@@ -99,9 +99,9 @@
 			return expr.Arguments[1].ExpectLambda ();
         }
 
-		public static ParameterExpression GetLambdaParameter (this Expression expr)
+		public static ParameterExpression GetLambdaParameter (this Expression expr, int index)
 		{
-			return expr.ExpectLambda ().Parameters [0];
+			return expr.ExpectLambda ().Parameters [index];
 		}
 
         public static MethodCallExpression ExpectSelect (this Expression expr)

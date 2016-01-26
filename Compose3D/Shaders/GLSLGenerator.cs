@@ -292,8 +292,8 @@
 				var arg1 = CastFromBinding (mce.GetSelectLambda ().Body);
 				if (arg1 == null)
 					return false;
-				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (), arg0);
-				OutputFromBinding (mce.Arguments [2].GetLambdaParameter (), arg1);
+				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), arg0);
+				OutputFromBinding (mce.Arguments [2].GetLambdaParameter (0), arg1);
 			}
 			else
 			{
@@ -420,28 +420,36 @@
 		public void OutputShader (LambdaExpression expr)
         {
 			StartMain ();
-			var mce = ParseShader (expr.Body);
-            Return (mce.Arguments[1].ExpectLambda ().Body);
+			var retExpr = ParseShader (expr.Body);
+            Return (retExpr);
 			EndFunction ();
         }
 
-		MethodCallExpression ParseShader (Expression expr)
+		Expression ParseShader (Expression expr)
 		{
 			var mce = expr.ExpectSelect ();
 			var me = CastFromBinding (mce.Arguments [0]);
-			if (me != null && !mce.Method.IsSelectMany ())
-				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (), me);
+			if (me != null)
+			{
+				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), me);
+				me = CastFromBinding (mce.Arguments [1].ExpectLambda ().Body);
+				if (me != null)
+				{
+					OutputFromBinding (mce.Arguments [2].GetLambdaParameter (1), me);
+					return mce.Arguments [2].ExpectLambda ().Body;
+				}
+			}
 			else
 				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (LetBinding))
 					.Execute (new Source (mce.Arguments [0].Traverse ()));
-			return mce;
+			return mce.Arguments[1].ExpectLambda ().Body;
 		}
 
 		public void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			CodeOut ("return {0};", ExprToGLSL (node != null && node.Method.IsEvaluate () ?
-				ParseShader (node.Arguments [0]).Arguments [1].ExpectLambda ().Body : expr));
+				ParseShader (node.Arguments [0]) : expr));
 		}
 	}
 }

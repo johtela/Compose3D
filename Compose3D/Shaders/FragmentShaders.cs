@@ -6,8 +6,19 @@
 
 	public class Fragment
 	{
+		/// <summary>
+		/// Contains the position of the current vertex. Output variable, available in 
+		/// vertex, tessellation evaluation and geometry languages.
+		/// </summary>
 		[Builtin]
 		public Vec4 gl_Position;
+		
+		/// <summary>
+		/// Contains the window-relative coordinates of the current fragment. Input variable, 
+		/// only available in fragment shaders.
+		/// </summary>
+		[Builtin]
+		public Vec4 gl_FragCoord;
 	}
 
 	public class ColoredFragment : Fragment

@@ -45,7 +45,7 @@
 			Traverse<T> (action, new Mat4 (1f));
         }
 
-		public void Traverse<T, U> (Action<T, Mat4> actionT, Action<U, Mat4> actionU) 
+		public void Traverse<T, U> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Mat4 transform) 
             where T : SceneNode
             where U : SceneNode
         {
@@ -55,10 +55,18 @@
 					actionT ((T)node, mat);
                 else if (node is U)
 					actionU ((U)node, mat);
-            });
+			}, transform);
         }
+		
+		public void Traverse<T, U> (Action<T, Mat4> actionT, Action<U, Mat4> actionU) 
+			where T : SceneNode
+			where U : SceneNode
+		{
+			Traverse<T, U> (actionT, actionU, new Mat4 (1f));
+		}
 
-		public void Traverse<T, U, V> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Action<V, Mat4> actionV)
+		public void Traverse<T, U, V> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Action<V, Mat4> actionV,
+			Mat4 transform)
             where T : SceneNode
             where U : SceneNode
             where V : SceneNode
@@ -71,11 +79,19 @@
 					actionU ((U)node, mat);
                 else if (node is V)
 					actionV ((V)node, mat);
-            });
+            }, transform);
         }
 
+		public void Traverse<T, U, V> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Action<V, Mat4> actionV)
+			where T : SceneNode
+			where U : SceneNode
+			where V : SceneNode
+		{
+			Traverse<T, U, V> (actionT, actionU, actionV, new Mat4 (1f));
+		}
+		
 		public void Traverse<T, U, V, W> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Action<V, Mat4> actionV, 
-			Action<W, Mat4> actionW)
+			Action<W, Mat4> actionW, Mat4 transform)
             where T : SceneNode
             where U : SceneNode
             where V : SceneNode
@@ -91,7 +107,17 @@
 					actionV ((V)node, mat);
                 else if (node is W)
 					actionW ((W)node, mat);
-            });
+            }, transform);
         }
-    }
+ 
+		public void Traverse<T, U, V, W> (Action<T, Mat4> actionT, Action<U, Mat4> actionU, Action<V, Mat4> actionV,
+			Action<W, Mat4> actionW)
+			where T : SceneNode
+			where U : SceneNode
+			where V : SceneNode
+			where W : SceneNode
+		{
+			Traverse<T, U, V, W> (actionT, actionU, actionV, actionW, new Mat4 (1f));
+		}
+	}
 }

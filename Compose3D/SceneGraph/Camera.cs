@@ -23,9 +23,9 @@
 			_transform = Mat.LookAt (_position, _target, _upDirection);
 		}
 		
-		public override void Traverse<T> (Action<T, Mat4> action, Mat4 transform)
+		public Mat4 Transform 
 		{
-			base.Traverse<T> (action, transform * _transform);			
+			get { return _transform; }
 		}
 		
 		public Vec3 Position 

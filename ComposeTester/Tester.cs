@@ -28,6 +28,7 @@
 		// Scene graph
 		private SceneNode _sceneGraph;
 		private TransformNode[] _positions;
+		private Camera _camera;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
@@ -103,9 +104,9 @@
 			var mesh2 = new Mesh<Vertex> (house)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 			
-			var camera = new Camera (new Vec3 (10f, 10f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
+			_camera = new Camera (new Vec3 (10f, 10f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
-				dirLight, pointLight1, pointLight2, camera.Add (mesh1, mesh2));
+				dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
 		}
 
 		private void InitializeUniforms ()
@@ -195,7 +196,7 @@
 					using ( _program.Scope ())
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
-						_uniforms.worldMatrix &=  mat;
+						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
@@ -207,7 +208,8 @@
 					{
 						_passthrough.DrawLinePath (lines.VertexBuffer);
 					}
-				}
+				},
+				_camera.Transform
 			);
 			SwapBuffers ();
 		}

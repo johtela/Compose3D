@@ -429,7 +429,7 @@
 		{
 			var mce = expr.ExpectSelect ();
 			var me = CastFromBinding (mce.Arguments [0]);
-			if (me != null)
+			if (me != null && !mce.Method.IsSelectMany ())
 				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (), me);
 			else
 				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (LetBinding))

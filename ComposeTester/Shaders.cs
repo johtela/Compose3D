@@ -118,6 +118,11 @@
 			[GLArray (4)] internal Uniform<Sampler2D[]> samplers;
 		}
 
+		public class ShadowUniforms
+		{
+			internal Uniform<Mat4> mvpMatrix;
+		}
+
 		public static readonly Func<Sampler2D, Vec2, Vec3> TextureColor =
 			GLShader.Function
 			(
@@ -149,12 +154,28 @@
 			);
 		}
 
+		public static GLShader ShadowVertexShader ()
+		{
+			return GLShader.Create
+			(
+				ShaderType.VertexShader, () =>
+
+				from v in Shader.Inputs<Vertex> ()
+				from u in Shader.Uniforms<ShadowUniforms> ()
+				select new Fragment ()
+				{
+					gl_Position = !u.mvpMatrix * new Vec4 (v.position, 1f)
+				}
+			);
+		}
+
 		public static GLShader FragmentShader ()
 		{
 			Lighting.Use ();
 			return GLShader.Create 
 			(
 				ShaderType.FragmentShader, () =>
+
 				from f in Shader.Inputs<TexturedFragment> ()
 				from u in Shader.Uniforms<Uniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
@@ -164,7 +185,7 @@
 					samplerNo == 2 ? TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
-					let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
+				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate
 				(
 					new Vec3 (0f),
@@ -177,6 +198,20 @@
 				select new 
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, fragDiffuse, diffuse + specular)
+				}
+			);
+		}
+
+		public static GLShader ShadowFragmentShader ()
+		{
+			return GLShader.Create
+			(
+				ShaderType.FragmentShader, () =>
+
+				from f in Shader.Inputs<Fragment> ()
+				select new
+				{
+					fragmentDepth = f.gl_Position.Z
 				}
 			);
 		}

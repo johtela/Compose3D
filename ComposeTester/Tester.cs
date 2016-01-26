@@ -21,7 +21,9 @@
 		// OpenGL objects
 		private Program _program;
 		private	Program _passthrough;
+		private Program _shadowShader;
 		private ExampleShaders.Uniforms _uniforms;
+		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Scene graph
 		private SceneNode _sceneGraph;
@@ -35,7 +37,10 @@
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
-	
+
+			_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
+			_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
+
 			_passthrough = new Program (
 				GLShader.Create (ShaderType.VertexShader, 
 					() =>

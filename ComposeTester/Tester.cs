@@ -105,10 +105,10 @@
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 			
 			_camera = new Camera (
-				position: new Vec3 (10f, 10f, 10f), 
+				position: new Vec3 (20f, 20f, 20f), 
 				target: new Vec3 (0f, 0f, 0f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustrum: new ViewFrustrum (-1f, 1f, -1f, 1f, 1f, 100f),
+				frustrum: new ViewingFrustum (1f, 1f, 1f, 100f),
 				aspectRatio: 1f);
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
 				dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
@@ -223,7 +223,7 @@
 		{
 			using (_program.Scope ())
 			{
-				_camera.AspectRatio = size.Y / size.X;
+				_camera.Frustrum = new ViewingFrustum (size.X, size.Y, 1f, 100f);
 				_uniforms.perspectiveMatrix &= _camera.PerspectiveTransform;
 				GL.Viewport (ClientSize);
 			}

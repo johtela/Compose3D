@@ -9,18 +9,16 @@
 		private Vec3 _position;
 		private Vec3 _target;
 		private Vec3 _upDirection;
-		private ViewFrustrum _frustrum;
-		private float _aspectRatio;		// height / width
+		private ViewingFrustum _frustrum;
 		private Mat4 _perspectiveTransform;
 		
-		public Camera (Vec3 position, Vec3 target, Vec3 upDirection, ViewFrustrum frustrum, float aspectRatio)
+		public Camera (Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustrum, float aspectRatio)
 		{
 			_position = position;
 			_target = target;
 			_upDirection = upDirection;
 			UpdateViewTransform ();
 			_frustrum = frustrum;
-			_aspectRatio = aspectRatio;
 			UpdatePerspectiveTransform ();
 		}		
 		
@@ -31,9 +29,8 @@
 
 		private void UpdatePerspectiveTransform ()
 		{
-			_perspectiveTransform = Mat.Scaling<Mat4> (_aspectRatio, 1f, 1f) *
-				Mat.PerspectiveProjection (_frustrum.Left, _frustrum.Right, _frustrum.Bottom, _frustrum.Top, 
-				_frustrum.Near, _frustrum.Far);
+			_perspectiveTransform = Mat.PerspectiveProjection (-_frustrum.HalfWidth, _frustrum.HalfWidth, 
+				-_frustrum.HalfHeight, _frustrum.HalfHeight, _frustrum.Near, _frustrum.Far);
 		}
 		
 		public Mat4 Transform 
@@ -71,22 +68,12 @@
 			}
 		}
 
-		public ViewFrustrum Frustrum
+		public ViewingFrustum Frustrum
 		{
 			get { return _frustrum; }
 			set
 			{
 				_frustrum = value;
-				UpdatePerspectiveTransform ();
-			}
-		}
-
-		public float AspectRatio
-		{
-			get { return _aspectRatio; }
-			set
-			{
-				_aspectRatio = value;
 				UpdatePerspectiveTransform ();
 			}
 		}

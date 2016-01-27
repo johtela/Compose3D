@@ -88,6 +88,7 @@
     <Compile Include="SceneGraph\LineSegment.cs" />
     <Compile Include="SceneGraph\Scene.cs" />
     <Compile Include="SceneGraph\SceneNode.cs" />
+    <Compile Include="SceneGraph\ViewFrustrum.cs" />
     <Compile Include="Shaders\Lighting.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Sampler1D.cs">

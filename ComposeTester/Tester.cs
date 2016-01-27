@@ -104,7 +104,12 @@
 			var mesh2 = new Mesh<Vertex> (house)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 			
-			_camera = new Camera (new Vec3 (10f, 10f, 10f), new Vec3 (0f, 0f, 0f), new Vec3 (0f, 1f, 0f));
+			_camera = new Camera (
+				position: new Vec3 (10f, 10f, 10f), 
+				target: new Vec3 (0f, 0f, 0f), 
+				upDirection: new Vec3 (0f, 1f, 0f),
+				frustrum: new ViewFrustrum (-1f, 1f, -1f, 1f, 1f, 100f),
+				aspectRatio: 1f);
 			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
 				dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
 		}
@@ -218,8 +223,8 @@
 		{
 			using (_program.Scope ())
 			{
-				_uniforms.perspectiveMatrix &= Mat.Scaling<Mat4> (size.Y / size.X, 1f, 1f) *
-					Mat.PerspectiveProjection (-1f, 1f, -1f, 1f, 1f, 100f);
+				_camera.AspectRatio = size.Y / size.X;
+				_uniforms.perspectiveMatrix &= _camera.PerspectiveTransform;
 				GL.Viewport (ClientSize);
 			}
 		}

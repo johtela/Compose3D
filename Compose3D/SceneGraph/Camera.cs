@@ -1,6 +1,5 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System;
 	using Maths;
 
 	public class Camera : SceneNode
@@ -10,16 +9,14 @@
 		private Vec3 _target;
 		private Vec3 _upDirection;
 		private ViewingFrustum _frustrum;
-		private Mat4 _perspectiveTransform;
 		
-		public Camera (Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustrum, float aspectRatio)
+		public Camera (Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustum, float aspectRatio)
 		{
 			_position = position;
 			_target = target;
 			_upDirection = upDirection;
 			UpdateViewTransform ();
-			_frustrum = frustrum;
-			UpdatePerspectiveTransform ();
+			_frustrum = frustum;
 		}		
 		
 		private void UpdateViewTransform ()
@@ -27,12 +24,6 @@
 			_viewTransform = Mat.LookAt (_position, _target, _upDirection);
 		}
 
-		private void UpdatePerspectiveTransform ()
-		{
-			_perspectiveTransform = Mat.PerspectiveProjection (-_frustrum.HalfWidth, _frustrum.HalfWidth, 
-				-_frustrum.HalfHeight, _frustrum.HalfHeight, _frustrum.Near, _frustrum.Far);
-		}
-		
 		public Mat4 Transform 
 		{
 			get { return _viewTransform; }
@@ -68,19 +59,10 @@
 			}
 		}
 
-		public ViewingFrustum Frustrum
+		public ViewingFrustum Frustum
 		{
 			get { return _frustrum; }
-			set
-			{
-				_frustrum = value;
-				UpdatePerspectiveTransform ();
-			}
-		}
-
-		public Mat4 PerspectiveTransform
-		{
-			get { return _perspectiveTransform; }
+			set { _frustrum = value; }
 		}
 	}
 }

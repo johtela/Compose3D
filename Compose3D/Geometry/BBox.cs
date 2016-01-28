@@ -206,8 +206,6 @@ namespace Compose3D.Geometry
 
 		public static BBox FromPositions (IEnumerable<Vec3> vertices)
 		{
-			if (vertices.Count() < 1)
-				throw new GeometryError ("Geometry must contain at least one vertex");
 			var result = new BBox (vertices.First ());
 			foreach (var vertex in vertices.Skip (1))
 				result += vertex;

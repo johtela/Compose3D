@@ -73,9 +73,19 @@
 
 		private SceneNode CreateSceneGraph ()
 		{
-			var dirLight = new DirectionalLight (new Vec3 (0.2f), new Vec3 (-1f, 1f, 1f));
-			var pointLight1 = new PointLight (new Vec3 (1f), new Vec3 (10f, 10f, 10f), 0.001f, 0.001f);
-			var pointLight2 = new PointLight (new Vec3 (2f), new Vec3 (-10f, 10f, -10f), 0.001f, 0.001f);
+			var dirLight = new DirectionalLight (
+				intensity: new Vec3 (0.2f), 
+				direction: new Vec3 (-1f, 1f, 1f));
+			var pointLight1 = new PointLight (
+				intensity: new Vec3 (2f), 
+				position: new Vec3 (10f, 10f, 10f), 
+				linearAttenuation: 0.001f, 
+				quadraticAttenuation: 0.001f);
+			var pointLight2 = new PointLight (
+				intensity: new Vec3 (1f), 
+				position: new Vec3 (-10f, 10f, -10f), 
+				linearAttenuation: 0.001f, 
+				quadraticAttenuation: 0.001f);
 
 //			var textTexture = Texture.FromBitmap (
 //				"This is a test".TextToBitmapCentered (1024, 1024, 100),
@@ -97,12 +107,11 @@
 
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 //			fighter.Fighter.ApplyTextureTop<Vertex> (0.99f, new Vec2 (0f), new Vec2 (1f));
-			var mesh1 = new Mesh<Vertex> (fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 0f, -10f), new Vec3 (0f), new Vec3 (1f));
+			var mesh1 = new Mesh<Vertex> (fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
 
-			var house = Geometries.House ().Color (VertexColor<Vec3>.Brass);
+			var house = Geometries.Arrow ().Color (VertexColor<Vec3>.Brass);
 			var mesh2 = new Mesh<Vertex> (house)
-				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
+				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.5f));
 			
 			_camera = new Camera (
 				position: new Vec3 (20f, 20f, 20f), 

@@ -87,34 +87,34 @@
 				linearAttenuation: 0.001f, 
 				quadraticAttenuation: 0.001f);
 
-//			var textTexture = Texture.FromBitmap (
-//				"This is a test".TextToBitmapCentered (1024, 1024, 100),
-//				new TextureParams () 
-//				{
-//					{ TextureParameterName.TextureBaseLevel, 0 },
-//					{ TextureParameterName.TextureMaxLevel, 0 }
-//				});
-//			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
-//			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
-//			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
-//				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
+			var textTexture = Texture.FromBitmap (
+				"This is a test".TextToBitmapCentered (1024, 1024, 100),
+				new TextureParams ()
+				{
+					{ TextureParameterName.TextureBaseLevel, 0 },
+					{ TextureParameterName.TextureMaxLevel, 0 }
+				});
+			//			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
+			//			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
+			//			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
+			//				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
 
-//			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
-//			{
-//				{ TextureParameterName.TextureBaseLevel, 0 },
-//				{ TextureParameterName.TextureMaxLevel, 0 }
-//			});
+			//			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
+			//			{
+			//				{ TextureParameterName.TextureBaseLevel, 0 },
+			//				{ TextureParameterName.TextureMaxLevel, 0 }
+			//			});
 
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-//			fighter.Fighter.ApplyTextureTop<Vertex> (0.99f, new Vec2 (0f), new Vec2 (1f));
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
 
-			var house = Geometries.Arrow ().Color (VertexColor<Vec3>.Brass);
-			var mesh2 = new Mesh<Vertex> (house)
-				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.5f));
+			var pipe = Geometries.Pipe ().Color (VertexColor<Vec3>.Brass);
+			pipe.ApplyTextureTop<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
+			var mesh2 = new Mesh<Vertex> (pipe, textTexture)
+				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 			
 			_camera = new Camera (
-				position: new Vec3 (20f, 20f, 20f), 
+				position: new Vec3 (10f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, 0f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
@@ -259,12 +259,13 @@
 			Console.WriteLine (GL.GetString (StringName.Version));
 			wnd.Init ();
 			wnd.Run ();
-//			Tester.RunTestsTimed (
-//				new VecTests (),
-//				new MatTests (),
-//				new QuatTests ());
-//			//new PerformanceTests ());
-//			Console.ReadLine ();
+			Tester.RunTestsTimed (
+				//new VecTests (),
+				//new MatTests (),
+				//new QuatTests ());
+				new SceneTests ());
+			//new PerformanceTests ());
+			Console.ReadLine ();
 		}
 	}
 }

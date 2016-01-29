@@ -36,8 +36,8 @@
 			if (kind == FrustumKind.Perspective)
 			{
 				var max = Math.Max (width, height);
-				Right = width / max * 0.5f;
-				Top = height / max * 0.5f;
+				Right = width / max;
+				Top = height / max;
 			}
 			else
 			{
@@ -83,14 +83,14 @@
 					}
 					_corners = new Vec3[8]
 					{
-						new Vec3 (Left, Bottom, Near),
-						new Vec3 (Left, Top, Near),
-						new Vec3 (Right, Top, Near),
-						new Vec3 (Right, Bottom, Near),
-						new Vec3 (backLeft, backBottom, Far),
-						new Vec3 (backLeft, backTop, Far),
-						new Vec3 (backRight, backTop, Far),
-						new Vec3 (backRight, backBottom, Far)
+						new Vec3 (Left, Bottom, -Near),
+						new Vec3 (Left, Top, -Near),
+						new Vec3 (Right, Top, -Near),
+						new Vec3 (Right, Bottom, -Near),
+						new Vec3 (backLeft, backBottom, -Far),
+						new Vec3 (backLeft, backTop, -Far),
+						new Vec3 (backRight, backTop, -Far),
+						new Vec3 (backRight, backBottom, -Far)
 					};
 				}
 				return _corners;
@@ -102,12 +102,12 @@
 			var corners = Corners.Map (p => viewMatrix.Transform (p));
 			return new Plane[6]
 			{
-				new Plane (corners[0], corners[1], corners[4]),	
-				new Plane (corners[3], corners[2], corners[7]),	
-				new Plane (corners[0], corners[3], corners[4]),	
-				new Plane (corners[1], corners[2], corners[5]),	
-				new Plane (corners[0], corners[1], corners[2]),	
-				new Plane (corners[4], corners[5], corners[6])	
+				new Plane (corners[1], corners[0], corners[4]),	// left	
+				new Plane (corners[3], corners[2], corners[6]),	// right
+				new Plane (corners[0], corners[3], corners[7]),	// bottom
+				new Plane (corners[2], corners[1], corners[5]),	// top
+				new Plane (corners[0], corners[1], corners[2]),	// near
+				new Plane (corners[6], corners[5], corners[4])	// far
 			};
 		}
 		

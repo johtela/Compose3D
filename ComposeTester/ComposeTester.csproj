@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="OpenTK">
       <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
     </Reference>
@@ -43,14 +44,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FighterGeometry.cs" />
-    <Compile Include="MatTests.cs" />
-    <Compile Include="PerformanceTests.cs" />
-    <Compile Include="Tester.cs" />
+    <Compile Include="Tests\MatTests.cs" />
+    <Compile Include="Tests\PerformanceTests.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VecTests.cs" />
+    <Compile Include="Tests\SceneTests.cs" />
+    <Compile Include="Tests\VecTests.cs" />
     <Compile Include="Shaders.cs" />
     <Compile Include="Geometries.cs" />
-    <Compile Include="QuatTests.cs" />
+    <Compile Include="Tests\QuatTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

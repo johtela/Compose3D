@@ -25,6 +25,8 @@
 
 	public class DirectionalLight : Light
 	{
+		private Mat4 _viewTransform;
+
 		public DirectionalLight (Vec3 intensity, Vec3 direction)
 		{
 			Intensity = intensity;

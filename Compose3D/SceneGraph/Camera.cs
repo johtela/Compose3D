@@ -15,10 +15,10 @@
 			_position = position;
 			_target = target;
 			_upDirection = upDirection;
-			UpdateViewTransform ();
 			_frustrum = frustum;
-		}		
-		
+			UpdateViewTransform ();
+		}
+
 		private void UpdateViewTransform ()
 		{
 			_viewTransform = Mat.LookAt (_position, _target, _upDirection);

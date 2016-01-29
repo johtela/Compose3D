@@ -3,7 +3,12 @@
 	using Compose3D.Maths;
 	using Geometry;
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 
+	/// <summary>
+	/// Global lighting parameters affecting the whole scene.
+	/// </summary>
 	public class GlobalLighting : SceneNode
 	{
 		public GlobalLighting (Vec3 ambientLightIntensity, float maxIntensity, float gammaCorrection)
@@ -18,24 +23,76 @@
 		public float GammaCorrection { get; set; }
 	}
 
+	/// <summary>
+	/// Base class for non-ambient light sources.
+	/// </summary>
 	public abstract class Light : SceneNode
 	{
 		public Vec3 Intensity { get; set; }
 	}
 
+	/// <summary>
+	/// Directional light that has no position.
+	/// </summary>
 	public class DirectionalLight : Light
 	{
-		private Mat4 _viewTransform;
-
-		public DirectionalLight (Vec3 intensity, Vec3 direction)
+		private Vec3 _direction;
+		private float _distance;
+		private Mat4? _worldToLight;
+		
+		public DirectionalLight (Vec3 intensity, Vec3 direction, float distance)
 		{
 			Intensity = intensity;
-			Direction = direction;
+			_direction = direction;
+			_distance = distance;
+		}
+		
+		public float Distance
+		{ 
+			get { return _distance; }
+			set
+			{
+				_distance = value;
+				_worldToLight = null;
+			} 
 		}
 
-		public Vec3 Direction { get; set; }
+		public Vec3 Direction 
+		{ 
+			get { return _direction; } 
+			set
+			{
+				_direction = value;
+				_worldToLight = null;
+			}
+		}
+		
+		public Mat4 WorldToLight
+		{
+			get 
+			{ 
+				if (!_worldToLight.HasValue)
+					_worldToLight = Mat.Translation<Mat4> (0f, 0f, -_distance) *
+						Mat.RotationY<Mat4> (-_direction.YRotation ()) *
+						Mat.RotationX<Mat4> (-_direction.XRotation ());
+				return _worldToLight.Value; 
+			}
+		}
+		
+		public ViewingFrustum Fustrum (Vec3 [] worldPositions)
+		{
+			var mat = WorldToLight;
+			var lightPositions = worldPositions.Map (p => mat.Transform (p) );
+			var bbox = BBox.FromPositions (lightPositions);
+			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
+				1f, bbox.Size.Z + _distance);
+		}
+
 	}
 
+	/// <summary>
+	/// Point light source emitting light to all directions equally.
+	/// </summary>
 	public class PointLight : Light
 	{
 		public PointLight (Vec3 intensity, Vec3 position, float linearAttenuation, 
@@ -46,7 +103,7 @@
 			LinearAttenuation = linearAttenuation;
 			QuadraticAttenuation = quadraticAttenuation;
 		}
-
+	
 		public Vec3 Position { get; set; }
 		public float LinearAttenuation { get; set; }
 		public float QuadraticAttenuation { get; set; }

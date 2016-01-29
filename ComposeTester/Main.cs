@@ -75,7 +75,8 @@
 		{
 			var dirLight = new DirectionalLight (
 				intensity: new Vec3 (0.2f), 
-				direction: new Vec3 (-1f, 1f, 1f));
+				direction: new Vec3 (0f, 1f, 0f),
+				distance: 100f);
 			var pointLight1 = new PointLight (
 				intensity: new Vec3 (2f), 
 				position: new Vec3 (10f, 10f, 10f), 
@@ -119,7 +120,7 @@
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
 				aspectRatio: 1f);
-			return new GlobalLighting (new Vec3 (0.2f), 2f, 1.2f).Add (
+			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (
 				dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
 		}
 
@@ -223,7 +224,7 @@
 						_passthrough.DrawLinePath (lines.VertexBuffer);
 					}
 				},
-				_camera.Transform
+				_camera.WorldToCamera
 			);
 			SwapBuffers ();
 		}
@@ -233,7 +234,7 @@
 			using (_program.Scope ())
 			{
 				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X * 0.05f, size.Y * 0.05f, 1f, 100f);
-				_uniforms.perspectiveMatrix &= _camera.Frustum.Transform;
+				_uniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
 				GL.Viewport (ClientSize);
 			}
 		}

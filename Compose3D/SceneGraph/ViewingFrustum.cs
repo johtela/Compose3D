@@ -2,6 +2,7 @@
 {
 	using System;
 	using Maths;
+	using Geometry;
 
 	public enum FrustumKind	{ Perspective, Orthographic }
 
@@ -15,7 +16,7 @@
 		public readonly float Near;
 		public readonly float Far;
 
-		private Mat4? _transform;
+		private Mat4? _cameraToScreen;
 		private Vec3 [] _corners;
 
 		public ViewingFrustum (FrustumKind kind, float left, float right, float bottom, float top, float near, float far)
@@ -48,15 +49,15 @@
 			Bottom = -Top;
 		}
 		
-		public Mat4 Transform
+		public Mat4 CameraToScreen
 		{
 			get	
 			{ 
-				if (!_transform.HasValue)
-					_transform = Kind == FrustumKind.Perspective ?
+				if (!_cameraToScreen.HasValue)
+					_cameraToScreen = Kind == FrustumKind.Perspective ?
 						Mat.PerspectiveProjection (Left, Right, Bottom, Top, Near, Far) :
 						Mat.OrthographicProjection (Left, Right, Bottom, Top, Near, Far);
-				return _transform.Value; 
+				return _cameraToScreen.Value; 
 			}
 		}
 
@@ -97,9 +98,9 @@
 			}
 		}
 		
-		public Plane[] CullingPlanes (Mat4 viewMatrix)
+		public Plane[] CullingPlanes (Mat4 worldToCamera)
 		{
-			var corners = Corners.Map (p => viewMatrix.Transform (p));
+			var corners = Corners.Map (p => worldToCamera.Transform (p));
 			return new Plane[6]
 			{
 				new Plane (corners[1], corners[0], corners[4]),	// left	
@@ -111,13 +112,10 @@
 			};
 		}
 		
-		public ViewingFrustum IncludePoint (Vec3 point)
+		public static ViewingFrustum FromBBox (BBox bbox)
 		{
-			if (Kind != FrustumKind.Orthographic)
-				throw new InvalidOperationException ("This method works only for orthographic frustums");
-			var min = point.Min (new Vec3 (Left, Bottom, Near));
-			var max = point.Max (new Vec3 (Right, Top, Far));
-			return new ViewingFrustum (Kind, min.X, max.X, min.Y, max.Y, min.Z, max.Z);
+			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
+				1f, bbox.Size.Z);
 		}
 	}
 }

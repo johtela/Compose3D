@@ -148,8 +148,8 @@
 		
 		public static Mat4 ScalingPerpendicularTo (Vec3 vec, Vec2 factors)
 		{
-			var rotx = GLMath.Atan2 (-vec.Y, vec.Z);
-			var roty = GLMath.Atan2 (vec.X, vec.Z);
+			var rotx = vec.XRotation ();
+			var roty = vec.YRotation ();
 			return RotationX<Mat4> (rotx) * RotationY<Mat4> (roty) * 
 				Scaling<Mat4> (factors.X, factors.Y) * 
 				RotationY<Mat4> (-roty) * RotationX<Mat4> (-rotx);

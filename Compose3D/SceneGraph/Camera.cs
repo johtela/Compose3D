@@ -4,7 +4,7 @@
 
 	public class Camera : SceneNode
 	{
-		private Mat4 _viewTransform;
+		private Mat4 _worldToCamera;
 		private Vec3 _position;
 		private Vec3 _target;
 		private Vec3 _upDirection;
@@ -16,17 +16,17 @@
 			_target = target;
 			_upDirection = upDirection;
 			_frustrum = frustum;
-			UpdateViewTransform ();
+			UpdateCameraTransform ();
 		}
 
-		private void UpdateViewTransform ()
+		private void UpdateCameraTransform ()
 		{
-			_viewTransform = Mat.LookAt (_position, _target, _upDirection);
+			_worldToCamera = Mat.LookAt (_position, _target, _upDirection);
 		}
 
-		public Mat4 Transform 
+		public Mat4 WorldToCamera 
 		{
-			get { return _viewTransform; }
+			get { return _worldToCamera; }
 		}
 		
 		public Vec3 Position 
@@ -35,7 +35,7 @@
 			set 
 			{ 
 				_position = value; 
-				UpdateViewTransform ();
+				UpdateCameraTransform ();
 			}
 		}
 
@@ -45,7 +45,7 @@
 			set 
 			{ 
 				_target = value; 
-				UpdateViewTransform ();
+				UpdateCameraTransform ();
 			}
 		}
 
@@ -55,7 +55,7 @@
 			set 
 			{ 
 				_upDirection = value; 
-				UpdateViewTransform ();
+				UpdateCameraTransform ();
 			}
 		}
 

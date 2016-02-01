@@ -29,6 +29,7 @@
 		private SceneNode _sceneGraph;
 		private TransformNode[] _positions;
 		private Camera _camera;
+		private DirectionalLight _dirLight;
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
@@ -73,9 +74,9 @@
 
 		private SceneNode CreateSceneGraph ()
 		{
-			var dirLight = new DirectionalLight (
+			_dirLight = new DirectionalLight (
 				intensity: new Vec3 (0.2f), 
-				direction: new Vec3 (0f, 1f, 0f),
+				direction: new Vec3 (1f, 1f, 1f),
 				distance: 100f);
 			var pointLight1 = new PointLight (
 				intensity: new Vec3 (2f), 
@@ -121,7 +122,7 @@
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
 				aspectRatio: 1f);
 			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (
-				dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
+				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
 		}
 
 		private void InitializeUniforms ()
@@ -224,7 +225,8 @@
 						_passthrough.DrawLinePath (lines.VertexBuffer);
 					}
 				},
-				_camera.WorldToCamera
+				_dirLight.WorldToLight
+//				_camera.WorldToCamera
 			);
 			SwapBuffers ();
 		}
@@ -233,8 +235,8 @@
 		{
 			using (_program.Scope ())
 			{
-				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X * 0.05f, size.Y * 0.05f, 1f, 100f);
-				_uniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
+				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X * 0.05f, size.Y * 0.05f, 1f, 50f);
+				_uniforms.perspectiveMatrix &= _dirLight.ShadowFrustum (_camera).CameraToScreen;
 				GL.Viewport (ClientSize);
 			}
 		}

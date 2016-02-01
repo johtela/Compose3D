@@ -21,6 +21,7 @@
 
 		public ViewingFrustum (FrustumKind kind, float left, float right, float bottom, float top, float near, float far)
 		{
+			Kind = kind;
 			Left = left;
 			Right = right;
 			Bottom = bottom;

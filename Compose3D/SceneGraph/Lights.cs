@@ -79,15 +79,13 @@
 			}
 		}
 		
-		public ViewingFrustum Fustrum (Vec3 [] worldPositions)
+		public ViewingFrustum ShadowFrustum (Camera camera)
 		{
-			var mat = WorldToLight;
-			var lightPositions = worldPositions.Map (p => mat.Transform (p) );
-			var bbox = BBox.FromPositions (lightPositions);
+			var cameraToLight = WorldToLight * camera.WorldToCamera.Inverse;
+			var bbox = BBox.FromPositions (camera.Frustum.Corners.Map (c => cameraToLight.Transform (c)));
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
 				1f, bbox.Size.Z + _distance);
 		}
-
 	}
 
 	/// <summary>

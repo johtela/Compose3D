@@ -28,7 +28,12 @@ namespace Compose3D
             var casted = expr as T;
             return casted != null ? func (casted) : null;
         }
-
+		
+		public static T Max<T> (params T[] values) where T : struct, IComparable<T>
+		{
+			return values.Max ();
+		}
+		
         #region float extensions
 
         public static bool ApproxEquals (this float x, float y, float epsilon)

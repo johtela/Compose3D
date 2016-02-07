@@ -173,6 +173,7 @@
     <Compile Include="SceneGraph\TransformNode.cs" />
     <Compile Include="SceneGraph\ViewingFrustum.cs" />
     <Compile Include="Maths\Plane.cs" />
+    <Compile Include="DataStructures\IntervalTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />
@@ -260,5 +261,8 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler3D.cs</LastGenOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DataStructures\" />
   </ItemGroup>
 </Project>

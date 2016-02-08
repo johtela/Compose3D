@@ -1,8 +1,9 @@
 ﻿namespace Compose3D.DataStructures
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
-	using System.Diagnostics;
+	using System.Linq;
 
 	public class Interval<N, T> where N : struct, IComparable<N>
 	{
@@ -12,6 +13,8 @@
 		
 		public Interval (N low, N high, T data)
 		{
+			if (low.CompareTo (high) > 0)
+				throw new ArgumentException ("low parameter must be less or equal than high", "low");
 			Low = low;
 			High = high;
 			Data = data;
@@ -34,27 +37,15 @@
 			Data = other.Data;
 		}
 		
-		internal void WalkInPostOrder (Action<Interval<N, T>> action)
+		internal bool CheckInvariants ()
 		{
-			if (_left != null)
-				_left.WalkInPostOrder (action);
-			if (_right != null)
-				_right.WalkInPostOrder (action);
-			action (this);
-		}
-
-		internal void CheckInvariants ()
-		{
-			if (_left != null)
-			{
-				Debug.Assert (_left.Low.CompareTo (Low) <= 0, "Low order wrong in left child");
-				Debug.Assert (_left._max.CompareTo (_max) <= 0, "Max bigger in left child than in parent");
-			}
-			if (_right != null)
-			{
-				Debug.Assert (_right.Low.CompareTo (Low) >= 0, "Low order wrong in right child");
-				Debug.Assert (_right._max.CompareTo (_max) <= 0, "Max bigger in right child than in parent");
-			}
+			if (_left != null &&
+				(_left.Low.CompareTo (Low) > 0 || _left._max.CompareTo (_max) > 0))
+				return false;
+			if (_right != null &&
+				(_right.Low.CompareTo (Low) < 0 || _right._max.CompareTo (_max) > 0))
+				return false;
+			return true;
 		}
 
 		public bool Intersect (N low, N high)
@@ -62,34 +53,46 @@
 			return High.CompareTo (low) >= 0 && Low.CompareTo (high) <= 0;
 		}
 
+		public override string ToString ()
+		{
+			return string.Format ("({0}, {1}): {2}", Low, High, _max);
+		}
+
 		public N Low { get; private set; }
 		public N High { get; private set; }
 		public T Data { get; private set; }
 	}
 	
-	public class IntervalTree<N, T> where N : struct, IComparable<N>
+	public class IntervalTree<N, T> : IEnumerable<Interval<N, T>>
+		where N : struct, IComparable<N>
 	{	
 		private Interval<N, T> _root;
+		private int _count;
 		
 		public void Add (N low, N high, T data)
 		{
-			var newNode = new Interval<N, T> (low, high, data);
+			Add (new Interval<N, T> (low, high, data));
+		}
+
+		public void Add (Interval<N, T> interval)
+		{
+			_count++;
 			if (_root == null)
 			{
-				_root = newNode;
+				_root = interval;
 				return;
 			}			
 			var node = _root;
 			// Find the parent node and update the max interval end on the way.
 			while (true)
 			{
-		 		if (high.CompareTo (node._max) > 0)
-					node._max = high;
-				if (low.CompareTo (node.Low) < 0)
+		 		if (interval.High.CompareTo (node._max) > 0)
+					node._max = interval.High;
+				if (interval.Low.CompareTo (node.Low) < 0)
 				{
 					if (node._left == null)
 					{
-						node._left = newNode;
+						node._left = interval;
 						return;
 					}
 					node = node._left;
@@ -98,7 +101,7 @@
 				{
 					if (node._right == null)
 					{
-						node._right = newNode;
+						node._right = interval;
 						return;
 					}
 					node = node._right;
@@ -158,6 +161,7 @@
 			}
 			while (path.Peek () != null)
 				path.Pop ().UpdateMax ();
+			_count--;
 		}
 		
 		public IEnumerable<Interval<N, T>> Intersect (N low, N high)
@@ -176,9 +180,43 @@
 			}
 		}
 		
-		public void CheckInvariants ()
+		public bool CheckInvariants ()
 		{
-			_root.WalkInPostOrder (node => node.CheckInvariants ());
+			return this.All (ival => ival.CheckInvariants ());
+		}
+
+		public static IntervalTree<N, T> FromEnumerable (IEnumerable<Interval<N, T>> values)
+		{
+			var result = new IntervalTree<N, T> ();
+			foreach (var item in values)
+				result.Add (item);
+			return result;
+		}
+
+		public int Count
+		{
+			get { return _count; }
+		}
+
+		public IEnumerator<Interval<N, T>> GetEnumerator ()
+		{
+			var stack = new Stack<Interval<N, T>> ();
+
+			for (var current = _root; current != null || stack.Count > 0; current = current._right)
+			{
+				while (current != null)
+				{
+					stack.Push (current);
+					current = current._left;
+				}
+				current = stack.Pop ();
+				yield return current;
+			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator ()
+		{
+			return GetEnumerator ();
 		}
 	}
 }

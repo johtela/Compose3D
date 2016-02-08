@@ -260,13 +260,14 @@
 		{
 			var wnd = new TestWindow ();
 			Console.WriteLine (GL.GetString (StringName.Version));
-			wnd.Init ();
-			wnd.Run ();
+			//wnd.Init ();
+			//wnd.Run ();
 			Tester.RunTestsTimed (
-				//new VecTests (),
-				//new MatTests (),
-				//new QuatTests ());
-				new SceneTests ());
+				new VecTests (),
+				new MatTests (),
+				new QuatTests (),
+				new SceneTests (),
+				new IntervalTreeTests ());
 			//new PerformanceTests ());
 			Console.ReadLine ();
 		}

@@ -11,26 +11,32 @@
 
 	public class IntervalTreeTests
 	{
-		public static Gen<Interval<float, T>> GenInterval<T> (float minRange, float maxRange, float maxLen)
+		static IntervalTreeTests ()
+		{
+			Arbitrary.Register (new Arbitrary<Interval<float, int>> (GenInterval (0f, 10f, 10f)));
+		}
+		
+		public static Gen<Interval<float, int>> GenInterval (float minRange, float maxRange, float maxLen)
 		{
 			return from start in Gen.Choose (minRange, maxRange).ToFloat ()
 				   from len in Gen.Choose (1, maxLen).ToFloat ()
-				   select new Interval<float, T> (start, start + len, default (T));
+				   select new Interval<float, int> (start, start + len, 0);
 		}
 
-		public static Arbitrary<IntervalTree<float, T>> ArbitraryIntervalTree<T> (float minRange, float maxRange, float maxLen)
+		public static Arbitrary<IntervalTree<float, int>> ArbitraryIntervalTree (float minRange, float maxRange, 
+			float maxLen)
 		{
-			return new Arbitrary<IntervalTree<float, T>> (
-				from ivals in GenInterval<T> (minRange, maxRange, maxLen).EnumerableOf ()
-				select IntervalTree<float, T>.FromEnumerable (ivals),
-				it => from e in Arbitrary.Get<IEnumerable<Interval<float, T>>> ().Shrink (it)
-					  select IntervalTree<float, T>.FromEnumerable (e));
+			return new Arbitrary<IntervalTree<float, int>> (
+				from ivals in GenInterval (minRange, maxRange, maxLen).EnumerableOf ()
+				select IntervalTree<float, int>.FromEnumerable (ivals),
+				it => from e in Arbitrary.Get<IEnumerable<Interval<float, int>>> ().Shrink (it)
+					  select IntervalTree<float, int>.FromEnumerable (e));
 		}
 
-		public void CheckInvariantsAndCount<T> ()
+		public void CheckInvariantsAndCount ()
 		{
 			var prop =
-				from it in Prop.ForAll (ArbitraryIntervalTree<T> (0f, 100f, 100f))
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
 				select new { it };
 
 			prop.Label ("Check tree invariants").Check (p => p.it.CheckInvariants ());
@@ -40,7 +46,7 @@
 		[Test]
 		public void TestInvariantsAndCount ()
 		{
-			CheckInvariantsAndCount<int> ();
+			CheckInvariantsAndCount ();
 		}
 	}
 }

@@ -47,7 +47,7 @@
 				return false;
 			return true;
 		}
-
+		
 		public bool Intersect (N low, N high)
 		{
 			return High.CompareTo (low) >= 0 && Low.CompareTo (high) <= 0;
@@ -77,36 +77,20 @@
 		public void Add (Interval<N, T> interval)
 		{
 			_count++;
-			if (_root == null)
-			{
-				_root = interval;
-				return;
-			}			
-			var node = _root;
-			// Find the parent node and update the max interval end on the way.
-			while (true)
-			{
-		 		if (interval.High.CompareTo (node._max) > 0)
-					node._max = interval.High;
-				if (interval.Low.CompareTo (node.Low) < 0)
-				{
-					if (node._left == null)
-					{
-						node._left = interval;
-						return;
-					}
-					node = node._left;
-				}
-				else
-				{
-					if (node._right == null)
-					{
-						node._right = interval;
-						return;
-					}
-					node = node._right;
-				}
-			}
+			_root = AddNode (_root, interval);
+		}
+		
+		private Interval<N, T> AddNode (Interval<N, T> node, Interval<N, T> newNode)
+		{
+			if (node == null)
+				return newNode;
+			if (newNode.Low.CompareTo (node.Low) < 0)
+				node._left = AddNode (node._left, newNode);
+			else
+				node._right = AddNode (node._right, newNode);
+			if (newNode.High.CompareTo (node._max) > 0)
+				node._max = newNode.High;
+			return node;
 		}
 
 		private Stack<Interval<N, T>> PathToNode (Interval<N, T> node)
@@ -189,7 +173,7 @@
 		{
 			var result = new IntervalTree<N, T> ();
 			foreach (var item in values)
-				result.Add (item);
+				result.Add (item.Low, item.High, item.Data);
 			return result;
 		}
 
@@ -217,6 +201,11 @@
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
+		}
+		
+		public override string ToString ()
+		{
+			return "[ " + this.Select (ival => ival.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
 		}
 	}
 }

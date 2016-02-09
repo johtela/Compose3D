@@ -263,9 +263,9 @@
 			//wnd.Init ();
 			//wnd.Run ();
 			Tester.RunTestsTimed (
-				new VecTests (),
-				new MatTests (),
-				new QuatTests (),
+//				new VecTests (),
+//				new MatTests (),
+//				new QuatTests (),
 				new SceneTests (),
 				new IntervalTreeTests ());
 			//new PerformanceTests ());

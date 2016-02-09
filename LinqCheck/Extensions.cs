@@ -107,6 +107,11 @@ namespace LinqCheck
 		{
 			yield return value;
 		}
+		
+		public static IEnumerable<T> AsPrintable<T> (this IEnumerable<T> enumerable)
+		{
+			return new PrintableEnumerable<T> (enumerable);
+		}
 
 		public static bool IsEmpty<T> (this IEnumerable<T> enumerable)
 		{

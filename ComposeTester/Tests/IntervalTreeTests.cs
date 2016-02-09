@@ -33,20 +33,61 @@
 					  select IntervalTree<float, int>.FromEnumerable (e));
 		}
 
-		public void CheckInvariantsAndCount ()
+		[Test]
+		public void TestInvariantsAndCount ()
 		{
 			var prop =
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
 				select new { it };
 
 			prop.Label ("Check tree invariants").Check (p => p.it.CheckInvariants ());
-			prop.Label ("Check count is correct").Check (p => p.it.Count == p.it.Count ());
+			prop.Label ("Count is correct").Check (p => p.it.Count == p.it.Count ());
+			prop.Label ("At least one overlap").Check (
+				p => (p.it.Count > 0).Implies (!p.it.Overlap (0f, 100f).IsEmpty ()));
 		}
 
 		[Test]
-		public void TestInvariantsAndCount ()
+		public void TestAllPresent ()
 		{
-			CheckInvariantsAndCount ();
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				let midpoints = (from ival in it
+				                 select (ival.Low + ival.High) / 2f).AsPrintable ()
+				select new { it, midpoints };
+			
+			prop.Label ("Check all present").Check (p => 
+				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).IsEmpty ()));
+		}
+
+		[Test]
+		public void TestGapsNotOverlap ()
+		{
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				from low in Prop.ForAll (Gen.Choose (0.0, 100.0).ToFloat ())
+				select new { it,  low };
+			
+			prop.Label ("No tree overlap => None of the intervals overlap").Check (
+				p => p.it.Overlap (p.low, p.low + 1).IsEmpty ().Implies (
+					p.it.All (ival => !ival.Overlap (p.low, p.low + 1))));
+		}
+		
+		[Test]
+		public void TestAdding ()
+		{
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				let cnt = it.Count
+				from low in Prop.ForAll (Gen.Choose (200.0).ToFloat ())
+				from len in Prop.ForAll (Gen.Choose (1.0, 100.0).ToFloat ())
+				let high = low + len
+				let newCnt = it.Add (low, high, 0)
+				select new { it,  cnt, low, high, newCnt };
+
+			prop.Label ("Count is correct").Check (p => p.newCnt == p.cnt + 1 && p.newCnt == p.it.Count ());
+			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Count () == 1);
+			prop.Label ("No overlap above or below").Check (
+				p => p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (400f, 500f).IsEmpty ());
 		}
 	}
 }

@@ -45,6 +45,7 @@
     <Compile Include="Property.cs" />
     <Compile Include="Tester.cs" />
     <Compile Include="TestState.cs" />
+    <Compile Include="PrintableEnumerable.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

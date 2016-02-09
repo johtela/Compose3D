@@ -48,7 +48,7 @@
 			return true;
 		}
 		
-		public bool Intersect (N low, N high)
+		public bool Overlap (N low, N high)
 		{
 			return High.CompareTo (low) >= 0 && Low.CompareTo (high) <= 0;
 		}
@@ -70,16 +70,16 @@
 		private int _count;
 		private int _version;
 		
-		public void Add (N low, N high, T data)
+		public int Add (N low, N high, T data)
 		{
-			Add (new Interval<N, T> (low, high, data));
+			return Add (new Interval<N, T> (low, high, data));
 		}
 
-		public void Add (Interval<N, T> interval)
+		public int Add (Interval<N, T> interval)
 		{
 			_root = AddNode (_root, interval);
-			_count++;
 			_version++;
+			return ++_count;
 		}
 
 		private Interval<N, T> AddNode (Interval<N, T> node, Interval<N, T> newNode)
@@ -95,11 +95,11 @@
 			return node;
 		}
 
-		public void Remove (Interval<N, T> node)
+		public int Remove (Interval<N, T> node)
 		{
 			_root = RemoveNode (_root, node);
-			_count--;
 			_version++;
+			return --_count;
 		}
 
 		public Interval<N, T> RemoveNode (Interval<N, T> current, Interval<N, T> node)
@@ -127,14 +127,16 @@
 			return current;
 		}
 		
-		public IEnumerable<Interval<N, T>> Intersect (N low, N high)
+		public IEnumerable<Interval<N, T>> Overlap (N low, N high)
 		{
+			if (_root == null)
+				yield break;
 			var stack = new Stack<Interval<N, T>> ();
 			stack.Push (_root);
 			while (stack.Count > 0)
 			{
 				var node = stack.Pop ();
-				if (node.Intersect (low, high))
+				if (node.Overlap (low, high))
 					yield return node;
 				if (node._left != null && node._left._max.CompareTo (low) >= 0)
 					stack.Push (node._left);

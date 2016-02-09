@@ -68,6 +68,7 @@
 	{	
 		private Interval<N, T> _root;
 		private int _count;
+		private int _version;
 		
 		public void Add (N low, N high, T data)
 		{
@@ -76,10 +77,11 @@
 
 		public void Add (Interval<N, T> interval)
 		{
-			_count++;
 			_root = AddNode (_root, interval);
+			_count++;
+			_version++;
 		}
-		
+
 		private Interval<N, T> AddNode (Interval<N, T> node, Interval<N, T> newNode)
 		{
 			if (node == null)
@@ -93,59 +95,36 @@
 			return node;
 		}
 
-		private Stack<Interval<N, T>> PathToNode (Interval<N, T> node)
-		{
-			var result = new Stack<Interval<N, T>> ();
-			// Push null as the parent of the root.
-			result.Push (null);
-			if (_root != node)
-			{
-				var current = _root;
-				do
-				{
-					result.Push (current);
-					current = node.Low.CompareTo (current.Low) < 0 ?
-						current._left : current._right;
-				}
-				while (current != node);
-			}
-			return result;
-		}
-		
-		private void ChangeChild (Interval<N, T> parent, Interval<N, T> node, Interval<N, T> newNode)
-		{
-			if (parent == null)
-				_root = newNode;
-			else if (node == parent._left)
-				parent._left = newNode;
-			else
-				parent._right = newNode;
-		}
-		
 		public void Remove (Interval<N, T> node)
 		{
-			var path = PathToNode (node);
-			if (node._left == null || node._right == null)
-				ChangeChild (path.Peek (), node, node._left ?? node._right);
-			else
-			{
-				path.Push (node);
-				var succ = node._right;
-				while (succ._left != null)
-				{
-					path.Push (succ);
-					succ = succ._left;
-				}
-				var succParent = path.Peek ();
-				if (succParent != node)
-					succParent._left = succ._right;
-				else
-					node._right = succ._right;
-				node.AssignFrom (succ);
-			}
-			while (path.Peek () != null)
-				path.Pop ().UpdateMax ();
+			_root = RemoveNode (_root, node);
 			_count--;
+			_version++;
+		}
+
+		public Interval<N, T> RemoveNode (Interval<N, T> current, Interval<N, T> node)
+		{
+			if (current == null)
+				return null;
+			if (current == node)
+			{
+				if (current._left == null || current._right == null)
+					return current._left ?? current._right;
+				else
+				{
+					var succ = current._right;
+					while (succ._left != null)
+						succ = succ._left;
+					current.AssignFrom (succ);
+					current._right = RemoveNode (current._right, succ);
+				}
+			}
+			else if (node.Low.CompareTo (current.Low) < 0)
+				current._left = RemoveNode (current._left, node);
+			else
+				current._right = RemoveNode (current._right, node);
+			current.UpdateMax ();
+			return current;
 		}
 		
 		public IEnumerable<Interval<N, T>> Intersect (N low, N high)
@@ -185,6 +164,7 @@
 		public IEnumerator<Interval<N, T>> GetEnumerator ()
 		{
 			var stack = new Stack<Interval<N, T>> ();
+			var version = _version;
 
 			for (var current = _root; current != null || stack.Count > 0; current = current._right)
 			{
@@ -194,6 +174,8 @@
 					current = current._left;
 				}
 				current = stack.Pop ();
+				if (_version != version)
+					throw new InvalidOperationException ("Underlying tree has changed while enumerating it.");
 				yield return current;
 			}
 		}

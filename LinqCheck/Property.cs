@@ -241,7 +241,9 @@
 				state = new TestState (TestPhase.Shrink, 0, 0, optimized, null);
 				// Fail again with optimized input without catching the exception.
 				testProp (state);
-				Debug.Assert (false, "Code should not enter here");
+				throw new TestFailed ("The failed propety was re-evaluated, but the error did not reoccur. "
+					+ "This probably means that the property has side effects which supress the error "
+					+ "under some conditions and make the test case undeterministic.");
 			}
 			Console.ForegroundColor = ConsoleColor.Gray;
 			Console.WriteLine ("'{0}' passed {1} tests. Discarded: {2}", 

@@ -7,6 +7,10 @@
 
 	public class Interval<N, T> where N : struct, IComparable<N>
 	{
+		public readonly N Low;
+		public readonly N High;
+		public readonly T Data;
+
 		internal Interval<N, T> _left;
 		internal Interval<N, T> _right;
 		internal N _max;
@@ -58,10 +62,6 @@
 		{
 			return string.Format ("({0}, {1}): {2}", Low, High, _max);
 		}
-
-		public N Low { get; private set; }
-		public N High { get; private set; }
-		public T Data { get; private set; }
 	}
 	
 	public class IntervalTree<N, T> : IEnumerable<Interval<N, T>>

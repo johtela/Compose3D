@@ -105,7 +105,8 @@
 								 select (ival.Low + ival.High) / 2f).AsPrintable ()
 				select new { it, cnt, index, rem, newCnt, midpoints };
 
-			prop.Label ("Count is correct").Check (p => p.newCnt == p.cnt - 1 && p.newCnt == p.it.Count ());
+			prop.Label ("Count is correct").Check (p => 
+				p.newCnt == p.cnt - 1 && p.newCnt == p.it.Count ());
 			prop.Label ("No overlap above or below").Check (p => 
 				p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (200f, 300f).IsEmpty ());
 			prop.Label ("Removed interval not found").Check (p => 				

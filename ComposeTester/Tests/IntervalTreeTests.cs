@@ -20,7 +20,8 @@
 		{
 			return from start in Gen.Choose (minRange, maxRange).ToFloat ()
 				   from len in Gen.Choose (1, maxLen).ToFloat ()
-				   select new Interval<float, int> (start, start + len, 0);
+				   from data in Gen.Choose (0, int.MaxValue)
+				   select new Interval<float, int> (start, start + len, data);
 		}
 
 		public static Arbitrary<IntervalTree<float, int>> ArbitraryIntervalTree (float minRange, float maxRange, 
@@ -88,6 +89,29 @@
 			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Count () == 1);
 			prop.Label ("No overlap above or below").Check (
 				p => p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (400f, 500f).IsEmpty ());
+		}
+
+		[Test]
+		public void TestRemoving ()
+		{
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				let cnt = it.Count
+				where cnt > 0
+				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				let rem = it.Skip (index).First ()
+				let newCnt = it.Remove (rem)
+				let midpoints = (from ival in it
+								 select (ival.Low + ival.High) / 2f).AsPrintable ()
+				select new { it, cnt, index, rem, newCnt, midpoints };
+
+			prop.Label ("Count is correct").Check (p => p.newCnt == p.cnt - 1 && p.newCnt == p.it.Count ());
+			prop.Label ("No overlap above or below").Check (p => 
+				p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (200f, 300f).IsEmpty ());
+			prop.Label ("Removed interval not found").Check (p => 				
+				p.it.All (ival => ival != p.rem));
+			prop.Label ("Not removed intervals found").Check (p =>
+				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).IsEmpty ()));
 		}
 	}
 }

@@ -30,11 +30,12 @@
 				_max = _right._max;
 		}
 		
-		internal void AssignFrom (Interval<N, T> other)
+		internal Interval<N, T> AssignFrom (Interval<N, T> other)
 		{
-			Low = other.Low;
-			High = other.High;
-			Data = other.Data;
+			var result = new Interval<N, T> (other.Low, other.High, other.Data);
+			result._left = _left;
+			result._right = _right;
+			return result;
 		}
 		
 		internal bool CheckInvariants ()
@@ -115,7 +116,7 @@
 					var succ = current._right;
 					while (succ._left != null)
 						succ = succ._left;
-					current.AssignFrom (succ);
+					current = current.AssignFrom (succ);
 					current._right = RemoveNode (current._right, succ);
 				}
 			}

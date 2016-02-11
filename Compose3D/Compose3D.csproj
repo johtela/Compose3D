@@ -265,4 +265,10 @@
   <ItemGroup>
     <Folder Include="DataStructures\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Visuals\Visuals.csproj">
+      <Project>{DF55A445-8526-489C-AC6B-5C969E8DE42B}</Project>
+      <Name>Visuals</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

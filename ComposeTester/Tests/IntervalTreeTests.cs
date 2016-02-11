@@ -89,6 +89,11 @@
 			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Count () == 1);
 			prop.Label ("No overlap above or below").Check (
 				p => p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (400f, 500f).IsEmpty ());
+			prop.Label ("Visualize").Check (p => 
+			{
+				TestProgram.VConsole.ShowVisual (p.it.ToVisual ());
+				return true;
+			});
 		}
 
 		[Test]
@@ -113,6 +118,27 @@
 				p.it.All (ival => ival != p.rem));
 			prop.Label ("Not removed intervals found").Check (p =>
 				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).IsEmpty ()));
+		}
+		
+		[Test]
+		public void TestRemoveAll ()
+		{
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				let cnt = it.Count
+				where cnt > 0
+				let ivals = it.ToArray ()
+				let checks = ivals.Select (ival => 
+					{
+						var c = it.Remove (ival);
+						return Tuple.Create (c, it.CheckInvariants ());
+					}).ToArray ()
+				select new { it, cnt, ivals, checks };
+
+			prop.Label ("Counts are correct").Check (p => 
+				p.it.Count == 0 && p.it.Count () == 0 && 
+				p.checks.First ().Item1 == p.cnt - 1 && p.checks.Last ().Item1 == 0);
+			prop.Label ("Check invariants").Check (p => p.checks.All (t => t.Item2));
 		}
 	}
 }

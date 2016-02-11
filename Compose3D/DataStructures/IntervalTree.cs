@@ -3,7 +3,10 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Drawing;
+	using System.Drawing.Drawing2D;
 	using System.Linq;
+	using Visuals;
 
 	public class Interval<N, T> where N : struct, IComparable<N>
 	{
@@ -52,7 +55,7 @@
 			if (_right != null &&
 				(_right.Low.CompareTo (Low) < 0 || _right._max.CompareTo (_max) > 0))
 				return false;
-			return true;
+			return !(_isRed && ((_left != null && _left._isRed) || (_right != null && _right._isRed)));
 		}
 		
 		public bool Overlap (N low, N high)
@@ -66,7 +69,7 @@
 		}
 	}
 	
-	public class IntervalTree<N, T> : IEnumerable<Interval<N, T>>
+	public class IntervalTree<N, T> : IEnumerable<Interval<N, T>>, IVisualizable
 		where N : struct, IComparable<N>
 	{	
 		private Interval<N, T> _root;
@@ -174,39 +177,14 @@
 		{
 			if (interval == null)
 				throw new ArgumentNullException ("interval");
-			_root = delete (_root, interval);
+			_root = RemoveNode (_root, interval);
 			if (_root != null)
 				_root._isRed = false;
 			_version++;
 			return --_count;
 		}
 
-		public Interval<N, T> RemoveNode (Interval<N, T> current, Interval<N, T> node)
-		{
-			if (current == null)
-				throw new InvalidOperationException ("Interval not found in the tree.");
-			if (current == node)
-			{
-				if (current._left == null || current._right == null)
-					return current._left ?? current._right;
-				else
-				{
-					var succ = current._right;
-					while (succ._left != null)
-						succ = succ._left;
-					current = current.AssignFrom (succ);
-					current._right = RemoveNode (current._right, succ);
-				}
-			}
-			else if (node.Low.CompareTo (current.Low) < 0)
-				current._left = RemoveNode (current._left, node);
-			else
-				current._right = RemoveNode (current._right, node);
-			current.UpdateMax ();
-			return current;
-		}
-
-		private Interval<N, T> delete (Interval<N, T> current, Interval<N, T> node)
+		private Interval<N, T> RemoveNode (Interval<N, T> current, Interval<N, T> node)
 		{
 			if (node.Low.CompareTo (current.Low) < 0)
 			{
@@ -214,7 +192,7 @@
 					throw new InvalidOperationException ("Interval not found in the tree.");
 				if (!IsRed (current._left) && !IsRed (current._left._left))
 					current = MoveRedLeft (current);
-				current._left = delete (current._left, node);
+				current._left = RemoveNode (current._left, node);
 			}
 			else
 			{
@@ -232,9 +210,9 @@
 					while (succ._left != null)
 						succ = succ._left;
 					current = current.AssignFrom (succ);
-					current._right = delete (current._right, succ);
+					current._right = RemoveNode (current._right, succ);
 				}
-				else current._right = delete (current._right, node);
+				else current._right = RemoveNode (current._right, node);
 			}
 			return Fixup (current);
 		}
@@ -298,10 +276,39 @@
 		{
 			return GetEnumerator ();
 		}
-		
+				
 		public override string ToString ()
 		{
-			return "[ " + this.Select (ival => ival.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
+			return _count == 0 ? "[ ]" :
+				"[ " + this.Select (ival => ival.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
 		}
+		
+		#region IVisualizable implementation
+
+		private Visual NodeVisual (string text, Color color, Visual parent)
+		{
+			var node = Visual.Styled (
+				Visual.Frame (Visual.Margin (Visual.Label (text), 2, 2, 2, 2), FrameKind.RoundRectangle),
+				new VisualStyle (pen: new Pen (color, 1)));
+			return Visual.Anchor (
+				parent == null ? node : Visual.Connector (node, parent, HAlign.Center, VAlign.Top),
+				HAlign.Center, VAlign.Bottom);
+		}
+
+		private Visual TreeVisual (Interval<N, T> interval, Visual parent)
+		{
+			if (interval == null)
+				return Visual.Margin (NodeVisual ("-", Color.Black, parent), right: 4, bottom: 4);
+			var node = NodeVisual (interval.ToString (), interval._isRed ? Color.Red : Color.Black, parent);
+			return Visual.VStack (HAlign.Center, Visual.Margin (node, right: 4, bottom: 20),
+				Visual.HStack (VAlign.Top, TreeVisual (interval._left, node), TreeVisual (interval._right, node)));
+		}	
+
+		public Visual ToVisual ()
+		{
+			return TreeVisual (_root, null);
+		}
+
+		#endregion
 	}
 }

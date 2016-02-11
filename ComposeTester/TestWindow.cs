@@ -15,6 +15,7 @@
 	using System;
 	using System.Linq;
 	using LinqCheck;
+	using Visuals;
 
 	public class TestWindow : GameWindow
 	{
@@ -114,7 +115,7 @@
 			pipe.ApplyTextureTop<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh2 = new Mesh<Vertex> (pipe, textTexture)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
-			
+
 			_camera = new Camera (
 				position: new Vec3 (10f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, 0f), 
@@ -161,12 +162,12 @@
 				var samplers = new Sampler2D[4];
 				for (int i = 0; i < samplers.Length; i++)
 					samplers [i] = new Sampler2D (i, new SamplerParams () 
-					{
-						{ SamplerParameterName.TextureMagFilter, All.Linear },
-						{ SamplerParameterName.TextureMinFilter, All.Linear },
-						{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-						{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
-					});
+						{
+							{ SamplerParameterName.TextureMagFilter, All.Linear },
+							{ SamplerParameterName.TextureMinFilter, All.Linear },
+							{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
+							{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
+						});
 				_uniforms.samplers &= samplers;
 			}
 		}
@@ -226,7 +227,7 @@
 					}
 				},
 				_dirLight.WorldToLight
-//				_camera.WorldToCamera
+				//				_camera.WorldToCamera
 			);
 			SwapBuffers ();
 		}
@@ -254,22 +255,6 @@
 		}
 
 		#endregion
-
-		[STAThread]
-		static void Main (string[] args)
-		{
-			var wnd = new TestWindow ();
-			Console.WriteLine (GL.GetString (StringName.Version));
-			//wnd.Init ();
-			//wnd.Run ();
-			Tester.RunTestsTimed (
-//				new VecTests (),
-//				new MatTests (),
-//				new QuatTests (),
-				new SceneTests (),
-				new IntervalTreeTests ());
-			//new PerformanceTests ());
-			Console.ReadLine ();
-		}
 	}
 }
+

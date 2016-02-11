@@ -46,13 +46,14 @@
     <Compile Include="Tests\IntervalTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />
     <Compile Include="Tests\PerformanceTests.cs" />
-    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\SceneTests.cs" />
     <Compile Include="Tests\VecTests.cs" />
     <Compile Include="Shaders.cs" />
     <Compile Include="Geometries.cs" />
     <Compile Include="Tests\QuatTests.cs" />
+    <Compile Include="TestWindow.cs" />
+    <Compile Include="TestProgram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -70,6 +71,10 @@
     <ProjectReference Include="..\LinqCheck\LinqCheck.csproj">
       <Project>{09491672-675E-4226-95EF-4F5A5FEE36D4}</Project>
       <Name>LinqCheck</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Visuals\Visuals.csproj">
+      <Project>{DF55A445-8526-489C-AC6B-5C969E8DE42B}</Project>
+      <Name>Visuals</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

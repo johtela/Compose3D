@@ -14,6 +14,7 @@
 		internal Interval<N, T> _left;
 		internal Interval<N, T> _right;
 		internal N _max;
+		internal bool _isRed;
 		
 		public Interval (N low, N high, T data)
 		{
@@ -23,6 +24,7 @@
 			High = high;
 			Data = data;
 			_max = high;
+			_isRed = true;
 		}
 
 		internal void UpdateMax ()
@@ -70,7 +72,78 @@
 		private Interval<N, T> _root;
 		private int _count;
 		private int _version;
-		
+
+		private bool IsRed (Interval<N, T> node)
+		{
+			return node != null ? node._isRed : false;
+		}
+
+		private Interval<N, T> RotateLeft (Interval<N, T> node)
+		{
+			var x = node._right;
+			node._right = x._left;
+			x._left = node;
+			x._isRed = node._isRed;
+			node._isRed = true;
+			node.UpdateMax ();
+			return x;
+		}
+
+		private Interval<N, T> RotateRight (Interval<N, T> node)
+		{
+			var x = node._left;
+			node._left = x._right;
+			x._right = node;
+			x._isRed = node._isRed;
+			node._isRed = true;
+			node.UpdateMax ();
+			return x;
+		}
+
+		private void FlipColors (Interval<N, T> node)
+		{
+			node._isRed = !node._isRed;
+			node._left._isRed = !node._left._isRed;
+			node._right._isRed = !node._right._isRed;
+		}
+
+		private Interval<N, T> MoveRedLeft (Interval<N, T> node)
+		{
+			FlipColors (node);
+			if (IsRed (node._right._left))
+			{
+				node._right = RotateRight (node._right);
+				node = RotateLeft (node);
+				FlipColors (node);
+			}
+			return node;
+		}
+
+		private Interval<N, T> MoveRedRight (Interval<N, T> node)
+		{
+			FlipColors (node);
+			if (IsRed (node._left._left))
+			{
+				node = RotateRight (node);
+				FlipColors (node);
+			}
+			return node;
+		}
+
+		private Interval<N, T> Fixup (Interval<N, T> node)
+		{
+			// Rebalance if RB-invariants are broken.
+			if (IsRed (node._right) && !IsRed (node._left))
+				node = RotateLeft (node);
+			if (IsRed (node._left) && IsRed (node._left._left))
+				node = RotateRight (node);
+			if (IsRed (node._left) && IsRed (node._right))
+				FlipColors (node);
+			// Update max high value for subtree.
+			node.UpdateMax ();
+			return node;
+		}
+
 		public int Add (N low, N high, T data)
 		{
 			return Add (new Interval<N, T> (low, high, data));
@@ -78,7 +151,10 @@
 
 		public int Add (Interval<N, T> interval)
 		{
+			if (interval == null)
+				throw new ArgumentNullException ("interval");
 			_root = AddNode (_root, interval);
+			_root._isRed = false;
 			_version++;
 			return ++_count;
 		}
@@ -91,14 +167,16 @@
 				node._left = AddNode (node._left, newNode);
 			else
 				node._right = AddNode (node._right, newNode);
-			if (newNode.High.CompareTo (node._max) > 0)
-				node._max = newNode.High;
-			return node;
+			return Fixup (node);
 		}
 
-		public int Remove (Interval<N, T> node)
+		public int Remove (Interval<N, T> interval)
 		{
-			_root = RemoveNode (_root, node);
+			if (interval == null)
+				throw new ArgumentNullException ("interval");
+			_root = delete (_root, interval);
+			if (_root != null)
+				_root._isRed = false;
 			_version++;
 			return --_count;
 		}
@@ -106,7 +184,7 @@
 		public Interval<N, T> RemoveNode (Interval<N, T> current, Interval<N, T> node)
 		{
 			if (current == null)
-				return null;
+				throw new InvalidOperationException ("Interval not found in the tree.");
 			if (current == node)
 			{
 				if (current._left == null || current._right == null)
@@ -127,7 +205,40 @@
 			current.UpdateMax ();
 			return current;
 		}
-		
+
+		private Interval<N, T> delete (Interval<N, T> current, Interval<N, T> node)
+		{
+			if (node.Low.CompareTo (current.Low) < 0)
+			{
+				if (current._left == null)
+					throw new InvalidOperationException ("Interval not found in the tree.");
+				if (!IsRed (current._left) && !IsRed (current._left._left))
+					current = MoveRedLeft (current);
+				current._left = delete (current._left, node);
+			}
+			else
+			{
+				if (IsRed (current._left))
+					current = RotateRight (current);
+				if (node == current && current._right == null)
+					return null;
+				if (current._right == null)
+					throw new InvalidOperationException ("Interval not found in the tree.");
+				if (!IsRed (current._right) && !IsRed (current._right._left))
+					current = MoveRedRight (current);
+				if (node == current)
+				{
+					var succ = current._right;
+					while (succ._left != null)
+						succ = succ._left;
+					current = current.AssignFrom (succ);
+					current._right = delete (current._right, succ);
+				}
+				else current._right = delete (current._right, node);
+			}
+			return Fixup (current);
+		}
+
 		public IEnumerable<Interval<N, T>> Overlap (N low, N high)
 		{
 			if (_root == null)

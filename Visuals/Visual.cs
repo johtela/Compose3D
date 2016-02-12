@@ -5,7 +5,6 @@
 	using System.Linq;
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
-	using System.Text;
 	
 	/// <summary>
 	/// Interface that can be implemented by any object that
@@ -195,7 +194,7 @@
 			/// <summary>
 			/// The visuals in the stack.
 			/// </summary>
-			public readonly IEnumerable<Visual> Items;
+			public readonly Visual[] Items;
 			
 			/// <summary>
 			/// The direction of the stack (horizontal or vertical)
@@ -222,7 +221,7 @@
 			public _Stack (IEnumerable<Visual> items, VisualDirection direction, HAlign horizAlign,
 				VAlign vertAlign)
 			{
-				Items = items;
+				Items = items.ToArray ();
 				Direction = direction;
 				HorizAlign = horizAlign;
 				VertAlign = vertAlign;

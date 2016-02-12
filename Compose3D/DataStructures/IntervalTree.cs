@@ -4,7 +4,6 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Drawing;
-	using System.Drawing.Drawing2D;
 	using System.Linq;
 	using Visuals;
 
@@ -287,11 +286,12 @@
 
 		private Visual NodeVisual (string text, Color color, Visual parent)
 		{
-			var node = Visual.Styled (
-				Visual.Frame (Visual.Margin (Visual.Label (text), 2, 2, 2, 2), FrameKind.RoundRectangle),
-				new VisualStyle (pen: new Pen (color, 1)));
+			var node = Visual.Frame (Visual.Margin (Visual.Label (text), 2, 2, 2, 2), FrameKind.RoundRectangle);
 			return Visual.Anchor (
-				parent == null ? node : Visual.Connector (node, parent, HAlign.Center, VAlign.Top),
+				parent == null ? 
+					node :
+					Visual.Styled (Visual.Connector (node, parent, HAlign.Center, VAlign.Top),
+						new VisualStyle (pen: new Pen (color, 1))),
 				HAlign.Center, VAlign.Bottom);
 		}
 

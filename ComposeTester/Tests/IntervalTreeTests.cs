@@ -82,11 +82,11 @@
 				from low in Prop.ForAll (Gen.Choose (200.0).ToFloat ())
 				from len in Prop.ForAll (Gen.Choose (1.0, 100.0).ToFloat ())
 				let high = low + len
-				let newCnt = it.Add (low, high, 0)
-				select new { it,  cnt, low, high, newCnt };
+				let ival = it.Add (low, high, 0)
+				select new { it,  cnt, low, high, ival };
 
-			prop.Label ("Count is correct").Check (p => p.newCnt == p.cnt + 1 && p.newCnt == p.it.Count ());
-			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Count () == 1);
+			prop.Label ("Count is correct").Check (p => p.cnt + 1 == p.it.Count ());
+			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Single () == p.ival);
 			prop.Label ("No overlap above or below").Check (
 				p => p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (400f, 500f).IsEmpty ());
 			prop.Label ("Visualize").Check (p => 

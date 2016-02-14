@@ -129,9 +129,9 @@
 		{
 			switch (align)
 			{
-				case Alignment.Negative: return Min.Subtract (other.Min)[dimension];
-				case Alignment.Positive: return Max.Subtract (other.Max)[dimension];
-				case Alignment.Center: return Center.Subtract (other.Center)[dimension];
+				case Alignment.Negative: return Min[dimension] - other.Min[dimension];
+				case Alignment.Positive: return Max[dimension] - other.Max[dimension];
+				case Alignment.Center: return Center[dimension] - other.Center[dimension];
 				default: return 0f;
 			}
 		}

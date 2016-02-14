@@ -4,15 +4,23 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
+	using Maths;
 
-	public class RectangleTree<N, T>  where N : struct, IComparable<N>
+	public class RectangleTree<T>
 	{
-		private IntervalTree<N, IntervalTree<N, T>> _nestedTree;
+		private IntervalTree<float, IntervalTree<float, T>> _tree;
 
 		public RectangleTree ()
 		{
-			_nestedTree = new IntervalTree<N, IntervalTree<N, T>> ();
+			_tree = new IntervalTree<float, IntervalTree<float, T>> ();
 		}
 
+		public void Add (Aabb<Vec2> rect, T data)
+		{
+			var interval = _tree.Add (rect.Left, rect.Right, null);
+			if (interval.Data == null)
+				interval.Data = new IntervalTree<float, T> ();
+			interval.Data.Add (rect.Bottom, rect.Top, data);
+		}
 	}
 }

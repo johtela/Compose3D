@@ -11,7 +11,7 @@
 	{
 		public readonly N Low;
 		public readonly N High;
-		public readonly T Data;
+		public T Data;
 
 		internal Interval<N, T> _left;
 		internal Interval<N, T> _right;
@@ -146,30 +146,38 @@
 			return node;
 		}
 
-		public int Add (N low, N high, T data)
+		public Interval<N, T> Add (N low, N high, T data)
 		{
 			return Add (new Interval<N, T> (low, high, data));
 		}
 
-		public int Add (Interval<N, T> interval)
+		public Interval<N, T> Add (Interval<N, T> interval)
 		{
 			if (interval == null)
 				throw new ArgumentNullException ("interval");
-			_root = AddNode (_root, interval);
+			Interval<N, T> found = null;
+			_root = AddNode (_root, interval, ref found);
 			_root._isRed = false;
+			_count++;
 			_version++;
-			return ++_count;
+			return found ?? interval;
 		}
 
-		private Interval<N, T> AddNode (Interval<N, T> node, Interval<N, T> newNode)
+		private Interval<N, T> AddNode (Interval<N, T> node, Interval<N, T> newNode, ref Interval<N, T> found)
 		{
 			if (node == null)
 				return newNode;
-			if (newNode.Low.CompareTo (node.Low) < 0)
-				node._left = AddNode (node._left, newNode);
+			var cmp = newNode.Low.CompareTo (node.Low);
+			if (cmp == 0 && newNode.High.CompareTo (node.High) == 0)
+			{
+				found = node;
+				return node;
+			}
+			if (cmp < 0)
+				node._left = AddNode (node._left, newNode, ref found);
 			else
-				node._right = AddNode (node._right, newNode);
-			return Fixup (node);
+				node._right = AddNode (node._right, newNode, ref found);
+			return found != null ? node : Fixup (node);
 		}
 
 		public int Remove (Interval<N, T> interval)

@@ -3,10 +3,11 @@
 	using Compose3D.Maths;
 	using System.Collections.Generic;
 	using System.Linq;
+	using DataStructures;
 
 	public static class Stacking
 	{
-		private static Mat4 GetStackingMatrix (Axis axis, AxisDirection direction, BBox previous, BBox current)
+		private static Mat4 GetStackingMatrix (Axis axis, AxisDirection direction, Aabb<Vec3> previous, Aabb<Vec3> current)
 		{
 			switch (axis)
 			{
@@ -30,7 +31,7 @@
 			{
 				var current = geom.BoundingBox;
 				var matrix = GetStackingMatrix (axis, direction, previous, current);
-				previous = new BBox (
+				previous = new Aabb<Vec3> (
 					new Vec3 (matrix * new Vec4 (current.Min, 1f)), 
 					new Vec3 (matrix * new Vec4 (current.Max, 1f)));
 				return geom.Transform (matrix);

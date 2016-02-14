@@ -3,16 +3,17 @@
 	using Compose3D.Maths;
 	using System.Collections.Generic;
 	using System.Linq;
+	using DataStructures;
 
 	public static class Aligning
 	{
-		private static Mat4 GetAlignmentMatrix (Alignment xalign, Alignment yalign, Alignment zalign, 
-			BBox previous, BBox current)
+		private static Mat4 GetAlignmentMatrix (Alignment xalign, Alignment yalign, Alignment zalign,
+			Aabb<Vec3> previous, Aabb<Vec3> current)
 		{
 			return Mat.Translation<Mat4> (
-				previous.GetXOffset (current, xalign),
-				previous.GetYOffset (current, yalign),
-				previous.GetZOffset (current, zalign));
+				previous.GetAlignmentOffset (current, 0, xalign),
+				previous.GetAlignmentOffset (current, 1, yalign),
+				previous.GetAlignmentOffset (current, 2, zalign));
 		}
 
 		public static IEnumerable<Geometry<V>> Align<V> (this IEnumerable<Geometry<V>> geometries, 
@@ -23,7 +24,7 @@
 			{
 				var current = geom.BoundingBox;
 				var matrix = GetAlignmentMatrix (xalign, yalign, zalign, previous, current);
-				previous = new BBox (
+				previous = new Aabb<Vec3> (
 					new Vec3 (matrix * new Vec4 (current.Min, 1f)), 
 					new Vec3 (matrix * new Vec4 (current.Max, 1f)));
 				return geom.Transform (matrix);

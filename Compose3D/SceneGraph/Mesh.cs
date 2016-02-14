@@ -4,6 +4,7 @@
     using Geometry;
     using GLTypes;
     using OpenTK.Graphics.OpenGL;
+	using DataStructures;
     using Textures;
 
     public class Mesh<V> : SceneNode 
@@ -53,7 +54,7 @@
             }
         }
 
-        public BBox BoundingBox (Mat4 matrix)
+		public Aabb<Vec3> BoundingBox (Mat4 matrix)
         {
             return matrix * Geometry.BoundingBox;
         }

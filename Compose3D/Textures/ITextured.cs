@@ -5,6 +5,7 @@
 	using OpenTK;
 	using System.Collections.Generic;
 	using System.Linq;
+	using DataStructures;
 
 	/// <summary>
 	/// Interface for textured vertices.
@@ -74,7 +75,7 @@
             var projected = geometry.Transform (projection);
             var range = maxPos - minPos;
 			var invView = new Vec3 (0f, 0f, 1f);
-            var bbox = BBox.FromPositions (projected.Vertices.Where (
+			var bbox = Aabb<Vec3>.FromPositions (projected.Vertices.Where (
 				v => v.Normal.Dot (invView) >= minCosAngle).Select (v => v.Position));
             var scaleX = range.X / bbox.Size.X;
             var scaleY = range.Y / bbox.Size.Y;

@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System;
+	using DataStructures;
 	using Maths;
 	using Geometry;
 
@@ -112,8 +113,8 @@
 				new Plane (corners[6], corners[5], corners[4])	// far
 			};
 		}
-		
-		public static ViewingFrustum FromBBox (BBox bbox)
+
+		public static ViewingFrustum FromBBox (Aabb<Vec3> bbox)
 		{
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
 				1f, bbox.Size.Z);

@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
 	using System.Linq;
+	using DataStructures;
 
 	/// <summary>
 	/// Enumerations representing the axes in 3D cartesian coordinate system.
@@ -40,7 +41,7 @@
 		where V : struct, IVertex
 	{
 		private static int _lastTag;
-		private BBox _boundingBox;
+		private Aabb<Vec3> _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
         private V[] _normals;
@@ -77,12 +78,12 @@
 		/// <summary>
 		/// Return the bounding box of this geometry.
 		/// </summary>
-		public virtual BBox BoundingBox 
+		public virtual Aabb<Vec3> BoundingBox 
 		{
 			get
 			{
 				if (_boundingBox == null)
-					_boundingBox = BBox.FromPositions (Vertices.Select (v => v.Position));
+					_boundingBox = Aabb<Vec3>.FromPositions (Vertices.Select (v => v.Position));
 				return _boundingBox;
 			}
 		}

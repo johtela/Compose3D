@@ -1,10 +1,11 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using Compose3D.Maths;
-	using Geometry;
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using DataStructures;
+	using Maths;
+	using Geometry;
 
 	/// <summary>
 	/// Global lighting parameters affecting the whole scene.
@@ -82,7 +83,7 @@
 		public ViewingFrustum ShadowFrustum (Camera camera)
 		{
 			var cameraToLight = WorldToLight * camera.WorldToCamera.Inverse;
-			var bbox = BBox.FromPositions (camera.Frustum.Corners.Map (c => cameraToLight.Transform (c)));
+			var bbox = Aabb<Vec3>.FromPositions (camera.Frustum.Corners.Map (c => cameraToLight.Transform (c)));
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
 				1f, bbox.Size.Z + _distance);
 		}

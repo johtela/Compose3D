@@ -140,5 +140,23 @@
 				p.checks.First ().Item1 == p.cnt - 1 && p.checks.Last ().Item1 == 0);
 			prop.Label ("Check invariants").Check (p => p.checks.All (t => t.Item2));
 		}
+		
+		[Test]
+		public void TestBigTree ()
+		{
+			var it = new IntervalTree<float, int> ();
+			for (int i = 0; i < 100; i++)
+			{
+				it.Add (i, i + 1, 0);
+				Check.IsTrue (it.CheckInvariants ());
+			}
+			var ita = it.ToArray ();
+			for (int j = 0; j < 100; j += 2)
+			{
+				it.Remove (ita [j]);
+				Check.IsTrue (it.CheckInvariants ());
+			}
+			TestProgram.VConsole.ShowVisual (it.ToVisual ());
+		}
 	}
 }

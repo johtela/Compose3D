@@ -17,9 +17,7 @@
 
 		public void Add (Aabb<Vec2> rect, T data)
 		{
-			var interval = _tree.Add (rect.Left, rect.Right, null);
-			if (interval.Data == null)
-				interval.Data = new IntervalTree<float, T> ();
+			var interval = _tree.Add (rect.Left, rect.Right, new IntervalTree<float, T> ());
 			interval.Data.Add (rect.Bottom, rect.Top, data);
 		}
 	}

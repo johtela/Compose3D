@@ -97,6 +97,22 @@
 		}
 
 		[Test]
+		public void TestAddingDuplicate ()
+		{
+			var prop =
+				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
+				let cnt = it.Count
+				where cnt > 0
+				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				let ival = it.Skip (index).First ()
+				let same = it.Add (ival.Low, ival.High, 42)
+				select new { it, cnt, ival, same };
+
+			prop.Label ("Count is correct").Check (p => p.cnt == p.it.Count ());
+			prop.Label ("Same item added").Check (p => p.same == p.ival);
+		}
+
+		[Test]
 		public void TestRemoving ()
 		{
 			var prop =

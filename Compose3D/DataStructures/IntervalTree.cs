@@ -11,7 +11,7 @@
 	{
 		public readonly N Low;
 		public readonly N High;
-		public T Data;
+		public readonly T Data;
 
 		internal Interval<N, T> _left;
 		internal Interval<N, T> _right;

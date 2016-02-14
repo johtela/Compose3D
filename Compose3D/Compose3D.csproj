@@ -42,6 +42,8 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\Aabb.cs" />
+    <Compile Include="DataStructures\RectangleTree.cs" />
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
@@ -262,7 +264,6 @@
       <LastGenOutput>Sampler3D.cs</LastGenOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Visuals\Visuals.csproj">
       <Project>{df55a445-8526-489c-ac6b-5c969e8de42b}</Project>

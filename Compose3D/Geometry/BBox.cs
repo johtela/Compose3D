@@ -172,28 +172,12 @@ namespace Compose3D.Geometry
 
         public static BBox operator + (BBox bbox, Vec3 vertex)
         {
-			var min = new Vec3 (
-				Math.Min (bbox.Min.X, vertex.X), 
-				Math.Min (bbox.Min.Y, vertex.Y), 
-				Math.Min (bbox.Min.Z, vertex.Z));
-			var max = new Vec3 (
-				Math.Max (bbox.Max.X, vertex.X), 
-				Math.Max (bbox.Max.Y, vertex.Y), 
-				Math.Max (bbox.Max.Z, vertex.Z));
-			return new BBox (min, max);
+			return new BBox (bbox.Min.Min (vertex), bbox.Max.Max (vertex));
         }
 
         public static BBox operator + (BBox bbox, BBox other)
         {
-			var min = new Vec3 (
-				Math.Min (bbox.Min.X, other.Min.X),
-				Math.Min (bbox.Min.Y, other.Min.Y),
-				Math.Min (bbox.Min.Z, other.Min.Z));
-			var max = new Vec3 (
-				Math.Max (bbox.Max.X, other.Max.X),
-				Math.Max (bbox.Max.Y, other.Max.Y),
-				Math.Max (bbox.Max.Z, other.Max.Z));
-			return new BBox (min, max);
+			return new BBox (bbox.Min.Min (other.Min), bbox.Max.Max (other.Max));
         }
 
         public static BBox operator * (Mat4 matrix, BBox bbox)

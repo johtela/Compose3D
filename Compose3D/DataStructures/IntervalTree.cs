@@ -11,7 +11,7 @@
 	{
 		public readonly N Low;
 		public readonly N High;
-		public readonly T Data;
+		public T Data;
 
 		internal Interval<N, T> _left;
 		internal Interval<N, T> _right;
@@ -178,6 +178,24 @@
 			else
 				node._right = AddNode (node._right, newNode, ref found);
 			return found != null ? node : Fixup (node);
+		}
+
+		public Interval<N, T> Find (N low, N high)
+		{
+			return FindNode (_root, low, high);
+		}
+
+		private Interval<N, T> FindNode (Interval<N, T> node, N low, N high)
+		{
+			if (node == null)
+				return null;
+			var cmp = low.CompareTo (node.Low);
+			if (cmp == 0 && high.CompareTo (node.High) == 0)
+				return node;
+			if (cmp < 0)
+				return FindNode (node._left, low, high);
+			else
+				return FindNode (node._right, low, high);
 		}
 
 		public int Remove (Interval<N, T> interval)

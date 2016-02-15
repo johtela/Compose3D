@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FighterGeometry.cs" />
+    <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />
     <Compile Include="Tests\PerformanceTests.cs" />

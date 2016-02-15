@@ -31,16 +31,16 @@
 		public readonly V Min;
 		public readonly V Max;
 
-		public Aabb (V min)
+		public Aabb (V pos)
 		{
-			Min = min;
-			Max = min;
+			Min = pos;
+			Max = pos;
 		}
 
-		public Aabb (V min, V max)
+		public Aabb (V pos1, V pos2)
 		{
-			Min = min;
-			Max = max;
+			Min = pos1.Min (pos2);
+			Max = pos2.Max (pos1);
 		}
 
 		/// <summary>

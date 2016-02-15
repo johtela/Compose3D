@@ -23,7 +23,8 @@
 	//				new MatTests (),
 	//				new QuatTests (),
 					new SceneTests (),
-					new IntervalTreeTests ()));
+					new IntervalTreeTests (),
+					new BoundingTreeTests ()));
 			Application.Run (VConsole);
 		}
 	}

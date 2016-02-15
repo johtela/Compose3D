@@ -122,5 +122,11 @@
 				store = func ();
 			return store;
 		}
+
+		public static T ToExpression<T> (Action action, T result)
+		{
+			action ();
+			return result;
+		}
 	}
 }

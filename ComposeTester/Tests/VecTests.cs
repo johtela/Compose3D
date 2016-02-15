@@ -12,10 +12,12 @@
     {
         static VecTests ()
         {
-            Arbitrary.Register (ArbitraryVec<Vec2, float> (2));
-            Arbitrary.Register (ArbitraryVec<Vec3, float> (3));
-            Arbitrary.Register (ArbitraryVec<Vec4, float> (4));
-        }
+			Arbitrary.Register (ArbitraryVec<Vec2, float> (2));
+			Arbitrary.Register (ArbitraryVec<Vec3, float> (3));
+			Arbitrary.Register (ArbitraryVec<Vec4, float> (4));
+		}
+
+		public static void Use () {	}
 
         public static Arbitrary<V> ArbitraryVec<V, T> (int size) 
             where V : struct, IVec<V, T>

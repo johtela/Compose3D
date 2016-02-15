@@ -64,7 +64,7 @@
 
 		public override string ToString ()
 		{
-			return string.Format ("({0}, {1}): {2}", Low, High, _max);
+			return string.Format ("({0}, {1}): {2} => {3}", Low, High, _max, Data);
 		}
 	}
 	

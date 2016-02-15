@@ -11,11 +11,6 @@
 
 	public class IntervalTreeTests
 	{
-		static IntervalTreeTests ()
-		{
-			Arbitrary.Register (new Arbitrary<Interval<float, int>> (GenInterval (0f, 10f, 10f)));
-		}
-		
 		public static Gen<Interval<float, int>> GenInterval (float minRange, float maxRange, float maxLen)
 		{
 			return from start in Gen.Choose (minRange, maxRange).ToFloat ()
@@ -30,8 +25,8 @@
 			return new Arbitrary<IntervalTree<float, int>> (
 				from ivals in GenInterval (minRange, maxRange, maxLen).EnumerableOf ()
 				select IntervalTree<float, int>.FromEnumerable (ivals),
-				it => from e in Arbitrary.Get<IEnumerable<Interval<float, int>>> ().Shrink (it)
-					  select IntervalTree<float, int>.FromEnumerable (e));
+				it => from ivals in it.ShrinkEnumerable ()
+					  select IntervalTree<float, int>.FromEnumerable (ivals));
 		}
 
 		[Test]

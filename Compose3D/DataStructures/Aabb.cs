@@ -64,7 +64,7 @@
 		/// </summary>
 		public float Bottom
 		{
-			get { return Max[1]; }
+			get { return Min[1]; }
 		}
 
 		/// <summary>
@@ -160,6 +160,11 @@
 			foreach (var vertex in positions.Skip (1))
 				result += vertex;
 			return result;
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("{0} -> {1}", Min, Max);
 		}
 	}
 }

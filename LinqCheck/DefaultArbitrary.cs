@@ -5,7 +5,7 @@
 	using System.Linq;
 	using System.Text;
 
-	internal static class DefaultArbitrary
+	public static class DefaultArbitrary
 	{
 		internal static void Register ()
 		{
@@ -79,7 +79,7 @@
 			yield return Math.Floor (x);
 		}
 
-		private static IEnumerable<IEnumerable<T>> ShrinkEnumerable<T> (IEnumerable<T> e)
+		public static IEnumerable<IEnumerable<T>> ShrinkEnumerable<T> (this IEnumerable<T> e)
 		{
 			return RemoveUntil (e).Collect (Fun.Identity).Concat (ShrinkOne (e)).Prepend (new T[0]);
 		}

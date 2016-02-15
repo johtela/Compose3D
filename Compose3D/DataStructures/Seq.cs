@@ -32,6 +32,11 @@
 		{
 			return GetEnumerator ();
 		}
+
+		public override string ToString ()
+		{
+			return "[ " + this.Select (ival => ival.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
+		}
 	}
 
 	public static class Seq

@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.DataStructures
 {
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using Maths;
@@ -7,6 +8,7 @@
 	public class BoundingBoxTree<T> : IBoundingTree<Vec3, T>
 	{
 		private IntervalTree<float, IntervalTree<float, IntervalTree<float, Seq<T>>>> _tree;
+		private int _count;
 
 		public BoundingBoxTree ()
 		{
@@ -23,6 +25,7 @@
 				yival.Data = new IntervalTree<float, Seq<T>> ();
 			var zival = yival.Data.Add (rect.Back, rect.Front, null);
 			zival.Data = Seq.Cons (data, zival.Data);
+			_count++;
 		}
 
 		public IEnumerable<KeyValuePair<Aabb<Vec3>, T>> Overlap (Aabb<Vec3> rect)
@@ -36,7 +39,7 @@
 				   select new KeyValuePair<Aabb<Vec3>, T> (box, data);
 		}
 
-		public void Remove (Aabb<Vec3> box, T data)
+		public void Remove (Aabb<Vec3> box, T value)
 		{
 			var xival = _tree.Find (box.Left, box.Right);
 			if (xival == null)
@@ -47,8 +50,12 @@
 			var zival = yival.Data.Find (box.Back, box.Front);
 			if (zival == null)
 				throw new KeyNotFoundException ("Given box not found in the tree");
-			zival.Data = zival.Data.Remove (data);
-			if (zival.Data != null)
+			var newData = zival.Data.Remove (value);
+			if (newData == zival.Data)
+				throw new KeyNotFoundException ("Given value was not found");
+			zival.Data = newData;
+			_count--;
+			if (newData != null)
 				return;
 			if (xival.Data.Count > 1)
 			{
@@ -59,6 +66,32 @@
 			}
 			else
 				_tree.Remove (xival);
+		}
+
+		public int Count
+		{
+			get { return _count; }
+		}
+
+		public IEnumerator<KeyValuePair<Aabb<Vec3>, T>> GetEnumerator ()
+		{
+			return (from xival in _tree
+					from yival in xival.Data
+					from zival in yival.Data
+					let box = new Aabb<Vec3> (new Vec3 (xival.Low, yival.Low, zival.Low), 
+						new Vec3 (xival.High, yival.High, zival.High))
+					from data in zival.Data
+					select new KeyValuePair<Aabb<Vec3>, T> (box, data)).GetEnumerator ();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator ()
+		{
+			return GetEnumerator ();
+		}
+
+		public override string ToString ()
+		{
+			return _tree.ToString ();
 		}
 	}
 }

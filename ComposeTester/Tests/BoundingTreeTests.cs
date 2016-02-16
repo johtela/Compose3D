@@ -47,7 +47,19 @@
 					  select BoundingTree.FromEnumerable<B, V, T> (pairs));
 		}
 
-		public void CheckAddition<B, V, T> ()
+		public void CheckAllPresent<B, V, T> ()
+			where B : IBoundingTree<V, T>, new()
+			where V : struct, IVec<V, float>
+		{
+			var prop = from bt in Prop.ForAll (ArbitraryBoundingTree<B, V, T> ())
+					   let pairs = bt.ToArray ()
+					   select new { bt, pairs };
+
+			prop.Label ("{0}: All items are present", typeof (B)).Check (
+				p => p.pairs.All (pair => p.bt.Overlap (pair.Key).Contains (pair)));
+		}
+
+		public void CheckAdding<B, V, T> ()
 			where B : IBoundingTree<V, T>, new ()
 			where V : struct, IVec<V, float>
 		{
@@ -63,11 +75,68 @@
 				kv => kv.Key.Equals (p.box) && kv.Value.Equals (p.value)));
 		}
 
-		[Test]
-		public void TestAddition ()
+		public void CheckRemoving<B, V, T> ()
+			where B : IBoundingTree<V, T>, new()
+			where V : struct, IVec<V, float>
 		{
-			CheckAddition<BoundingRectTree<int>, Vec2, int> ();
-			CheckAddition<BoundingBoxTree<float>, Vec3, float> ();
+			var prop = from bt in Prop.ForAll (ArbitraryBoundingTree<B, V, T> ())
+					   let cnt = bt.Count
+					   where cnt > 0
+					   from index in Prop.ForAll (Gen.Choose (0, cnt))
+					   let rem = bt.Skip (index).First ()
+					   let _ = Fun.ToExpression (() => bt.Remove (rem.Key, rem.Value), 0)
+					   select new { bt, cnt, rem };
+
+			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => p.bt.Count == p.cnt - 1 && p.bt.Count () == p.bt.Count);
+			prop.Label ("{0}: Item was removed", typeof (B)).Check (p => p.bt.Overlap (p.rem.Key).All (
+				kv => !(kv.Key.Equals (p.rem.Key) && kv.Value.Equals (p.rem.Value))));
+		}
+
+		public void CheckRemoveAll<B, V, T> ()
+			where B : IBoundingTree<V, T>, new()
+			where V : struct, IVec<V, float>
+		{
+			var prop = from bt in Prop.ForAll (ArbitraryBoundingTree<B, V, T> ())
+					   let cnt = bt.Count
+					   let pairs = bt.Reverse ().ToArray ()
+					   let cnts = pairs.Select (pair =>
+					   {
+						   bt.Remove (pair.Key, pair.Value);
+						   return bt.Count;
+					   }).ToArray ()
+					   select new { bt, cnt, cnts, pairs };
+
+			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => 
+				p.bt.Count == 0 && p.bt.Count () == 0 && 
+				(p.cnt == 0 || (p.cnts.First () == p.cnt - 1 && p.cnts.Last () == 0)));
+		}
+
+		[Test]
+		public void TestAllPresent ()
+		{
+			CheckAllPresent<BoundingRectTree<int>, Vec2, int> ();
+			CheckAllPresent<BoundingBoxTree<float>, Vec3, float> ();
+		}
+
+		[Test]
+		public void TestAdding ()
+		{
+			CheckAdding<BoundingRectTree<int>, Vec2, int> ();
+			CheckAdding<BoundingBoxTree<float>, Vec3, float> ();
+		}
+
+		[Test]
+		public void TestRemoving ()
+		{
+			CheckRemoving<BoundingRectTree<int>, Vec2, int> ();
+			CheckRemoving<BoundingBoxTree<float>, Vec3, float> ();
+		}
+
+		[Test]
+		public void TestRemoveAll ()
+		{
+			CheckRemoveAll<BoundingRectTree<int>, Vec2, int> ();
+			CheckRemoveAll<BoundingBoxTree<float>, Vec3, float> ();
 		}
 	}
 }

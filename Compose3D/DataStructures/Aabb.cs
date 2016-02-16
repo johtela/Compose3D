@@ -162,6 +162,11 @@
 			return result;
 		}
 
+		public static Aabb<V> Empty
+		{
+			get { return new Aabb<V> ( ) }
+		}
+
 		public override bool Equals (object obj)
 		{
 			var other = obj as Aabb<V>;

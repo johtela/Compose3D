@@ -58,7 +58,7 @@
     </Compile>
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
-    <Compile Include="Geometry\Octree.cs" />
+    <Compile Include="DataStructures\Octree.cs" />
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\Attributes.cs" />

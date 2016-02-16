@@ -1,9 +1,10 @@
-﻿namespace Compose3D.Geometry
+﻿namespace Compose3D.DataStructures
 {
     using System;
-    using Compose3D.Maths;
     using System.Collections.Generic;
     using System.Linq;
+	using Maths;
+	using Geometry;
 
 	public class Octree<P, T, V> 
 		where P : IPositional<V>

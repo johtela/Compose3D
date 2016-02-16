@@ -1,12 +1,12 @@
 ﻿namespace Compose3D.SceneGraph
 {
-    using Compose3D.Maths;
-    using Geometry;
     using System;
     using System.Collections.Generic;
 	using System.Linq;
+	using Maths;
+	using DataStructures;
 
-    public abstract class SceneNode
+	public abstract class SceneNode
     {
         private List<SceneNode> _subNodes;
 
@@ -29,6 +29,8 @@
 					Ext.Enumerate (this);
 			}
 		}
+
+		public abstract Aabb<Vec3> BoundingBox { get; }
 
 		public virtual void Traverse<T> (Action<T, Mat4> action, Mat4 transform) 
 			where T : SceneNode

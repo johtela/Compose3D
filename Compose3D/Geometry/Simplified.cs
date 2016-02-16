@@ -1,9 +1,9 @@
 ﻿namespace Compose3D.Geometry
 {
-	using System;
-	using Compose3D.Maths;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Maths;
+	using DataStructures;
 
 	internal class Simplified<V> : Wrapper<V> where V : struct, IVertex
 	{

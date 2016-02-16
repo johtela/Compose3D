@@ -138,16 +138,30 @@
 
 		public static Aabb<V> operator + (Aabb<V> bbox, V pos)
 		{
-			return new Aabb<V> (bbox.Min.Min (pos), bbox.Max.Max (pos));
+			return bbox == null ? 
+				new Aabb<V> (pos) :
+				new Aabb<V> (bbox.Min.Min (pos), bbox.Max.Max (pos));
 		}
 
 		public static Aabb<V> operator + (Aabb<V> bbox, Aabb<V> other)
 		{
-			return new Aabb<V> (bbox.Min.Min (other.Min), bbox.Max.Max (other.Max));
+			return bbox == null || other == null ?
+				bbox ?? other :
+				new Aabb<V> (bbox.Min.Min (other.Min), bbox.Max.Max (other.Max));
+		}
+
+		public static bool operator & (Aabb<V> bbox, Aabb<V> other)
+		{
+			for (int i = 0; i < bbox.Min.Dimensions; i++)
+				if (bbox.Max[i] < other.Min[i] || bbox.Min[i] > other.Max[i])
+					return false;
+			return true;
 		}
 
 		public static Aabb<V> operator * (Mat4 matrix, Aabb<V> bbox)
 		{
+			if (bbox == null)
+				return null;
 			var result = new Aabb<V> (matrix.Transform (bbox.Corners.First ()));
 			foreach (var corner in bbox.Corners.Skip (1))
 				result += matrix.Transform (corner);
@@ -160,11 +174,6 @@
 			foreach (var vertex in positions.Skip (1))
 				result += vertex;
 			return result;
-		}
-
-		public static Aabb<V> Empty
-		{
-			get { return new Aabb<V> ( ) }
 		}
 
 		public override bool Equals (object obj)

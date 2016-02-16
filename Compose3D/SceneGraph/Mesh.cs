@@ -54,9 +54,9 @@
             }
         }
 
-		public Aabb<Vec3> BoundingBox (Mat4 matrix)
+		public override Aabb<Vec3> BoundingBox
         {
-            return matrix * Geometry.BoundingBox;
+            get { return Geometry.BoundingBox; }
         }
     }
 }

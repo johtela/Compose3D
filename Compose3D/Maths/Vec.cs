@@ -46,6 +46,14 @@
             return res;
         }
 
+		public static U Convert<V, U, T> (this V vec)
+			where V : struct, IVec<V, T>
+			where U : struct, IVec<U, T>
+			where T : struct, IEquatable<T>
+		{
+			return FromArray<U, T> (vec.ToArray<V, T> ());
+		}
+
 		public static bool ApproxEquals<V> (V vec, V other, float epsilon)
             where V : struct, IVec<V, float>
         {

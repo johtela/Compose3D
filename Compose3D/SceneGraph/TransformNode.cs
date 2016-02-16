@@ -1,8 +1,10 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using Compose3D.Maths;
-	using Geometry;
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Compose3D.Maths;
+	using DataStructures;
 
 	public class TransformNode : SceneNode
 	{
@@ -59,6 +61,19 @@
 			{
 				_scale = value;
 				UpdateTransform ();
+			}
+		}
+
+		public override Aabb<Vec3> BoundingBox
+		{
+			get
+			{
+				return Aabb<Vec3>.FromPositions (
+					from subNode in SubNodes
+					let bbox = subNode.BoundingBox
+					where bbox != null
+					from bpoint in bbox.Corners
+					select _transform.Transform (bpoint));
 			}
 		}
 	}

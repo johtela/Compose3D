@@ -1,5 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System;
+	using DataStructures;
 	using Maths;
 
 	public class Camera : SceneNode
@@ -22,6 +24,11 @@
 		private void UpdateCameraTransform ()
 		{
 			_worldToCamera = Mat.LookAt (_position, _target, _upDirection);
+		}
+
+		public override Aabb<Vec3> BoundingBox
+		{
+			get { return null; }
 		}
 
 		public Mat4 WorldToCamera 

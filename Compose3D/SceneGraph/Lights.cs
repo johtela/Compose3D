@@ -19,6 +19,11 @@
 			GammaCorrection = gammaCorrection;
 		}
 
+		public override Aabb<Vec3> BoundingBox
+		{
+			get { return null; }
+		}
+
 		public Vec3 AmbientLightIntensity { get; set; }
 		public float MaxIntensity { get; set; }
 		public float GammaCorrection { get; set; }
@@ -30,6 +35,11 @@
 	public abstract class Light : SceneNode
 	{
 		public Vec3 Intensity { get; set; }
+
+		public override Aabb<Vec3> BoundingBox
+		{
+			get { return null; }
+		}
 	}
 
 	/// <summary>

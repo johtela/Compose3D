@@ -282,12 +282,22 @@ namespace Compose3D
 		{
 			return items;
 		}
-		
-        #endregion        
-        
-        #region Map & Fold
-        
-        public static U[] Map<T, U> (this T[] vector, Func<T, U> func)
+
+		public static IEnumerable<K> Keys<K, V> (this IEnumerable<KeyValuePair<K, V>> pairs)
+		{
+			return pairs.Select (kv => kv.Key);
+		}
+
+		public static IEnumerable<V> Values<K, V> (this IEnumerable<KeyValuePair<K, V>> pairs)
+		{
+			return pairs.Select (kv => kv.Value);
+		}
+
+		#endregion
+
+		#region Map & Fold
+
+		public static U[] Map<T, U> (this T[] vector, Func<T, U> func)
         {
             var result = new U[vector.Length];
             Map (vector, result, func);

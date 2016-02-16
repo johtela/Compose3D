@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.DataStructures
 {
 	using System.Collections.Generic;
+	using System.Linq;
 	using Maths;
 
 	public interface IBoundingTree<V, T> : IEnumerable<KeyValuePair<Aabb<V>, T>>
@@ -24,7 +25,7 @@
 			var result = new B ();
 			foreach (var pair in pairs)
 				result.Add (pair.Key, pair.Value);
-			return result;
+			return result; 
 		}
 	}
 }

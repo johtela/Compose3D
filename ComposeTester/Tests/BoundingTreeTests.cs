@@ -58,8 +58,9 @@
 					   let _ = Fun.ToExpression (() => bt.Add (box, value), 0)
 					   select new { bt, cnt, box, value };
 
-			prop.Label ("{0}: Count is correct", typeof(B)).Check (p => p.bt.Count == p.cnt + 1 && p.bt.Count () == p.bt.Count);
-
+			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => p.bt.Count == p.cnt + 1 && p.bt.Count () == p.bt.Count);
+			prop.Label ("{0}: Item was added", typeof (B)).Check (p => p.bt.Overlap (p.box).Any (
+				kv => kv.Key.Equals (p.box) && kv.Value.Equals (p.value)));
 		}
 
 		[Test]

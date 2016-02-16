@@ -162,6 +162,17 @@
 			return result;
 		}
 
+		public override bool Equals (object obj)
+		{
+			var other = obj as Aabb<V>;
+			return other != null && Min.Equals (other.Min) && Max.Equals (other.Max);
+		}
+
+		public override int GetHashCode ()
+		{
+			return Min.GetHashCode () ^ Max.GetHashCode ();
+		}
+
 		public override string ToString ()
 		{
 			return string.Format ("{0} -> {1}", Min, Max);

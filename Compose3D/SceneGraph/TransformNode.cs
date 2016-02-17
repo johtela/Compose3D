@@ -31,9 +31,14 @@
 				Mat.RotationX<Mat4> (Orientation.X);
 		}
 		
-		public override void Traverse<T> (Action<T, Mat4> action, Mat4 transform)
+		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
+			Mat4 transform) 
 		{
-			base.Traverse<T> (action, transform * _transform);
+			transform *= _transform;
+			var current = Tuple.Create ((SceneNode)this, transform);
+			return predicate (current.Item1, current.Item2) ? 
+				Node.Traverse (predicate, transform).Append (current) :
+				Enumerable.Empty<Tuple<SceneNode, Mat4>> ();
 		}
 		
 		public Vec3 Offset 

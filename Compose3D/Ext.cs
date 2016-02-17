@@ -293,6 +293,18 @@ namespace Compose3D
 			return pairs.Select (kv => kv.Value);
 		}
 
+		public static void Foreach<T, U> (this IEnumerable<Tuple<T, U>> items, Action<T, U> action)
+		{
+			foreach (var item in items)
+				action (item.Item1, item.Item2);
+		}
+
+		public static void Foreach<T, U, V> (this IEnumerable<Tuple<T, U, V>> items, Action<T, U, V> action)
+		{
+			foreach (var item in items)
+				action (item.Item1, item.Item2, item.Item3);
+		}
+
 		#endregion
 
 		#region Map & Fold

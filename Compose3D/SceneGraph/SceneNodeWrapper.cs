@@ -17,10 +17,5 @@
 		{
 			get { return Node.BoundingBox; }
 		}
-
-		public override IEnumerable<SceneNode> Descendants
-		{
-			get { return Node.Descendants.Append (Node); }
-		}
 	}
 }

@@ -8,18 +8,15 @@
 
 	public abstract class SceneNode
     {
-		public virtual IEnumerable<SceneNode> Descendants
-		{
-			get { return Enumerable.Empty<SceneNode> (); }
-		}
-
 		public abstract Aabb<Vec3> BoundingBox { get; }
 
-		public virtual void Traverse<T> (Action<T, Mat4> action, Mat4 transform) 
-			where T : SceneNode
+		public virtual IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
+			Mat4 transform) 
         {
-            if (this is T)
-				action ((T)this, transform);
+			var current = Tuple.Create (this, transform);
+			return predicate (current.Item1, current.Item2) ? 
+				Ext.Enumerate (current) : 
+				Enumerable.Empty<Tuple<SceneNode, Mat4>> ();
         }
 
 		public virtual IEnumerable<SceneNode> OverlapWith (Aabb<Vec3> bbox)

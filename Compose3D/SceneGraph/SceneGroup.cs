@@ -31,12 +31,13 @@
 			return this;
 		}
 
-		public override void Traverse<T> (Action<T, Mat4> action, Mat4 transform)
+		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
+			Mat4 transform)
 		{
-			if (_subNodes != null)
-				foreach (var subNode in _subNodes)
-					subNode.Traverse<T> (action, transform);
-			base.Traverse<T> (action, transform);
+			return SubNodes
+				.Select (sn => Tuple.Create (sn, transform))
+				.Where (sn => predicate (sn.Item1, sn.Item2))
+				.SelectMany (sn => sn.Item1.Traverse (predicate, sn.Item2));
 		}
 
 		public override Aabb<Vec3> BoundingBox
@@ -44,19 +45,9 @@
 			get
 			{
 				return _subNodes == null ? null :
-						(from node in _subNodes
-						 where node != null
-						 select node.BoundingBox).Aggregate ((b1, b2) => b1 + b2);
-			}
-		}
-
-		public override IEnumerable<SceneNode> Descendants
-		{
-			get
-			{
-				return _subNodes != null ?
-					_subNodes.SelectMany (sn => sn.Descendants) :
-					Enumerable.Empty<SceneNode> ();
+					(from node in _subNodes
+					 where node != null
+					 select node.BoundingBox).Aggregate ((b1, b2) => b1 + b2);
 			}
 		}
 

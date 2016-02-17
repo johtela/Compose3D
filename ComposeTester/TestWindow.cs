@@ -36,7 +36,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.Descendants.OfType<TransformNode> ().ToArray ();
+			_positions = _sceneGraph.Traverse ().OfNodeType<TransformNode> ().Select (t => t.Item1).ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -133,30 +133,29 @@
 
 			using (_program.Scope ())
 			{
-				_sceneGraph.Traverse<GlobalLighting, DirectionalLight, PointLight> 
-				(
-					(globalLight, mat) =>
-					_uniforms.globalLighting &= new Lighting.GlobalLight () 
-					{
-						ambientLightIntensity = globalLight.AmbientLightIntensity,
-						maxintensity = globalLight.MaxIntensity,
-						inverseGamma = 1f / globalLight.GammaCorrection
-					},
-					(dirLight, mat) =>
-					_uniforms.directionalLight &= new Lighting.DirectionalLight () 
-					{
-						direction = dirLight.Direction,
-						intensity = dirLight.Intensity
-					},
-					(pointLight, mat) =>
-					pointLights [numPointLights++] = new Lighting.PointLight 
+				var globalLight = _sceneGraph.Descendants<GlobalLighting> ().First ();
+				_uniforms.globalLighting &= new Lighting.GlobalLight () 
+				{
+					ambientLightIntensity = globalLight.AmbientLightIntensity,
+					maxintensity = globalLight.MaxIntensity,
+					inverseGamma = 1f / globalLight.GammaCorrection
+				};
+				var dirLight = _sceneGraph.Descendants<DirectionalLight> ().First ();
+				_uniforms.directionalLight &= new Lighting.DirectionalLight () 
+				{
+					direction = dirLight.Direction,
+					intensity = dirLight.Intensity
+				};
+				foreach (var pointLight in _sceneGraph.Descendants<PointLight> ())
+				{
+					pointLights[numPointLights++] = new Lighting.PointLight
 					{
 						position = pointLight.Position,
 						intensity = pointLight.Intensity,
 						linearAttenuation = pointLight.LinearAttenuation,
 						quadraticAttenuation = pointLight.QuadraticAttenuation
-					}
-				);
+					};
+				}
 				_uniforms.pointLights &= pointLights;
 
 				var samplers = new Sampler2D[4];
@@ -206,29 +205,21 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
-			_sceneGraph.Traverse<Mesh<Vertex>, LineSegment<PathNode, Vec3>> 
-			(
-				(mesh, mat) =>
-				{
-					using ( _program.Scope ())
+			using ( _program.Scope ())
+				_sceneGraph.Traverse (_dirLight.WorldToLight).OfNodeType <Mesh<Vertex>> ().Foreach (
+					(mesh, mat) =>
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 						_uniforms.worldMatrix &= mat;
 						_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
-					}
-				},
-				(lines, mat) =>
-				{
-					using (_passthrough.Scope ())
-					{
-						_passthrough.DrawLinePath (lines.VertexBuffer);
-					}
-				},
-				_dirLight.WorldToLight
+					});
+			using (_passthrough.Scope ())
+				_sceneGraph.Traverse ().OfNodeType <LineSegment<PathNode, Vec3>> ().Foreach (
+					(lines, mat) => _passthrough.DrawLinePath (lines.VertexBuffer));
+				
 				//				_camera.WorldToCamera
-			);
 			SwapBuffers ();
 		}
 

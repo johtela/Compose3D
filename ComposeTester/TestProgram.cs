@@ -13,10 +13,9 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-//			var wnd = new TestWindow ();
-//			Console.WriteLine (GL.GetString (StringName.Version));
-			//wnd.Init ();
-			//wnd.Run ();
+			var wnd = new TestWindow ();
+			wnd.Init ();
+			wnd.Run ();
 			Task.Factory.StartNew (() =>
 				Tester.RunTestsTimed (
 	//				new VecTests (),

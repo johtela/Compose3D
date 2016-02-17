@@ -7,6 +7,7 @@
 	public class Camera : SceneNode
 	{
 		private Mat4 _worldToCamera;
+		private Mat4 _cameraToWorld;
 		private Vec3 _position;
 		private Vec3 _target;
 		private Vec3 _upDirection;
@@ -24,6 +25,7 @@
 		private void UpdateCameraTransform ()
 		{
 			_worldToCamera = Mat.LookAt (_position, _target, _upDirection);
+			_cameraToWorld = _worldToCamera.Inverse;
 		}
 
 		public override Aabb<Vec3> BoundingBox
@@ -34,6 +36,11 @@
 		public Mat4 WorldToCamera 
 		{
 			get { return _worldToCamera; }
+		}
+
+		public Mat4 CameraToWorld
+		{
+			get { return _cameraToWorld; }
 		}
 		
 		public Vec3 Position 

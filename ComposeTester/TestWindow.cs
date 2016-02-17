@@ -27,7 +27,7 @@
 		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Scene graph
-		private SceneNode _sceneGraph;
+		private SceneGroup _sceneGraph;
 		private TransformNode[] _positions;
 		private Camera _camera;
 		private DirectionalLight _dirLight;
@@ -73,7 +73,7 @@
 
 		#region Setup
 
-		private SceneNode CreateSceneGraph ()
+		private SceneGroup CreateSceneGraph ()
 		{
 			_dirLight = new DirectionalLight (
 				intensity: new Vec3 (0.2f), 
@@ -112,7 +112,7 @@
 			var mesh1 = new Mesh<Vertex> (fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
 
 			var pipe = Geometries.Pipe ().Color (VertexColor<Vec3>.Brass);
-			pipe.ApplyTextureTop<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
+			pipe.ApplyTextureTop (1f, new Vec2 (0f), new Vec2 (1f));
 			var mesh2 = new Mesh<Vertex> (pipe, textTexture)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
@@ -122,7 +122,7 @@
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
 				aspectRatio: 1f);
-			return new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f).Add (
+			return new SceneGroup (new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f),
 				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
 		}
 

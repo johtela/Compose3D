@@ -33,23 +33,5 @@
 		{
 			return OffsetOrientAndScale (node, new Vec3 (0f), factor, new Vec3 (1f));
 		}
-
-		public static IEnumerable<Tuple<SceneNode, Mat4>> Traverse (this SceneNode sceneNode)
-		{
-			return sceneNode.Traverse (new Mat4 (1f));
-		}
-
-		public static IEnumerable<Tuple<T, Mat4>> OfNodeType<T> (this IEnumerable<Tuple<SceneNode, Mat4>> nodes)
-			where T : SceneNode
-		{
-			return from node in nodes
-				   where node.Item1 is T
-				   select Tuple.Create ((T)node.Item1, node.Item2);
-		}
-
-		public static IEnumerable<SceneNode> Descendants (this SceneNode root)
-		{
-			return root.Traverse ().Select (TupleExt.First);
-		}
 	}
 }

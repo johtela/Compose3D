@@ -36,7 +36,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.Descendants ().OfType<TransformNode> ().ToArray ();
+			_positions = _sceneGraph.Traverse ().OfType<TransformNode> ().ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -133,7 +133,7 @@
 
 			using (_program.Scope ())
 			{
-				_sceneGraph.Descendants ()
+				_sceneGraph.Traverse ()
 					.WhenOfType<SceneNode, GlobalLighting> (globalLight =>
 						_uniforms.globalLighting &= new Lighting.GlobalLight ()
 						{
@@ -206,20 +206,17 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 			using ( _program.Scope ())
-				_sceneGraph.Traverse (_dirLight.WorldToLight).OfNodeType <Mesh<Vertex>> ().ForEach (
-					(mesh, mat) =>
+				_sceneGraph.Traverse ().OfType <Mesh<Vertex>> ().ForEach (mesh =>
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
-						_uniforms.worldMatrix &= mat;
-						_uniforms.normalMatrix &= new Mat3 (mat).Inverse.Transposed;
+						_uniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
+						_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					});
 			using (_passthrough.Scope ())
-				_sceneGraph.Traverse ().OfNodeType <LineSegment<PathNode, Vec3>> ().ForEach (
-					(lines, mat) => _passthrough.DrawLinePath (lines.VertexBuffer));
-				
-				//				_camera.WorldToCamera
+				_sceneGraph.Traverse ().OfType <LineSegment<PathNode, Vec3>> ().ForEach (
+					lines => _passthrough.DrawLinePath (lines.VertexBuffer));
 			SwapBuffers ();
 		}
 
@@ -227,8 +224,8 @@
 		{
 			using (_program.Scope ())
 			{
-				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X * 0.05f, size.Y * 0.05f, 1f, 50f);
-				_uniforms.perspectiveMatrix &= _dirLight.ShadowFrustum (_camera).CameraToScreen;
+				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 50f);
+				_uniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
 				GL.Viewport (ClientSize);
 			}
 		}

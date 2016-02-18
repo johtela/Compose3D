@@ -30,11 +30,10 @@
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
 		}
-		
-		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform) 
+
+		public override Mat4 Transform
 		{
-			transform *= _transform;
-			return Node.Traverse (transform).Concat (base.Traverse (transform));
+			get { return base.Transform * _transform; }
 		}
 		
 		public Vec3 Offset 
@@ -68,7 +67,7 @@
 
 		public override Aabb<Vec3> BoundingBox
 		{
-			get { return _transform * Node.BoundingBox; }
+			get { return Transform * Node.BoundingBox; }
 		}
 	}
 }

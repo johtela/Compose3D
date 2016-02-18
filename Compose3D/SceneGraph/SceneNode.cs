@@ -8,12 +8,19 @@
 	using Extensions;
 
 	public abstract class SceneNode
-    {
+    {	
+		public SceneNode Parent { get; internal set; }
+
 		public abstract Aabb<Vec3> BoundingBox { get; }
 
-		public virtual IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform) 
+		public virtual Mat4 Transform
+		{
+			get { return Parent == null ? new Mat4 (1f) : Parent.Transform; }
+		}
+
+		public virtual IEnumerable<SceneNode> Traverse () 
         {
-			return EnumerableExt.Enumerate (Tuple.Create (this, transform)); 
+			return EnumerableExt.Enumerate (this); 
         }
 
 		public virtual IEnumerable<SceneNode> OverlapWith (Aabb<Vec3> bbox)

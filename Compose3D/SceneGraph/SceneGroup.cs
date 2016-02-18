@@ -5,51 +5,53 @@
 	using System.Linq;
 	using Maths;
 	using DataStructures;
+	using Extensions;
 
 	public class SceneGroup : SceneNode
 	{
 		private List<SceneNode> _subNodes;
 
-		public SceneGroup () { }
+		public SceneGroup () 
+		{
+			_subNodes = new List<SceneNode> ();
+		}
 
-		public SceneGroup (IEnumerable<SceneNode> subNodes)
+		public SceneGroup (IEnumerable<SceneNode> subNodes) : this ()
 		{
 			Add (subNodes);
 		}
 
-		public SceneGroup (params SceneNode[] subNodes)
+		public SceneGroup (params SceneNode[] subNodes) : this ()
 		{
 			Add (subNodes);
 		}
 
 		public virtual SceneNode Add (IEnumerable<SceneNode> subNodes)
 		{
-			if (_subNodes == null)
-				_subNodes = new List<SceneNode> (subNodes);
-			else
-				_subNodes.AddRange (subNodes);
+			_subNodes.AddRange (subNodes);
+			foreach (var subNode in subNodes)
+				subNode.Parent = this;
 			return this;
 		}
 
-		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform)
+		public override IEnumerable<SceneNode> Traverse ()
 		{
-			return SubNodes.SelectMany (sn => sn.Traverse (transform)).Concat (base.Traverse (transform));
+			return _subNodes.SelectMany (sn => sn.Traverse ()).Append (this);
 		}
 
 		public override Aabb<Vec3> BoundingBox
 		{
 			get
 			{
-				return _subNodes == null ? null :
-					(from node in _subNodes
-					 where node != null
-					 select node.BoundingBox).Aggregate ((b1, b2) => b1 + b2);
+				return (from node in _subNodes
+						where node != null
+						select node.BoundingBox).Aggregate ((b1, b2) => b1 + b2);
 			}
 		}
 
 		public IEnumerable<SceneNode> SubNodes
 		{
-			get { return _subNodes == null ? Enumerable.Empty<SceneNode> () : _subNodes; }
+			get { return _subNodes; }
 		}
 	}
 }

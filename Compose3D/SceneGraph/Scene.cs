@@ -34,20 +34,9 @@
 			return OffsetOrientAndScale (node, new Vec3 (0f), factor, new Vec3 (1f));
 		}
 
-		public static IEnumerable<Tuple<SceneNode, Mat4>> Traverse (this SceneNode sceneNode, 
-			Func<SceneNode, Mat4, bool> predicate)
-		{
-			return sceneNode.Traverse (predicate, new Mat4 (1f));
-		}
-
-		public static IEnumerable<Tuple<SceneNode, Mat4>> Traverse (this SceneNode sceneNode, Mat4 transform)
-		{
-			return sceneNode.Traverse ((sn, mat) => true, transform);
-		}
-
 		public static IEnumerable<Tuple<SceneNode, Mat4>> Traverse (this SceneNode sceneNode)
 		{
-			return sceneNode.Traverse ((sn, mat) => true, new Mat4 (1f));
+			return sceneNode.Traverse (new Mat4 (1f));
 		}
 
 		public static IEnumerable<Tuple<T, Mat4>> OfNodeType<T> (this IEnumerable<Tuple<SceneNode, Mat4>> nodes)

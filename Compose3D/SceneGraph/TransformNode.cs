@@ -5,7 +5,6 @@
 	using System.Linq;
 	using Compose3D.Maths;
 	using DataStructures;
-	using Extensions;
 
 	public class TransformNode : SceneNodeWrapper
 	{
@@ -32,14 +31,10 @@
 				Mat.RotationX<Mat4> (Orientation.X);
 		}
 		
-		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
-			Mat4 transform) 
+		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform) 
 		{
 			transform *= _transform;
-			var current = Tuple.Create ((SceneNode)this, transform);
-			return predicate (current.Item1, current.Item2) ? 
-				Node.Traverse (predicate, transform).Append (current) :
-				Enumerable.Empty<Tuple<SceneNode, Mat4>> ();
+			return Node.Traverse (transform).Concat (base.Traverse (transform));
 		}
 		
 		public Vec3 Offset 

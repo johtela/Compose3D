@@ -31,13 +31,9 @@
 			return this;
 		}
 
-		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
-			Mat4 transform)
+		public override IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform)
 		{
-			return SubNodes
-				.Select (sn => Tuple.Create (sn, transform))
-				.Where (sn => predicate (sn.Item1, sn.Item2))
-				.SelectMany (sn => sn.Item1.Traverse (predicate, sn.Item2));
+			return SubNodes.SelectMany (sn => sn.Traverse (transform)).Concat (base.Traverse (transform));
 		}
 
 		public override Aabb<Vec3> BoundingBox

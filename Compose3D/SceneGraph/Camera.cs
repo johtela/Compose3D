@@ -1,8 +1,9 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System;
+	using System.Linq;
 	using DataStructures;
 	using Maths;
+	using Extensions;
 
 	public class Camera : SceneNode
 	{
@@ -30,7 +31,11 @@
 
 		public override Aabb<Vec3> BoundingBox
 		{
-			get { return null; }
+			get
+			{
+				return Aabb<Vec3>.FromPositions (Frustum.Corners.Map (pos => 
+					CameraToWorld.Transform (pos)));
+			}
 		}
 
 		public Mat4 WorldToCamera 

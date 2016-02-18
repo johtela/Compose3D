@@ -34,14 +34,9 @@
 		public static U[] Map<T, U> (this T[] vector, Func<T, U> func)
 		{
 			var result = new U[vector.Length];
-			Map (vector, result, func);
-			return result;
-		}
-
-		public static void Map<T, U> (this T[] vector, U[] result, Func<T, U> func)
-		{
 			for (int i = 0; i < vector.Length; i++)
 				result[i] = func (vector[i]);
+			return result;
 		}
 
 		public static string ToString<T> (this T[] array, string openBracket, string closeBracket, string separator)

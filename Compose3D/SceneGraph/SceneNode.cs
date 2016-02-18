@@ -11,13 +11,9 @@
     {
 		public abstract Aabb<Vec3> BoundingBox { get; }
 
-		public virtual IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Func<SceneNode, Mat4, bool> predicate,
-			Mat4 transform) 
+		public virtual IEnumerable<Tuple<SceneNode, Mat4>> Traverse (Mat4 transform) 
         {
-			var current = Tuple.Create (this, transform);
-			return predicate (current.Item1, current.Item2) ? 
-				EnumerableExt.Enumerate (current) : 
-				Enumerable.Empty<Tuple<SceneNode, Mat4>> ();
+			return EnumerableExt.Enumerate (Tuple.Create (this, transform)); 
         }
 
 		public virtual IEnumerable<SceneNode> OverlapWith (Aabb<Vec3> bbox)

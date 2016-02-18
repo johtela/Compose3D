@@ -305,6 +305,21 @@ namespace Compose3D
 				action (item.Item1, item.Item2, item.Item3);
 		}
 
+		public static IEnumerable<T> WhenOfType<T, U> (this IEnumerable<T> items, Action<U> action)
+			where U : T
+		{
+			foreach (var node in items)
+				if (node is U)
+					action ((U)node);
+				else
+					yield return node;
+		}
+
+		public static void ToVoid<T> (this IEnumerable<T> items)
+		{
+			foreach (var item in items);
+		}
+
 		#endregion
 
 		#region Map & Fold

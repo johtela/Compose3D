@@ -69,6 +69,10 @@
       <Project>{515CEF49-ED7F-4EAA-8F64-C62005D8F6D0}</Project>
       <Name>Compose3D</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LinqCheck\LinqCheck.csproj">
       <Project>{09491672-675E-4226-95EF-4F5A5FEE36D4}</Project>
       <Name>LinqCheck</Name>

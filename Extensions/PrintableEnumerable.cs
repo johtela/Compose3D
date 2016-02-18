@@ -1,4 +1,4 @@
-﻿namespace LinqCheck
+﻿namespace Extensions
 {
 	using System;
 	using System.Collections;

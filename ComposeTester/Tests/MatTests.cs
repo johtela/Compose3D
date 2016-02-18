@@ -6,6 +6,7 @@
     using System.Text;
     using Compose3D;
     using Compose3D.Maths;
+	using Extensions;
     using LinqCheck;
 
     public class MatTests

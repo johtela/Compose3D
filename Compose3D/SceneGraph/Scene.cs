@@ -57,9 +57,9 @@
 				   select Tuple.Create ((T)node.Item1, node.Item2);
 		}
 
-		public static IEnumerable<T> Descendants<T> (this SceneNode root) where T : SceneNode
+		public static IEnumerable<SceneNode> Descendants (this SceneNode root)
 		{
-			return root.Traverse ().OfNodeType<T> ().Select (t => t.Item1);
+			return root.Traverse ().Select (t => t.Item1);
 		}
 	}
 }

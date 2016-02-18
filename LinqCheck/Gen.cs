@@ -3,6 +3,7 @@ namespace LinqCheck
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 
 	public delegate T Gen<T> (Random rnd, int size);
 

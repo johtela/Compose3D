@@ -6,6 +6,7 @@
 	using Compose3D;
 	using Compose3D.Maths;
 	using Compose3D.DataStructures;
+	using Extensions;
 	using LinqCheck;
 
 	public class BoundingTreeTests

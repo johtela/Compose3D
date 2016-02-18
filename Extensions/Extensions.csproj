@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{09491672-675E-4226-95EF-4F5A5FEE36D4}</ProjectGuid>
+    <ProjectGuid>{BDEBBC66-4ABF-4AC7-9EFE-CC385B2E9E4A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LinqCheck</RootNamespace>
-    <AssemblyName>LinqCheck</AssemblyName>
+    <RootNamespace>Extensions</RootNamespace>
+    <AssemblyName>Extensions</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -35,20 +35,17 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arbitrary.cs" />
-    <Compile Include="Container.cs" />
-    <Compile Include="DefaultArbitrary.cs" />
-    <Compile Include="Gen.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Property.cs" />
-    <Compile Include="Tester.cs" />
-    <Compile Include="TestState.cs" />
+    <Compile Include="ArrayExt.cs" />
+    <Compile Include="BoolExt.cs" />
+    <Compile Include="EnumerableExt.cs" />
+    <Compile Include="Fun.cs" />
+    <Compile Include="NumExt.cs" />
+    <Compile Include="PrintableEnumerable.cs" />
+    <Compile Include="StringExt.cs" />
+    <Compile Include="TupleExt.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Extensions\Extensions.csproj">
-      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
-      <Name>Extensions</Name>
-    </ProjectReference>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

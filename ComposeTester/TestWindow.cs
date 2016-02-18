@@ -36,7 +36,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.Traverse ().OfNodeType<TransformNode> ().Select (t => t.Item1).ToArray ();
+			_positions = _sceneGraph.Descendants ().OfType<TransformNode> ().ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -133,29 +133,29 @@
 
 			using (_program.Scope ())
 			{
-				var globalLight = _sceneGraph.Descendants<GlobalLighting> ().First ();
-				_uniforms.globalLighting &= new Lighting.GlobalLight () 
-				{
-					ambientLightIntensity = globalLight.AmbientLightIntensity,
-					maxintensity = globalLight.MaxIntensity,
-					inverseGamma = 1f / globalLight.GammaCorrection
-				};
-				var dirLight = _sceneGraph.Descendants<DirectionalLight> ().First ();
-				_uniforms.directionalLight &= new Lighting.DirectionalLight () 
-				{
-					direction = dirLight.Direction,
-					intensity = dirLight.Intensity
-				};
-				foreach (var pointLight in _sceneGraph.Descendants<PointLight> ())
-				{
-					pointLights[numPointLights++] = new Lighting.PointLight
-					{
-						position = pointLight.Position,
-						intensity = pointLight.Intensity,
-						linearAttenuation = pointLight.LinearAttenuation,
-						quadraticAttenuation = pointLight.QuadraticAttenuation
-					};
-				}
+				_sceneGraph.Descendants ()
+					.WhenOfType<SceneNode, GlobalLighting> (globalLight =>
+						_uniforms.globalLighting &= new Lighting.GlobalLight ()
+						{
+							ambientLightIntensity = globalLight.AmbientLightIntensity,
+							maxintensity = globalLight.MaxIntensity,
+							inverseGamma = 1f / globalLight.GammaCorrection
+						})
+					.WhenOfType<SceneNode, DirectionalLight> (dirLight =>
+						_uniforms.directionalLight &= new Lighting.DirectionalLight ()
+						{
+							direction = dirLight.Direction,
+							intensity = dirLight.Intensity
+						})
+					.WhenOfType<SceneNode, PointLight> (pointLight =>
+						pointLights[numPointLights++] = new Lighting.PointLight
+						{
+							position = pointLight.Position,
+							intensity = pointLight.Intensity,
+							linearAttenuation = pointLight.LinearAttenuation,
+							quadraticAttenuation = pointLight.QuadraticAttenuation
+						})
+					.ToVoid ();
 				_uniforms.pointLights &= pointLights;
 
 				var samplers = new Sampler2D[4];
@@ -248,4 +248,3 @@
 		#endregion
 	}
 }
-

@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Text;
 	using System.Diagnostics;
+	using Extensions;
 
 	/// <summary>
 	/// Result of a single test run. Test can either succeed, fail, or be discarded. When test

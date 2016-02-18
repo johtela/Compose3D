@@ -4,9 +4,9 @@
 	using Compose3D.Geometry;
 	using Compose3D.SceneGraph;
 	using Compose3D;
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 	using OpenTK;
 
 	public class FighterGeometry<V, P>
@@ -86,9 +86,9 @@
 					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y,
 					cockpitFuselage.XSection.Nodes.Length);
 
-				var transforms = from z in Ext.Range (0f, -2f, -0.25f)
+				var transforms = from z in EnumerableExt.Range (0f, -2f, -0.25f)
 								 select Mat.Translation<Mat4> (0f, 0f, z);
-				var paths = Ext.Append (
+				var paths = EnumerableExt.Append (
 					cockpitFuselage.XSection.MorphTo (XSection, transforms),
 					XSection.Translate (0f, 0f, -6.75f));
 				RearXSection = paths.Last ();
@@ -128,7 +128,7 @@
 					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y, 20);
 
 				var transforms =
-					from s in Ext.Range (0.25f, 2f, 0.25f)
+					from s in EnumerableExt.Range (0.25f, 2f, 0.25f)
 					let scaleFactor = 1f + (0.2f * s.Pow (0.5f))
 					select Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
@@ -144,7 +144,7 @@
 					where v.Position.Y < -0.1f
 					select v.Position);
 				var scalePoint = new Vec3 (0f, BellyXSection.Nodes.First ().Position.Y, 0f);
-				Belly = Ext.Enumerate (BellyXSection, 
+				Belly = EnumerableExt.Enumerate (BellyXSection, 
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * 
 						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -2f) * 
@@ -187,7 +187,7 @@
 				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
 				var paths =
-					from s in Ext.Range (0f, 4f, 1f)
+					from s in EnumerableExt.Range (0f, 4f, 1f)
 					let scaleFactor = (0.15f * s).Pow (2f)
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
@@ -215,7 +215,7 @@
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + pos2 + 
 					BottomXSection (underside.RearXSection) + pos1);
 				var transforms = 
-					from s in Ext.Range (0f, 2.5f, 0.5f)
+					from s in EnumerableExt.Range (0f, 2.5f, 0.5f)
 					select Mat.Translation<Mat4> (0f, s / 25f, -s);
 				var paths = XSection.MorphTo (RearXSection, transforms);
 				var rear = paths.Extrude<V, P> (false, false);
@@ -230,7 +230,7 @@
 					.Close ();
 				ExhaustXSection = EngineXSection.Scale (0.8f, 0.7f);
 				transforms =
-					from s in Ext.Range (0f, 1f, 0.5f)
+					from s in EnumerableExt.Range (0f, 1f, 0.5f)
 					select Mat.Translation<Mat4> (0f, s / 10f, -s);
 				var engine = EngineXSection.MorphTo (ExhaustXSection, transforms)
 					.Extrude<V, P> (false, true);
@@ -288,7 +288,7 @@
 					});
 				var center = FlangeEndXSection.Nodes.Center<P, Vec3> ();
 				StabilizerFlange = FlangeXSection.MorphTo (FlangeEndXSection,
-						Ext.Range (0f, -1.25f, -0.25f).Select (s => Mat.Translation<Mat4> (0f, 0f, s) *
+						EnumerableExt.Range (0f, -1.25f, -0.25f).Select (s => Mat.Translation<Mat4> (0f, 0f, s) *
 							Mat.Scaling<Mat4> (1f, 1f - (s * 0.3f).Pow (2f)).RelativeTo (center)))
 					.Extrude<V, P> (false, true)
 					.Color (_color);
@@ -446,10 +446,10 @@
 			var path = exhaust.FlangeEndXSection;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
 			path.Nodes.Color (graySlide);
-			LineSegments = Ext.Enumerate (new LineSegment<P, Vec3> (path));
+			LineSegments = EnumerableExt.Enumerate (new LineSegment<P, Vec3> (path));
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
-				.Concat (Ext.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 
+				.Concat (EnumerableExt.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 
 					wing.Geometry, wing.Geometry.ReflectX (), rear.Geometry, exhaust.Geometry,
 					exhaust.StabilizerFlange, exhaust.StabilizerFlange.ReflectX (),
 					tailFin.Geometry, stabilizer.Geometry, stabilizer.Geometry.ReflectX (),

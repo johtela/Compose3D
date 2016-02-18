@@ -115,7 +115,37 @@
 		public static void Ignore<T> (T value)
 		{	
 		}
-		
+
+		public static bool True<T> (T value)
+		{
+			return true;
+		}
+
+		public static bool True<T, U> (T val1, U val2)
+		{
+			return true;
+		}
+
+		public static bool True<T, U, V> (T val1, U val2, V val3)
+		{
+			return true;
+		}
+
+		public static bool False<T> (T value)
+		{
+			return false;
+		}
+
+		public static bool False<T, U> (T val1, U val2)
+		{
+			return false;
+		}
+
+		public static bool False<T, U, V> (T val1, U val2, V val3)
+		{
+			return false;
+		}
+
 		public static T Memoize<T> (Func<T> func, ref T store) where T : class
 		{
 			if (store == null)

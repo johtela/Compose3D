@@ -2,7 +2,7 @@
 {
     using System;
     using System.Linq;
-	using Compose3D;
+	using Extensions;
     using Compose3D.Maths;
     using LinqCheck;
 

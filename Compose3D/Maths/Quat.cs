@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.Maths
 {
-	using System;
+	using Extensions;
 
 	public struct Quat : IQuat<Quat, float>
 	{

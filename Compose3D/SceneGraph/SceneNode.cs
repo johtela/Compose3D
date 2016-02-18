@@ -5,6 +5,7 @@
 	using System.Linq;
 	using Maths;
 	using DataStructures;
+	using Extensions;
 
 	public abstract class SceneNode
     {
@@ -15,13 +16,13 @@
         {
 			var current = Tuple.Create (this, transform);
 			return predicate (current.Item1, current.Item2) ? 
-				Ext.Enumerate (current) : 
+				EnumerableExt.Enumerate (current) : 
 				Enumerable.Empty<Tuple<SceneNode, Mat4>> ();
         }
 
 		public virtual IEnumerable<SceneNode> OverlapWith (Aabb<Vec3> bbox)
 		{
-			return bbox & BoundingBox ? Ext.Enumerate (this) : Enumerable.Empty<SceneNode> ();
+			return bbox & BoundingBox ? EnumerableExt.Enumerate (this) : Enumerable.Empty<SceneNode> ();
 		}
 	}
 }

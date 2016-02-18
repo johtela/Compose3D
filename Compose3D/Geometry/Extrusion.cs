@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+	using Extensions;
 
     public static class Extrusion
 	{
@@ -252,7 +253,7 @@
 			var scaleRange = 1f - targetScale;
 			var exponent = scaleRange < 0 ? 1f / steepness : steepness;
 			var transforms =
-				from s in Ext.Range (step, depth, step)
+				from s in EnumerableExt.Range (step, depth, step)
 				let factor = (1f - (s / depth).Pow (exponent)) * scaleRange + targetScale
 				let offs = -normal * s
 				select Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) * 

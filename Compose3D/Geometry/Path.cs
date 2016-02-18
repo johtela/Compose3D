@@ -5,6 +5,7 @@
 	using System.Linq;
 	using Maths;
 	using OpenTK;
+	using Extensions;
 
 	public class Path<P, V> : ITransformable<Path<P, V>, Mat4>
 		where P : struct, IPositional<V>

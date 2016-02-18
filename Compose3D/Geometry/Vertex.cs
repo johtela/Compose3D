@@ -4,6 +4,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 	
 	/// <summary>
 	/// Interface for objects with any position data.
@@ -131,9 +132,9 @@
 		{
 			if (vertices.Count () < 4)
 				return true;
-			var first = Ext.Next (ref vertices).Position;
-			var ab = Ext.Next (ref vertices).Position - first;
-			var ac = Ext.Next (ref vertices).Position - first;
+			var first = EnumerableExt.Next (ref vertices).Position;
+			var ab = EnumerableExt.Next (ref vertices).Position - first;
+			var ac = EnumerableExt.Next (ref vertices).Position - first;
 			var normal = ab.Cross (ac);
 
 			return vertices.All (v => normal.Dot (v.Position - first).ApproxEquals (0f, 0.1f));

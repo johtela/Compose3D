@@ -5,7 +5,7 @@
 	using System.Linq;
 	using DataStructures;
 	using Maths;
-	using Geometry;
+	using Extensions;
 
 	/// <summary>
 	/// Global lighting parameters affecting the whole scene.

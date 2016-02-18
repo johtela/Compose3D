@@ -2,7 +2,7 @@
 {
     using System;
 	using System.Collections.Generic;
-	using System.Linq;
+	using Extensions;
 	using GLTypes;
 
 	public interface IVec<V, T> : IEquatable<V>

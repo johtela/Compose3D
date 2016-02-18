@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Reactive
 {
 	using System;
+	using Extensions;
 
 	public delegate void Reaction<T> (T input);
 
@@ -95,13 +96,13 @@
 
 		public static Tuple<Reaction<T>, Reaction<U>> All<T, U> (this Reaction<Tuple<T, U>> reaction)
 		{
-			var value = Ext.EmptyTuple<T, U> ();
+			var value = TupleExt.EmptyTuple<T, U> ();
 			Action invoke = () =>
 			{
 				if (value.HasValues ())
 				{
 					reaction (value);
-					value = Ext.EmptyTuple<T, U> ();
+					value = TupleExt.EmptyTuple<T, U> ();
 				}
 			};
 			return Tuple.Create<Reaction<T>, Reaction<U>> (
@@ -112,13 +113,13 @@
 
 		public static Tuple<Reaction<T>, Reaction<U>, Reaction<V>> All<T, U, V> (this Reaction<Tuple<T, U, V>> reaction)
 		{
-			var value = Ext.EmptyTuple<T, U, V> ();
+			var value = TupleExt.EmptyTuple<T, U, V> ();
 			Action invoke = () =>
 			{
 				if (value.HasValues ())
 				{
 					reaction (value);
-					value = Ext.EmptyTuple<T, U, V> ();
+					value = TupleExt.EmptyTuple<T, U, V> ();
 				}
 			};
 			return Tuple.Create<Reaction<T>, Reaction<U>, Reaction<V>> (
@@ -131,13 +132,13 @@
 		public static Tuple<Reaction<T>, Reaction<U>, Reaction<V>, Reaction<W>> All<T, U, V, W> (
 			this Reaction<Tuple<T, U, V, W>> reaction)
 		{
-			var value = Ext.EmptyTuple<T, U, V, W> ();
+			var value = TupleExt.EmptyTuple<T, U, V, W> ();
 			Action invoke = () =>
 			{
 				if (value.HasValues ())
 				{
 					reaction (value);
-					value = Ext.EmptyTuple<T, U, V, W> ();
+					value = TupleExt.EmptyTuple<T, U, V, W> ();
 				}
 			};
 			return Tuple.Create<Reaction<T>, Reaction<U>, Reaction<V>, Reaction<W>> (

@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
 	using System.Text;
 
 	public static class ArrayExt
@@ -30,6 +29,19 @@
 			for (int i = array.Length - 1; i >= 0; i--)
 				acc = func (array[i], acc);
 			return acc;
+		}
+
+		public static U[] Map<T, U> (this T[] vector, Func<T, U> func)
+		{
+			var result = new U[vector.Length];
+			Map (vector, result, func);
+			return result;
+		}
+
+		public static void Map<T, U> (this T[] vector, U[] result, Func<T, U> func)
+		{
+			for (int i = 0; i < vector.Length; i++)
+				result[i] = func (vector[i]);
 		}
 
 		public static string ToString<T> (this T[] array, string openBracket, string closeBracket, string separator)
@@ -94,5 +106,45 @@
 			return GeneratePermutations (array.Length - 1, res);
 		}
 
+		public static T[] Repeat<T> (this T value, int times)
+		{
+			var result = new T[times];
+			for (int i = 0; i < times; i++)
+				result[i] = value;
+			return result;
+		}
+
+		public static T First<T> (this T[] array)
+		{
+			return array[0];
+		}
+
+		public static T Last<T> (this T[] array)
+		{
+			return array[array.Length - 1];
+		}
+
+		public static int IndexOf<T> (this T[] array, T value)
+		{
+			return Array.IndexOf (array, value);
+		}
+
+		public static IEnumerable<T> Slice<T> (this T[] array, int start, int length)
+		{
+			for (int i = 0; i < length; i++)
+				yield return array[start + i];
+		}
+
+		public static T[][] Duplicate<T> (this T[][] matrix)
+		{
+			var res = new T[matrix.Length][];
+			for (int i = 0; i < matrix.Length; i++)
+			{
+				var len = matrix[i].Length;
+				res[i] = new T[len];
+				Array.Copy (matrix[i], res[i], len);
+			}
+			return res;
+		}
 	}
 }

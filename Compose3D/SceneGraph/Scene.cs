@@ -5,6 +5,7 @@
     using System;
     using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 
     public static class Scene
     {
@@ -59,7 +60,7 @@
 
 		public static IEnumerable<SceneNode> Descendants (this SceneNode root)
 		{
-			return root.Traverse ().Select (t => t.Item1);
+			return root.Traverse ().Select (TupleExt.First);
 		}
 	}
 }

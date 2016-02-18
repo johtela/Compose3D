@@ -4,6 +4,7 @@
 	using OpenTK;
 	using System;
 	using System.Collections.Generic;
+	using Extensions;
 
 	public class Lathe<V> : Primitive<V> where V : struct, IVertex
 	{

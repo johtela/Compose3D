@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Maths
 {
     using System;
+	using Extensions;
 	
 	public interface IMat<M, T> : IEquatable<M>
 		where M : struct, IMat<M, T>

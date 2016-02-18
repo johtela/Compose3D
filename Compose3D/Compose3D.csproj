@@ -70,9 +70,7 @@
     <Compile Include="GLTypes\VBO.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
     <Compile Include="Geometry\Geometry.cs" />
-    <Compile Include="Params.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Ext.cs" />
     <Compile Include="GLTypes\GLShader.cs" />
     <Compile Include="GLTypes\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
@@ -269,6 +267,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Visuals\Visuals.csproj">
       <Project>{df55a445-8526-489c-ac6b-5c969e8de42b}</Project>
       <Name>Visuals</Name>

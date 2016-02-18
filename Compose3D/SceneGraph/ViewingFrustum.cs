@@ -4,6 +4,7 @@
 	using DataStructures;
 	using Maths;
 	using Geometry;
+	using Extensions;
 
 	public enum FrustumKind	{ Perspective, Orthographic }
 

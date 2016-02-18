@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using Maths;
+	using Extensions;
 
 	internal class VertexFilter<V> : Wrapper<V>
 		where V : struct, IVertex

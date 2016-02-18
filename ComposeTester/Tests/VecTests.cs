@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using Compose3D;
+    using Extensions;
     using Compose3D.Maths;
     using LinqCheck;
 

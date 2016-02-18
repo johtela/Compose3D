@@ -5,6 +5,7 @@
 	using System.Linq;
 	using Compose3D.Maths;
 	using DataStructures;
+	using Extensions;
 
 	public class TransformNode : SceneNodeWrapper
 	{

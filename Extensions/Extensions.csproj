@@ -40,6 +40,8 @@
     <Compile Include="EnumerableExt.cs" />
     <Compile Include="Fun.cs" />
     <Compile Include="NumExt.cs" />
+    <Compile Include="ObjectExt.cs" />
+    <Compile Include="Params.cs" />
     <Compile Include="PrintableEnumerable.cs" />
     <Compile Include="StringExt.cs" />
     <Compile Include="TupleExt.cs" />

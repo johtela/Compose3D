@@ -11,6 +11,7 @@
     using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
+	using Extensions;
 
 	public class GLSLGenerator
     {

@@ -15,7 +15,7 @@
 	using System;
 	using System.Linq;
 	using LinqCheck;
-	using Visuals;
+	using Extensions;
 
 	public class TestWindow : GameWindow
 	{
@@ -206,7 +206,7 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 			using ( _program.Scope ())
-				_sceneGraph.Traverse (_dirLight.WorldToLight).OfNodeType <Mesh<Vertex>> ().Foreach (
+				_sceneGraph.Traverse (_dirLight.WorldToLight).OfNodeType <Mesh<Vertex>> ().ForEach (
 					(mesh, mat) =>
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
@@ -216,7 +216,7 @@
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					});
 			using (_passthrough.Scope ())
-				_sceneGraph.Traverse ().OfNodeType <LineSegment<PathNode, Vec3>> ().Foreach (
+				_sceneGraph.Traverse ().OfNodeType <LineSegment<PathNode, Vec3>> ().ForEach (
 					(lines, mat) => _passthrough.DrawLinePath (lines.VertexBuffer));
 				
 				//				_camera.WorldToCamera

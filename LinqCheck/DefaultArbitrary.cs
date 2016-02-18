@@ -82,7 +82,7 @@
 
 		public static IEnumerable<IEnumerable<T>> ShrinkEnumerable<T> (this IEnumerable<T> e)
 		{
-			return RemoveUntil (e).Collect (Fun.Identity).Concat (ShrinkOne (e)).Prepend (new T[0]);
+			return RemoveUntil (e).SelectMany (Fun.Identity).Concat (ShrinkOne (e)).Prepend (new T[0]);
 		}
 
 		private static IEnumerable<IEnumerable<IEnumerable<T>>> RemoveUntil<T> (IEnumerable<T> e)

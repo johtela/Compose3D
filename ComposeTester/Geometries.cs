@@ -4,11 +4,10 @@
 	using Compose3D.DataStructures;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
-	using Compose3D.GLTypes;
 	using OpenTK;
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 
 	public static class Geometries
 	{
@@ -99,10 +98,10 @@
 			var range = MathHelper.PiOver2;
 			var step = MathHelper.Pi / 20f;
 			var contour =
-				(from x in Ext.Range (-range, range, step)
+				(from x in EnumerableExt.Range (-range, range, step)
 				 select new Vec2 (x, x.Sin () + 1f))
 				.Concat (
-				from x in Ext.Range (range, -range, -step)
+				from x in EnumerableExt.Range (range, -range, -step)
 				select new Vec2 (x, x.Sin () - 1f)).ToArray ();
 			return Polygon<Vertex>.FromVec2s (contour)
 				.Extrude (2f, true)

@@ -56,7 +56,7 @@
 
 		public override Aabb<Vec3> BoundingBox
         {
-            get { return Geometry.BoundingBox; }
+            get { return Transform * Geometry.BoundingBox; }
         }
     }
 }

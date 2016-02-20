@@ -46,6 +46,16 @@
 			};
 		}
 
+		public static Reaction<U> Reduce<T, U> (this Reaction<T> reaction, Func<T, U, T> func, T initial)
+		{
+			var current = initial;
+			return input =>
+			{
+				current = func (current, input);
+				reaction (current);
+			};
+		}
+
 		public static Reaction<T> Once<T> (this Reaction<T> reaction)
 		{
 			bool occurred = false;
@@ -65,6 +75,67 @@
 			{
 				foreach (var r in reactions)
 					r (input);
+			};
+		}
+
+		public static Reaction<T> Buffer<T> (this Reaction<T[]> reaction, int bufferSize)
+		{
+			var buffer = new T[bufferSize];
+			var last = 0;
+			return input =>
+			{
+				buffer[last++] = input;
+				if (last == bufferSize)
+				{
+					reaction (buffer);
+					last = 0;
+				}
+			};
+		}
+
+		public static Reaction<T> Skip<T> (this Reaction<T> reaction, int count)
+		{
+			var i = 0;
+			return input =>
+			{
+				if (++i > count)
+					reaction (input);
+			};
+		}
+
+		public static Reaction<T> SkipWhile<T> (this Reaction<T> reaction, Func<T, bool> condition)
+		{
+			var take = false;
+			return input =>
+			{
+				if (take)
+					if (!condition (input))
+						reaction (input);
+					else
+						take = true;
+			};
+		}
+
+		public static Reaction<T> Take<T> (this Reaction<T> reaction, int count)
+		{
+			var i = 0;
+			return input =>
+			{
+				if (i++ < count)
+					reaction (input);
+			};
+		}
+
+		public static Reaction<T> TakeWhile<T> (this Reaction<T> reaction, Func<T, bool> condition)
+		{
+			var cont = true;
+			return input =>
+			{
+				if (cont)
+					if (condition (input))
+						reaction (input);
+					else
+						cont = false;
 			};
 		}
 
@@ -235,20 +306,9 @@
 			);
 		}
 
-		public static Reaction<U> Fold<T, U> (this Reaction<T> reaction, Func<T, U, T> func, T initial)
-		{
-			var current = initial;
-			return input =>
-			{
-				current = func (current, input);
-				reaction (current);
-			};
-		}
-
 		public static EventHandler<T> ToEvent<T> (this Reaction<T> reaction) where T : EventArgs
 		{
 			return (sender, e) => reaction (e);
 		}
 	}
 }
-

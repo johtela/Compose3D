@@ -181,8 +181,8 @@
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? TextureColor ((!u.samplers)[0], f.texturePosition) :
-					samplerNo == 1 ? TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
-					samplerNo == 2 ? TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
+					//samplerNo == 1 ? TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
+					//samplerNo == 2 ? TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse

@@ -5,6 +5,9 @@
 
 	public delegate void Reaction<T> (T input);
 
+	/// <summary>
+	/// Operations for creating reactions and for extending and combining them in various ways.
+	/// </summary>
 	public static class React
 	{
 		public static Reaction<T> By<T> (Action<T> action)
@@ -73,8 +76,8 @@
 		{
 			return input =>
 			{
-				foreach (var r in reactions)
-					r (input);
+				foreach (var reaction in reactions)
+					reaction (input);
 			};
 		}
 

@@ -41,12 +41,7 @@
 
 		public override Aabb<Vec3> BoundingBox
 		{
-			get
-			{
-				return (from node in _subNodes
-						where node != null
-						select node.BoundingBox).Aggregate ((b1, b2) => b1 + b2);
-			}
+			get { return null; }
 		}
 
 		public IEnumerable<SceneNode> SubNodes

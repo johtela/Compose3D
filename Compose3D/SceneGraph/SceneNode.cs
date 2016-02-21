@@ -22,10 +22,5 @@
         {
 			return EnumerableExt.Enumerate (this); 
         }
-
-		public virtual IEnumerable<SceneNode> OverlapWith (Aabb<Vec3> bbox)
-		{
-			return bbox & BoundingBox ? EnumerableExt.Enumerate (this) : Enumerable.Empty<SceneNode> ();
-		}
 	}
 }

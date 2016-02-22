@@ -16,7 +16,7 @@
 
 		public static SceneNode OffsetOrientAndScale (this SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
 		{
-			return new TransformNode (node, offset, orientation, scale);
+			return new TransformNode (node.Graph, node, offset, orientation, scale);
 		}
 
 		public static SceneNode Offset (this SceneNode node, Vec3 offset)

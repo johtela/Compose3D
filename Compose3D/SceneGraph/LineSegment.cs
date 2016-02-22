@@ -13,7 +13,7 @@
 	{
 		private VBO<P> _vertexBuffer;
 
-		public LineSegment (Path<P, V> path)
+		public LineSegment (SceneGraph graph, Path<P, V> path) : base (graph)
 		{
 			Path = path;
 		} 

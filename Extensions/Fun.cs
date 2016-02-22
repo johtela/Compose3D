@@ -158,5 +158,11 @@
 			action ();
 			return result;
 		}
+
+		public static bool NotNull<T> (T value)
+			where T : class
+		{
+			return value != null;
+		}
 	}
 }

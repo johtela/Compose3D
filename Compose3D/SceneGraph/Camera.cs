@@ -11,7 +11,8 @@
 		public Vec3 UpDirection;
 		public ViewingFrustum Frustum;
 		
-		public Camera (Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustum, float aspectRatio)
+		public Camera (SceneGraph graph, Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustum, 
+			float aspectRatio) : base (graph)
 		{
 			Position = position;
 			Target = target;

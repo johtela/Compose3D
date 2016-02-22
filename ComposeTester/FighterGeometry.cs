@@ -14,7 +14,7 @@
 		where P : struct, IPositional<Vec3>, IDiffuseColor<Vec3>
 	{
 		public readonly Geometry<V> Fighter;
-		public readonly IEnumerable<LineSegment<P, Vec3>> LineSegments;
+		public readonly IEnumerable<Path<P, Vec3>> Paths;
 		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.GreyPlastic;
 
         private class Nose
@@ -446,7 +446,7 @@
 			var path = exhaust.FlangeEndXSection;
 			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
 			path.Nodes.Color (graySlide);
-			LineSegments = EnumerableExt.Enumerate (new LineSegment<P, Vec3> (path));
+			Paths = EnumerableExt.Enumerate (path);
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)
 				.Concat (EnumerableExt.Enumerate (intake.Intake, intake.Belly, underside.Geometry, canopy.Geometry, 

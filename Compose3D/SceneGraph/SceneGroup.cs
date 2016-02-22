@@ -11,26 +11,29 @@
 	{
 		private List<SceneNode> _subNodes;
 
-		public SceneGroup () 
+		public SceneGroup (SceneGraph graph) : base (graph)
 		{
 			_subNodes = new List<SceneNode> ();
 		}
 
-		public SceneGroup (IEnumerable<SceneNode> subNodes) : this ()
+		public SceneGroup (SceneGraph graph, IEnumerable<SceneNode> subNodes) : this (graph)
 		{
 			Add (subNodes);
 		}
 
-		public SceneGroup (params SceneNode[] subNodes) : this ()
+		public SceneGroup (SceneGraph graph, params SceneNode[] subNodes) : this (graph)
 		{
 			Add (subNodes);
 		}
 
-		public virtual SceneNode Add (IEnumerable<SceneNode> subNodes)
+		public SceneNode Add (IEnumerable<SceneNode> subNodes)
 		{
 			_subNodes.AddRange (subNodes);
 			foreach (var subNode in subNodes)
+			{
 				subNode.Parent = this;
+				Graph.AddToIndex (subNode);
+			}
 			return this;
 		}
 

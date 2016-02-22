@@ -27,7 +27,7 @@
 		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Scene graph
-		private SceneGroup _sceneGraph;
+		private SceneGraph _sceneGraph;
 		private TransformNode[] _positions;
 		private Camera _camera;
 		private DirectionalLight _dirLight;
@@ -36,7 +36,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.Traverse ().OfType<TransformNode> ().ToArray ();
+			_positions = _sceneGraph.Root.Traverse ().OfType<TransformNode> ().ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -73,18 +73,19 @@
 
 		#region Setup
 
-		private SceneGroup CreateSceneGraph ()
+		private SceneGraph CreateSceneGraph ()
 		{
-			_dirLight = new DirectionalLight (
+			var sceneGraph = new SceneGraph ();
+			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (0.2f), 
 				direction: new Vec3 (1f, 1f, 1f),
 				distance: 100f);
-			var pointLight1 = new PointLight (
+			var pointLight1 = new PointLight (sceneGraph,
 				intensity: new Vec3 (2f), 
 				position: new Vec3 (10f, 10f, 10f), 
 				linearAttenuation: 0.001f, 
 				quadraticAttenuation: 0.001f);
-			var pointLight2 = new PointLight (
+			var pointLight2 = new PointLight (sceneGraph,
 				intensity: new Vec3 (1f), 
 				position: new Vec3 (-10f, 10f, -10f), 
 				linearAttenuation: 0.001f, 
@@ -109,21 +110,25 @@
 			//			});
 
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			var mesh1 = new Mesh<Vertex> (fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
+			var mesh1 = new Mesh<Vertex> (sceneGraph, fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
 
 			var pipe = Geometries.Pipe ().Color (VertexColor<Vec3>.Brass);
 			pipe.ApplyTextureTop (1f, new Vec2 (0f), new Vec2 (1f));
-			var mesh2 = new Mesh<Vertex> (pipe, textTexture)
+			var mesh2 = new Mesh<Vertex> (sceneGraph, pipe, textTexture)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
-			_camera = new Camera (
+			_camera = new Camera (sceneGraph,
 				position: new Vec3 (10f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, 0f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
 				aspectRatio: 1f);
-			return new SceneGroup (new GlobalLighting (new Vec3 (0.1f), 2f, 1.2f),
+			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
+				ambientLightIntensity: new Vec3 (0.1f), 
+				maxIntensity: 2f, 
+				gammaCorrection: 1.2f),
 				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
+			return sceneGraph;
 		}
 
 		private void InitializeUniforms ()
@@ -133,7 +138,7 @@
 
 			using (_program.Scope ())
 			{
-				_sceneGraph.Traverse ()
+				_sceneGraph.Root.Traverse ()
 					.WhenOfType<SceneNode, GlobalLighting> (globalLight =>
 						_uniforms.globalLighting &= new Lighting.GlobalLight ()
 						{
@@ -205,8 +210,10 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+			var cameraBox = _camera.BoundingBox;
 			using ( _program.Scope ())
-				_sceneGraph.Traverse ().OfType <Mesh<Vertex>> ().ForEach (mesh =>
+				_sceneGraph.Index.Overlap (cameraBox).Values ().OfType <Mesh<Vertex>> ()
+					.ForEach (mesh =>
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 						_uniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
@@ -215,7 +222,7 @@
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 					});
 			using (_passthrough.Scope ())
-				_sceneGraph.Traverse ().OfType <LineSegment<PathNode, Vec3>> ().ForEach (
+				_sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ().ForEach (
 					lines => _passthrough.DrawLinePath (lines.VertexBuffer));
 			SwapBuffers ();
 		}

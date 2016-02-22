@@ -2,16 +2,35 @@
 {
     using System;
     using System.Collections.Generic;
-	using System.Linq;
 	using Maths;
 	using DataStructures;
 	using Extensions;
 
 	public abstract class SceneNode
-    {	
-		public SceneNode Parent { get; internal set; }
+    {
+		private SceneNode _parent;
+
+		public SceneNode (SceneGraph graph)
+		{
+			if (graph == null)
+				throw new ArgumentNullException ("graph");
+			Graph = graph;
+		}
+
+		public SceneGraph Graph { get; private set; }
 
 		public abstract Aabb<Vec3> BoundingBox { get; }
+
+		public SceneNode Parent
+		{
+			get { return _parent; }
+			internal set
+			{
+				if (_parent != null && _parent.Graph != Graph)
+					throw new InvalidOperationException ("Cannot add nodes belonging to another scene graph.");
+				_parent = value;
+			}
+		}
 
 		public virtual Mat4 Transform
 		{

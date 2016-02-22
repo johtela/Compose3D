@@ -13,7 +13,8 @@
 		public float MaxIntensity;
 		public float GammaCorrection;
 
-		public GlobalLighting (Vec3 ambientLightIntensity, float maxIntensity, float gammaCorrection)
+		public GlobalLighting (SceneGraph graph, Vec3 ambientLightIntensity, float maxIntensity, float gammaCorrection)
+			: base (graph)
 		{
 			AmbientLightIntensity = ambientLightIntensity;
 			MaxIntensity = maxIntensity;
@@ -33,6 +34,8 @@
 	{
 		public Vec3 Intensity;
 
+		public Light (SceneGraph graph) : base (graph) { }
+
 		public override Aabb<Vec3> BoundingBox
 		{
 			get { return null; }
@@ -47,7 +50,8 @@
 		public Vec3 Direction;
 		public float Distance;
 		
-		public DirectionalLight (Vec3 intensity, Vec3 direction, float distance)
+		public DirectionalLight (SceneGraph graph, Vec3 intensity, Vec3 direction, float distance)
+			: base (graph)
 		{
 			Intensity = intensity;
 			Distance = distance;
@@ -82,8 +86,8 @@
 		public float LinearAttenuation;
 		public float QuadraticAttenuation;
 
-		public PointLight (Vec3 intensity, Vec3 position, float linearAttenuation, 
-			float quadraticAttenuation)
+		public PointLight (SceneGraph graph, Vec3 intensity, Vec3 position, float linearAttenuation, 
+			float quadraticAttenuation) : base (graph)
 		{
 			Intensity = intensity;
 			Position = position;

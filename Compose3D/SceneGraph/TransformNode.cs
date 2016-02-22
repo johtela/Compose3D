@@ -1,8 +1,5 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
 	using Compose3D.Maths;
 	using DataStructures;
 
@@ -13,22 +10,25 @@
 		private Vec3 _orientation;
 		private Vec3 _scale;
 
-		public TransformNode (SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
-			: base (node)
+		public TransformNode (SceneGraph graph, SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
+			: base (graph, node)
 		{
 			_offset = offset;
 			_orientation = orientation;
 			_scale = scale;
-			UpdateTransform ();
+			UpdateTransform (true);
 		}
 
-		private void UpdateTransform ()
+		private void UpdateTransform (bool initial)
 		{
+			if (!initial)
+				Graph.RemoveFromIndex (Node);
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
+			Graph.AddToIndex (Node);
 		}
 
 		public override Mat4 Transform
@@ -42,7 +42,7 @@
 			set
 			{
 				_offset = value;
-				UpdateTransform ();
+				UpdateTransform (false);
 			}
 		}
 		public Vec3 Orientation
@@ -51,7 +51,7 @@
 			set
 			{
 				_orientation = value;
-				UpdateTransform ();
+				UpdateTransform (false);
 			}
 		}
 
@@ -61,13 +61,13 @@
 			set
 			{
 				_scale = value;
-				UpdateTransform ();
+				UpdateTransform (false);
 			}
 		}
 
 		public override Aabb<Vec3> BoundingBox
 		{
-			get { return Transform * Node.BoundingBox; }
+			get { return null; }
 		}
 	}
 }

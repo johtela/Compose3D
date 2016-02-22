@@ -9,7 +9,7 @@
 	{
 		public readonly SceneNode Node;
 
-		public SceneNodeWrapper (SceneNode node)
+		public SceneNodeWrapper (SceneGraph graph, SceneNode node) : base (graph)
 		{
 			Node = node;
 			Node.Parent = this;

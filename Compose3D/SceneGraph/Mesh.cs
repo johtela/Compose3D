@@ -14,7 +14,8 @@
         private VBO<int> _indexBuffer;
         private VBO<V> _normalBuffer;
 
-        public Mesh (Geometry<V> geometry, params Texture[] textures)
+        public Mesh (SceneGraph graph, Geometry<V> geometry, params Texture[] textures)
+			: base (graph)
         {
             Geometry = geometry;
             Textures = textures;

@@ -16,19 +16,20 @@
 			_offset = offset;
 			_orientation = orientation;
 			_scale = scale;
-			UpdateTransform (true);
+			UpdateTransform ();
 		}
 
-		private void UpdateTransform (bool initial)
+		private void UpdateTransform ()
 		{
-			if (!initial)
+			if (Parent != null)
 				Graph.RemoveFromIndex (Node);
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
-			Graph.AddToIndex (Node);
+			if (Parent != null)
+				Graph.AddToIndex (Node);
 		}
 
 		public override Mat4 Transform
@@ -42,7 +43,7 @@
 			set
 			{
 				_offset = value;
-				UpdateTransform (false);
+				UpdateTransform ();
 			}
 		}
 		public Vec3 Orientation
@@ -51,7 +52,7 @@
 			set
 			{
 				_orientation = value;
-				UpdateTransform (false);
+				UpdateTransform ();
 			}
 		}
 
@@ -61,7 +62,7 @@
 			set
 			{
 				_scale = value;
-				UpdateTransform (false);
+				UpdateTransform ();
 			}
 		}
 

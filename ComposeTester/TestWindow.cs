@@ -211,6 +211,7 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 			var cameraBox = _camera.BoundingBox;
+			var emptyScene = true;
 			using ( _program.Scope ())
 				_sceneGraph.Index.Overlap (cameraBox).Values ().OfType <Mesh<Vertex>> ()
 					.ForEach (mesh =>
@@ -220,10 +221,16 @@
 						_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
+						emptyScene = false;
 					});
 			using (_passthrough.Scope ())
 				_sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ().ForEach (
 					lines => _passthrough.DrawLinePath (lines.VertexBuffer));
+			if (emptyScene)
+			{
+				GL.ClearColor (new Color4 (150, 50, 0, 255));
+				GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			}
 			SwapBuffers ();
 		}
 

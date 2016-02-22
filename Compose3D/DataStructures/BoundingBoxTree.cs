@@ -15,7 +15,7 @@
 			_tree = new IntervalTree<float, IntervalTree<float, IntervalTree<float, Seq<T>>>> ();
 		}
 
-		public void Add (Aabb<Vec3> rect, T data)
+		public void Add (Aabb<Vec3> rect, T value)
 		{
 			var xival = _tree.Add (rect.Left, rect.Right, null);
 			if (xival.Data == null)
@@ -24,8 +24,11 @@
 			if (yival.Data == null)
 				yival.Data = new IntervalTree<float, Seq<T>> ();
 			var zival = yival.Data.Add (rect.Back, rect.Front, null);
-			zival.Data = Seq.Cons (data, zival.Data);
-			_count++;
+			if (!zival.Data.Contains (value))
+			{
+				zival.Data = Seq.Cons (value, zival.Data);
+				_count++;
+			}
 		}
 
 		public IEnumerable<KeyValuePair<Aabb<Vec3>, T>> Overlap (Aabb<Vec3> rect)

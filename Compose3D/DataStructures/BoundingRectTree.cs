@@ -21,8 +21,11 @@
 			if (xival.Data == null)
 				xival.Data = new IntervalTree<float, Seq<T>> ();
 			var yival = xival.Data.Add (rect.Bottom, rect.Top, null);
-			yival.Data = Seq.Cons (value, yival.Data);
-			_count++;
+			if (!yival.Data.Contains (value))
+			{
+				yival.Data = Seq.Cons (value, yival.Data);
+				_count++;
+			}
 		}
 
 		public IEnumerable<KeyValuePair<Aabb<Vec2>, T>> Overlap (Aabb<Vec2> rect)

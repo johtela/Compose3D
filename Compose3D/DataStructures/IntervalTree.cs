@@ -235,10 +235,20 @@
 					while (succ._left != null)
 						succ = succ._left;
 					current = current.AssignFrom (succ);
-					current._right = RemoveNode (current._right, succ);
+					current._right = RemoveMin (current._right);
 				}
 				else current._right = RemoveNode (current._right, node);
 			}
+			return Fixup (current);
+		}
+
+		private Interval<N, T> RemoveMin (Interval<N, T> current)
+		{
+			if (current._left == null) 
+				return null;
+			if (!IsRed (current._left) && !IsRed (current._left._left))
+				current = MoveRedLeft (current);
+			current._left = RemoveMin (current._left);
 			return Fixup (current);
 		}
 

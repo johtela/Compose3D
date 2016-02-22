@@ -59,5 +59,15 @@
 				return seq.Rest;
 			return Cons (seq.First, Remove (seq.Rest, item));
 		}
+
+		public static bool Contains<T> (this Seq<T> seq, T item)
+		{
+			if (seq == null)
+				return false;
+			else if (seq.First.Equals (item))
+				return true;
+			else
+				return Contains (seq.Rest, item);
+		}
 	}
 }

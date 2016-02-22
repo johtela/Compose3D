@@ -32,16 +32,14 @@
 
 		internal void AddToIndex (SceneNode node)
 		{
-			if (node == null)
-				throw new ArgumentNullException ("node");
-			UpdateIndex (node, true);
+			if (node.Root == Root)
+				UpdateIndex (node, true);
 		}
 
 		internal void RemoveFromIndex (SceneNode node)
 		{
-			if (node == null)
-				throw new ArgumentNullException ("node");
-			UpdateIndex (node, false);
+			if (node.Root == Root)
+				UpdateIndex (node, false);
 		}
 	}
 }

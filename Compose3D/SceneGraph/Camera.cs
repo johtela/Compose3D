@@ -22,7 +22,7 @@
 
 		public override Mat4 Transform
 		{
-			get { return WorldToCamera; }
+			get { return CameraToWorld; }
 		}
 
 		public override Aabb<Vec3> BoundingBox

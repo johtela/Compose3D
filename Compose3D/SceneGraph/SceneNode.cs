@@ -32,6 +32,17 @@
 			}
 		}
 
+		public SceneNode Root
+		{
+			get
+			{
+				var result = this;
+				while (result.Parent != null)
+					result = result.Parent;
+				return result;
+			}
+		}
+
 		public virtual Mat4 Transform
 		{
 			get { return Parent == null ? new Mat4 (1f) : Parent.Transform; }

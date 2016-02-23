@@ -16,15 +16,15 @@
 			var wnd = new TestWindow ();
 			wnd.Init ();
 			wnd.Run ();
-			Task.Factory.StartNew (() =>
-				Tester.RunTestsTimed (
-	//				new VecTests (),
-	//				new MatTests (),
-	//				new QuatTests (),
-					new SceneTests (),
-					new IntervalTreeTests (),
-					new BoundingTreeTests ()));
-			Application.Run (VConsole);
+			//Task.Factory.StartNew (() =>
+			//	Tester.RunTestsTimed (
+			//		new VecTests (),
+			//		new MatTests (),
+			//		new QuatTests (),
+			//		new SceneTests (),
+			//		new IntervalTreeTests (),
+			//		new BoundingTreeTests ()));
+			//Application.Run (VConsole);
 		}
 	}
 }

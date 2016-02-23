@@ -42,11 +42,6 @@
 			return _subNodes.SelectMany (sn => sn.Traverse ()).Append (this);
 		}
 
-		public override Aabb<Vec3> BoundingBox
-		{
-			get { return null; }
-		}
-
 		public IEnumerable<SceneNode> SubNodes
 		{
 			get { return _subNodes; }

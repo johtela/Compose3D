@@ -20,11 +20,6 @@
 			MaxIntensity = maxIntensity;
 			GammaCorrection = gammaCorrection;
 		}
-
-		public override Aabb<Vec3> BoundingBox
-		{
-			get { return null; }
-		}
 	}
 
 	/// <summary>
@@ -35,11 +30,6 @@
 		public Vec3 Intensity;
 
 		public Light (SceneGraph graph) : base (graph) { }
-
-		public override Aabb<Vec3> BoundingBox
-		{
-			get { return null; }
-		}
 	}
 
 	/// <summary>

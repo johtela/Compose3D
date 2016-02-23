@@ -21,15 +21,13 @@
 
 		private void UpdateTransform ()
 		{
-			if (Parent != null)
-				Graph.RemoveFromIndex (Node);
+			Graph.RemoveFromIndex (Node);
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
-			if (Parent != null)
-				Graph.AddToIndex (Node);
+			Graph.AddToIndex (Node);
 		}
 
 		public override Mat4 Transform
@@ -64,11 +62,6 @@
 				_scale = value;
 				UpdateTransform ();
 			}
-		}
-
-		public override Aabb<Vec3> BoundingBox
-		{
-			get { return null; }
 		}
 	}
 }

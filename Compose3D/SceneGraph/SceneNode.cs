@@ -19,7 +19,10 @@
 
 		public SceneGraph Graph { get; private set; }
 
-		public abstract Aabb<Vec3> BoundingBox { get; }
+		public virtual Aabb<Vec3> BoundingBox
+		{
+			get { return null; }
+		}
 
 		public SceneNode Parent
 		{

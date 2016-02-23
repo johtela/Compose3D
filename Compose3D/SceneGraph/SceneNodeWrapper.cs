@@ -19,10 +19,5 @@
 		{
 			return Node.Traverse ().Append (this);
 		}
-
-		public override Aabb<Vec3> BoundingBox
-		{
-			get { return Node.BoundingBox; }
-		}
 	}
 }

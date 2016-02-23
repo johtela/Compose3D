@@ -386,7 +386,7 @@
 					new Vec2 (-1.75f, -0.5f),
 					new Vec2 (-2f, -0.25f))
 					.ExtrudeToScale (
-						depth: 0.1f,
+						depth: 0.07f,
 						targetScale: 0.5f,
 						steepness: 3f,
 						numSteps: 5,

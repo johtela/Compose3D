@@ -210,10 +210,9 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
-			var cameraBox = _camera.BoundingBox;
 			var emptyScene = true;
 			using ( _program.Scope ())
-				_sceneGraph.Index.Overlap (cameraBox).Values ().OfType <Mesh<Vertex>> ()
+				_sceneGraph.Index.Overlap (_camera.BoundingBox).Values ().OfType <Mesh<Vertex>> ()
 					.ForEach (mesh =>
 					{
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);

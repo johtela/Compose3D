@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System;
+	using System.Linq;
 	using DataStructures;
 	using Maths;
 
@@ -14,32 +15,5 @@
 
 		public IBoundingTree<Vec3, SceneNode> Index { get; internal set; }
 		public SceneGroup Root { get; private set; }
-
-		private void UpdateIndex (SceneNode node, bool add)
-		{
-			foreach (var subNode in node.Traverse ())
-			{
-				var bbox = subNode.BoundingBox;
-				if (bbox != null)
-				{
-					if (add)
-						Index.Add (subNode.BoundingBox, subNode);
-					else
-						Index.Remove (subNode.BoundingBox, subNode);
-				}
-			}
-		}
-
-		internal void AddToIndex (SceneNode node)
-		{
-			if (node.Root == Root)
-				UpdateIndex (node, true);
-		}
-
-		internal void RemoveFromIndex (SceneNode node)
-		{
-			if (node.Root == Root)
-				UpdateIndex (node, false);
-		}
 	}
 }

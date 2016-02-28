@@ -1,5 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System.Linq;
+	using Extensions;
 	using Compose3D.Maths;
 	using DataStructures;
 
@@ -21,13 +23,13 @@
 
 		private void UpdateTransform ()
 		{
-			Graph.RemoveFromIndex (Node);
+			Traverse ().ForEach (node => node.RemoveFromIndex ());
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
-			Graph.AddToIndex (Node);
+			Traverse ().ForEach (node => node.AddToIndex ());
 		}
 
 		public override Mat4 Transform

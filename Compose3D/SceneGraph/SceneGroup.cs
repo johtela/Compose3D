@@ -32,7 +32,7 @@
 			foreach (var subNode in subNodes)
 			{
 				subNode.Parent = this;
-				Graph.AddToIndex (subNode);
+				subNode.Traverse ().ForEach (n => n.AddToIndex ());
 			}
 			return this;
 		}

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+	using System.Linq;
 	using Maths;
 	using DataStructures;
 	using Extensions;
@@ -37,12 +38,19 @@
 
 		public SceneNode Root
 		{
+			get { return Ancestors.LastOrDefault () ?? this; }
+		}
+
+		public IEnumerable<SceneNode> Ancestors
+		{
 			get
 			{
-				var result = this;
-				while (result.Parent != null)
-					result = result.Parent;
-				return result;
+				var node = Parent;
+				while (node != null)
+				{
+					yield return node;
+					node = node.Parent;
+				}
 			}
 		}
 
@@ -55,5 +63,23 @@
         {
 			return EnumerableExt.Enumerate (this); 
         }
+
+		internal virtual void AddToIndex ()
+		{
+			if (Root != Graph.Root)
+				return;
+			var bbox = BoundingBox;
+			if (bbox != null)
+				Graph.Index.Add (bbox, this);
+		}
+
+		internal virtual void RemoveFromIndex ()
+		{
+			if (Root != Graph.Root)
+				return;
+			var bbox = BoundingBox;
+			if (bbox != null)
+				Graph.Index.Remove (bbox, this);
+		}
 	}
 }

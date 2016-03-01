@@ -34,14 +34,13 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTK.1.1.2225.0\lib\net20\OpenTK.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
+      <HintPath>..\packages\OpenTK.1.1.2225.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\Aabb.cs" />
@@ -182,6 +181,7 @@
     <Compile Include="SceneGraph\ViewingFrustum.cs" />
     <Compile Include="Maths\Plane.cs" />
     <Compile Include="DataStructures\IntervalTree.cs" />
+    <Compile Include="Geometry\TerrainPatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />
@@ -273,11 +273,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extensions\Extensions.csproj">
-      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Project>{BDEBBC66-4ABF-4AC7-9EFE-CC385B2E9E4A}</Project>
       <Name>Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Visuals\Visuals.csproj">
-      <Project>{df55a445-8526-489c-ac6b-5c969e8de42b}</Project>
+      <Project>{DF55A445-8526-489C-AC6B-5C969E8DE42B}</Project>
       <Name>Visuals</Name>
     </ProjectReference>
   </ItemGroup>

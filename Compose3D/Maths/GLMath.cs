@@ -67,6 +67,11 @@
 		{
 			return start * (1.0 - interPos) + end * interPos;
 		}
+		
+		public static float CosMix (float start, float end, float interPos)
+		{
+			return Mix (start, end, (1f - Cos (interPos * MathHelper.Pi)) * 0.5f); 
+		}
 
 		[GLFunction ("step ({0})")]
 		public static float Step (float edge, float value)

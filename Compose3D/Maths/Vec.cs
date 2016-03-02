@@ -188,6 +188,20 @@
 			return vec.Map<V, float> (GLMath.Ceiling);
 		}
 
+		[GLFunction ("trunc ({0})")]
+		public static V Truncate<V> (this V vec)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map<V, float> (GLMath.Truncate);
+		}
+
+		[GLFunction ("fract ({0})")]
+		public static V Fraction<V> (this V vec)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map<V, float> (GLMath.Fraction);
+		}
+
 		[GLFunction ("min ({0})")]
 		public static V Min<V> (this V vec, V other)
 			where V : struct, IVec<V, float>

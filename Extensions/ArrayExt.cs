@@ -39,6 +39,14 @@
 			return result;
 		}
 
+		public static V[] Map2<T, U, V> (this T[] vector, U[] other, Func<T, U, V> func)
+		{
+			var result = new V[vector.Length];
+			for (int i = 0; i < vector.Length; i++)
+				result[i] = func (vector[i], other[i]);
+			return result;
+		}
+
 		public static string ToString<T> (this T[] array, string openBracket, string closeBracket, string separator)
 		{
 			StringBuilder sb = new StringBuilder (openBracket);

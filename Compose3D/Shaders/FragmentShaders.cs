@@ -21,16 +21,20 @@
 		public Vec4 gl_FragCoord;
 	}
 
-	public class ColoredFragment : Fragment
+	public class DiffuseFragment : Fragment
 	{
 		public Vec3 vertexPosition;
 		public Vec3 vertexNormal;
-		public Vec3 vertexDiffuse;
+		public Vec3 vertexDiffuse;		
+	}
+	
+	public class SpecularFragment : DiffuseFragment
+	{
 		public Vec3 vertexSpecular;
 		public float vertexShininess;
 	}
 
-	public class TexturedFragment : ColoredFragment
+	public class TexturedFragment : SpecularFragment
 	{
 		public Vec2 texturePosition;
 	}
@@ -50,7 +54,7 @@
 		public static GLShader DirectOutput ()
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
-				from f in Shader.Inputs<ColoredFragment> ()
+				from f in Shader.Inputs<DiffuseFragment> ()
 				select new 
 				{
 					outputColor = new Vec3 (f.vertexDiffuse)

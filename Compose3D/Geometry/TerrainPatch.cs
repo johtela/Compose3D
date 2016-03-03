@@ -34,7 +34,7 @@
 
 		private float Height (int x, int z)
 		{
-			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.25f, 3);
+			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 1f, 1);
 		}
 		
 		private void GenerateVertexPositions ()
@@ -69,7 +69,7 @@
 			var i = 0;
 			for (int z = 0; z < Size.Y - 1; z++)
 			{
-				if (z % 1 == 0)
+				if ((z & 1) == 1)
 					for (int x = 0; x < Size.X; x++)
 					{
 						Indices[i++] = Index (x, z);
@@ -84,7 +84,8 @@
 							Indices[i++] = Index (x, z + 1);
 					}
 			}
-			Indices[i++] = Index (Size.X - 1, Size.Y - 1);
+			var lastZ = Size.Y - 1;
+			Indices[i++] = Index ((lastZ & 1) == 1 ? 0 : Size.X - 1, lastZ);
 		}
 
 		public Aabb<Vec3> BoundingBox

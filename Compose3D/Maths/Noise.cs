@@ -7,7 +7,8 @@
 
 	public static class Noise
 	{
-		private static Vec2i _primes = new Vec2i (7919, 6691);
+		private static int _seed = new Random ().Next ();
+		private static Vec2i _primes = new Vec2i (7919999, 6691);
 		private static Vec2i[] _corners = new Vec2i[]
 		{
 			new Vec2i (-1, 1), new Vec2i (-1, 1), new Vec2i (1, -1), new Vec2i (1, 1)
@@ -23,7 +24,7 @@
 
 		public static float Raw (Vec2i vec)
 		{
-			var random = new Random (vec.Dot (_primes));
+			var random = new Random (vec.Dot (_primes) * _seed);
 			return Convert.ToSingle (random.NextDouble ()) * 2f - 1f;
 		}
 

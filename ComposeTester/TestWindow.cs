@@ -23,7 +23,9 @@
 		private Program _program;
 		private	Program _passthrough;
 		private Program _shadowShader;
+		private Program _terrainShader;
 		private ExampleShaders.Uniforms _uniforms;
+		private ExampleShaders.TerrainUniforms _terrainUniforms;
 		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Scene graph
@@ -44,11 +46,15 @@
 			_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
 			_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
 
+			_terrainShader = new Program (ExampleShaders.TerrrainVertexShader (), 
+				ExampleShaders.TerrainFragmentShader ());
+			_terrainShader.InitializeUniforms (_terrainUniforms = new ExampleShaders.TerrainUniforms ());
+			
 			_passthrough = new Program (
 				GLShader.Create (ShaderType.VertexShader, 
 					() =>
 					from v in Shader.Inputs<PathNode> ()
-					select new ColoredFragment ()
+					select new DiffuseFragment ()
 					{
 						gl_Position = new Vec4 (v.position.X, v.position.Y, -1f, 1f),
 						vertexDiffuse = v.color
@@ -56,7 +62,7 @@
 				),
 				GLShader.Create (ShaderType.FragmentShader, 
 					() =>
-					from f in Shader.Inputs<ColoredFragment> ()
+					from f in Shader.Inputs<DiffuseFragment> ()
 					select new 
 					{
 						outputColor = f.vertexDiffuse
@@ -67,7 +73,8 @@
 
 		public void Init ()
 		{
-			InitializeUniforms ();
+			InitializeUniforms (_program, _uniforms);
+			InitializeTerrainUniforms (_terrainShader, _terrainUniforms);
 			SetupReactions ();
 		}
 
@@ -77,8 +84,8 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (0.2f), 
-				direction: new Vec3 (1f, 1f, 1f),
+				intensity: new Vec3 (1f), 
+				direction: new Vec3 (0f, 1f, 0f),
 				distance: 100f);
 			var pointLight1 = new PointLight (sceneGraph,
 				intensity: new Vec3 (2f), 
@@ -98,17 +105,6 @@
 					{ TextureParameterName.TextureBaseLevel, 0 },
 					{ TextureParameterName.TextureMaxLevel, 0 }
 				});
-			//			var geometry = Solids.Cube<Vertex> (30f, 30f, 1f).Color (VertexColor<Vec3>.Chrome);
-			//			geometry.ApplyTextureFront<Vertex> (1f, new Vec2 (0f), new Vec2 (1f));
-			//			var mesh1 = new Mesh<Vertex> (geometry, tulipTexture)
-			//				.OffsetOrientAndScale (new Vec3 (15f, 0f, -20f), new Vec3 (0f), new Vec3 (1f));
-
-			//			var plasticTexture = Texture.FromFile ("Textures/Plastic.jpg", new TextureParams () 
-			//			{
-			//				{ TextureParameterName.TextureBaseLevel, 0 },
-			//				{ TextureParameterName.TextureMaxLevel, 0 }
-			//			});
-
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			var mesh1 = new Mesh<Vertex> (sceneGraph, fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
 
@@ -117,6 +113,9 @@
 			var mesh2 = new Mesh<Vertex> (sceneGraph, pipe, textTexture)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
+			var terrain = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (-25, -25), new Vec2i (50, 50))
+				.OffsetOrientAndScale (new Vec3 (0f, -10f, 0f), new Vec3 (0f), new Vec3 (1f));
+			
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (10f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, 0f), 
@@ -127,52 +126,63 @@
 				ambientLightIntensity: new Vec3 (0.1f), 
 				maxIntensity: 2f, 
 				gammaCorrection: 1.2f),
-				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2);
+				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2, terrain);
 			return sceneGraph;
 		}
 
-		private void InitializeUniforms ()
+		private void InitializeTerrainUniforms (Program program, ExampleShaders.TerrainUniforms uniforms)
 		{
-			var numPointLights = 0;
-			var pointLights = new Lighting.PointLight[4];
-
-			using (_program.Scope ())
+			using (program.Scope ())
 			{
 				_sceneGraph.Root.Traverse ()
 					.WhenOfType<SceneNode, GlobalLighting> (globalLight =>
-						_uniforms.globalLighting &= new Lighting.GlobalLight ()
-						{
-							ambientLightIntensity = globalLight.AmbientLightIntensity,
-							maxintensity = globalLight.MaxIntensity,
-							inverseGamma = 1f / globalLight.GammaCorrection
-						})
+						uniforms.globalLighting &= new Lighting.GlobalLight ()
+					{
+						ambientLightIntensity = globalLight.AmbientLightIntensity,
+						maxintensity = globalLight.MaxIntensity,
+						inverseGamma = 1f / globalLight.GammaCorrection
+					})
 					.WhenOfType<SceneNode, DirectionalLight> (dirLight =>
-						_uniforms.directionalLight &= new Lighting.DirectionalLight ()
-						{
-							direction = dirLight.Direction,
-							intensity = dirLight.Intensity
-						})
-					.WhenOfType<SceneNode, PointLight> (pointLight =>
-						pointLights[numPointLights++] = new Lighting.PointLight
-						{
-							position = pointLight.Position,
-							intensity = pointLight.Intensity,
-							linearAttenuation = pointLight.LinearAttenuation,
-							quadraticAttenuation = pointLight.QuadraticAttenuation
-						})
+						uniforms.directionalLight &= new Lighting.DirectionalLight ()
+					{
+						direction = dirLight.Direction,
+						intensity = dirLight.Intensity
+					})
 					.ToVoid ();
-				_uniforms.pointLights &= pointLights;
+			}
+		}
+		
+		private void InitializeUniforms (Program program, ExampleShaders.Uniforms uniforms)
+		{
+			InitializeTerrainUniforms (program, uniforms);
+			var numPointLights = 0;
+			var pointLights = new Lighting.PointLight[4];
+
+			using (program.Scope ())
+			{
+				_sceneGraph.Root.Traverse ()
+					.WhenOfType<SceneNode, PointLight> (pointLight =>
+						pointLights [numPointLights++] = new Lighting.PointLight
+					{
+						position = pointLight.Position,
+						intensity = pointLight.Intensity,
+						linearAttenuation = pointLight.LinearAttenuation,
+						quadraticAttenuation = pointLight.QuadraticAttenuation
+					})
+					.ToVoid ();
+
+				uniforms.pointLights &= pointLights;
 
 				var samplers = new Sampler2D[4];
 				for (int i = 0; i < samplers.Length; i++)
-					samplers [i] = new Sampler2D (i, new SamplerParams () 
+					samplers [i] = new Sampler2D (i, new SamplerParams ()
 						{
 							{ SamplerParameterName.TextureMagFilter, All.Linear },
 							{ SamplerParameterName.TextureMinFilter, All.Linear },
 							{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
 							{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
 						});
-				_uniforms.samplers &= samplers;
+				uniforms.samplers &= samplers;
 			}
 		}
 
@@ -210,6 +220,14 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+			using ( _terrainShader.Scope ())
+				_sceneGraph.Index.Overlap (_camera.BoundingBox).Values ().OfType <TerrainMesh<TerrainVertex>> ()
+					.ForEach (mesh =>
+						{
+							_terrainUniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
+							_terrainUniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+							_program.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
+						});
 			var emptyScene = true;
 			using ( _program.Scope ())
 				_sceneGraph.Index.Overlap (_camera.BoundingBox).Values ().OfType <Mesh<Vertex>> ()
@@ -218,7 +236,7 @@
 						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
 						_uniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
 						_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-						_program.DrawTriangles (mesh.VertexBuffer, mesh.IndexBuffer);
+						_program.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
 						emptyScene = false;
 					});
@@ -235,12 +253,12 @@
 
 		private void ResizeViewport (Vec2 size)
 		{
+			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 50f);
 			using (_program.Scope ())
-			{
-				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 50f);
 				_uniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
-				GL.Viewport (ClientSize);
-			}
+			using (_terrainShader.Scope ())
+				_terrainUniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
+			GL.Viewport (ClientSize);
 		}
 
 		private void RotateView (Vec3 rot)

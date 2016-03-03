@@ -63,11 +63,12 @@
 			}
 		}
 
-		public void DrawTriangles<V> (VBO<V> vertices, VBO<int> indices) where V : struct
+		public void DrawElements<V> (PrimitiveType primitive, VBO<V> vertices, VBO<int> indices) 
+			where V : struct
 		{
 			BindVertices (vertices);
 			GL.BindBuffer (BufferTarget.ElementArrayBuffer, indices._glvbo);
-			GL.DrawElements (PrimitiveType.Triangles, indices._count, DrawElementsType.UnsignedInt, 0);
+			GL.DrawElements (primitive, indices._count, DrawElementsType.UnsignedInt, 0);
 			GL.BindBuffer (BufferTarget.ElementArrayBuffer, 0);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 		}

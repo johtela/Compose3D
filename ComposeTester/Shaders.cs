@@ -105,15 +105,64 @@
 		}
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	public struct TerrainVertex : IVertex, IDiffuseColor<Vec3>
+	{
+		internal Vec3 position;
+		internal Vec3 normal;
+		internal Vec3 diffuseColor;
+		[OmitInGlsl]
+		internal int tag;
+
+		Vec3 IPositional<Vec3>.Position
+		{
+			get { return position; }
+			set { position = value; }
+		}
+
+		Vec3 IDiffuseColor<Vec3>.Diffuse
+		{
+			get { return diffuseColor; }
+			set { diffuseColor = value; }
+		}
+
+		Vec3 IPlanar<Vec3>.Normal
+		{
+			get { return normal; }
+			set 
+			{
+				if (float.IsNaN (value.X) || float.IsNaN (value.Y) || float.IsNaN (value.Z))
+					throw new ArgumentException ("Normal component NaN");
+				normal = value; 
+			}
+		}
+
+		int IVertex.Tag
+		{
+			get { return tag; }
+			set { tag = value; }
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, Normal={3}, Tag={4}]", 
+				position, diffuseColor, normal, tag);
+		}
+	}
+		
 	public static class ExampleShaders
 	{
-		public class Uniforms
+		public class TerrainUniforms
 		{
 			internal Uniform<Mat4> worldMatrix;
 			internal Uniform<Mat4> perspectiveMatrix;
 			internal Uniform<Mat3> normalMatrix;
 			internal Uniform<Lighting.GlobalLight> globalLighting;
-			internal Uniform<Lighting.DirectionalLight> directionalLight;
+			internal Uniform<Lighting.DirectionalLight> directionalLight;			
+		}
+		
+		public class Uniforms : TerrainUniforms
+		{
 			[GLArray (4)] internal Uniform<Lighting.PointLight[]> pointLights;
 			[GLArray (4)] internal Uniform<Sampler2D[]> samplers;
 		}
@@ -154,6 +203,25 @@
 			);
 		}
 
+		public static GLShader TerrrainVertexShader ()
+		{
+			return GLShader.Create 
+				(
+					ShaderType.VertexShader, () =>
+
+					from v in Shader.Inputs<TerrainVertex> ()
+					from u in Shader.Uniforms<TerrainUniforms> ()
+					let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+					select new DiffuseFragment ()
+					{
+						gl_Position = !u.perspectiveMatrix * worldPos,
+						vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
+						vertexNormal = (!u.normalMatrix * v.normal).Normalized,
+						vertexDiffuse = v.diffuseColor,
+					}
+				);
+		}
+		
 		public static GLShader ShadowVertexShader ()
 		{
 			return GLShader.Create
@@ -202,6 +270,23 @@
 			);
 		}
 
+		public static GLShader TerrainFragmentShader ()
+		{
+			Lighting.Use ();
+			return GLShader.Create 
+				(
+					ShaderType.FragmentShader, () =>
+
+					from f in Shader.Inputs<DiffuseFragment> ()
+					from u in Shader.Uniforms<TerrainUniforms> ()
+					let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * f.vertexDiffuse
+					select new 
+					{
+						outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 4f, new Vec3 (0f))
+					}
+				);
+		}
+		
 		public static GLShader ShadowFragmentShader ()
 		{
 			return GLShader.Create

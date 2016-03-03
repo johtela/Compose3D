@@ -8,7 +8,7 @@
 	using DataStructures;
 
 	public class TerrainMesh<V> : SceneNode
-		where V : struct, IVertex
+		where V : struct, IVertex, IDiffuseColor<Vec3>
 	{
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
@@ -18,6 +18,7 @@
 			: base (graph)
 		{
 			Patch = new TerrainPatch<V> (start, size);
+			Patch.Vertices.Color (VertexColor<Vec3>.Green.Diffuse);
 		}
 
 		public TerrainPatch<V> Patch { get; private set; }
@@ -42,10 +43,10 @@
 			}
 		}
 
-		internal override void RemoveFromIndex ()
-		{
-			throw new InvalidOperationException ("Cannot remove a terrain mesh from index.");
-		}
+//		internal override void RemoveFromIndex ()
+//		{
+//			throw new InvalidOperationException ("Cannot remove a terrain mesh from index.");
+//		}
 
 		public override Aabb<Vec3> BoundingBox
 		{

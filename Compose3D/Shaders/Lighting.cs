@@ -88,18 +88,6 @@
 				)
 			);
 
-		//public static readonly Func<SpotLight, Vec3, Vec3> CalcSpotLight =
-		//	GLShader.Function (() => CalcSpotLight,
-		//		(spotLight, position) =>
-		//		(from vecToLight in (spotLight.pointLight.position - position).ToShader ()
-		//		 let dist = vecToLight.Length
-		//		 let lightDir = vecToLight.Normalized
-		//		 let attenuation = CalcAttenuation (spotLight.pointLight, dist)
-		//		 let cosAngle = (-lightDir).Dot (spotLight.direction)
-		//		 select spotLight.pointLight.intensity *
-		//			 (cosAngle < spotLight.cosSpotCutoff ? 0f : attenuation * cosAngle.Pow (spotLight.spotExponent)))
-		//		.Evaluate ());
-
 		/// <summary>
 		/// Calculate the global light intensity given the global lightin parameters
 		/// and the diffuse and other color coefficents of a vertex.

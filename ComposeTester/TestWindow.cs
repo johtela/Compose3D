@@ -85,7 +85,7 @@
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (1f), 
-				direction: new Vec3 (0f, 1f, 0f),
+				direction: new Vec3 (1f, 1f, -1f),
 				distance: 100f);
 			var pointLight1 = new PointLight (sceneGraph,
 				intensity: new Vec3 (2f), 
@@ -113,14 +113,16 @@
 			var mesh2 = new Mesh<Vertex> (sceneGraph, pipe, textTexture)
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
-			var terrain = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (-25, -25), new Vec2i (50, 50))
-				.OffsetOrientAndScale (new Vec3 (0f, -10f, 0f), new Vec3 (0f), new Vec3 (1f));
+			var terrain = new SceneGroup (sceneGraph,
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (0, 0), new Vec2i (20, 40)),
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (20, 0), new Vec2i (20, 40)))
+				.OffsetOrientAndScale (new Vec3 (-20f, -10f, -10f), new Vec3 (0f), new Vec3 (1f));
 			
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (10f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, 0f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 100f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 200f),
 				aspectRatio: 1f);
 			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
 				ambientLightIntensity: new Vec3 (0.1f), 

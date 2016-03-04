@@ -56,7 +56,7 @@
 		[GLFunction ("fract ({0})")]
 		public static float Fraction (this float value)
 		{
-			return value - Truncate (value);
+			return value - Floor (value);
 		}
 
 		/// <summary>
@@ -65,7 +65,7 @@
 		[GLFunction ("fract ({0})")]
 		public static double Fraction (this double value)
 		{
-			return value - Math.Truncate (value);
+			return value - Math.Floor (value);
 		}
 
 		/// <summary>

@@ -1,8 +1,6 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Linq;
 	using DataStructures;
 	using Geometry;
 	using Maths;
@@ -17,7 +15,7 @@
 		public StaticMesh (SceneGraph graph, Geometry<V> geometry, params Texture[] textures)
 			: base (graph, geometry, textures) { }
 
-		public override Maths.Mat4 Transform
+		public override Mat4 Transform
 		{
 			get
 			{

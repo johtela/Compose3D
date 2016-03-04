@@ -105,7 +105,8 @@
 		private void FlipColors (Interval<N, T> node)
 		{
 			node._isRed = !node._isRed;
-			node._left._isRed = !node._left._isRed;
+			if (node._left != null)
+				node._left._isRed = !node._left._isRed;
 			node._right._isRed = !node._right._isRed;
 		}
 
@@ -124,7 +125,7 @@
 		private Interval<N, T> MoveRedRight (Interval<N, T> node)
 		{
 			FlipColors (node);
-			if (IsRed (node._left._left))
+			if (node._left != null && IsRed (node._left._left))
 			{
 				node = RotateRight (node);
 				FlipColors (node);

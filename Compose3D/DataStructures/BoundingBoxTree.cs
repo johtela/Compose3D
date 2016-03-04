@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Maths;
+	using System.Diagnostics;
 
 	public class BoundingBoxTree<T> : IBoundingTree<Vec3, T>
 	{
@@ -69,6 +70,7 @@
 			}
 			else
 				_tree.Remove (xival);
+			Debug.Assert (_tree.Count == _tree.Count ());
 		}
 
 		public int Count

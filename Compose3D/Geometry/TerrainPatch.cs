@@ -13,6 +13,7 @@
 
 		private float _minHeight;
 		private float _maxHeight;
+		private Aabb<Vec3> _boundingBox;
 		
 		public TerrainPatch (Vec2i start, Vec2i size)
 		{
@@ -34,7 +35,7 @@
 
 		private float Height (int x, int z)
 		{
-			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 1f, 1);
+			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.049999f, 20f, 3, 10f);
 		}
 		
 		private void GenerateVertexPositions ()
@@ -56,11 +57,11 @@
 			for (int z = 0; z < Size.Y; z++)
 				for (int x = 0; x < Size.X; x++)
 				{
-					var left  = Height (x - 1, z);
-					var right = Height (x + 1, z);
-					var back  = Height (x, z - 1);
-					var front = Height (x, z + 1);
-					Vertices[Index (x, z)].Normal = new Vec3 (left - right, 2f, back - front).Normalized;
+					var w  = Height (x - 1, z);
+					var e = Height (x + 1, z);
+					var n  = Height (x, z - 1);
+					var s = Height (x, z + 1);
+					Vertices[Index (x, z)].Normal = new Vec3 (w - e, 2f, n - s).Normalized;
 				}
 		}
 
@@ -92,10 +93,14 @@
 		{
 			get
 			{
-				var start = new Vec3 (Start.X, _minHeight, Start.Y);
-				var endi = Start + Size;
-				var end = new Vec3 (endi.X, _maxHeight, endi.Y);
-				return new Aabb<Vec3> (start, end);
+				if (_boundingBox == null)
+				{
+					var start = new Vec3 (Start.X, _minHeight, Start.Y);
+					var endi = Start + Size;
+					var end = new Vec3 (endi.X, _maxHeight, endi.Y);
+					_boundingBox = new Aabb<Vec3> (start, end);
+				}
+				return _boundingBox;
 			}
 		}
 	}

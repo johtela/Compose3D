@@ -52,7 +52,7 @@
 		{
 			get
 			{
-				if (_boundingBox == null)
+				//if (_boundingBox == null)
 					_boundingBox = Transform * Patch.BoundingBox;
 				return _boundingBox;
 			}

@@ -43,6 +43,7 @@
 			var result = new Interval<N, T> (other.Low, other.High, other.Data);
 			result._left = _left;
 			result._right = _right;
+			result._isRed = _isRed;
 			return result;
 		}
 		
@@ -105,8 +106,7 @@
 		private void FlipColors (Interval<N, T> node)
 		{
 			node._isRed = !node._isRed;
-			if (node._left != null)
-				node._left._isRed = !node._left._isRed;
+			node._left._isRed = !node._left._isRed;
 			node._right._isRed = !node._right._isRed;
 		}
 
@@ -125,7 +125,7 @@
 		private Interval<N, T> MoveRedRight (Interval<N, T> node)
 		{
 			FlipColors (node);
-			if (node._left != null && IsRed (node._left._left))
+			if (IsRed (node._left._left))
 			{
 				node = RotateRight (node);
 				FlipColors (node);

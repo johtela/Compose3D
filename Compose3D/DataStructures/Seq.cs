@@ -54,7 +54,7 @@
 		public static Seq<T> Remove<T> (this Seq<T> seq, T item)
 		{
 			if (seq == null)
-				return null;
+				throw new ArgumentException ("Item not found in sequence.");
 			if (seq.First.Equals (item))
 				return seq.Rest;
 			return Cons (seq.First, Remove (seq.Rest, item));

@@ -18,7 +18,7 @@
 		{
 			new Vec2i (0, 0), new Vec2i (1, 0), new Vec2i (0, 1), new Vec2i (1, 1)
 		};
-		private const int HalfMaxInt = int.MaxValue >> 3;
+		private const int HalfMaxInt = 1000;
 		private static readonly Vec2i _midVec = new Vec2i (HalfMaxInt, HalfMaxInt);
 
 		public static float Raw (Vec2i vec)

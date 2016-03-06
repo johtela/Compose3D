@@ -114,9 +114,9 @@
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
 			var terrain = new SceneGroup (sceneGraph,
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (-19, 0), new Vec2i (20, 40)),
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (0, 0), new Vec2i (20, 40)),
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (19, 0), new Vec2i (20, 40)))
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (0, 0), new Vec2i (21, 40)),
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (20, 0), new Vec2i (21, 40)),
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (40, 0), new Vec2i (21, 40)))
 				.OffsetOrientAndScale (new Vec3 (-20f, -10f, -10f), new Vec3 (0f), new Vec3 (1f));
 			
 			_camera = new Camera (sceneGraph,

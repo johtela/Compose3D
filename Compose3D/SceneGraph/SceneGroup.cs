@@ -32,7 +32,8 @@
 			foreach (var subNode in subNodes)
 			{
 				subNode.Parent = this;
-				subNode.Traverse ().ForEach (n => n.AddToIndex ());
+				foreach (var node in subNode.Traverse ())
+					node.AddToIndex ();
 			}
 			return this;
 		}

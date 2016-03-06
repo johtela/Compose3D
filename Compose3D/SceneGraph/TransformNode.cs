@@ -23,13 +23,15 @@
 
 		private void UpdateTransform ()
 		{
-			Traverse ().ForEach (node => node.RemoveFromIndex ());
+			foreach (var node in Traverse ())
+				node.RemoveFromIndex ();
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
-			Traverse ().ForEach (node => node.AddToIndex ());
+			foreach (var node in Traverse ())
+				node.AddToIndex ();
 		}
 
 		public override Mat4 Transform

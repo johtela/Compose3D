@@ -24,7 +24,8 @@
 
 		public void Register (Assembly assembly)
 		{
-			assembly.GetTypes ().ForEach (Register);
+			foreach (var type in assembly.GetTypes ())
+				Register (type);
 		}
 
 		public void Register (Type type)

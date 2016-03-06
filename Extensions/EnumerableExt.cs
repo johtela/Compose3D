@@ -27,24 +27,6 @@
 			return Enumerate (item).Concat (enumerable);
 		}
 
-		public static void ForEach<T> (this IEnumerable<T> enumerable, Action<T> action)
-		{
-			foreach (var x in enumerable)
-				action (x);
-		}
-
-		public static void ForEach<T, U> (this IEnumerable<Tuple<T, U>> items, Action<T, U> action)
-		{
-			foreach (var item in items)
-				action (item.Item1, item.Item2);
-		}
-
-		public static void ForEach<T, U, V> (this IEnumerable<Tuple<T, U, V>> items, Action<T, U, V> action)
-		{
-			foreach (var item in items)
-				action (item.Item1, item.Item2, item.Item3);
-		}
-
 		public static T[,] To2DArray<T> (this IEnumerable<T> enumerable, int dimension1, int dimension2)
 		{
 			var res = new T[dimension1, dimension2];

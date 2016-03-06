@@ -4,7 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Maths;
-	using System.Diagnostics;
+	using System;
 
 	public class BoundingBoxTree<T> : IBoundingTree<Vec3, T>
 	{
@@ -25,11 +25,10 @@
 			if (yival.Data == null)
 				yival.Data = new IntervalTree<float, Seq<T>> ();
 			var zival = yival.Data.Add (rect.Back, rect.Front, null);
-			if (!zival.Data.Contains (value))
-			{
-				zival.Data = Seq.Cons (value, zival.Data);
-				_count++;
-			}
+			if (zival.Data.Contains (value))
+				throw new InvalidOperationException ("Same value added twice.");
+			zival.Data = Seq.Cons (value, zival.Data);
+			_count++;
 		}
 
 		public IEnumerable<KeyValuePair<Aabb<Vec3>, T>> Overlap (Aabb<Vec3> rect)
@@ -70,7 +69,6 @@
 			}
 			else
 				_tree.Remove (xival);
-			Debug.Assert (_tree.Count == _tree.Count ());
 		}
 
 		public int Count

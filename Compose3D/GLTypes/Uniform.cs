@@ -7,6 +7,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+	using System.Diagnostics;
 
 	public class Uniform<T>
 	{
@@ -33,6 +34,7 @@
 		};
 
         private int _glUniform;
+		private string _name;
         private Tuple<GLStructField, int>[] _mappings;
         private T _value;
 
@@ -64,15 +66,28 @@
                             .ToArray ();
             else
                 _glUniform = GetUniformLocation (program, name);
+			_name = name;
         }
 
         private static int GetUniformLocation (Program program, string name)
         {
             var loc = GL.GetUniformLocation (program._glProgram, name);
-            if (loc < 0)
-                throw new GLError (string.Format ("Uniform '{0}' was not found in program", name));
+			if (loc < 0)
+				Trace.TraceWarning (string.Format ("Creating uniform '{0}' which is not found in program. " +
+					" Probably optimized away by OpenGL.", name));			
             return loc;
         }
+		
+		private static bool UniformInitialized (string name, int unif)
+		{
+			if (unif < 0)
+			{
+				Trace.TraceWarning (string.Format ("Assigning value to uniform '{0}' which is not found " +
+					"in the program. Probably optimized away by OpenGL.", name));			
+				return false;
+			}
+			return true;
+		}
 
         public static Uniform<T> operator & (Uniform<T> uniform, T value)
 		{
@@ -84,10 +99,12 @@
                     {
                         var field = map.Item1;
                         var glUnif = map.Item2;
-                        _setters[field.Type] (glUnif, field.Getter (value));
+						if (UniformInitialized (field.Name, glUnif))
+                    		_setters[field.Type] (glUnif, field.Getter (value));
                     }
                 else
-                    _setters[type] (uniform._glUniform, (object)value);
+					if (UniformInitialized (uniform._name, uniform._glUniform))
+	                    _setters[type] (uniform._glUniform, (object)value);
                 uniform._value = value;
                 return uniform;
             }

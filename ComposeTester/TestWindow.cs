@@ -115,7 +115,7 @@
 
 			var terrain = new SceneGroup (sceneGraph,
 				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (0, 0), new Vec2i (20, 40)),
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (20, 0), new Vec2i (20, 40)))
+				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (19, 0), new Vec2i (20, 40)))
 				.OffsetOrientAndScale (new Vec3 (-20f, -10f, -10f), new Vec3 (0f), new Vec3 (1f));
 			
 			_camera = new Camera (sceneGraph,
@@ -223,28 +223,30 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 			using ( _terrainShader.Scope ())
-				_sceneGraph.Index.Overlap (_camera.BoundingBox).Values ().OfType <TerrainMesh<TerrainVertex>> ()
-					.ForEach (mesh =>
-						{
-							_terrainUniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
-							_terrainUniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-							_program.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
-						});
+				foreach (var mesh in _sceneGraph.Index.Overlap (_camera.BoundingBox).Values ()
+					.OfType <TerrainMesh<TerrainVertex>> ())
+				{
+					_terrainUniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
+					_terrainUniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+					_program.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
+					
+				}
 			var emptyScene = true;
 			using ( _program.Scope ())
-				_sceneGraph.Index.Overlap (_camera.BoundingBox).Values ().OfType <Mesh<Vertex>> ()
-					.ForEach (mesh =>
-					{
-						Sampler.Bind (!_uniforms.samplers, mesh.Textures);
-						_uniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
-						_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-						_program.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-						Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
-						emptyScene = false;
-					});
+				foreach (var mesh in _sceneGraph.Index.Overlap (_camera.BoundingBox).Values ()
+					.OfType <Mesh<Vertex>> ())
+				{
+					Sampler.Bind (!_uniforms.samplers, mesh.Textures);
+					_uniforms.worldMatrix &= _camera.WorldToCamera * mesh.Transform;
+					_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+					_program.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+					Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
+					emptyScene = false;
+				}
 			using (_passthrough.Scope ())
-				_sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ().ForEach (
-					lines => _passthrough.DrawLinePath (lines.VertexBuffer));
+				foreach (var lines in _sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ())
+					_passthrough.DrawLinePath (lines.VertexBuffer);
+
 			if (emptyScene)
 			{
 				GL.ClearColor (new Color4 (150, 50, 0, 255));

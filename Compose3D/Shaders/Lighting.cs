@@ -41,7 +41,7 @@
 		/// Calculate intensity of a directional light given light source and
 		/// a vertex normal.
 		/// </summary>
-		public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
+			public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
 			GLShader.Function 
 			(
 				() => DirectionalLightIntensity,
@@ -97,13 +97,13 @@
 			(
 				() => GlobalLightIntensity,
 
-				(GlobalLight globalLight, Vec3 diffuse, Vec3 other) =>
+				(GlobalLight globalLight, Vec3 diffuseColor, Vec3 directionalAndSpecular) =>
 				Shader.Evaluate
 				(
 					from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
 					let maxInten = globalLight.maxintensity
-					let ambient = diffuse * globalLight.ambientLightIntensity
-					select ((ambient + other).Pow (gamma) / maxInten).Clamp (0f, 1f)
+					let ambient = diffuseColor * globalLight.ambientLightIntensity
+					select ((ambient + directionalAndSpecular).Pow (gamma) / maxInten).Clamp (0f, 1f)
 				)
 			);
 

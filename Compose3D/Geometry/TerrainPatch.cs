@@ -30,7 +30,7 @@
 
 		private float Height (int x, int z)
 		{
-			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.0499999f, _amplitude, 3, _amplitude / 2f);
+			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.0399999f, _amplitude, 3, _amplitude / 3f);
 		}
 
 		private void GenerateVertexPositions ()

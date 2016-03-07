@@ -19,6 +19,10 @@
 			UpDirection = upDirection;
 			Frustum = frustum;
 		}
+		
+		internal override void AddToIndex () { }
+		
+		internal override void RemoveFromIndex () { }
 
 		public override Mat4 Transform
 		{
@@ -40,8 +44,8 @@
 		}
 
 		public Mat4 CameraToWorld
-		{
+			{
 			get { return WorldToCamera.Inverse; }
 		}		
 	}
-}
+}	

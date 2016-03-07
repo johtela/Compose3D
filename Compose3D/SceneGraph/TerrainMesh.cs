@@ -29,7 +29,7 @@
 			get
 			{
 				if (_patch == null)
-					_patch = new TerrainPatch<V> (_start, _size, 30f);
+					_patch = new TerrainPatch<V> (_start, _size, 20f);
 				return _patch;
 			}
 		}

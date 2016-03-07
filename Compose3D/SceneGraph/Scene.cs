@@ -14,22 +14,22 @@
             return group.Add (subNodes as IEnumerable<SceneNode>);
         }
 
-		public static SceneNode OffsetOrientAndScale (this SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
+		public static TransformNode OffsetOrientAndScale (this SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
 		{
 			return new TransformNode (node.Graph, node, offset, orientation, scale);
 		}
 
-		public static SceneNode Offset (this SceneNode node, Vec3 offset)
+		public static TransformNode Offset (this SceneNode node, Vec3 offset)
 		{
 			return OffsetOrientAndScale (node, offset, new Vec3 (0f), new Vec3 (1f));
 		}
 
-		public static SceneNode Orient (this SceneNode node, Vec3 orientation)
+		public static TransformNode Orient (this SceneNode node, Vec3 orientation)
 		{
 			return OffsetOrientAndScale (node, new Vec3 (0f), orientation, new Vec3 (1f));
 		}
 
-		public static SceneNode Scale (this SceneNode node, Vec3 factor)
+		public static TransformNode Scale (this SceneNode node, Vec3 factor)
 		{
 			return OffsetOrientAndScale (node, new Vec3 (0f), factor, new Vec3 (1f));
 		}

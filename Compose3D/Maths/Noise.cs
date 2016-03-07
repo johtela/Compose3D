@@ -18,12 +18,9 @@
 		{
 			new Vec2i (0, 0), new Vec2i (1, 0), new Vec2i (0, 1), new Vec2i (1, 1)
 		};
-		private const int HalfMaxInt = 1000;
-		private static readonly Vec2i _midVec = new Vec2i (HalfMaxInt, HalfMaxInt);
 
 		public static float Random (Vec2i vec)
 		{
-			vec += _midVec;
 			var n = vec.X + (vec.Y * 57);
 			n = (n << 13) ^ n;
 			n = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;

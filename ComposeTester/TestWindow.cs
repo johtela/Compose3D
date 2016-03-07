@@ -32,10 +32,11 @@
 		private SceneGraph _sceneGraph;
 		private TransformNode[] _positions;
 		private Camera _camera;
+		private TransformNode _cameraTransform;
 		private DirectionalLight _dirLight;
 
 		public TestWindow ()
-			: base (800, 600, GraphicsMode.Default, "Compose3D")
+			: base (1366, 768, GraphicsMode.Default, "Compose3D", GameWindowFlags.Fullscreen)
 		{
 			_sceneGraph = CreateSceneGraph ();
 			_positions = (from tx in _sceneGraph.Root.Traverse ().OfType<TransformNode> ()
@@ -100,38 +101,29 @@
 				linearAttenuation: 0.001f, 
 				quadraticAttenuation: 0.001f);
 
-			var textTexture = Texture.FromBitmap (
-				"This is a test".TextToBitmapCentered (1024, 1024, 100),
-				new TextureParams ()
-				{
-					{ TextureParameterName.TextureBaseLevel, 0 },
-					{ TextureParameterName.TextureMaxLevel, 0 }
-				});
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			var mesh1 = new Mesh<Vertex> (sceneGraph, fighter.Fighter).Offset (new Vec3 (0f, 0f, -10f));
-
-			var pipe = Geometries.Pipe ().Color (VertexColor<Vec3>.Brass);
-			pipe.ApplyTextureTop (1f, new Vec2 (0f), new Vec2 (1f));
-			var mesh2 = new Mesh<Vertex> (sceneGraph, pipe, textTexture)
-				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
+			var mesh1 = new Mesh<Vertex> (sceneGraph, fighter.Fighter)
+				.OffsetOrientAndScale (new Vec3 (0f, 10f, -10f), new Vec3 (0f, MathHelper.Pi, 0f), new Vec3 (1f));
 
 			var terrain = new SceneGroup (sceneGraph,
-					from x in EnumerableExt.Range (-1000, 1000, 20)
-					from y in EnumerableExt.Range (-1000, 1000, 20)
+					from x in EnumerableExt.Range (0, 1000, 20)
+					from y in EnumerableExt.Range (0, 1000, 20)
 					select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (21, 21)))
-				.OffsetOrientAndScale (new Vec3 (0f, -10f, 0f), new Vec3 (0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (-500f, -10f, -500f), new Vec3 (0f), new Vec3 (2f));
 			
 			_camera = new Camera (sceneGraph,
-				position: new Vec3 (10f, 10f, 10f), 
-				target: new Vec3 (0f, 0f, 0f), 
+				position: new Vec3 (0f, 10f, 10f), 
+				target: new Vec3 (0f, 0f, -75f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 200f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 75f),
 				aspectRatio: 1f);
+			_cameraTransform = _camera.Orient (new Vec3(0f));
+			
 			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
 				ambientLightIntensity: new Vec3 (0.1f), 
 				maxIntensity: 2f, 
 				gammaCorrection: 1.2f),
-				_dirLight, pointLight1, pointLight2, _camera, mesh1, mesh2, terrain);
+				_dirLight, pointLight1, pointLight2, _cameraTransform, mesh1, terrain);
 			return sceneGraph;
 		}
 
@@ -199,7 +191,7 @@
 			React.By<Vec2> (ResizeViewport)
 				.WhenResized (this);
 
-			React.By<Vec3> (RotateView)
+			React.By<Vec3> (RotateCamera)
 				.Map<MouseMoveEventArgs, Vec3> (e =>
 					new Vec3 (e.YDelta.Radians () / 2f, e.XDelta.Radians () / 2f, 0f))
 				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
@@ -208,7 +200,23 @@
 			React.By<float> (ZoomView)
 				.Map (delta => delta * -0.2f)
 				.WhenMouseWheelDeltaChangesOn (this);
-		}
+			
+			React.By<float> (ZoomView)
+				.Map<Key, float> (key => 
+					key == Key.W ? 0.2f :
+					key == Key.S ? -0.2f :
+					0f)
+				.Filter (key => key.In (Key.W, Key.S))
+				.WhenKeyDown (this);
+
+			React.By<Vec3> (RotateCamera)
+				.Map<Key, Vec3> (key => 
+					key == Key.A ? new Vec3 (0f, -0.1f, 0f) :
+					key == Key.D ? new Vec3 (0f, 0.1f, 0f)  :
+					new Vec3 (0f))
+				.Filter (key => key.In (Key.A, Key.D))
+				.WhenKeyDown (this);
+			}
 
 		#endregion
 
@@ -234,7 +242,6 @@
 					_program.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
 					
 				}
-			var emptyScene = true;
 			using ( _program.Scope ())
 				foreach (var mesh in _sceneGraph.Index.Overlap (_camera.BoundingBox).Values ()
 					.OfType <Mesh<Vertex>> ())
@@ -244,23 +251,17 @@
 					_uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					_program.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					Sampler.Unbind (!_uniforms.samplers, mesh.Textures);
-					emptyScene = false;
 				}
 			using (_passthrough.Scope ())
 				foreach (var lines in _sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ())
 					_passthrough.DrawLinePath (lines.VertexBuffer);
 
-			if (emptyScene)
-			{
-				GL.ClearColor (new Color4 (150, 50, 0, 255));
-				GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			}
 			SwapBuffers ();
 		}
 
 		private void ResizeViewport (Vec2 size)
 		{
-			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 50f);
+			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 200f);
 			using (_program.Scope ())
 				_uniforms.perspectiveMatrix &= _camera.Frustum.CameraToScreen;
 			using (_terrainShader.Scope ())
@@ -268,16 +269,16 @@
 			GL.Viewport (ClientSize);
 		}
 
-		private void RotateView (Vec3 rot)
+		private void RotateCamera (Vec3 rot)
 		{
-			foreach (var pos in _positions)
-				pos.Orientation += rot;
+			_cameraTransform.Orientation += rot;
 		}
 
 		private void ZoomView (float delta)
 		{
-			foreach (var pos in _positions)
-				pos.Offset = pos.Offset.With (2, Math.Min (pos.Offset.Z + delta, 2f));
+//			foreach (var pos in _positions)
+//				pos.Offset = pos.Offset.With (2, Math.Min (pos.Offset.Z + delta, 2f));
+			_cameraTransform.Offset += new Vec3 (0f, 0f, delta);
 		}
 
 		#endregion

@@ -21,7 +21,7 @@
 		private const int HalfMaxInt = 1000;
 		private static readonly Vec2i _midVec = new Vec2i (HalfMaxInt, HalfMaxInt);
 
-		public static float Raw (Vec2i vec)
+		public static float Random (Vec2i vec)
 		{
 			vec += _midVec;
 			var n = vec.X + (vec.Y * 57);
@@ -32,9 +32,9 @@
 
 		public static float Smooth (Vec2i vec)
 		{
-			var corners = _corners.Aggregate (0f, (res, c) => res + Raw (c + vec)) / (_corners.Length * 4f);
-			var sides = _sides.Aggregate (0f, (res, s) => res + Raw (s + vec)) / (_corners.Length * 2f);
-			var center = Raw (vec) / 4f;
+			var corners = _corners.Aggregate (0f, (res, c) => res + Random (c + vec)) / (_corners.Length * 4f);
+			var sides = _sides.Aggregate (0f, (res, s) => res + Random (s + vec)) / (_corners.Length * 2f);
+			var center = Random (vec) / 4f;
 
 			return corners + sides + center;
 		}

@@ -50,6 +50,7 @@
 		public static IVertexColor<V> Red = RGB (1f, 0f, 0f);
 		public static IVertexColor<V> Green = RGB (0f, 1f, 0f);
 		public static IVertexColor<V> Blue = RGB (0f, 0f, 1f);
+		public static IVertexColor<V> Grey = RGB (0.5f, 0.5f, 0.5f);
 		public static IVertexColor<V> Random 
 		{
 			get 

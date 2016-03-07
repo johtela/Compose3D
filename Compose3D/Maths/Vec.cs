@@ -287,14 +287,14 @@
 		}
 
 		[GLFunction ("smoothstep ({0})")]
-		public static V Step<V> (float edgeLower, float edgeUpper, V vec)
+		public static V SmoothStep<V> (float edgeLower, float edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
 			return vec.Map<V, float> (a => GLMath.SmoothStep (edgeLower, edgeUpper, a));
 		}
 
 		[GLFunction ("smoothstep ({0})")]
-		public static V Step<V> (V edgeLower, V edgeUpper, V vec)
+		public static V SmoothStep<V> (V edgeLower, V edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
 			return edgeLower.Map3<V, float> (edgeUpper, vec, GLMath.SmoothStep);

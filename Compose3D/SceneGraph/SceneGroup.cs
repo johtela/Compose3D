@@ -28,9 +28,9 @@
 
 		public SceneNode Add (IEnumerable<SceneNode> subNodes)
 		{
-			_subNodes.AddRange (subNodes);
 			foreach (var subNode in subNodes)
 			{
+				_subNodes.Add (subNode);
 				subNode.Parent = this;
 				foreach (var node in subNode.Traverse ())
 					node.AddToIndex ();

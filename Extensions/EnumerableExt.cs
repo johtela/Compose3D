@@ -131,6 +131,12 @@
 				yield return val;
 		}
 
+		public static IEnumerable<int> Range (int start, int end, int step)
+		{
+			for (int val = start; step > 0 ? val <= end : val >= end; val += step)
+				yield return val;
+		}
+
 		public static IEnumerable<T> RemoveConsequtiveDuplicates<T> (this IEnumerable<T> items)
 		{
 			var prev = default (T);

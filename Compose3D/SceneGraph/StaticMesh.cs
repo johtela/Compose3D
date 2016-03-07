@@ -37,7 +37,8 @@
 
 		internal override void RemoveFromIndex ()
 		{
-			throw new InvalidOperationException ("Cannot remove a static mesh from index.");
+			if (Root == Graph.Root)
+				throw new InvalidOperationException ("Cannot remove a static mesh from index.");
 		}
 	}
 }

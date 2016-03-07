@@ -13,22 +13,43 @@
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 		private Aabb<Vec3> _boundingBox;
+		private Vec2i _start;
+		private Vec2i _size;
+		private TerrainPatch<V> _patch;
 
 		public TerrainMesh (SceneGraph graph, Vec2i start, Vec2i size)
 			: base (graph)
 		{
-			Patch = new TerrainPatch<V> (start, size);
-			Patch.Vertices.Color (VertexColor<Vec3>.Green.Diffuse);
+			_start = start;
+			_size = size;
 		}
 
-		public TerrainPatch<V> Patch { get; private set; }
+		public TerrainPatch<V> Patch
+		{
+			get
+			{
+				if (_patch == null)
+					_patch = new TerrainPatch<V> (_start, _size, 30f);
+				return _patch;
+			}
+		}
 
 		public VBO<V> VertexBuffer
 		{
 			get
 			{
 				if (_vertexBuffer == null)
+				{
+					for (int i = 0; i < Patch.Vertices.Length; i++)
+					{
+						var height = Patch.Vertices[i].Position.Y;
+						Patch.Vertices[i].Diffuse =
+							height < 0f ? VertexColor<Vec3>.Green.Diffuse :
+							height < 5f ? VertexColor<Vec3>.Grey.Diffuse :
+										  VertexColor<Vec3>.White.Diffuse;
+					}
 					_vertexBuffer = new VBO<V> (Patch.Vertices, BufferTarget.ArrayBuffer);
+				}
 				return _vertexBuffer;
 			}
 		}
@@ -43,16 +64,17 @@
 			}
 		}
 
-//		internal override void RemoveFromIndex ()
-//		{
-//			throw new InvalidOperationException ("Cannot remove a terrain mesh from index.");
-//		}
+		internal override void RemoveFromIndex ()
+		{
+			if (Root == Graph.Root)
+				throw new InvalidOperationException ("Cannot remove a terrain mesh from index. It is a static node.");
+		}
 
 		public override Aabb<Vec3> BoundingBox
 		{
 			get
 			{
-				//if (_boundingBox == null)
+				if (_boundingBox == null)
 					_boundingBox = Transform * Patch.BoundingBox;
 				return _boundingBox;
 			}

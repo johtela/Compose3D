@@ -282,7 +282,7 @@
 					let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * f.vertexDiffuse
 					select new 
 					{
-						outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 2f, new Vec3 (0f))
+						outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 3f, new Vec3 (0f))
 					}
 				);
 		}

@@ -38,7 +38,9 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_positions = _sceneGraph.Root.Traverse ().OfType<TransformNode> ().ToArray ();
+			_positions = (from tx in _sceneGraph.Root.Traverse ().OfType<TransformNode> ()
+						  where tx.Node is Mesh<Vertex>
+						  select tx).ToArray ();
 
 			_program = new Program (ExampleShaders.VertexShader (), ExampleShaders.FragmentShader ());
 			_program.InitializeUniforms (_uniforms = new ExampleShaders.Uniforms ());
@@ -114,10 +116,10 @@
 				.OffsetOrientAndScale (new Vec3 (-10f, 0f, -10f), new Vec3 (0f), new Vec3 (0.2f));
 
 			var terrain = new SceneGroup (sceneGraph,
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (0, 0), new Vec2i (21, 40)),
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (20, 0), new Vec2i (21, 40)),
-				new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (40, 0), new Vec2i (21, 40)))
-				.OffsetOrientAndScale (new Vec3 (-20f, -10f, -10f), new Vec3 (0f), new Vec3 (1f));
+					from x in EnumerableExt.Range (-1000, 1000, 20)
+					from y in EnumerableExt.Range (-1000, 1000, 20)
+					select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (21, 21)))
+				.OffsetOrientAndScale (new Vec3 (0f, -10f, 0f), new Vec3 (0f), new Vec3 (1f));
 			
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (10f, 10f, 10f), 

@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Geometry
 {
 	using System;
+	using System.Threading.Tasks;
 	using Maths;
 	using DataStructures;
 
@@ -36,17 +37,20 @@
 		private void GenerateVertexPositions ()
 		{
 			_vertices = new V[Size.X * Size.Y];
-			for (int z = 0; z < Size.Y; z++)
+			Parallel.For (0, Size.Y, z =>
+			{
 				for (int x = 0; x < Size.X; x++)
 				{
 					var height = Height (x, z);
 					_vertices[Index (x, z)].Position = new Vec3 (Start.X + x, height, Start.Y + z);
 				}
+			});
 		}
 
 		private void GenerateVertexNormals ()
 		{
-			for (int z = 0; z < Size.Y; z++)
+			Parallel.For (0, Size.Y, z =>
+			{
 				for (int x = 0; x < Size.X; x++)
 				{
 					var w = Height (x - 1, z);
@@ -55,6 +59,7 @@
 					var s = Height (x, z + 1);
 					_vertices[Index (x, z)].Normal = new Vec3 (w - e, 2f, n - s).Normalized;
 				}
+			});
 		}
 
 		private void GenerateIndices ()

@@ -42,7 +42,9 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities.cs" />
     <Compile Include="FighterGeometry.cs" />
+    <Compile Include="Terrain.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />

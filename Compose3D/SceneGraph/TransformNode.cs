@@ -23,15 +23,19 @@
 
 		private void UpdateTransform ()
 		{
-			foreach (var node in Traverse ())
-				node.RemoveFromIndex ();
+			var attachedToRoot = Graph.Root == Root;
+
+			if (attachedToRoot)
+				foreach (var node in Traverse ())
+					node.RemoveFromIndex ();
 			_transform = Mat.Translation<Mat4> (Offset.X, Offset.Y, Offset.Z) *
 				Mat.Scaling<Mat4> (Scale.X, Scale.Y, Scale.Z) *
 				Mat.RotationZ<Mat4> (Orientation.Z) *
 				Mat.RotationY<Mat4> (Orientation.Y) *
 				Mat.RotationX<Mat4> (Orientation.X);
-			foreach (var node in Traverse ())
-				node.AddToIndex ();
+			if (attachedToRoot)
+				foreach (var node in Traverse ())
+					node.AddToIndex ();
 		}
 
 		public override Mat4 Transform

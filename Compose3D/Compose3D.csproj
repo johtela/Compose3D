@@ -98,6 +98,7 @@
     <Compile Include="SceneGraph\StaticMesh.cs" />
     <Compile Include="SceneGraph\TerrainMesh.cs" />
     <Compile Include="Shaders\Lighting.cs" />
+    <Compile Include="Shaders\Uniforms.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Sampler1D.cs">
       <AutoGen>True</AutoGen>

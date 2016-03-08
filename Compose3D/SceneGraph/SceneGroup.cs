@@ -28,12 +28,15 @@
 
 		public SceneNode Add (IEnumerable<SceneNode> subNodes)
 		{
+			var attachedToRoot = Graph.Root == Root;
+
 			foreach (var subNode in subNodes)
 			{
 				_subNodes.Add (subNode);
 				subNode.Parent = this;
-				foreach (var node in subNode.Traverse ())
-					node.AddToIndex ();
+				if (attachedToRoot)
+					foreach (var node in subNode.Traverse ())
+						node.AddToIndex ();
 			}
 			return this;
 		}

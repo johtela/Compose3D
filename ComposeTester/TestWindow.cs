@@ -4,19 +4,16 @@
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
-	using Compose3D.Shaders;
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using System.Linq;
-	using LinqCheck;
 	using Extensions;
 
 	public class TestWindow : GameWindow
 	{
 		// OpenGL objects
-		private	Program _passthrough;
 		private Program _shadowShader;
 		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
@@ -39,26 +36,6 @@
 
 			_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
 			_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
-
-			_passthrough = new Program (
-				GLShader.Create (ShaderType.VertexShader, 
-					() =>
-					from v in Shader.Inputs<PathNode> ()
-					select new DiffuseFragment ()
-					{
-						gl_Position = new Vec4 (v.position.X, v.position.Y, -1f, 1f),
-						vertexDiffuse = v.color
-					} 
-				),
-				GLShader.Create (ShaderType.FragmentShader, 
-					() =>
-					from f in Shader.Inputs<DiffuseFragment> ()
-					select new 
-					{
-						outputColor = f.vertexDiffuse
-					}
-				)
-			);
 		}
 
 		public void Init ()
@@ -67,8 +44,6 @@
 			_entities.Uniforms.Initialize (_entities.EntityShader, _sceneGraph);
 			SetupReactions ();
 		}
-
-		#region Setup
 
 		private SceneGraph CreateSceneGraph ()
 		{
@@ -128,21 +103,15 @@
 					key == Key.W ? 0.5f :
 					key == Key.S ? -0.5f :
 					0f)
-				.Filter (key => key.In (Key.W, Key.S))
-				.WhenKeyDown (this);
+				.WhenKeyDown (this, Key.W, Key.S);
 
 			React.By<Vec3> (RotateCamera)
 				.Map<Key, Vec3> (key => 
 					key == Key.A ? new Vec3 (0f, -0.01f, 0f) :
 					key == Key.D ? new Vec3 (0f, 0.01f, 0f)  :
 					new Vec3 (0f))
-				.Filter (key => key.In (Key.A, Key.D))
-				.WhenKeyDown (this);
+				.WhenKeyDown (this, Key.A, Key.D);
 			}
-
-		#endregion
-
-		#region Update operations
 
 		private void Render (double time)
 		{
@@ -151,9 +120,9 @@
 			_terrain.Render (_sceneGraph, _camera);
 			_entities.Render (_sceneGraph, _camera);
 
-			using (_passthrough.Scope ())
+			using (ExampleShaders.PassThrough.Scope ())
 				foreach (var lines in _sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ())
-					_passthrough.DrawLinePath (lines.VertexBuffer);
+					ExampleShaders.PassThrough.DrawLinePath (lines.VertexBuffer);
 
 			SwapBuffers ();
 		}
@@ -175,7 +144,5 @@
 		{
 			_cameraTransform.Offset += new Vec3 (0f, 0f, delta);
 		}
-
-		#endregion
 	}
 }

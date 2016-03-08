@@ -1,30 +1,34 @@
 ﻿namespace Compose3D.Reactive
 {
-	using System;
 	using OpenTK;
 	using OpenTK.Input;
-	using Compose3D.Maths;
+	using Extensions;
 
 	public static class Keyboard
 	{
-		public static void WhenKeyDown (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
+		public static void WhenAnyKeyDown (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
 			window.KeyDown += reaction.ToEvent ();
 		}
 
-		public static void WhenKeyDown (this Reaction<Key> reaction, GameWindow window)
+		public static void WhenAnyKeyDown (this Reaction<Key> reaction, GameWindow window)
 		{
-			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenKeyDown (window);
+			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenAnyKeyDown (window);
 		}
 
-		public static void WhenKeyUp (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
+		public static void WhenKeyDown (this Reaction<Key> reaction, GameWindow window, params Key[] keys)
+		{
+			reaction.Filter (key => key.In (keys)).WhenAnyKeyDown (window);
+		}
+
+		public static void WhenAnyKeyUp (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
 			window.KeyUp += reaction.ToEvent ();
 		}
 
-		public static void WhenKeyUp (this Reaction<Key> reaction, GameWindow window)
+		public static void WhenAnyKeyUp (this Reaction<Key> reaction, GameWindow window)
 		{
-			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenKeyUp (window);
+			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenAnyKeyUp (window);
 		}
 	}
 }

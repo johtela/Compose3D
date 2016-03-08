@@ -107,6 +107,5 @@
 				.Extrude (2f, true)
 				.Smoothen (0.9f);
 		}
-
 	}
 }

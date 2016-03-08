@@ -115,7 +115,7 @@
 
 		private void Render (double time)
 		{
-			GL.ClearColor (new Color4 (0, 50, 150, 255));
+			GL.ClearColor (new Color4 (0.2f, 0.4f, 0.6f, 1f));
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			_terrain.Render (_sceneGraph, _camera);
 			_entities.Render (_sceneGraph, _camera);

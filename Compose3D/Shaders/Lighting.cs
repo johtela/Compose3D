@@ -41,7 +41,7 @@
 		/// Calculate intensity of a directional light given light source and
 		/// a vertex normal.
 		/// </summary>
-			public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
+		public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
 			GLShader.Function 
 			(
 				() => DirectionalLightIntensity,
@@ -106,7 +106,16 @@
 					select ((ambient + directionalAndSpecular).Pow (gamma) / maxInten).Clamp (0f, 1f)
 				)
 			);
-
+		
+		public static readonly Func<float, float, float, float> FogVisibility =
+			GLShader.Function
+			(
+				() => FogVisibility,
+				
+				(float distance, float density, float gradient) =>
+					1f - GLMath.Exp (-(distance * density).Pow (gradient))
+			);
+				
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of
 		/// this class.

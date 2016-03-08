@@ -59,6 +59,11 @@
 
 	public class Terrain
 	{
+		public class TerrainFragment : DiffuseFragment
+		{
+			public float visibility;
+		}
+		
 		public readonly Program TerrainShader;
 		public readonly BasicUniforms Uniforms;
 
@@ -71,10 +76,10 @@
 		public SceneNode CreateScene (SceneGraph sceneGraph)
 		{
 			return new SceneGroup (sceneGraph,
-				from x in EnumerableExt.Range (0, 5000, 20)
-				from y in EnumerableExt.Range (0, 5000, 20)
-				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (21, 21)))
-				.OffsetOrientAndScale (new Vec3 (-2500f, -10f, -2500f), new Vec3 (0f), new Vec3 (2f));
+				from x in EnumerableExt.Range (0, 5000, 50)
+				from y in EnumerableExt.Range (0, 5000, 50)
+				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (51, 51)))
+				.OffsetOrientAndScale (new Vec3 (-2400f, -10f, -2400f), new Vec3 (0f), new Vec3 (2f));
 		}
 
 		public void Render (SceneGraph scene, Camera camera)
@@ -86,12 +91,14 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 			using (TerrainShader.Scope ())
-				foreach (var mesh in scene.Index.Overlap (camera.BoundingBox).Values ()
-					.OfType<TerrainMesh<TerrainVertex>> ())
+				foreach (var mesh in scene.Index.Overlap (camera.BoundingBox).Values ().OfType<TerrainMesh<TerrainVertex>> ())
 				{
-					Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;
-					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-					TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
+					if (mesh.VertexBuffer != null && mesh.IndexBuffer != null)
+					{
+						Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;
+						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
+					}
 				}
 		}
 
@@ -103,36 +110,39 @@
 
 		public static GLShader VertexShader ()
 		{
+			Lighting.Use ();
 			return GLShader.Create
 			(
 				ShaderType.VertexShader, () =>
 
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<BasicUniforms> ()
-				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				select new DiffuseFragment ()
+				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				let vertPos = viewPos[Coord.x, Coord.y, Coord.z]
+				select new TerrainFragment ()
 				{
-					gl_Position = !u.perspectiveMatrix * worldPos,
-					vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
+					gl_Position = !u.perspectiveMatrix * viewPos,
+					vertexPosition = vertPos,
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
+					visibility = Lighting.FogVisibility (vertPos.Z, 0.007f, 2.5f)
 				}
 			);
 		}
 
 		public static GLShader FragmentShader ()
 		{
-			Lighting.Use ();
 			return GLShader.Create
 			(
 				ShaderType.FragmentShader, () =>
 
-				from f in Shader.Inputs<DiffuseFragment> ()
+				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<BasicUniforms> ()
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * f.vertexDiffuse
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 3f, new Vec3 (0f))
+						.Mix (new Vec3 (0.2f, 0.4f, 0.6f), f.visibility)
 				}
 			);
 		}

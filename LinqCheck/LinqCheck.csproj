@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LinqCheck</RootNamespace>
     <AssemblyName>LinqCheck</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extensions\Extensions.csproj">
-      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Project>{BDEBBC66-4ABF-4AC7-9EFE-CC385B2E9E4A}</Project>
       <Name>Extensions</Name>
     </ProjectReference>
   </ItemGroup>

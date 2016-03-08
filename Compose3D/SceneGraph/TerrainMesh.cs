@@ -38,15 +38,15 @@
 		{
 			get
 			{
-				if (_vertexBuffer == null)
+				if (_vertexBuffer == null && Patch.Vertices != null)
 				{
 					for (int i = 0; i < Patch.Vertices.Length; i++)
 					{
-						var height = Patch.Vertices[i].Position.Y;
-						Patch.Vertices[i].Diffuse =
-							height < 0f ? VertexColor<Vec3>.Green.Diffuse :
-							height < 5f ? VertexColor<Vec3>.Grey.Diffuse :
-										  VertexColor<Vec3>.White.Diffuse;
+						var height = Patch.Vertices [i].Position.Y;
+						Patch.Vertices [i].Diffuse =
+									height < 0f ? VertexColor<Vec3>.Green.Diffuse :
+									height < 5f ? VertexColor<Vec3>.Grey.Diffuse :
+												  VertexColor<Vec3>.White.Diffuse;
 					}
 					_vertexBuffer = new VBO<V> (Patch.Vertices, BufferTarget.ArrayBuffer);
 				}
@@ -58,7 +58,7 @@
 		{
 			get
 			{
-				if (_indexBuffer == null)
+				if (_indexBuffer == null && Patch.Indices != null)
 					_indexBuffer = new VBO<int> (Patch.Indices, BufferTarget.ElementArrayBuffer);
 				return _indexBuffer;
 			}

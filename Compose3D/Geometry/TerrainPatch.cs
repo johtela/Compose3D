@@ -14,6 +14,7 @@
 		private int[] _indices;
 		private float _amplitude;
 		private Aabb<Vec3> _boundingBox;
+		private Task _task;
 
 		public TerrainPatch (Vec2i start, Vec2i size, float amplitude)
 		{
@@ -34,22 +35,23 @@
 			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.0399999f, _amplitude, 3, _amplitude / 3f);
 		}
 
-		private void GenerateVertexPositions ()
+		private V[] GenerateVertexPositions ()
 		{
-			_vertices = new V[Size.X * Size.Y];
-			Parallel.For (0, Size.Y, z =>
+			var result = new V[Size.X * Size.Y];
+			for (int z = 0; z < Size.Y; z++)
 			{
 				for (int x = 0; x < Size.X; x++)
 				{
 					var height = Height (x, z);
-					_vertices[Index (x, z)].Position = new Vec3 (Start.X + x, height, Start.Y + z);
+					result[Index (x, z)].Position = new Vec3 (Start.X + x, height, Start.Y + z);
 				}
-			});
+			}
+			return result;
 		}
 
-		private void GenerateVertexNormals ()
+		private void GenerateVertexNormals (V[] vertices)
 		{
-			Parallel.For (0, Size.Y, z =>
+			for (int z = 0; z < Size.Y; z++)
 			{
 				for (int x = 0; x < Size.X; x++)
 				{
@@ -57,45 +59,48 @@
 					var e = Height (x + 1, z);
 					var n = Height (x, z - 1);
 					var s = Height (x, z + 1);
-					_vertices[Index (x, z)].Normal = new Vec3 (w - e, 2f, n - s).Normalized;
+					vertices[Index (x, z)].Normal = new Vec3 (w - e, 2f, n - s).Normalized;
 				}
-			});
+			}
 		}
 
-		private void GenerateIndices ()
+		private int[] GenerateIndices ()
 		{
-			_indices = new int[((Size.X * 2) - 1) * (Size.Y - 1) + 1];
+			var result = new int[((Size.X * 2) - 1) * (Size.Y - 1) + 1];
 			var i = 0;
 			for (int z = 0; z < Size.Y - 1; z++)
 			{
 				if ((z & 1) == 1)
 					for (int x = 0; x < Size.X; x++)
 					{
-						_indices[i++] = Index (x, z);
+						result[i++] = Index (x, z);
 						if (x < Size.X - 1)
-							_indices[i++] = Index (x, z + 1);
+							result[i++] = Index (x, z + 1);
 					}
 				else
 					for (int x = Size.X - 1; x >= 0; x--)
 					{
-						_indices[i++] = Index (x, z);
+						result[i++] = Index (x, z);
 						if (x > 0)
-							_indices[i++] = Index (x, z + 1);
+							result[i++] = Index (x, z + 1);
 					}
 			}
 			var lastZ = Size.Y - 1;
-			_indices[i++] = Index ((lastZ & 1) == 1 ? 0 : Size.X - 1, lastZ);
+			result[i++] = Index ((lastZ & 1) == 1 ? 0 : Size.X - 1, lastZ);
+			return result;
 		}
 
 		public V[] Vertices
 		{
 			get
 			{
-				if (_vertices == null)
-				{
-					GenerateVertexPositions ();
-					GenerateVertexNormals ();
-				}
+				if (_vertices == null && _task == null)
+					_task = Task.Run (() =>
+					{
+						var verts = GenerateVertexPositions ();
+						GenerateVertexNormals (verts);
+						_vertices = verts;
+					});
 				return _vertices;
 			}
 		}
@@ -104,8 +109,11 @@
 		{
 			get
 			{
-				if (_indices == null)
-					GenerateIndices ();
+				if (_indices == null && _vertices != null && _task != null)
+					_task.ContinueWith (task =>
+					{
+						_indices = GenerateIndices ();
+					});
 				return _indices;
 			}
 		}

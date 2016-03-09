@@ -104,9 +104,9 @@
 					{
 						Uniforms.worldMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-						var distance = worldToCamera.Transform (mesh.BoundingBox.Center).Z.Abs ();
-						var lod = distance < 128 ? 0 :
-								  distance < 256 ? 1 :
+						var distance = -(worldToCamera * mesh.BoundingBox).Front;
+						var lod = distance < 100 ? 0 :
+								  distance < 150 ? 1 :
 								  2;
 						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffers[lod]);
 					}
@@ -139,7 +139,7 @@
 					vertexDiffuse = height < 0f ? new Vec3 (0f, 1f, 0f) :
 									height < 5f ? new Vec3 (0.5f, 0.5f, 0.5f) :
 												  new Vec3 (1f, 1f, 1f),
-					visibility = Lighting.FogVisibility (vertPos.Z, 0.007f, 2.5f)
+					visibility = Lighting.FogVisibility (vertPos.Z, 0.005f, 2.5f)
 				}
 			);
 		}

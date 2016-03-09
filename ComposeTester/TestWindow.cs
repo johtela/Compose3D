@@ -131,7 +131,7 @@
 
 		private void ResizeViewport (Vec2 size)
 		{
-			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 200f);
+			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 300f);
 			_terrain.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			_entities.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			GL.Viewport (ClientSize);

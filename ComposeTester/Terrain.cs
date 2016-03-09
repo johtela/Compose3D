@@ -81,9 +81,9 @@
 		public SceneNode CreateScene (SceneGraph sceneGraph)
 		{
 			return new SceneGroup (sceneGraph,
-				from x in EnumerableExt.Range (0, 5000, 50)
-				from y in EnumerableExt.Range (0, 5000, 50)
-				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (51, 51)))
+				from x in EnumerableExt.Range (0, 5000, 60)
+				from y in EnumerableExt.Range (0, 5000, 60)
+				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (64, 64)))
 				.OffsetOrientAndScale (new Vec3 (-2400f, -10f, -2400f), new Vec3 (0f), new Vec3 (2f));
 		}
 
@@ -96,14 +96,19 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 
+			var worldToCamera = camera.WorldToCamera;
 			using (TerrainShader.Scope ())
 				foreach (var mesh in camera.NodesInView<TerrainMesh<TerrainVertex>> ())
 				{
-					if (mesh.VertexBuffer != null && mesh.IndexBuffer != null)
+					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 					{
-						Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;
+						Uniforms.worldMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
-						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffer);
+						var distance = worldToCamera.Transform (mesh.BoundingBox.Center).Z.Abs ();
+						var lod = distance < 128 ? 0 :
+								  distance < 256 ? 1 :
+								  2;
+						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffers[lod]);
 					}
 				}
 		}

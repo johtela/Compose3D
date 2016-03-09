@@ -11,7 +11,7 @@
 		where V : struct, IVertex
 	{
 		private VBO<V> _vertexBuffer;
-		private VBO<int> _indexBuffer;
+		private VBO<int>[] _indexBuffers;
 		private Aabb<Vec3> _boundingBox;
 		private Vec2i _start;
 		private Vec2i _size;
@@ -44,13 +44,18 @@
 			}
 		}
 
-		public VBO<int> IndexBuffer
+		public VBO<int>[] IndexBuffers
 		{
 			get
 			{
-				if (_indexBuffer == null && Patch.Indices != null)
-					_indexBuffer = new VBO<int> (Patch.Indices, BufferTarget.ElementArrayBuffer);
-				return _indexBuffer;
+				if (_indexBuffers == null && Patch.Indices != null)
+				{
+					var len = Patch.Indices.Length;
+					_indexBuffers = new VBO<int>[len];
+					for (int i = 0; i < len; i++)
+						_indexBuffers[i] = new VBO<int> (Patch.Indices[i], BufferTarget.ElementArrayBuffer);
+				}
+				return _indexBuffers;
 			}
 		}
 

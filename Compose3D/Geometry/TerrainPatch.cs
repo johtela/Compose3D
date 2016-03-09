@@ -11,7 +11,7 @@
 		public readonly Vec2i Size;
 
 		private V[] _vertices;
-		private int[] _indices;
+		private int[][] _indices;
 		private float _amplitude;
 		private Aabb<Vec3> _boundingBox;
 		private bool _genStarged;
@@ -64,29 +64,29 @@
 			}
 		}
 
-		private int[] GenerateIndices ()
+		private int[] GenerateIndices (int lod)
 		{
-			var result = new int[((Size.X * 2) - 1) * (Size.Y - 1) + 1];
+			var result = new int[(((Size.X >> lod) * 2) - 1) * ((Size.Y >> lod) - 1) + 1];
+			var step = 1 << lod;
 			var i = 0;
-			for (int z = 0; z < Size.Y - 1; z++)
+			for (int z = 0; z < Size.Y - step; z += step)
 			{
-				if ((z & 1) == 1)
-					for (int x = 0; x < Size.X; x++)
+				if ((z & step) != 0)
+					for (int x = 0; x < Size.X; x += step)
 					{
 						result[i++] = Index (x, z);
-						if (x < Size.X - 1)
-							result[i++] = Index (x, z + 1);
+						if (x < Size.X - step)
+							result[i++] = Index (x, z + step);
 					}
 				else
-					for (int x = Size.X - 1; x >= 0; x--)
+					for (int x = Size.X - step; x >= 0; x -= step)
 					{
 						result[i++] = Index (x, z);
 						if (x > 0)
-							result[i++] = Index (x, z + 1);
+							result[i++] = Index (x, z + step);
 					}
 			}
-			var lastZ = Size.Y - 1;
-			result[i++] = Index ((lastZ & 1) == 1 ? 0 : Size.X - 1, lastZ);
+			result[i++] = Index (0, Size.Y - step);
 			return result;
 		}
 
@@ -95,7 +95,10 @@
 			var verts = GenerateVertexPositions ();
 			GenerateVertexNormals (verts);
 			_vertices = verts;
-			_indices = GenerateIndices ();
+			var inds = new int[3][];
+			for (int i = 0; i < 3; i++)
+				inds[i] = GenerateIndices (i);
+			_indices = inds;
 		}
 
 		public V[] Vertices
@@ -111,7 +114,7 @@
 			}
 		}
 
-		public int[] Indices
+		public int[][] Indices
 		{
 			get
 			{

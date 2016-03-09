@@ -4,6 +4,7 @@
 	using System.Threading.Tasks;
 	using Maths;
 	using DataStructures;
+	using Extensions;
 
 	public class TerrainPatch<V> where V : struct, IVertex
 	{
@@ -13,16 +14,27 @@
 		private V[] _vertices;
 		private int[][] _indices;
 		private float _amplitude;
+		private float _frequency;
+		private int _octaves;
+		private float _attenuation;
 		private Aabb<Vec3> _boundingBox;
 		private bool _genStarged;
 
-		public TerrainPatch (Vec2i start, Vec2i size, float amplitude)
+		public TerrainPatch (Vec2i start, Vec2i size, float amplitude, float frequency, int octaves,
+			float attenuation)
 		{
 			if (amplitude < 0f)
 				throw new ArgumentException ("Amplitude must be positive", "amplitude");
+			if (start.X < 0 || start.Y < 0)
+				throw new ArgumentException ("The start must be positive");
+			if (size.X.NumberOfBitsSet () != 1 && size.Y.NumberOfBitsSet () != 1)
+				throw new ArgumentException ("The size components must be power of two");
 			Start = start;
 			Size = size;
 			_amplitude = amplitude;
+			_frequency = frequency;
+			_octaves = octaves;
+			_attenuation = attenuation;
 		}
 
 		private int Index (int x, int z)
@@ -32,7 +44,8 @@
 
 		private float Height (int x, int z)
 		{
-			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), 0.0399999f, _amplitude, 3, _amplitude / 3f);
+			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), _frequency, _amplitude, 
+				_octaves, _attenuation);
 		}
 
 		private V[] GenerateVertexPositions ()

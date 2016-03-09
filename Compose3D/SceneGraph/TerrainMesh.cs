@@ -13,25 +13,13 @@
 		private VBO<V> _vertexBuffer;
 		private VBO<int>[] _indexBuffers;
 		private Aabb<Vec3> _boundingBox;
-		private Vec2i _start;
-		private Vec2i _size;
-		private TerrainPatch<V> _patch;
 
-		public TerrainMesh (SceneGraph graph, Vec2i start, Vec2i size)
-			: base (graph)
-		{
-			_start = start;
-			_size = size;
-		}
+		public readonly TerrainPatch<V> Patch;
 
-		public TerrainPatch<V> Patch
+		public TerrainMesh (SceneGraph graph, Vec2i start, Vec2i size, float amplitude, float frequency,
+			int octaves, float attenuation) : base (graph)
 		{
-			get
-			{
-				if (_patch == null)
-					_patch = new TerrainPatch<V> (_start, _size, 20f);
-				return _patch;
-			}
+			Patch = new TerrainPatch<V> (start, size, amplitude, frequency, octaves, attenuation);
 		}
 
 		public VBO<V> VertexBuffer

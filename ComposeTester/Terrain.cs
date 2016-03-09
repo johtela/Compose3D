@@ -81,10 +81,11 @@
 		public SceneNode CreateScene (SceneGraph sceneGraph)
 		{
 			return new SceneGroup (sceneGraph,
-				from x in EnumerableExt.Range (0, 5000, 60)
-				from y in EnumerableExt.Range (0, 5000, 60)
-				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (64, 64)))
-				.OffsetOrientAndScale (new Vec3 (-2400f, -10f, -2400f), new Vec3 (0f), new Vec3 (2f));
+				from x in EnumerableExt.Range (0, 5000, 58)
+				from y in EnumerableExt.Range (0, 5000, 58)
+				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (64, 64),
+					20f, 0.029999f, 3, 7f))
+				.OffsetOrientAndScale (new Vec3 (-5000f, -10f, -5000f), new Vec3 (0f), new Vec3 (2f));
 		}
 
 		public void Render (Camera camera)
@@ -108,7 +109,8 @@
 						var lod = distance < 100 ? 0 :
 								  distance < 150 ? 1 :
 								  2;
-						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, mesh.IndexBuffers[lod]);
+						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, 
+							mesh.IndexBuffers[lod]);
 					}
 				}
 		}

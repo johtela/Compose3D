@@ -27,7 +27,7 @@
 		private TransformNode _cameraTransform;
 		private DirectionalLight _dirLight;
 
-		private readonly Vec3 _skyColor = new Vec3 (0.2f, 0.4f, 0.6f);
+		private readonly Vec3 _skyColor = new Vec3 (0.2f, 0.3f, 0.5f);
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
@@ -102,8 +102,8 @@
 			
 			React.By<float> (ZoomView)
 				.Map<Key, float> (key => 
-					key == Key.W ? 0.5f :
-					key == Key.S ? -0.5f :
+					key == Key.W ? 1f :
+					key == Key.S ? -1f :
 					0f)
 				.WhenKeyDown (this, Key.W, Key.S);
 

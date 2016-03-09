@@ -14,7 +14,7 @@
 		private int[] _indices;
 		private float _amplitude;
 		private Aabb<Vec3> _boundingBox;
-		private Task _task;
+		private bool _genStarged;
 
 		public TerrainPatch (Vec2i start, Vec2i size, float amplitude)
 		{
@@ -90,17 +90,23 @@
 			return result;
 		}
 
+		private void Generate ()
+		{
+			var verts = GenerateVertexPositions ();
+			GenerateVertexNormals (verts);
+			_vertices = verts;
+			_indices = GenerateIndices ();
+		}
+
 		public V[] Vertices
 		{
 			get
 			{
-				if (_vertices == null && _task == null)
-					_task = Task.Run (() =>
-					{
-						var verts = GenerateVertexPositions ();
-						GenerateVertexNormals (verts);
-						_vertices = verts;
-					});
+				if (_vertices == null && !_genStarged)
+				{
+					_genStarged = true;
+					Task.Run (() => Generate ());
+				}
 				return _vertices;
 			}
 		}
@@ -109,11 +115,11 @@
 		{
 			get
 			{
-				if (_indices == null && _vertices != null && _task != null)
-					_task.ContinueWith (task =>
-					{
-						_indices = GenerateIndices ();
-					});
+				if (_indices == null && !_genStarged)
+				{
+					_genStarged = true;
+					Task.Run (() => Generate ());
+				}
 				return _indices;
 			}
 		}

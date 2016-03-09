@@ -8,7 +8,7 @@
 	using DataStructures;
 
 	public class TerrainMesh<V> : SceneNode
-		where V : struct, IVertex, IDiffuseColor<Vec3>
+		where V : struct, IVertex
 	{
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
@@ -39,17 +39,7 @@
 			get
 			{
 				if (_vertexBuffer == null && Patch.Vertices != null)
-				{
-					for (int i = 0; i < Patch.Vertices.Length; i++)
-					{
-						var height = Patch.Vertices [i].Position.Y;
-						Patch.Vertices [i].Diffuse =
-									height < 0f ? VertexColor<Vec3>.Green.Diffuse :
-									height < 5f ? VertexColor<Vec3>.Grey.Diffuse :
-												  VertexColor<Vec3>.White.Diffuse;
-					}
 					_vertexBuffer = new VBO<V> (Patch.Vertices, BufferTarget.ArrayBuffer);
-				}
 				return _vertexBuffer;
 			}
 		}

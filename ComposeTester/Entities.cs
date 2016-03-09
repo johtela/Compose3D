@@ -94,7 +94,7 @@
 			[GLArray (4)]
 			public Uniform<Sampler2D[]> samplers;
 
-			public override void Initialize (Program program, SceneGraph scene)
+			public new void Initialize (Program program, SceneGraph scene)
 			{
 				base.Initialize (program, scene);
 				var numPointLights = 0;
@@ -144,7 +144,7 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 10f, -10f), new Vec3 (0f, MathHelper.Pi, 0f), new Vec3 (1f));
 		}
 
-		public void Render (SceneGraph scene, Camera camera)
+		public void Render (Camera camera)
 		{
 			GL.Enable (EnableCap.CullFace);
 			GL.CullFace (CullFaceMode.Back);
@@ -154,8 +154,7 @@
 			GL.DepthFunc (DepthFunction.Less);
 
 			using (EntityShader.Scope ())
-				foreach (var mesh in scene.Index.Overlap (camera.BoundingBox).Values ()
-					.OfType<Mesh<Vertex>> ())
+				foreach (var mesh in camera.NodesInView <Mesh<Vertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;

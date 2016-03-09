@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Maths
 {
-	using System;
+	using System.Linq;
+	using DataStructures;
 
 	public struct Plane
 	{
@@ -27,6 +28,19 @@
 		public Vec3 ProjectPoint (Vec3 p)
 		{
 			return p - DistanceFromPoint (p) * Normal;
+		}
+
+		public bool PointInside (Vec3 p)
+		{
+			return DistanceFromPoint (p) >= 0f;
+		}
+
+		public bool BoundingBoxInside (Aabb<Vec3> bb)
+		{
+			foreach (var p in bb.Corners)
+				if (DistanceFromPoint (p) >= 0f)
+					return true;
+			return false;
 		}
 	}
 }

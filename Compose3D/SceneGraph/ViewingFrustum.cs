@@ -1,9 +1,9 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System;
+	using System.Linq;
 	using DataStructures;
 	using Maths;
-	using Geometry;
 	using Extensions;
 
 	public enum FrustumKind	{ Perspective, Orthographic }
@@ -101,9 +101,9 @@
 			}
 		}
 		
-		public Plane[] CullingPlanes (Mat4 worldToCamera)
+		public Plane[] CullingPlanes (Mat4 cameraToWorld)
 		{
-			var corners = Corners.Map (p => worldToCamera.Transform (p));
+			var corners = Corners.Map (p => cameraToWorld.Transform (p));
 			return new Plane[6]
 			{
 				new Plane (corners[1], corners[0], corners[4]),	// left	

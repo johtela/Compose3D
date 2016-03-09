@@ -13,7 +13,7 @@
 		public Uniform<Lighting.GlobalLight> globalLighting;
 		public Uniform<Lighting.DirectionalLight> directionalLight;
 
-		public virtual void Initialize (Program program, SceneGraph scene)
+		public void Initialize (Program program, SceneGraph scene)
 		{
 			using (program.Scope ())
 			{

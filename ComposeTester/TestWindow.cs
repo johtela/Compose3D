@@ -27,6 +27,8 @@
 		private TransformNode _cameraTransform;
 		private DirectionalLight _dirLight;
 
+		private readonly Vec3 _skyColor = new Vec3 (0.2f, 0.4f, 0.6f);
+
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
@@ -40,7 +42,7 @@
 
 		public void Init ()
 		{
-			_terrain.Uniforms.Initialize (_terrain.TerrainShader, _sceneGraph);
+			_terrain.Uniforms.Initialize (_terrain.TerrainShader, _sceneGraph, _skyColor);
 			_entities.Uniforms.Initialize (_entities.EntityShader, _sceneGraph);
 			SetupReactions ();
 		}
@@ -115,10 +117,10 @@
 
 		private void Render (double time)
 		{
-			GL.ClearColor (new Color4 (0.2f, 0.4f, 0.6f, 1f));
+			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			_terrain.Render (_sceneGraph, _camera);
-			_entities.Render (_sceneGraph, _camera);
+			_terrain.Render (_camera);
+			_entities.Render (_camera);
 
 			using (ExampleShaders.PassThrough.Scope ())
 				foreach (var lines in _sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ())

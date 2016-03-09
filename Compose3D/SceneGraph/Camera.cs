@@ -1,5 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System.Collections.Generic;
+	using System.Linq;
 	using DataStructures;
 	using Maths;
 	using Extensions;
@@ -24,6 +26,14 @@
 		
 		internal override void RemoveFromIndex () { }
 
+		public IEnumerable<T> NodesInView<T> () where T : SceneNode
+		{
+			var cullingPlanes = Frustum.CullingPlanes (CameraToWorld);
+			return from kv in Graph.Index.Overlap (BoundingBox)
+				   where kv.Value is T && cullingPlanes.All (cp => cp.BoundingBoxInside (kv.Key))
+				   select kv.Value as T;
+		}
+
 		public override Mat4 Transform
 		{
 			get { return CameraToWorld; }
@@ -31,11 +41,7 @@
 
 		public override Aabb<Vec3> BoundingBox
 		{
-			get
-			{
-				return Aabb<Vec3>.FromPositions (Frustum.Corners.Map (pos => 
-					Transform.Transform (pos)));
-			}
+			get	{ return Aabb<Vec3>.FromPositions (Frustum.Corners.Map (pos => Transform.Transform (pos)));	}
 		}
 
 		public Mat4 WorldToCamera 
@@ -44,7 +50,7 @@
 		}
 
 		public Mat4 CameraToWorld
-			{
+		{
 			get { return WorldToCamera.Inverse; }
 		}		
 	}

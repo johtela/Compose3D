@@ -13,11 +13,10 @@
 	using Extensions;
 
 	[StructLayout (LayoutKind.Sequential)]
-	public struct TerrainVertex : IVertex, IDiffuseColor<Vec3>
+	public struct TerrainVertex : IVertex
 	{
 		internal Vec3 position;
 		internal Vec3 normal;
-		internal Vec3 diffuseColor;
 		[OmitInGlsl]
 		internal int tag;
 
@@ -25,12 +24,6 @@
 		{
 			get { return position; }
 			set { position = value; }
-		}
-
-		Vec3 IDiffuseColor<Vec3>.Diffuse
-		{
-			get { return diffuseColor; }
-			set { diffuseColor = value; }
 		}
 
 		Vec3 IPlanar<Vec3>.Normal
@@ -52,8 +45,8 @@
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, Normal={3}, Tag={4}]",
-				position, diffuseColor, normal, tag);
+			return string.Format ("[Vertex: Position={0}, Normal={3}, Tag={4}]",
+				position, normal, tag);
 		}
 	}
 
@@ -63,14 +56,26 @@
 		{
 			public float visibility;
 		}
+
+		public class TerrainUniforms : BasicUniforms
+		{
+			public Uniform<Vec3> skyColor;
+
+			public void Initialize (Program program, SceneGraph scene, Vec3 skyCol)
+			{
+				base.Initialize (program, scene);
+				using (program.Scope ())
+					skyColor &= skyCol;
+			}
+		}
 		
 		public readonly Program TerrainShader;
-		public readonly BasicUniforms Uniforms;
+		public readonly TerrainUniforms Uniforms;
 
 		public Terrain ()
 		{
 			TerrainShader = new Program (VertexShader (), FragmentShader ());
-			TerrainShader.InitializeUniforms (Uniforms = new BasicUniforms ());
+			TerrainShader.InitializeUniforms (Uniforms = new TerrainUniforms ());
 		}
 
 		public SceneNode CreateScene (SceneGraph sceneGraph)
@@ -82,7 +87,7 @@
 				.OffsetOrientAndScale (new Vec3 (-2400f, -10f, -2400f), new Vec3 (0f), new Vec3 (2f));
 		}
 
-		public void Render (SceneGraph scene, Camera camera)
+		public void Render (Camera camera)
 		{
 			GL.Enable (EnableCap.CullFace);
 			GL.CullFace (CullFaceMode.Back);
@@ -90,8 +95,9 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+
 			using (TerrainShader.Scope ())
-				foreach (var mesh in scene.Index.Overlap (camera.BoundingBox).Values ().OfType<TerrainMesh<TerrainVertex>> ())
+				foreach (var mesh in camera.NodesInView<TerrainMesh<TerrainVertex>> ())
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffer != null)
 					{
@@ -116,15 +122,18 @@
 				ShaderType.VertexShader, () =>
 
 				from v in Shader.Inputs<TerrainVertex> ()
-				from u in Shader.Uniforms<BasicUniforms> ()
+				from u in Shader.Uniforms<TerrainUniforms> ()
 				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
 				let vertPos = viewPos[Coord.x, Coord.y, Coord.z]
+				let height = v.position.Y
 				select new TerrainFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * viewPos,
 					vertexPosition = vertPos,
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
-					vertexDiffuse = v.diffuseColor,
+					vertexDiffuse = height < 0f ? new Vec3 (0f, 1f, 0f) :
+									height < 5f ? new Vec3 (0.5f, 0.5f, 0.5f) :
+												  new Vec3 (1f, 1f, 1f),
 					visibility = Lighting.FogVisibility (vertPos.Z, 0.007f, 2.5f)
 				}
 			);
@@ -137,12 +146,12 @@
 				ShaderType.FragmentShader, () =>
 
 				from f in Shader.Inputs<TerrainFragment> ()
-				from u in Shader.Uniforms<BasicUniforms> ()
+				from u in Shader.Uniforms<TerrainUniforms> ()
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * f.vertexDiffuse
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 3f, new Vec3 (0f))
-						.Mix (new Vec3 (0.2f, 0.4f, 0.6f), f.visibility)
+						.Mix (!u.skyColor, f.visibility)
 				}
 			);
 		}

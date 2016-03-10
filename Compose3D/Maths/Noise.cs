@@ -48,14 +48,15 @@
 			return GLMath.CosMix (i1, i2, fracVec.Y);
 		}
 
-		public static float Noise2D (Vec2 vec, float frequency, float amplitude, int octaves, float attenuation)
+		public static float Noise2D (Vec2 vec, float frequency, float amplitude, int octaves, 
+			float amplitudeDamping, float frequencyMultiplier)
 		{
 			var res = 0f;
 			for (int i = 0; i < octaves; i++)
 			{
 				res += Interpolated (vec * frequency, amplitude);
-				amplitude /= attenuation;
-				frequency *= attenuation;
+				amplitude /= amplitudeDamping;
+				frequency *= frequencyMultiplier;
 			}
 			return res;
 		}

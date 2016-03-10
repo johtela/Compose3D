@@ -16,12 +16,13 @@
 		private float _amplitude;
 		private float _frequency;
 		private int _octaves;
-		private float _attenuation;
+		private float _amplitudeDamping;
+		private float _frequenceMultiplier;
 		private Aabb<Vec3> _boundingBox;
 		private bool _genStarged;
 
 		public TerrainPatch (Vec2i start, Vec2i size, float amplitude, float frequency, int octaves,
-			float attenuation)
+			float amplitudeDamping, float frequencyMultiplier)
 		{
 			if (amplitude < 0f)
 				throw new ArgumentException ("Amplitude must be positive", "amplitude");
@@ -34,7 +35,8 @@
 			_amplitude = amplitude;
 			_frequency = frequency;
 			_octaves = octaves;
-			_attenuation = attenuation;
+			_amplitudeDamping = amplitudeDamping;
+			_frequenceMultiplier = frequencyMultiplier;
 		}
 
 		private int Index (int x, int z)
@@ -45,7 +47,7 @@
 		private float Height (int x, int z)
 		{
 			return Noise.Noise2D (new Vec2 (Start.X + x, Start.Y + z), _frequency, _amplitude, 
-				_octaves, _attenuation);
+				_octaves, _amplitudeDamping, _frequenceMultiplier);
 		}
 
 		private V[] GenerateVertexPositions ()

@@ -84,7 +84,7 @@
 				from x in EnumerableExt.Range (0, 5000, 58)
 				from y in EnumerableExt.Range (0, 5000, 58)
 				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (64, 64),
-					20f, 0.029999f, 3, 7f))
+					20f, 0.039999f, 3, 5f, 4f))
 				.OffsetOrientAndScale (new Vec3 (-5000f, -10f, -5000f), new Vec3 (0f), new Vec3 (2f));
 		}
 
@@ -106,8 +106,8 @@
 						Uniforms.worldMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
-						var lod = distance < 100 ? 0 :
-								  distance < 150 ? 1 :
+						var lod = distance < 150 ? 0 :
+								  distance < 250 ? 1 :
 								  2;
 						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, 
 							mesh.IndexBuffers[lod]);
@@ -133,15 +133,20 @@
 				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
 				let vertPos = viewPos[Coord.x, Coord.y, Coord.z]
 				let height = v.position.Y
+				let slope = v.normal.Dot (new Vec3 (0f, 1f, 0f))
+				let blend = GLMath.SmoothStep (0.9f, 0.99f, slope)
+				let rockColor = new Vec3 (0.3f, 0.4f, 0.5f)
+				let grassColor = new Vec3 (0.3f, 1f, 0.2f)
+				let snowColor = new Vec3 (1f, 1f, 1f)
 				select new TerrainFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * viewPos,
 					vertexPosition = vertPos,
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
-					vertexDiffuse = height < 0f ? new Vec3 (0f, 1f, 0f) :
-									height < 5f ? new Vec3 (0.5f, 0.5f, 0.5f) :
-												  new Vec3 (1f, 1f, 1f),
-					visibility = Lighting.FogVisibility (vertPos.Z, 0.005f, 2.5f)
+					vertexDiffuse = height < -2f ? 
+							rockColor.Mix (grassColor, blend) : 
+							rockColor.Mix (snowColor, blend),
+					visibility = Lighting.FogVisibility (vertPos.Z, 0.004f, 3f)
 				}
 			);
 		}

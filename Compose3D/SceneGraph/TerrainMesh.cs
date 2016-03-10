@@ -17,9 +17,10 @@
 		public readonly TerrainPatch<V> Patch;
 
 		public TerrainMesh (SceneGraph graph, Vec2i start, Vec2i size, float amplitude, float frequency,
-			int octaves, float attenuation) : base (graph)
+			int octaves, float amplitudeDamping, float frequencyMultiplier) : base (graph)
 		{
-			Patch = new TerrainPatch<V> (start, size, amplitude, frequency, octaves, attenuation);
+			Patch = new TerrainPatch<V> (start, size, amplitude, frequency, octaves, 
+				amplitudeDamping, frequencyMultiplier);
 		}
 
 		public VBO<V> VertexBuffer

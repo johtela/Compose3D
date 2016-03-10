@@ -69,7 +69,7 @@
 				position: new Vec3 (0f, 10f, 10f), 
 				target: new Vec3 (0f, 0f, -75f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 75f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 400f),
 				aspectRatio: 1f);
 			_cameraTransform = _camera.Orient (new Vec3(0f));
 			
@@ -131,7 +131,7 @@
 
 		private void ResizeViewport (Vec2 size)
 		{
-			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 300f);
+			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
 			_terrain.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			_entities.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			GL.Viewport (ClientSize);

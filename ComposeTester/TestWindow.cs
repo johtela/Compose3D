@@ -101,17 +101,13 @@
 				.WhenMouseWheelDeltaChangesOn (this);
 			
 			React.By<float> (ZoomView)
-				.Map<Key, float> (key => 
-					key == Key.W ? 1f :
-					key == Key.S ? -1f :
-					0f)
+				.Map<Key, float> (key => key == Key.W ? 1f : -1f)
 				.WhenKeyDown (this, Key.W, Key.S);
 
 			React.By<Vec3> (RotateCamera)
-				.Map<Key, Vec3> (key => 
-					key == Key.A ? new Vec3 (0f, -0.01f, 0f) :
-					key == Key.D ? new Vec3 (0f, 0.01f, 0f)  :
-					new Vec3 (0f))
+				.Map<Key, Vec3> (key => key == Key.A ? 
+					new Vec3 (0f, -0.01f, 0f) : 
+					new Vec3 (0f, 0.01f, 0f))
 				.WhenKeyDown (this, Key.A, Key.D);
 			}
 

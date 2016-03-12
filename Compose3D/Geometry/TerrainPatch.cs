@@ -5,8 +5,9 @@
 	using Maths;
 	using DataStructures;
 	using Extensions;
+	using Textures;
 
-	public class TerrainPatch<V> where V : struct, IVertex
+	public class TerrainPatch<V> where V : struct, IVertex, ITextured
 	{
 		public readonly Vec2i Start;
 		public readonly Vec2i Size;
@@ -19,7 +20,7 @@
 		private float _amplitudeDamping;
 		private float _frequenceMultiplier;
 		private Aabb<Vec3> _boundingBox;
-		private bool _genStarged;
+		private bool _genStarted;
 
 		public TerrainPatch (Vec2i start, Vec2i size, float amplitude, float frequency, int octaves,
 			float amplitudeDamping, float frequencyMultiplier)
@@ -58,7 +59,9 @@
 				for (int x = 0; x < Size.X; x++)
 				{
 					var height = Height (x, z);
-					result[Index (x, z)].Position = new Vec3 (Start.X + x, height, Start.Y + z);
+					var index = Index (x, z);
+					result[index].Position = new Vec3 (Start.X + x, height, Start.Y + z);
+					result [index].TexturePos = new Vec2 (x, z);
 				}
 			}
 			return result;
@@ -120,9 +123,9 @@
 		{
 			get
 			{
-				if (_vertices == null && !_genStarged)
+				if (_vertices == null && !_genStarted)
 				{
-					_genStarged = true;
+					_genStarted = true;
 					Task.Run (() => Generate ());
 				}
 				return _vertices;
@@ -133,9 +136,9 @@
 		{
 			get
 			{
-				if (_indices == null && !_genStarged)
+				if (_indices == null && !_genStarted)
 				{
-					_genStarged = true;
+					_genStarted = true;
 					Task.Run (() => Generate ());
 				}
 				return _indices;

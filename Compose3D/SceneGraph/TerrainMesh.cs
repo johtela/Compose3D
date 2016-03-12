@@ -4,11 +4,12 @@
     using Maths;
     using Geometry;
     using GLTypes;
+	using Textures;
     using OpenTK.Graphics.OpenGL;
 	using DataStructures;
 
 	public class TerrainMesh<V> : SceneNode
-		where V : struct, IVertex
+		where V : struct, IVertex, ITextured
 	{
 		private VBO<V> _vertexBuffer;
 		private VBO<int>[] _indexBuffers;
@@ -24,7 +25,7 @@
 		}
 
 		public VBO<V> VertexBuffer
-		{
+		{	
 			get
 			{
 				if (_vertexBuffer == null && Patch.Vertices != null)

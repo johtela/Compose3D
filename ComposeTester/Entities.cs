@@ -170,15 +170,6 @@
 				Uniforms.perspectiveMatrix &= matrix;
 		}
 
-		public static readonly Func<Sampler2D, Vec2, Vec3> TextureColor =
-			GLShader.Function
-			(
-				() => TextureColor,
-
-				(Sampler2D sampler, Vec2 texturePos) =>
-					sampler.Texture (texturePos)[Coord.x, Coord.y, Coord.z]
-			);
-
 		public static GLShader VertexShader ()
 		{
 			return GLShader.Create
@@ -204,6 +195,8 @@
 		public static GLShader FragmentShader ()
 		{
 			Lighting.Use ();
+			FragmentShaders.Use ();
+			
 			return GLShader.Create
 			(
 				ShaderType.FragmentShader, () =>
@@ -212,10 +205,10 @@
 				from u in Shader.Uniforms<EntityUniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
-					samplerNo == 0 ? TextureColor ((!u.samplers)[0], f.texturePosition) :
-					//samplerNo == 1 ? TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
-					//samplerNo == 2 ? TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
-					samplerNo == 3 ? TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
+					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.texturePosition) :
+					//samplerNo == 1 ? FragmentShaders.TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
+					//samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
+					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate

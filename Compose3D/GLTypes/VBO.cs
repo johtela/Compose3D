@@ -21,7 +21,8 @@
 		{
 			_glvbo = GL.GenBuffer ();
 			var varr = elements.ToArray ();
-			var size = new IntPtr (Marshal.SizeOf (typeof (T)) * varr.Length);
+			var recSize = Marshal.SizeOf (typeof (T));
+			var size = new IntPtr (recSize  * varr.Length);
 
 			GL.BindBuffer (bufferType, _glvbo);
 			GL.BufferData (bufferType, size, varr, BufferUsageHint.StaticDraw);

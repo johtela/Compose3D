@@ -1,7 +1,9 @@
 ﻿namespace Compose3D.Shaders
 {
-	using Compose3D.Maths;
-	using Compose3D.GLTypes;
+	using System;
+	using Maths;
+	using GLTypes;
+	using Textures;
 	using OpenTK.Graphics.OpenGL;
 
 	public class Fragment
@@ -41,6 +43,8 @@
 
 	public static class FragmentShaders
 	{
+		public static void Use () { }
+		
 		public static GLShader WhiteOutput ()
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
@@ -60,5 +64,14 @@
 					outputColor = new Vec3 (f.vertexDiffuse)
 				});
 		}
+
+		public static readonly Func<Sampler2D, Vec2, Vec3> TextureColor =
+			GLShader.Function
+			(
+				() => TextureColor,
+
+				(Sampler2D sampler, Vec2 texturePos) =>
+				sampler.Texture (texturePos)[Coord.x, Coord.y, Coord.z]
+			);
 	}
 }

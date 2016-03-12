@@ -56,12 +56,12 @@
 				distance: 100f);
 			var pointLight1 = new PointLight (sceneGraph,
 				intensity: new Vec3 (2f), 
-				position: new Vec3 (10f, 10f, 10f), 
-				linearAttenuation: 0.001f, 
-				quadraticAttenuation: 0.001f);
+				position: new Vec3 (100f, 100f, -100f), 
+				linearAttenuation: 0.00001f, 
+				quadraticAttenuation: 0.00001f);
 			var pointLight2 = new PointLight (sceneGraph,
 				intensity: new Vec3 (1f), 
-				position: new Vec3 (-10f, 10f, -10f), 
+				position: new Vec3 (0f, 10f, -10f), 
 				linearAttenuation: 0.001f, 
 				quadraticAttenuation: 0.001f);
 

@@ -40,20 +40,20 @@
 		
 		Vec2 ITextured.TexturePos
 		{
-			get { return new Vec2 (); }
-			set {  }
+			get { return texturePos; }
+			set { texturePos = value; }
 		}
 
 		int IVertex.Tag
 		{
-			get { return 0; }
-			set { }
+			get { return tag; }
+			set { tag = value; }
 		}
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, Normal={3}, Tag={4}]",
-				position, normal, 0);
+			return string.Format ("[Vertex: Position={0}, Normal={3}, TexturePos={4}, Tag={5}]",
+				position, normal, texturePos, tag);
 		}
 	}
 
@@ -113,7 +113,7 @@
 
 		private Texture LoadTexture (string name)
 		{
-			return Texture.FromFile (string.Format ("Textures/{0}.png", name), 
+			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name), 
 				new TextureParams ()
 				{
 					{ TextureParameterName.TextureBaseLevel, 0 },
@@ -191,10 +191,10 @@
 					vertexPosition = vertPos,
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = new Vec3 (1f),
-					visibility = Lighting.FogVisibility (vertPos.Z, 0.004f, 3f),
+					visibility = Lighting.FogVisibility (vertPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
-//					vertexTexPos = v.texturePos
+					vertexTexPos = v.texturePos / 50f
 				}
 			);
 		}
@@ -210,17 +210,14 @@
 
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
-//				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.vertexTexPos)
-//				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.vertexTexPos)
-//				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.vertexTexPos)
-				let blend = GLMath.SmoothStep (0.9f, 0.99f, f.slope)
-				let rockColor = new Vec3 (0.3f, 0.4f, 0.5f)
-				let grassColor = new Vec3 (0.3f, 1f, 0.2f)
-				let sandColor = new Vec3 (1f, 1f, 1f)
-				let textureColor = f.height < -2f ? 
-					rockColor.Mix (grassColor, blend) : 
-					rockColor.Mix (sandColor, blend)
-				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * textureColor
+				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.vertexTexPos)
+				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.vertexTexPos)
+				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.vertexTexPos)
+				let sandBlend = GLMath.SmoothStep (2f, 4f, f.height)
+				let flatColor = grassColor.Mix (sandColor, sandBlend) 
+				let rockBlend = GLMath.SmoothStep (0.9f, 0.99f, f.slope)
+				let terrainColor = rockColor.Mix (flatColor, rockBlend)
+				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 3f, new Vec3 (0f))

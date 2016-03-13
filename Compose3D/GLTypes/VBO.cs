@@ -18,15 +18,17 @@
 		}
 
 		public VBO (IEnumerable<T> elements, BufferTarget bufferType)
+			: this (elements.ToArray (), bufferType) { }
+
+		public VBO (T[] elements, BufferTarget bufferType)
 		{
 			_glvbo = GL.GenBuffer ();
-			var varr = elements.ToArray ();
 			var recSize = Marshal.SizeOf (typeof (T));
-			var size = new IntPtr (recSize  * varr.Length);
+			var size = new IntPtr (recSize  * elements.Length);
 
 			GL.BindBuffer (bufferType, _glvbo);
-			GL.BufferData (bufferType, size, varr, BufferUsageHint.StaticDraw);
-			_count = varr.Length;
+			GL.BufferData (bufferType, size, elements, BufferUsageHint.StaticDraw);
+			_count = elements.Length;
 		}
 	}
 }

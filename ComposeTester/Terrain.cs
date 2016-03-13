@@ -8,6 +8,7 @@
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
 	using Extensions;
@@ -104,6 +105,8 @@
 		private Texture _sandTexture;
 		private Texture _rockTexture;
 		private Texture _grassTexture;
+		private TerrainMesh<TerrainVertex>[,] _meshes;
+		private Mat4 _worldToModel;
 
 		public Terrain ()
 		{
@@ -120,18 +123,38 @@
 					{ TextureParameterName.TextureMaxLevel, 0 }
 				});
 		}
+
+		private IEnumerable<TerrainMesh<TerrainVertex>> Meshes (SceneGraph sceneGraph)
+		{
+			_meshes = new TerrainMesh<TerrainVertex>[100, 100];
+			for (int x = 0; x < 100; x++)
+				for (int y = 0; y < 100; y++)
+				{
+					var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * 58, y * 58), new Vec2i (64, 64),
+						20f, 0.039999f, 3, 5f, 4f);
+					_meshes[x, y] = mesh;
+					yield return mesh;
+				}
+		}
 		
 		public SceneNode CreateScene (SceneGraph sceneGraph)
 		{
 			_sandTexture = LoadTexture ("Sand");
 			_rockTexture = LoadTexture ("Rock");
 			_grassTexture = LoadTexture ("Grass");
-			return new SceneGroup (sceneGraph,
-				from x in EnumerableExt.Range (0, 5000, 58)
-				from y in EnumerableExt.Range (0, 5000, 58)
-				select new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x, y), new Vec2i (64, 64),
-					20f, 0.039999f, 3, 5f, 4f))
-				.OffsetOrientAndScale (new Vec3 (-5000f, -10f, -5000f), new Vec3 (0f), new Vec3 (2f));
+			var result = new SceneGroup (sceneGraph, Meshes (sceneGraph))
+				.OffsetOrientAndScale (new Vec3 (-5800f, -10f, -5800f) * 1.5f, new Vec3 (0f), new Vec3 (3f));
+			_worldToModel = result.Transform.Inverse;
+			return result;
+		}
+
+		public float Height (Vec3 posInWorldSpace)
+		{
+			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / 58f;
+			var mesh = _meshes[(int)coords.X, (int)coords.Y];
+			var vertVec = coords.Fraction () * 58f;
+			var vertIndex = ((int)vertVec.Y * 64) + (int)vertVec.X;
+			return mesh.Patch.Vertices[vertIndex].position.Y;
 		}
 
 		public void Render (Camera camera)
@@ -157,8 +180,8 @@
 						Uniforms.worldMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
-						var lod = distance < 150 ? 0 :
-								  distance < 250 ? 1 :
+						var lod = distance < 100 ? 0 :
+								  distance < 200 ? 1 :
 								  2;
 						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, 
 							mesh.IndexBuffers [lod]);
@@ -194,7 +217,7 @@
 					visibility = Lighting.FogVisibility (vertPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
-					vertexTexPos = v.texturePos / 50f
+					vertexTexPos = v.texturePos / 20f
 				}
 			);
 		}
@@ -220,7 +243,7 @@
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 3f, new Vec3 (0f))
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 5f, new Vec3 (0f))
 						.Mix (!u.skyColor, f.visibility)
 				}
 			);

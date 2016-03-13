@@ -24,8 +24,8 @@
 		// Scene graph
 		private SceneGraph _sceneGraph;
 		private Camera _camera;
-		private TransformNode _cameraTransform;
 		private DirectionalLight _dirLight;
+		private Vec3 _rotation;
 
 		private readonly Vec3 _skyColor = new Vec3 (0.2f, 0.3f, 0.5f);
 
@@ -67,17 +67,16 @@
 
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (0f, 10f, 10f), 
-				target: new Vec3 (0f, 0f, -75f), 
+				target: new Vec3 (0f, 10f, -1f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 400f),
 				aspectRatio: 1f);
-			_cameraTransform = _camera.Orient (new Vec3(0f));
 			
 			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
 				ambientLightIntensity: new Vec3 (0.1f), 
 				maxIntensity: 2f, 
 				gammaCorrection: 1.2f),
-				_dirLight, pointLight1, pointLight2, _cameraTransform, _terrain.CreateScene (sceneGraph),
+				_dirLight, pointLight1, pointLight2, _camera, _terrain.CreateScene (sceneGraph),
 					_entities.CreateScene (sceneGraph));
 			return sceneGraph;
 		}
@@ -92,22 +91,22 @@
 
 			React.By<Vec3> (RotateCamera)
 				.Map<MouseMoveEventArgs, Vec3> (e =>
-					new Vec3 (e.YDelta.Radians () / 2f, e.XDelta.Radians () / 2f, 0f))
+					new Vec3 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f, 0f))
 				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this);
 
-			React.By<float> (ZoomView)
+			React.By<float> (MoveCamera)
 				.Map (delta => delta * -0.2f)
 				.WhenMouseWheelDeltaChangesOn (this);
 			
-			React.By<float> (ZoomView)
+			React.By<float> (MoveCamera)
 				.Map<Key, float> (key => key == Key.W ? 1f : -1f)
 				.WhenKeyDown (this, Key.W, Key.S);
 
 			React.By<Vec3> (RotateCamera)
 				.Map<Key, Vec3> (key => key == Key.A ? 
-					new Vec3 (0f, -0.01f, 0f) : 
-					new Vec3 (0f, 0.01f, 0f))
+					new Vec3 (0f, 0.01f, 0f) : 
+					new Vec3 (0f, -0.01f, 0f))
 				.WhenKeyDown (this, Key.A, Key.D);
 			}
 
@@ -133,14 +132,26 @@
 			GL.Viewport (ClientSize);
 		}
 
-		private void RotateCamera (Vec3 rot)
+		private Vec3 LookVec ()
 		{
-			_cameraTransform.Orientation += rot;
+			return (Mat.RotationX<Mat4> (_rotation.X) * Mat.RotationY<Mat4> (_rotation.Y))
+				.Transform (new Vec3 (0f, 0f, -1f));
 		}
 
-		private void ZoomView (float delta)
+		private void RotateCamera (Vec3 rot)
 		{
-			_cameraTransform.Offset += new Vec3 (0f, 0f, delta);
+			_rotation += rot;
+			_camera.Target = _camera.Position + LookVec ();
+		}
+
+		private void MoveCamera (float delta)
+		{
+			var lookVec = LookVec ();
+			var cameraPos = _camera.Position + (lookVec * delta);
+			var terrainHeight = _terrain.Height (cameraPos);
+			_camera.Position = cameraPos.Y >= terrainHeight ? cameraPos :
+				new Vec3 (cameraPos.X, terrainHeight, cameraPos.Z);
+			_camera.Target = _camera.Position + lookVec;
 		}
 	}
 }

@@ -116,11 +116,14 @@
 
 		private Texture LoadTexture (string name)
 		{
-			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name), 
+			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name), true,
 				new TextureParams ()
 				{
 					{ TextureParameterName.TextureBaseLevel, 0 },
-					{ TextureParameterName.TextureMaxLevel, 0 }
+					{ TextureParameterName.TextureMaxLevel, 10 },
+					{ TextureParameterName.TextureMinFilter, TextureMinFilter.LinearMipmapLinear },
+					{ TextureParameterName.TextureLodBias, 100000f },
+					{ TextureParameterName.TextureMaxLod, 10 }
 				});
 		}
 

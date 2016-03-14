@@ -20,14 +20,16 @@
 			_glTexture = GL.GenTexture ();
 		}
 
-		public Texture (TextureTarget target, int level, PixelInternalFormat internalFormat,
+		public Texture (TextureTarget target, bool useMipmap, PixelInternalFormat internalFormat,
 			int width, int height, PixelFormat format, PixelType type, IntPtr pixels, 
 			TextureParams parameters)
 			: this (target)
 		{
 			BindTexture (() =>
 			{
-				GL.TexImage2D (target, level, internalFormat, width, height, 0, format, type, pixels);
+				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
+				if (useMipmap)
+					GL.GenerateMipmap (MapMipmapTarget (target));
 				SetParameters (parameters);
 			});
 		}
@@ -90,22 +92,24 @@
 			});
 		}
 
-		public static Texture FromBitmap (Bitmap bitmap, TextureParams parameters)
+		public static Texture FromBitmap (Bitmap bitmap, bool useMipmap, TextureParams parameters)
 		{
 			var result = new Texture (TextureTarget.Texture2D);
 			result.BindTexture (() =>
 			{
 				result.LoadBitmap (bitmap);
 				result.SetParameters (parameters);
+				if (useMipmap)
+					GL.GenerateMipmap (MapMipmapTarget (TextureTarget.Texture2D));
 			});
 			return result;
 		}
 
-		public static Texture FromFile (string path, TextureParams parameters)
+		public static Texture FromFile (string path, bool useMipmap, TextureParams parameters)
 		{
 			if (!File.Exists (path))
 				throw new ArgumentException ("Could not find texture file: " + path);
-			return FromBitmap (new Bitmap (path), parameters);
+			return FromBitmap (new Bitmap (path), useMipmap, parameters);
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)
@@ -139,6 +143,25 @@
 				case System.Drawing.Imaging.PixelFormat.Format64bppPArgb:
 				case System.Drawing.Imaging.PixelFormat.Format64bppArgb: return PixelFormat.Bgra;
 				default: throw new ArgumentException ("Unsupported pixel format: " + pixelFormat.ToString ());
+			}
+		}
+
+		private static GenerateMipmapTarget MapMipmapTarget (TextureTarget target)
+		{
+			switch (target)
+			{
+				case TextureTarget.Texture2D:
+					return GenerateMipmapTarget.Texture2D;
+				case TextureTarget.Texture2DArray:
+					return GenerateMipmapTarget.Texture2DArray;
+				case TextureTarget.Texture2DMultisample:
+					return GenerateMipmapTarget.Texture2DMultisample;
+				case TextureTarget.TextureCubeMap:
+					return GenerateMipmapTarget.TextureCubeMap;
+				case TextureTarget.TextureCubeMapArray:
+					return GenerateMipmapTarget.TextureCubeMapArray;
+				default:
+					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
 			}
 		}
 	}

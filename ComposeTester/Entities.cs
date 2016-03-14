@@ -141,7 +141,7 @@
 		{
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			return new Mesh<Vertex> (sceneGraph, fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 10f, -10f), new Vec3 (0f, MathHelper.Pi, 0f), new Vec3 (1f));
+				.OffsetOrientAndScale (new Vec3 (0f, 10f, -10f), new Vec3 (0f, MathHelper.Pi, 0f), new Vec3 (2f));
 		}
 
 		public void Render (Camera camera)

@@ -121,9 +121,7 @@
 				{
 					{ TextureParameterName.TextureBaseLevel, 0 },
 					{ TextureParameterName.TextureMaxLevel, 10 },
-					{ TextureParameterName.TextureMinFilter, TextureMinFilter.LinearMipmapLinear },
-					{ TextureParameterName.TextureLodBias, 100000f },
-					{ TextureParameterName.TextureMaxLod, 10 }
+					{ TextureParameterName.TextureMinFilter, TextureMinFilter.LinearMipmapLinear }
 				});
 		}
 

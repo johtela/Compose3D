@@ -149,21 +149,33 @@
     <Compile Include="Maths\Vec.cs" />
     <Compile Include="Maths\Vec4i.cs">
       <DependentUpon>Vec4i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Vec3i.cs">
       <DependentUpon>Vec3i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Vec2i.cs">
       <DependentUpon>Vec2i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Vec4.cs">
       <DependentUpon>Vec4.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Vec3.cs">
       <DependentUpon>Vec3.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Vec2.cs">
       <DependentUpon>Vec2.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Quat.cs" />
     <Compile Include="Maths\IQuat.cs" />

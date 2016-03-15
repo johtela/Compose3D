@@ -244,7 +244,7 @@
 				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 15f, new Vec3 (0f))
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 10f, new Vec3 (0f))
 						.Mix (!u.skyColor, f.visibility)
 				}
 			);

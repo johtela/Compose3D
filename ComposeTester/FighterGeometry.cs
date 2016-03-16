@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<Path<P, Vec3>> Paths;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.GreyPlastic;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
 
         private class Nose
 		{
@@ -273,7 +273,7 @@
 				Geometry = exhaust
 					.SnapVertex (exhaust.Vertices.Furthest (Dir3D.Up).First (), snapToVertex, Axes.Y | Axes.Z)
 					.Translate (0f, -0.02f, 0.02f)
-					.Color (VertexColor<Vec3>.Chrome); 
+					.Color (VertexColor<Vec3>.BlackPlastic); 
 				
 				FlangeXSection = new Path<P, Vec3> (
 					from n in rear.RearXSection.Nodes

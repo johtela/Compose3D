@@ -218,7 +218,7 @@
 					visibility = Lighting.FogVisibility (vertPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
-					vertexTexPos = v.texturePos / 20f
+					vertexTexPos = v.texturePos / 15f
 				}
 			);
 		}
@@ -241,11 +241,12 @@
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
 				let rockBlend = GLMath.SmoothStep (0.9f, 0.99f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
-				let diffuse = Lighting.DirLightDiffuseIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
+				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.directionalLight).direction,
+					(!u.directionalLight).intensity, f.vertexNormal)
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 10f, new Vec3 (0f))
-						.Mix (!u.skyColor, f.visibility)
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuseLight, new Vec3 (0f),
+						terrainColor, new Vec3 (0f)).Mix (!u.skyColor, f.visibility)
 				}
 			);
 		}

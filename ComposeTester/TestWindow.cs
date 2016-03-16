@@ -51,19 +51,14 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (1f), 
-				direction: new Vec3 (1f, 1f, -1f),
+				intensity: new Vec3 (2.5f), 
+				direction: new Vec3 (0.75f, 1f, 0f),
 				distance: 100f);
-			var pointLight1 = new PointLight (sceneGraph,
-				intensity: new Vec3 (2f), 
-				position: new Vec3 (100f, 100f, -100f), 
-				linearAttenuation: 0.00001f, 
-				quadraticAttenuation: 0.00001f);
-			var pointLight2 = new PointLight (sceneGraph,
-				intensity: new Vec3 (1f), 
-				position: new Vec3 (0f, 10f, -10f), 
-				linearAttenuation: 0.001f, 
-				quadraticAttenuation: 0.001f);
+			//var pointLight1 = new PointLight (sceneGraph,
+			//	intensity: new Vec3 (2f),
+			//	position: new Vec3 (100f, 100f, -100f),
+			//	linearAttenuation: 0.00001f,
+			//	quadraticAttenuation: 0.00001f);
 
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (0f, 10f, 10f), 
@@ -75,8 +70,8 @@
 			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
 				ambientLightIntensity: new Vec3 (0.1f), 
 				maxIntensity: 2f, 
-				gammaCorrection: 1.2f),
-				_dirLight, pointLight1, pointLight2, _camera, _terrain.CreateScene (sceneGraph),
+				gammaCorrection: 1.5f),
+				_dirLight, _camera, _terrain.CreateScene (sceneGraph),
 					_entities.CreateScene (sceneGraph));
 			return sceneGraph;
 		}

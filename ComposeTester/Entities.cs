@@ -210,19 +210,18 @@
 					//samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
-				let diffuse = Lighting.DirLightDiffuseIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
-				let specular = (!u.pointLights).Aggregate
-				(
-					new Vec3 (0f),
-					(spec, pl) =>
-						pl.intensity == new Vec3 (0f) ?
-							spec :
-							spec + Lighting.PointLightIntensity (pl, f.vertexPosition, f.vertexNormal, fragDiffuse,
-								f.vertexSpecular, f.vertexShininess)
-				)
+				let dirLight = Lighting.DirLightIntensity (!u.directionalLight, f.vertexPosition, 
+					f.vertexNormal, f.vertexShininess)
+				let totalLight = 
+					(from pl in !u.pointLights
+					 select Lighting.PointLightIntensity (pl, f.vertexPosition, f.vertexNormal, f.vertexShininess))
+					.Aggregate (dirLight, 
+						(total, pointLight) => new Lighting.DiffuseAndSpecular (
+							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, fragDiffuse, diffuse + specular)
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, totalLight.diffuse, 
+						totalLight.specular, fragDiffuse, f.vertexSpecular)
 				}
 			);
 		}

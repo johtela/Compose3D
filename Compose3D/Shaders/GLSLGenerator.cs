@@ -197,7 +197,11 @@
         private string GLType (Type type)
         {
             var attr = type.GetGLAttribute ();
-            return attr == null ? TypeMapping.Type (type) : attr.Syntax;
+            if (attr == null) 
+				return TypeMapping.Type (type);
+			if (attr is GLStruct)
+				OutputStruct (type);
+			return attr.Syntax;
         }
 
         private string NewLocalVar (string name)

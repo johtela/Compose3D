@@ -614,7 +614,7 @@
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Asin(float)(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="GLMath.Asin(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("asin ({0})")]
 		public static V Asin<V> (this V x)

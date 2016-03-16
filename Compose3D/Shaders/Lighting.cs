@@ -37,6 +37,19 @@
 			public float inverseGamma;
 		}
 
+		[GLStruct ("DiffuseAndSpecular")]
+		public struct DiffuseAndSpecular
+		{
+			public Vec3 diffuse;
+			public Vec3 specular;
+
+			[GLConstructor ("DiffuseAndSpecular ({0})")]
+			public DiffuseAndSpecular (Vec3 diff, Vec3 spec)
+			{
+				diffuse = diff;
+				specular = spec;
+			}
+		}
 
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
 			GLShader.Function
@@ -46,14 +59,6 @@
 					intensity * normal.Dot (lightDir).Clamp (0f, 1f)
 			);
 
-
-		public static readonly Func<DirectionalLight, Vec3, Vec3> DirLightDiffuseIntensity =
-			GLShader.Function
-			(
-				() => DirLightDiffuseIntensity,
-				(DirectionalLight dirLight, Vec3 normal) => 
-					LightDiffuseIntensity (dirLight.direction, dirLight.intensity, normal)
-			);
 
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3, float, Vec3> LightSpecularIntensity =
 			GLShader.Function
@@ -70,12 +75,14 @@
 				)
 			);
 
-		public static readonly Func<DirectionalLight, Vec3, Vec3, float, Vec3> DirLightSpecularIntensity =
+		public static readonly Func<DirectionalLight, Vec3, Vec3, float, DiffuseAndSpecular> DirLightIntensity =
 			GLShader.Function
 			(
-				() => DirLightSpecularIntensity,
+				() => DirLightIntensity,
 				(DirectionalLight dirLight, Vec3 position, Vec3 normal, float shininess) =>
-					LightSpecularIntensity (dirLight.direction, dirLight.intensity, position, normal, shininess)
+					new DiffuseAndSpecular (
+						LightDiffuseIntensity (dirLight.direction, dirLight.intensity, normal),
+						LightSpecularIntensity (dirLight.direction, dirLight.intensity, position, normal, shininess))
 			);
 
 		/// <summary>
@@ -88,31 +95,27 @@
 				() => Attenuation, 
 
 				(PointLight pointLight, float distance) => 
-				(1f / ((pointLight.linearAttenuation * distance) + 
-					(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f)
+					(1f / ((pointLight.linearAttenuation * distance) + 
+						(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f)
 			);
 
 		/// <summary>
 		/// Calculate intensity of a point light given the light source and the vertex position,
 		/// normal, and color attributes. Uses Blinn shading for specular highlights.
 		/// </summary>
-		public static readonly Func<PointLight, Vec3, Vec3, Vec3, Vec3, float, Vec3> PointLightIntensity =
+		public static readonly Func<PointLight, Vec3, Vec3, float, DiffuseAndSpecular> PointLightIntensity =
 			GLShader.Function
 			(
 				() => PointLightIntensity,
-
-				(PointLight pointLight, Vec3 position, Vec3 normal, Vec3 diffuse, Vec3 specular, float shininess) =>
+				(PointLight pointLight, Vec3 position, Vec3 normal, float shininess) =>
 				Shader.Evaluate
 				(
 					from vecToLight in (pointLight.position - position).ToShader ()
-					let lightVec = vecToLight.Normalized
-					let cosAngle = lightVec.Dot (normal).Clamp (0f, 1f)
-					let attenIntensity = Attenuation (pointLight, vecToLight.Length) * pointLight.intensity
-					let viewDir = -position.Normalized
-					let halfAngle = (lightVec + viewDir).Normalized
-					let blinn = cosAngle == 0f ? 0f :
-						normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
-					select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn)
+					let lightDir = vecToLight.Normalized
+					let diffuse = LightDiffuseIntensity (lightDir, pointLight.intensity, normal)
+					let specular = LightSpecularIntensity (lightDir, pointLight.intensity, position, normal, shininess)
+					let attenuation = Attenuation (pointLight, vecToLight.Length)
+					select new DiffuseAndSpecular (diffuse * attenuation, specular * attenuation)
 				)
 			);
 
@@ -120,18 +123,19 @@
 		/// Calculate the global light intensity given the global lightin parameters
 		/// and the diffuse and other color coefficents of a vertex.
 		/// </summary>
-		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3> GlobalLightIntensity =
+		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3, Vec3, Vec3> GlobalLightIntensity =
 			GLShader.Function
 			(
 				() => GlobalLightIntensity,
 
-				(GlobalLight globalLight, Vec3 diffuseColor, Vec3 directionalAndSpecular) =>
+				(GlobalLight globalLighting, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
 				Shader.Evaluate
 				(
-					from gamma in new Vec3 (globalLight.inverseGamma).ToShader ()
-					let maxInten = globalLight.maxintensity
-					let ambient = diffuseColor * globalLight.ambientLightIntensity
-					select ((ambient + directionalAndSpecular).Pow (gamma) / maxInten).Clamp (0f, 1f)
+					from gamma in new Vec3 (globalLighting.inverseGamma).ToShader ()
+					let maxInten = globalLighting.maxintensity
+					let ambient = diffuseColor * globalLighting.ambientLightIntensity
+					select ((ambient + (diffuseLight * diffuseColor) + (specularLight * specularColor))
+						.Pow (gamma) / maxInten).Clamp (0f, 1f)
 				)
 			);
 		

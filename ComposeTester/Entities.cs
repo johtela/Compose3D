@@ -210,7 +210,7 @@
 					//samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
-				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
+				let diffuse = Lighting.DirLightDiffuseIntensity (!u.directionalLight, f.vertexNormal) * fragDiffuse
 				let specular = (!u.pointLights).Aggregate
 				(
 					new Vec3 (0f),

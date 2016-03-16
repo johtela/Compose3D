@@ -241,7 +241,7 @@
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
 				let rockBlend = GLMath.SmoothStep (0.9f, 0.99f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
-				let diffuse = Lighting.DirectionalLightIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
+				let diffuse = Lighting.DirLightDiffuseIntensity (!u.directionalLight, f.vertexNormal) * terrainColor
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuse * 10f, new Vec3 (0f))

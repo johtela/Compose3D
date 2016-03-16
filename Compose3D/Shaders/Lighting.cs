@@ -37,17 +37,45 @@
 			public float inverseGamma;
 		}
 
-		/// <summary>
-		/// Calculate intensity of a directional light given light source and
-		/// a vertex normal.
-		/// </summary>
-		public static readonly Func<DirectionalLight, Vec3, Vec3> DirectionalLightIntensity =
-			GLShader.Function 
-			(
-				() => DirectionalLightIntensity,
 
+		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
+			GLShader.Function
+			(
+				() => LightDiffuseIntensity,
+				(Vec3 lightDir, Vec3 intensity, Vec3 normal) =>
+					intensity * normal.Dot (lightDir).Clamp (0f, 1f)
+			);
+
+
+		public static readonly Func<DirectionalLight, Vec3, Vec3> DirLightDiffuseIntensity =
+			GLShader.Function
+			(
+				() => DirLightDiffuseIntensity,
 				(DirectionalLight dirLight, Vec3 normal) => 
-				(dirLight.intensity * normal.Dot (dirLight.direction)).Clamp (0f, 1f)
+					LightDiffuseIntensity (dirLight.direction, dirLight.intensity, normal)
+			);
+
+		public static readonly Func<Vec3, Vec3, Vec3, Vec3, float, Vec3> LightSpecularIntensity =
+			GLShader.Function
+			(
+				() => LightSpecularIntensity,
+				(Vec3 lightDir, Vec3 intensity, Vec3 position, Vec3 normal, float shininess) =>
+				Shader.Evaluate
+				(
+					from cosAngle in lightDir.Dot (normal).Clamp (0f, 1f).ToShader ()
+					let viewDir = -position.Normalized
+					let halfAngle = (lightDir + viewDir).Normalized
+					let blinn = cosAngle == 0f ? 0f : normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
+					select intensity * blinn
+				)
+			);
+
+		public static readonly Func<DirectionalLight, Vec3, Vec3, float, Vec3> DirLightSpecularIntensity =
+			GLShader.Function
+			(
+				() => DirLightSpecularIntensity,
+				(DirectionalLight dirLight, Vec3 position, Vec3 normal, float shininess) =>
+					LightSpecularIntensity (dirLight.direction, dirLight.intensity, position, normal, shininess)
 			);
 
 		/// <summary>
@@ -83,7 +111,7 @@
 					let viewDir = -position.Normalized
 					let halfAngle = (lightVec + viewDir).Normalized
 					let blinn = cosAngle == 0f ? 0f :
-					normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
+						normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
 					select (diffuse * attenIntensity * cosAngle) + (specular * attenIntensity * blinn)
 				)
 			);

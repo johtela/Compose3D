@@ -45,7 +45,7 @@
 		{
 			Intensity = intensity;
 			Distance = distance;
-			Direction = direction;
+			Direction = direction.Normalized;
 		}
 
 		public Mat4 WorldToLight

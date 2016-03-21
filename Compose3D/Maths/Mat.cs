@@ -204,6 +204,15 @@
 				.Multiply (Translation<M> (vec.Multiply (-1f).ToArray<V, float> ()));
 		}
 
+		public static M RemoveTranslation<M> (this M mat)
+			where M : struct, ISquareMat<M, float>
+		{
+			var lastcol = mat.Columns - 1;
+			for (int i = 0; i < mat.Rows - 1; i++)
+				mat[lastcol, i] = 0f;
+			return mat;
+		}
+
         public static float Determinant<M> (M mat)
             where M : struct, ISquareMat<M, float>
         {

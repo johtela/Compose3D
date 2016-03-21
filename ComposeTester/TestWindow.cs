@@ -18,6 +18,7 @@
 		private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Renderers
+		private Skybox _skybox;
 		private Terrain _terrain;
 		private Entities _entities;
 
@@ -32,6 +33,7 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
+			_skybox = new Skybox ();
 			_terrain = new Terrain ();
 			_entities = new Entities ();
 			_sceneGraph = CreateSceneGraph ();
@@ -51,8 +53,8 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (2.5f), 
-				direction: new Vec3 (0.75f, 1f, 0f),
+				intensity: new Vec3 (2f), 
+				direction: new Vec3 (1f, 1f, 0f),
 				distance: 100f);
 			//var pointLight1 = new PointLight (sceneGraph,
 			//	intensity: new Vec3 (2f),
@@ -70,7 +72,7 @@
 			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
 				ambientLightIntensity: new Vec3 (0.1f), 
 				maxIntensity: 2f, 
-				gammaCorrection: 1.5f),
+				gammaCorrection: 1.2f),
 				_dirLight, _camera, _terrain.CreateScene (sceneGraph),
 					_entities.CreateScene (sceneGraph));
 			return sceneGraph;
@@ -109,6 +111,7 @@
 		{
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			_skybox.Render (_camera);
 			_terrain.Render (_camera);
 			_entities.Render (_camera);
 
@@ -122,6 +125,7 @@
 		private void ResizeViewport (Vec2 size)
 		{
 			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
+			_skybox.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			_terrain.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			_entities.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
 			GL.Viewport (ClientSize);

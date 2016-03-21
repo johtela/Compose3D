@@ -8,6 +8,7 @@
 	using Compose3D.GLTypes;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
+	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
@@ -54,12 +55,12 @@
 		{
 			public Uniform<Mat4> worldMatrix;
 			public Uniform<Mat4> perspectiveMatrix;
-			public Uniform<SamplerCube> cubeSampler;
+			public Uniform<SamplerCube> cubeMap;
 
 			public void Initialize (Program program)
 			{
 				using (program.Scope ())
-					cubeSampler &= new SamplerCube (0, new SamplerParams ()
+					cubeMap &= new SamplerCube (0, new SamplerParams ()
 					{
 						{ SamplerParameterName.TextureMagFilter, All.Linear },
 						{ SamplerParameterName.TextureMinFilter, All.Linear },
@@ -74,22 +75,23 @@
 		public readonly SkyboxUniforms Uniforms;
 
 		private Texture _texture;
-		private Geometry<SkyboxVertex> _geometry;
+		private VBO<SkyboxVertex> _vertices;
+		private VBO<int> _indices;
 
-		private const float _cubeSize = 100f;
+		private const float _cubeSize = 20f;
 		private readonly string[] _paths = new string[] 
-			{ "sky_right", "sky_left", "sky_top", "sky_bottom", "sky_back", "sky_front" };
+			{ "sky_right.bmp", "sky_left.bmp", "sky_top.bmp", "sky_bottom.bmp", "sky_back.bmp", "sky_front.bmp" };
 
 		public Skybox ()
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
 			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
-			_geometry = 
-				Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize)
-				.Center ()
-				.ReverseWinding ();
+			Uniforms.Initialize (SkyboxShader);
+			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
+			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
+			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			_texture = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures\{0}.bmp", s)),
+				_paths.Map (s => string.Format (@"Textures\{0}", s)),
 				new TextureParams ()
 				{
 					{ TextureParameterName.TextureMagFilter, All.Linear },
@@ -100,14 +102,49 @@
 				});
 		}
 
+		public void Render (Camera camera)
+		{
+			GL.Enable (EnableCap.CullFace);
+			GL.CullFace (CullFaceMode.Front);
+			GL.FrontFace (FrontFaceDirection.Cw);
+			GL.Disable (EnableCap.DepthTest);
+
+			using (SkyboxShader.Scope ())
+			{
+				(!Uniforms.cubeMap).Bind (_texture);
+				Uniforms.worldMatrix &= camera.WorldToCamera.RemoveTranslation ();
+				SkyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);
+				(!Uniforms.cubeMap).Unbind (_texture);
+			}
+		}
+
+		public void UpdateViewMatrix (Mat4 matrix)
+		{
+			using (SkyboxShader.Scope ())
+				Uniforms.perspectiveMatrix &= matrix;
+		}
+
 		public static GLShader VertexShader ()
 		{
-			return null;
+			return GLShader.Create (ShaderType.VertexShader, () =>
+				from v in Shader.Inputs<SkyboxVertex> ()
+				from u in Shader.Uniforms<SkyboxUniforms> ()
+				select new SkyboxFragment ()
+				{
+					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
+					texturePos = v.position / 10f
+				});
 		}
 
 		public static GLShader FragmentShader ()
 		{
-			return null;
+			return GLShader.Create (ShaderType.FragmentShader, () =>
+				from f in Shader.Inputs<SkyboxFragment> ()
+				from u in Shader.Uniforms<SkyboxUniforms> ()
+				select new
+				{
+					outputColor = (!u.cubeMap).Texture (f.texturePos)[Coord.x, Coord.y, Coord.z]
+				});
 		}
 	}
 }

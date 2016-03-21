@@ -196,10 +196,7 @@
 		public static GLShader VertexShader ()
 		{
 			Lighting.Use ();
-			return GLShader.Create
-			(
-				ShaderType.VertexShader, () =>
-
+			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
 				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
@@ -214,19 +211,14 @@
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
 					vertexTexPos = v.texturePos / 15f
-				}
-			);
+				});
 		}
 
 		public static GLShader FragmentShader ()
 		{
 			Lighting.Use ();
 			FragmentShaders.Use ();
-
-			return GLShader.Create
-			(
-				ShaderType.FragmentShader, () =>
-
+			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
 				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.vertexTexPos)
@@ -234,7 +226,7 @@
 				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.vertexTexPos)
 				let sandBlend = GLMath.SmoothStep (2f, 4f, f.height)
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
-				let rockBlend = GLMath.SmoothStep (0.9f, 0.99f, f.slope)
+				let rockBlend = GLMath.SmoothStep (0.8f, 0.9f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
 				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.directionalLight).direction,
 					(!u.directionalLight).intensity, f.vertexNormal)
@@ -242,8 +234,7 @@
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuseLight, new Vec3 (0f),
 						terrainColor, new Vec3 (0f)).Mix (!u.skyColor, f.visibility)
-				}
-			);
+				});
 		}
 	}
 }

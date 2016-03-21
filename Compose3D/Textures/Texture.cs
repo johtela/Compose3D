@@ -56,10 +56,10 @@
 
 		public void SetParameters (TextureParams parameters)
 		{
+			if (parameters == null)
+				return;
 			BindTexture (() =>
 			{
-				if (parameters == null)
-					return;
 				foreach (var param in parameters)
 				{
 					if (param.Item2 is int || param.Item2.GetType ().IsEnum)
@@ -105,26 +105,33 @@
 			return result;
 		}
 
-		public static Texture FromFile (string path, bool useMipmap, TextureParams parameters)
+		private static void CheckFileExists (string path)
 		{
 			if (!File.Exists (path))
 				throw new ArgumentException ("Could not find texture file: " + path);
+		}
+
+		public static Texture FromFile (string path, bool useMipmap, TextureParams parameters)
+		{
+			CheckFileExists (path);
 			return FromBitmap (new Bitmap (path), useMipmap, parameters);
 		}
 
 		public static Texture CubeMapFromFiles (string[] paths, TextureParams parameters)
 		{
+			if (paths.Length > 6)
+				throw new ArgumentException ("Too many file paths (cube has only 6 sides)", "paths");
 			var result = new Texture (TextureTarget.TextureCubeMap);
 			result.BindTexture (() =>
 			{
 				for (int i = 0; i < paths.Length; i++)
 				{
 					var path = paths[i];
-					if (string.IsNullOrEmpty (path))
-						continue;
-					if (!File.Exists (path))
-						throw new ArgumentException ("Could not find texture file: " + path);
-					result.LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i);
+					if (!string.IsNullOrEmpty (path))
+					{
+						CheckFileExists (path);
+						result.LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i);
+					}
 				}
 				result.SetParameters (parameters);
 			});

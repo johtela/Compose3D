@@ -80,18 +80,19 @@
 
 		private const float _cubeSize = 20f;
 		private readonly string[] _paths = new string[] 
-			{ "sky_right.bmp", "sky_left.bmp", "sky_top.bmp", "sky_bottom.bmp", "sky_back.bmp", "sky_front.bmp" };
+			{ "sky_right", "sky_left", "sky_top", "sky_right", "sky_front", "sky_back" };
 
 		public Skybox ()
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
 			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
 			Uniforms.Initialize (SkyboxShader);
-			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
+			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ()
+				.Translate (0f, -5f);
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			_texture = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures\{0}", s)),
+				_paths.Map (s => s == null ? null : string.Format (@"Textures/{0}.bmp", s)),
 				new TextureParams ()
 				{
 					{ TextureParameterName.TextureMagFilter, All.Linear },

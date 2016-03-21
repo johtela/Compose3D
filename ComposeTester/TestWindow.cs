@@ -28,7 +28,7 @@
 		private DirectionalLight _dirLight;
 		private Vec3 _rotation;
 
-		private readonly Vec3 _skyColor = new Vec3 (0.2f, 0.3f, 0.5f);
+		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
 
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")

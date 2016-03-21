@@ -1,4 +1,4 @@
-﻿namespace Compose3D
+﻿namespace Compose3D.Geometry
 {
 	using System;
 	using Maths;

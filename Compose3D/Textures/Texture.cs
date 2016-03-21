@@ -73,7 +73,7 @@
 			});
 		}
 
-		public void LoadBitmap (Bitmap bitmap)
+		public void LoadBitmap (Bitmap bitmap, TextureTarget target)
 		{
 			BindTexture (() =>
 			{
@@ -81,7 +81,7 @@
 					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 				try
 				{
-					GL.TexImage2D (_target, 0, MapPixelInternalFormat (bitmap.PixelFormat), 
+					GL.TexImage2D (target, 0, MapPixelInternalFormat (bitmap.PixelFormat), 
 						bitmap.Width, bitmap.Height, 0, MapPixelFormat (bitmap.PixelFormat), 
 						PixelType.UnsignedByte, bitmapData.Scan0);
 				}
@@ -97,7 +97,7 @@
 			var result = new Texture (TextureTarget.Texture2D);
 			result.BindTexture (() =>
 			{
-				result.LoadBitmap (bitmap);
+				result.LoadBitmap (bitmap, result._target);
 				result.SetParameters (parameters);
 				if (useMipmap)
 					GL.GenerateMipmap (MapMipmapTarget (TextureTarget.Texture2D));
@@ -110,6 +110,25 @@
 			if (!File.Exists (path))
 				throw new ArgumentException ("Could not find texture file: " + path);
 			return FromBitmap (new Bitmap (path), useMipmap, parameters);
+		}
+
+		public static Texture CubeMapFromFiles (string[] paths, TextureParams parameters)
+		{
+			var result = new Texture (TextureTarget.TextureCubeMap);
+			result.BindTexture (() =>
+			{
+				for (int i = 0; i < paths.Length; i++)
+				{
+					var path = paths[i];
+					if (string.IsNullOrEmpty (path))
+						continue;
+					if (!File.Exists (path))
+						throw new ArgumentException ("Could not find texture file: " + path);
+					result.LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i);
+				}
+				result.SetParameters (parameters);
+			});
+			return result;
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

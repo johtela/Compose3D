@@ -15,7 +15,8 @@
 	using Extensions;
 
 	[StructLayout (LayoutKind.Sequential)]
-	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, ITextured
+	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, 
+		ITextured, ITagged<Vertex>
 	{
 		internal Vec3 position;
 		internal Vec3 normal;
@@ -55,7 +56,7 @@
 			get { return normal; }
 			set
 			{
-				if (float.IsNaN (value.X) || float.IsNaN (value.Y) || float.IsNaN (value.Z))
+				if (value.IsNan ())
 					throw new ArgumentException ("Normal component NaN");
 				normal = value;
 			}
@@ -67,7 +68,7 @@
 			set { texturePos = value; }
 		}
 
-		int IVertex.Tag
+		int ITagged<Vertex>.Tag
 		{
 			get { return tag; }
 			set { tag = value; }

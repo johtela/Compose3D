@@ -52,7 +52,7 @@
 		}
 
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
-			GLShader.Function
+			GLShader.Function 
 			(
 				() => LightDiffuseIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 normal) =>
@@ -61,11 +61,10 @@
 
 
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3, float, Vec3> LightSpecularIntensity =
-			GLShader.Function
+			GLShader.Function 
 			(
 				() => LightSpecularIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 position, Vec3 normal, float shininess) =>
-				Shader.Evaluate
 				(
 					from cosAngle in lightDir.Dot (normal).Clamp (0f, 1f).ToShader ()
 					let viewDir = -position.Normalized
@@ -73,6 +72,7 @@
 					let blinn = cosAngle == 0f ? 0f : normal.Dot (halfAngle).Clamp (0f, 1f).Pow (shininess)
 					select intensity * blinn
 				)
+				.Evaluate ()
 			);
 
 		public static readonly Func<DirectionalLight, Vec3, Vec3, float, DiffuseAndSpecular> DirLightIntensity =
@@ -93,7 +93,6 @@
 			GLShader.Function 
 			(
 				() => Attenuation, 
-
 				(PointLight pointLight, float distance) => 
 					(1f / ((pointLight.linearAttenuation * distance) + 
 						(pointLight.quadraticAttenuation * distance * distance))).Clamp (0f, 1f)
@@ -108,7 +107,6 @@
 			(
 				() => PointLightIntensity,
 				(PointLight pointLight, Vec3 position, Vec3 normal, float shininess) =>
-				Shader.Evaluate
 				(
 					from vecToLight in (pointLight.position - position).ToShader ()
 					let lightDir = vecToLight.Normalized
@@ -117,6 +115,7 @@
 					let attenuation = Attenuation (pointLight, vecToLight.Length)
 					select new DiffuseAndSpecular (diffuse * attenuation, specular * attenuation)
 				)
+				.Evaluate ()
 			);
 
 		/// <summary>
@@ -127,9 +126,7 @@
 			GLShader.Function
 			(
 				() => GlobalLightIntensity,
-
 				(GlobalLight globalLighting, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
-				Shader.Evaluate
 				(
 					from gamma in new Vec3 (globalLighting.inverseGamma).ToShader ()
 					let maxInten = globalLighting.maxintensity
@@ -137,13 +134,13 @@
 					select ((ambient + (diffuseLight * diffuseColor) + (specularLight * specularColor))
 						.Pow (gamma) / maxInten).Clamp (0f, 1f)
 				)
+				.Evaluate ()
 			);
 		
 		public static readonly Func<float, float, float, float> FogVisibility =
 			GLShader.Function
 			(
 				() => FogVisibility,
-				
 				(float distance, float density, float gradient) =>
 					1f - GLMath.Exp (-(distance * density).Pow (gradient))
 			);

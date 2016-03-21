@@ -19,8 +19,6 @@
 		internal Vec3 position;
 		internal Vec3 normal;
 		internal Vec2 texturePos;
-		[OmitInGlsl]
-		internal int tag;
 
 		Vec3 IPositional<Vec3>.Position
 		{
@@ -33,7 +31,7 @@
 			get { return normal; }
 			set
 			{
-				if (float.IsNaN (value.X) || float.IsNaN (value.Y) || float.IsNaN (value.Z))
+				if (value.IsNan ())
 					throw new ArgumentException ("Normal component NaN");
 				normal = value;
 			}
@@ -45,16 +43,10 @@
 			set { texturePos = value; }
 		}
 
-		int IVertex.Tag
-		{
-			get { return tag; }
-			set { tag = value; }
-		}
-
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, Normal={3}, TexturePos={4}, Tag={5}]",
-				position, normal, texturePos, tag);
+			return string.Format ("[Vertex: Position={0}, Normal={3}, TexturePos={4}]",
+				position, normal, texturePos);
 		}
 	}
 
@@ -90,12 +82,12 @@
 			private Sampler2D CreateSampler (int index)
 			{
 				return new Sampler2D (index, new SamplerParams ()
-					{
-						{ SamplerParameterName.TextureMagFilter, All.Mipmap },
-						{ SamplerParameterName.TextureMinFilter, All.Mipmap },
-						{ SamplerParameterName.TextureWrapR, All.Repeat },
-						{ SamplerParameterName.TextureWrapS, All.Repeat }
-					});				
+				{
+					{ SamplerParameterName.TextureMagFilter, All.Mipmap },
+					{ SamplerParameterName.TextureMinFilter, All.Mipmap },
+					{ SamplerParameterName.TextureWrapR, All.Repeat },
+					{ SamplerParameterName.TextureWrapS, All.Repeat }
+				});				
 			}
 		}
 		
@@ -107,6 +99,9 @@
 		private Texture _grassTexture;
 		private TerrainMesh<TerrainVertex>[,] _meshes;
 		private Mat4 _worldToModel;
+
+		private const int _patchSize = 64;
+		private const int _patchStep = 58;
 
 		public Terrain ()
 		{
@@ -131,8 +126,8 @@
 			for (int x = 0; x < 100; x++)
 				for (int y = 0; y < 100; y++)
 				{
-					var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * 58, y * 58), new Vec2i (64, 64),
-						20f, 0.039999f, 3, 5f, 4f);
+					var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * _patchStep, y * _patchStep), 
+						new Vec2i (_patchSize, _patchSize), 20f, 0.039999f, 3, 5f, 4f);
 					_meshes[x, y] = mesh;
 					yield return mesh;
 				}
@@ -151,10 +146,10 @@
 
 		public float Height (Vec3 posInWorldSpace)
 		{
-			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / 58f;
+			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / _patchStep;
 			var mesh = _meshes[(int)coords.X, (int)coords.Y];
-			var vertVec = coords.Fraction () * 58f;
-			var vertIndex = ((int)vertVec.Y * 64) + (int)vertVec.X;
+			var vertVec = coords.Fraction () * _patchStep;
+			var vertIndex = ((int)vertVec.Y * _patchSize) + (int)vertVec.X;
 			return mesh.Patch.Vertices[vertIndex].position.Y;
 		}
 

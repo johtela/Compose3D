@@ -40,7 +40,6 @@
 	public abstract class Geometry<V> : ITransformable<Geometry<V>, Mat4> 
 		where V : struct, IVertex
 	{
-		private static int _lastTag;
 		private Aabb<Vec3> _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
@@ -113,17 +112,6 @@
 				if (Vertices [i].Equals (vertex))
 					return i;
 			throw new ArgumentException ("Could not find vertex: " + vertex);
-		}
-
-		public int TagVertex (V vertex)
-		{
-			Vertices [FindVertex (vertex)].Tag = ++_lastTag;
-			return _lastTag;
-		}
-
-		public V FindVertexByTag (int tag)
-		{
-			return Vertices.First (v => v.Tag == tag);
 		}
 
 		#region ITransformable implementation

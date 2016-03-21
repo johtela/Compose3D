@@ -35,18 +35,20 @@
 	/// All Vertex structures need to implement this interface. Through it
 	/// geometry generators can set vertex attributes.
 	/// </description>
-	public interface IVertex : IPositional<Vec3>, IPlanar<Vec3>
-	{
-		/// <summary>
-		/// Tag can be used to identify a vertex.
-		/// </summary>
-		int Tag { get; set; }
-	}
+	public interface IVertex : IPositional<Vec3>, IPlanar<Vec3>	{ }
 
 	public interface IVertexInitializer<V>
 		where V : struct, IVertex
 	{
 		void Initialize (ref V vertex);
+	}
+
+	public interface ITagged<V> where V : IVertex
+	{
+		/// <summary>
+		/// Tag can be used to identify a vertex.
+		/// </summary>
+		int Tag { get; set; }
 	}
 
 	public static class Dir3D
@@ -61,22 +63,17 @@
 
 	public static class VertexHelpers
 	{
-        public static V New<V>(Vec3 position, Vec3 normal, int tag)
+		private static int _lastTag;
+
+		public static V New<V>(Vec3 position, Vec3 normal)
             where V : struct, IVertex
         {
             var vertex = new V ();
             vertex.Position = position;
             vertex.Normal = normal;
-            vertex.Tag = tag;
             if (vertex is IVertexInitializer<V>)
                 (vertex as IVertexInitializer<V>).Initialize (ref vertex);
             return vertex;
-        }
-
-        public static V New<V>(Vec3 position, Vec3 normal)
-            where V : struct, IVertex
-        {
-            return New<V> (position, normal, 0);
         }
 
 		public static V With<V>(this V vertex, Vec3 position, Vec3 normal)
@@ -138,6 +135,19 @@
 			var normal = ab.Cross (ac);
 
 			return vertices.All (v => normal.Dot (v.Position - first).ApproxEquals (0f, 0.1f));
+		}
+
+		public static int TagVertex<V> (this Geometry<V> geometry, V vertex) 
+			where V : struct, IVertex, ITagged<V>
+		{
+			geometry.Vertices[geometry.FindVertex (vertex)].Tag = ++_lastTag;
+			return _lastTag;
+		}
+
+		public static V FindVertexByTag<V> (this Geometry<V> geometry, int tag)
+			where V : struct, IVertex, ITagged<V>
+		{
+			return geometry.Vertices.First (v => v.Tag == tag);
 		}
 	}
 }

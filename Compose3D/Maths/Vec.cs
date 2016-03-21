@@ -254,6 +254,26 @@
 			return res;
 		}
 
+		public static bool All<V, T> (this V vec, Func<T, bool> predicate)
+			where V : struct, IVec<V, T>
+			where T : struct, IEquatable<T>
+		{
+			for (int i = 0; i < vec.Dimensions; i++)
+				if (!predicate (vec[i]))
+					return false;
+			return true;
+		}
+
+		public static bool Any<V, T> (this V vec, Func<T, bool> predicate)
+			where V : struct, IVec<V, T>
+			where T : struct, IEquatable<T>
+		{
+			for (int i = 0; i < vec.Dimensions; i++)
+				if (predicate (vec[i]))
+					return true;
+			return false;
+		}
+
 		/// <summary>
 		/// Calculate the normal vector given three points in a plane using the vector cross product.
 		/// </summary>
@@ -651,6 +671,15 @@
 			where V : struct, IVec<V, float>
 		{
 			return y.Map2<V, float> (x, GLMath.Atan2);
+		}
+
+		/// <summary>
+		/// Check whether any of the components of the vector are NaN. 
+		/// </summary>
+		public static bool IsNan<V> (this V vec)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Any<V, float> (float.IsNaN);
 		}
 	}
 }

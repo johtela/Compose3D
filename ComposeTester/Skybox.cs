@@ -92,7 +92,7 @@
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			_texture = Texture.CubeMapFromFiles (
-				_paths.Map (s => s == null ? null : string.Format (@"Textures/{0}.bmp", s)),
+				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)),
 				new TextureParams ()
 				{
 					{ TextureParameterName.TextureMagFilter, All.Linear },
@@ -133,7 +133,7 @@
 				select new SkyboxFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-					texturePos = v.position / 10f
+					texturePos = v.position
 				});
 		}
 

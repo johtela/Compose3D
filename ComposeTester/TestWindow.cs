@@ -53,8 +53,8 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (2f), 
-				direction: new Vec3 (1f, 1f, 0f),
+				intensity: new Vec3 (3f), 
+				direction: new Vec3 (0.5f, 0.5f, -1f),
 				distance: 100f);
 			//var pointLight1 = new PointLight (sceneGraph,
 			//	intensity: new Vec3 (2f),
@@ -68,13 +68,17 @@
 				upDirection: new Vec3 (0f, 1f, 0f),
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 400f),
 				aspectRatio: 1f);
-			
-			sceneGraph.Root.Add (new GlobalLighting (sceneGraph,
-				ambientLightIntensity: new Vec3 (0.1f), 
-				maxIntensity: 2f, 
-				gammaCorrection: 1.2f),
-				_dirLight, _camera, _terrain.CreateScene (sceneGraph),
-					_entities.CreateScene (sceneGraph));
+
+			sceneGraph.GlobalLighting = new GlobalLighting ()
+			{
+				AmbientLightIntensity = new Vec3 (0.25f),
+				MaxIntensity = 2f,
+				GammaCorrection = 1.2f,
+				EnvironmentMap = _skybox.EnvironmentMap
+			};
+			sceneGraph.Root.Add (_dirLight, _camera, 
+				_terrain.CreateScene (sceneGraph),
+				_entities.CreateScene (sceneGraph));
 			return sceneGraph;
 		}
 

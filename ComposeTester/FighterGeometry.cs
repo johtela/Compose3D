@@ -15,7 +15,7 @@
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<Path<P, Vec3>> Paths;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.GreyPlastic;
 
         private class Nose
 		{

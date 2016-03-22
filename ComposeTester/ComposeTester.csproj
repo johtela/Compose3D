@@ -110,6 +110,9 @@
     <Content Include="Textures\sky_back.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Textures\sky_bottom.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Textures\sky_top.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

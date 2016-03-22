@@ -73,7 +73,7 @@
 		public static IVertexColor<V> Chrome = new VertColor (
             Vec.FromArray<V, float> (0.4f, 0.4f, 0.4f),
             Vec.FromArray<V, float> (0.774597f, 0.774597f, 0.774597f),
-            26.8f);
+            76.8f);
 
 		public static IVertexColor<V> BlackPlastic = new VertColor (
             Vec.FromArray<V, float> (0.05f, 0.05f, 0.05f),

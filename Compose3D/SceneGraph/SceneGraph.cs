@@ -14,6 +14,9 @@
 		}
 
 		public IBoundingTree<Vec3, SceneNode> Index { get; internal set; }
+
 		public SceneGroup Root { get; private set; }
+
+		public GlobalLighting GlobalLighting { get; set; }
 	}
 }

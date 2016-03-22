@@ -122,15 +122,15 @@
 		/// Calculate the global light intensity given the global lightin parameters
 		/// and the diffuse and other color coefficents of a vertex.
 		/// </summary>
-		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3, Vec3, Vec3> GlobalLightIntensity =
+		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3> GlobalLightIntensity =
 			GLShader.Function
 			(
 				() => GlobalLightIntensity,
-				(GlobalLight globalLighting, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
+				(GlobalLight globalLighting, Vec3 ambientLight, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
 				(
 					from gamma in new Vec3 (globalLighting.inverseGamma).ToShader ()
 					let maxInten = globalLighting.maxintensity
-					let ambient = diffuseColor * globalLighting.ambientLightIntensity
+					let ambient = diffuseColor * ambientLight
 					select ((ambient + (diffuseLight * diffuseColor) + (specularLight * specularColor))
 						.Pow (gamma) / maxInten).Clamp (0f, 1f)
 				)

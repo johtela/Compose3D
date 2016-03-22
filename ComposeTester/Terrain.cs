@@ -232,8 +232,10 @@
 					(!u.directionalLight).intensity, f.vertexNormal)
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, diffuseLight, new Vec3 (0f),
-						terrainColor, new Vec3 (0f)).Mix (!u.skyColor, f.visibility)
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, 
+						(!u.globalLighting).ambientLightIntensity, diffuseLight, 
+						new Vec3 (0f), terrainColor, new Vec3 (0f))
+						.Mix (!u.skyColor, f.visibility)
 				});
 		}
 	}

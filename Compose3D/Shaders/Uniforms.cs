@@ -7,6 +7,7 @@
 
 	public class BasicUniforms
 	{
+		public Uniform<Mat4> modelMatrix;
 		public Uniform<Mat4> worldMatrix;
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
@@ -17,14 +18,17 @@
 		{
 			using (program.Scope ())
 			{
+				var gl = scene.GlobalLighting;
+				if (gl != null)
+				{
+					globalLighting &= new Lighting.GlobalLight ()
+					{
+						ambientLightIntensity = gl.AmbientLightIntensity,
+						maxintensity = gl.MaxIntensity,
+						inverseGamma = 1f / gl.GammaCorrection
+					};
+				}
 				scene.Root.Traverse ()
-					.WhenOfType<SceneNode, GlobalLighting> (globalLight =>
-						globalLighting &= new Lighting.GlobalLight ()
-						{
-							ambientLightIntensity = globalLight.AmbientLightIntensity,
-							maxintensity = globalLight.MaxIntensity,
-							inverseGamma = 1f / globalLight.GammaCorrection
-						})
 					.WhenOfType<SceneNode, DirectionalLight> (dirLight =>
 						directionalLight &= new Lighting.DirectionalLight ()
 						{

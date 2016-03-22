@@ -94,6 +94,7 @@
 			public Uniform<Lighting.PointLight[]> pointLights;
 			[GLArray (4)]
 			public Uniform<Sampler2D[]> samplers;
+			public Uniform<SamplerCube> environmentMap;
 
 			public new void Initialize (Program program, SceneGraph scene)
 			{
@@ -116,15 +117,18 @@
 					pointLights &= plights;
 
 					var samp = new Sampler2D[4];
+					var sampParams = new SamplerParams ()
+					{
+						{ SamplerParameterName.TextureMagFilter, All.Linear },
+						{ SamplerParameterName.TextureMinFilter, All.Linear },
+						{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
+						{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
+						{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
+					};
 					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i, new SamplerParams ()
-						{
-							{ SamplerParameterName.TextureMagFilter, All.Linear },
-							{ SamplerParameterName.TextureMinFilter, All.Linear },
-							{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-							{ SamplerParameterName.TextureWrapS, All.ClampToEdge }
-						});
+						samp[i] = new Sampler2D (i, sampParams);
 					samplers &= samp;
+					environmentMap &= new SamplerCube (0, sampParams);
 				}
 			}
 		}
@@ -154,13 +158,18 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 
+			var envTexture = camera.Graph.GlobalLighting.EnvironmentMap;
+
 			using (EntityShader.Scope ())
 				foreach (var mesh in camera.NodesInView <Mesh<Vertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
+					(!Uniforms.environmentMap).Bind (envTexture);
+					Uniforms.modelMatrix &= mesh.Transform;
 					Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;
 					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+					(!Uniforms.environmentMap).Unbind (envTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
 		}
@@ -179,10 +188,11 @@
 
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
-				let worldPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				let worldPos = !u.modelMatrix * new Vec4 (v.position, 1f)
 				select new TexturedFragment ()
 				{
-					gl_Position = !u.perspectiveMatrix * worldPos,
+					gl_Position = !u.perspectiveMatrix * viewPos,
 					vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
@@ -219,9 +229,11 @@
 					.Aggregate (dirLight, 
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
+				let ambient = (!u.environmentMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z] * 
+					(!u.globalLighting).ambientLightIntensity
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, totalLight.diffuse, 
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, ambient, totalLight.diffuse, 
 						totalLight.specular, fragDiffuse, f.vertexSpecular)
 				}
 			);

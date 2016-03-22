@@ -3,23 +3,17 @@
 	using DataStructures;
 	using Maths;
 	using Extensions;
+	using Textures;
 
 	/// <summary>
 	/// Global lighting parameters affecting the whole scene.
 	/// </summary>
-	public class GlobalLighting : SceneNode
+	public class GlobalLighting
 	{
 		public Vec3 AmbientLightIntensity;
 		public float MaxIntensity;
 		public float GammaCorrection;
-
-		public GlobalLighting (SceneGraph graph, Vec3 ambientLightIntensity, float maxIntensity, float gammaCorrection)
-			: base (graph)
-		{
-			AmbientLightIntensity = ambientLightIntensity;
-			MaxIntensity = maxIntensity;
-			GammaCorrection = gammaCorrection;
-		}
+		public Texture EnvironmentMap;
 	}
 
 	/// <summary>

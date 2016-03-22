@@ -1,7 +1,6 @@
 ﻿namespace ComposeTester
 {
 	using System;
-	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
 	using Extensions;
@@ -32,15 +31,14 @@
 			set
 			{
 				if (value.IsNan ())
-					throw new ArgumentException ("Normal component NaN");
+					throw new ArgumentException ("Normal component NaN.");
 				normal = value;
 			}
 		}
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, Normal={3}]",
-				position, normal);
+			return string.Format ("[Vertex: Position={0}, Normal={1}]", position, normal);
 		}
 	}
 
@@ -73,14 +71,14 @@
 
 		public readonly Program SkyboxShader;
 		public readonly SkyboxUniforms Uniforms;
+		public readonly Texture EnvironmentMap;
 
-		private Texture _texture;
 		private VBO<SkyboxVertex> _vertices;
 		private VBO<int> _indices;
 
 		private const float _cubeSize = 20f;
 		private readonly string[] _paths = new string[] 
-			{ "sky_right", "sky_left", "sky_top", "sky_right", "sky_front", "sky_back" };
+			{ "sky_right", "sky_left", "sky_top", "sky_bottom", "sky_front", "sky_back" };
 
 		public Skybox ()
 		{
@@ -91,7 +89,7 @@
 				.Translate (0f, -5f);
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
-			_texture = Texture.CubeMapFromFiles (
+			EnvironmentMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)),
 				new TextureParams ()
 				{
@@ -112,10 +110,10 @@
 
 			using (SkyboxShader.Scope ())
 			{
-				(!Uniforms.cubeMap).Bind (_texture);
+				(!Uniforms.cubeMap).Bind (EnvironmentMap);
 				Uniforms.worldMatrix &= camera.WorldToCamera.RemoveTranslation ();
 				SkyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);
-				(!Uniforms.cubeMap).Unbind (_texture);
+				(!Uniforms.cubeMap).Unbind (EnvironmentMap);
 			}
 		}
 

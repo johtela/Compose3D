@@ -136,7 +136,7 @@
         private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
             var syntax = GLType (memberType); 
-            if (!member.IsBuiltin ())
+            if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute))))
             {
                 var qualifiers = member.GetQualifiers ();
 				DeclOut (string.IsNullOrEmpty (qualifiers) ?
@@ -153,7 +153,7 @@
                     DeclareVariable (prop, prop.PropertyType, prefix);
             else
                 foreach (var field in type.GetGLFields ())
-                    DeclareVariable (field, field.FieldType, prefix);
+					DeclareVariable (field, field.FieldType, prefix);
         }
 
 		private void OutputFromBinding (ParameterExpression par, MethodCallExpression node)

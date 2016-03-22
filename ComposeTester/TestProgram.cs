@@ -14,7 +14,6 @@
 		static void Main (string[] args)
 		{
 			var wnd = new TestWindow ();
-			wnd.Init ();
 			wnd.Run ();
 			//Task.Factory.StartNew (() =>
 			//	Tester.RunTestsTimed (

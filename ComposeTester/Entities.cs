@@ -90,6 +90,7 @@
 	{
 		public class EntityUniforms : BasicUniforms
 		{
+			public Uniform<Mat4> modelMatrix;
 			[GLArray (4)]
 			public Uniform<Lighting.PointLight[]> pointLights;
 			[GLArray (4)]
@@ -128,7 +129,7 @@
 					for (int i = 0; i < samp.Length; i++)
 						samp[i] = new Sampler2D (i, sampParams);
 					samplers &= samp;
-					environmentMap &= new SamplerCube (0, sampParams);
+					environmentMap &= new SamplerCube (4, sampParams);
 				}
 			}
 		}
@@ -142,11 +143,11 @@
 			EntityShader.InitializeUniforms (Uniforms = new EntityUniforms ());
 		}
 
-		public SceneNode CreateScene (SceneGraph sceneGraph)
+		public TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			return new Mesh<Vertex> (sceneGraph, fighter.Fighter)
-				.OffsetOrientAndScale (new Vec3 (0f, 10f, -10f), new Vec3 (0f, MathHelper.Pi, 0f), new Vec3 (1f));
+			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (MathHelper.PiOver2))
+				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
 		public void Render (Camera camera)
@@ -166,7 +167,7 @@
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.environmentMap).Bind (envTexture);
 					Uniforms.modelMatrix &= mesh.Transform;
-					Uniforms.worldMatrix &= camera.WorldToCamera * mesh.Transform;
+					Uniforms.viewMatrix &= camera.WorldToCamera * mesh.Transform;
 					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					(!Uniforms.environmentMap).Unbind (envTexture);
@@ -188,7 +189,7 @@
 
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
-				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
+				let viewPos = !u.viewMatrix * new Vec4 (v.position, 1f)
 				let worldPos = !u.modelMatrix * new Vec4 (v.position, 1f)
 				select new TexturedFragment ()
 				{
@@ -217,8 +218,8 @@
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.texturePosition) :
-					//samplerNo == 1 ? FragmentShaders.TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
-					//samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
+					samplerNo == 1 ? FragmentShaders.TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
+					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
 				let dirLight = Lighting.DirLightIntensity (!u.directionalLight, f.vertexPosition, 
@@ -229,7 +230,7 @@
 					.Aggregate (dirLight, 
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
-				let ambient = (!u.environmentMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z] * 
+				let ambient = (!u.environmentMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z] *
 					(!u.globalLighting).ambientLightIntensity
 				select new
 				{

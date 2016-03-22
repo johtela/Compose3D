@@ -72,7 +72,7 @@
 			};
 		}
 
-		public static Reaction<T> Merge<T> (params Reaction<T>[] reactions)
+		public static Reaction<T> Propagate<T> (params Reaction<T>[] reactions)
 		{
 			return input =>
 			{

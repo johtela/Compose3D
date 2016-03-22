@@ -52,8 +52,9 @@
 
 	public class Terrain
 	{
-		public class TerrainFragment : DiffuseFragment
+		public class TerrainFragment : Fragment
 		{
+			public Vec3 vertexNormal;
 			public float visibility;
 			public Vec2 vertexTexPos;
 			public float height;
@@ -147,10 +148,15 @@
 		public float Height (Vec3 posInWorldSpace)
 		{
 			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / _patchStep;
-			var mesh = _meshes[(int)coords.X, (int)coords.Y];
+			var x = (int)coords.X;
+			var y = (int)coords.Y;
+			if (x >= _meshes.GetLength (0) || y >= _meshes.GetLength (1))
+				return 10f;
+			var mesh = _meshes[x, y];
 			var vertVec = coords.Fraction () * _patchStep;
 			var vertIndex = ((int)vertVec.Y * _patchSize) + (int)vertVec.X;
-			return mesh.Patch.Vertices[vertIndex].position.Y;
+			var vertices = mesh.Patch.Vertices;
+			return vertices != null ? vertices[vertIndex].position.Y : 10f;
 		}
 
 		public void Render (Camera camera)
@@ -173,7 +179,7 @@
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 					{
-						Uniforms.worldMatrix &= worldToCamera * mesh.Transform;
+						Uniforms.viewMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
 						var lod = distance < 100 ? 0 :
@@ -199,15 +205,12 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
-				let viewPos = !u.worldMatrix * new Vec4 (v.position, 1f)
-				let vertPos = viewPos[Coord.x, Coord.y, Coord.z]
+				let viewPos = !u.viewMatrix * new Vec4 (v.position, 1f)
 				select new TerrainFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * viewPos,
-					vertexPosition = vertPos,
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
-					vertexDiffuse = new Vec3 (1f),
-					visibility = Lighting.FogVisibility (vertPos.Z, 0.003f, 3f),
+					visibility = Lighting.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
 					vertexTexPos = v.texturePos / 15f
@@ -230,11 +233,11 @@
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
 				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.directionalLight).direction,
 					(!u.directionalLight).intensity, f.vertexNormal)
+				let ambient = (!u.globalLighting).ambientLightIntensity
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, 
-						(!u.globalLighting).ambientLightIntensity, diffuseLight, 
-						new Vec3 (0f), terrainColor, new Vec3 (0f))
+						ambient, diffuseLight, new Vec3 (0f), terrainColor, new Vec3 (0f))
 						.Mix (!u.skyColor, f.visibility)
 				});
 		}

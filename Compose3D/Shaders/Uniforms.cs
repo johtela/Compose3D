@@ -7,8 +7,7 @@
 
 	public class BasicUniforms
 	{
-		public Uniform<Mat4> modelMatrix;
-		public Uniform<Mat4> worldMatrix;
+		public Uniform<Mat4> viewMatrix;
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
 		public Uniform<Lighting.GlobalLight> globalLighting;

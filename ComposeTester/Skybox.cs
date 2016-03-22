@@ -84,7 +84,6 @@
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
 			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
-			Uniforms.Initialize (SkyboxShader);
 			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ()
 				.Translate (0f, -5f);
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);

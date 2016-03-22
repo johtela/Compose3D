@@ -1,5 +1,7 @@
 ﻿namespace ComposeTester
 {
+	using System;
+	using System.Linq;
 	using Compose3D.Maths;
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
@@ -8,14 +10,13 @@
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
-	using System.Linq;
 	using Extensions;
 
 	public class TestWindow : GameWindow
 	{
-		// OpenGL objects
-		private Program _shadowShader;
-		private ExampleShaders.ShadowUniforms _shadowUniforms;
+		//// OpenGL objects
+		//private Program _shadowShader;
+		//private ExampleShaders.ShadowUniforms _shadowUniforms;
 
 		// Renderers
 		private Skybox _skybox;
@@ -27,6 +28,7 @@
 		private Camera _camera;
 		private DirectionalLight _dirLight;
 		private Vec3 _rotation;
+		private TransformNode _fighter;
 
 		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
 
@@ -37,16 +39,13 @@
 			_terrain = new Terrain ();
 			_entities = new Entities ();
 			_sceneGraph = CreateSceneGraph ();
-
-			_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
-			_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
-		}
-
-		public void Init ()
-		{
+			_skybox.Uniforms.Initialize (_skybox.SkyboxShader);
 			_terrain.Uniforms.Initialize (_terrain.TerrainShader, _sceneGraph, _skyColor);
 			_entities.Uniforms.Initialize (_entities.EntityShader, _sceneGraph);
 			SetupReactions ();
+
+			//_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
+			//_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
 		}
 
 		private SceneGraph CreateSceneGraph ()
@@ -54,7 +53,7 @@
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (3f), 
-				direction: new Vec3 (0.5f, 0.5f, -1f),
+				direction: new Vec3 (0.75f, 0.75f, -1f),
 				distance: 100f);
 			//var pointLight1 = new PointLight (sceneGraph,
 			//	intensity: new Vec3 (2f),
@@ -71,20 +70,22 @@
 
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
-				AmbientLightIntensity = new Vec3 (0.25f),
-				MaxIntensity = 2f,
+				AmbientLightIntensity = new Vec3 (0.3f),
+				MaxIntensity = 1.5f,
 				GammaCorrection = 1.2f,
 				EnvironmentMap = _skybox.EnvironmentMap
 			};
-			sceneGraph.Root.Add (_dirLight, _camera, 
-				_terrain.CreateScene (sceneGraph),
-				_entities.CreateScene (sceneGraph));
+			_fighter = _entities.CreateScene (sceneGraph);
+			sceneGraph.Root.Add (_dirLight, _camera, _terrain.CreateScene (sceneGraph), _fighter);
 			return sceneGraph;
 		}
 
 		private void SetupReactions ()
 		{
-			React.By<double> (Render)
+			React.Propagate (
+				React.By<double> (Render),
+				React.By<float> (MoveFighter)
+					.Map<double, float> (t => (float)t * 2f))
 				.WhenRendered (this);
 
 			React.By<Vec2> (ResizeViewport)
@@ -109,7 +110,7 @@
 					new Vec3 (0f, 0.01f, 0f) : 
 					new Vec3 (0f, -0.01f, 0f))
 				.WhenKeyDown (this, Key.A, Key.D);
-			}
+		}
 
 		private void Render (double time)
 		{
@@ -155,6 +156,18 @@
 			_camera.Position = cameraPos.Y >= terrainHeight ? cameraPos :
 				new Vec3 (cameraPos.X, terrainHeight, cameraPos.Z);
 			_camera.Target = _camera.Position + lookVec;
+		}
+
+		private void MoveFighter (float delta)
+		{
+			var x = _fighter.Offset.X + (delta * 10f);
+			var y = _fighter.Offset.Y;
+			_fighter.Offset = new Vec3 (x, Math.Max (_terrain.Height (_fighter.Offset) + 10f, y), 0f);
+			var angle = x * 0.01f;
+			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
+			var rotation = Mat.RotationY<Mat4> (angle / 2f);
+			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (25f, 5f, 0f));
+			_camera.Target = _fighter.Offset;
 		}
 	}
 }

@@ -49,7 +49,7 @@
 			};
 		}
 
-		public static Reaction<U> Reduce<T, U> (this Reaction<T> reaction, Func<T, U, T> func, T initial)
+		public static Reaction<T> Reduce<T, U> (this Reaction<U> reaction, Func<U, T, U> func, U initial)
 		{
 			var current = initial;
 			return input =>

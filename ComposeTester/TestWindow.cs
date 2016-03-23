@@ -85,7 +85,7 @@
 			React.Propagate (
 				React.By<double> (Render),
 				React.By<float> (MoveFighter)
-					.Map<double, float> (t => (float)t * 2f))
+					.Reduce<double, float> ((s, t) => s + (float)t * 10f, 0f))
 				.WhenRendered (this);
 
 			React.By<Vec2> (ResizeViewport)
@@ -130,9 +130,10 @@
 		private void ResizeViewport (Vec2 size)
 		{
 			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
-			_skybox.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
-			_terrain.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
-			_entities.UpdateViewMatrix (_camera.Frustum.CameraToScreen);
+			var viewMatrix = _camera.Frustum.CameraToScreen;
+			_skybox.UpdateViewMatrix (viewMatrix);
+			_terrain.UpdateViewMatrix (viewMatrix);
+			_entities.UpdateViewMatrix (viewMatrix);
 			GL.Viewport (ClientSize);
 		}
 
@@ -158,12 +159,11 @@
 			_camera.Target = _camera.Position + lookVec;
 		}
 
-		private void MoveFighter (float delta)
+		private void MoveFighter (float x)
 		{
-			var x = _fighter.Offset.X + (delta * 10f);
-			var y = _fighter.Offset.Y;
-			_fighter.Offset = new Vec3 (x, Math.Max (_terrain.Height (_fighter.Offset) + 10f, y), 0f);
-			var angle = x * 0.01f;
+			_fighter.Offset = new Vec3 (x, 
+				Math.Max (_terrain.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), 0f);
+			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
 			var rotation = Mat.RotationY<Mat4> (angle / 2f);
 			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (25f, 5f, 0f));

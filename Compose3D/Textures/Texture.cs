@@ -73,7 +73,7 @@
 			});
 		}
 
-		public void LoadBitmap (Bitmap bitmap, TextureTarget target)
+		public void LoadBitmap (Bitmap bitmap, TextureTarget target, int lodLevel)
 		{
 			BindTexture (() =>
 			{
@@ -81,7 +81,7 @@
 					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 				try
 				{
-					GL.TexImage2D (target, 0, MapPixelInternalFormat (bitmap.PixelFormat), 
+					GL.TexImage2D (target, lodLevel, MapPixelInternalFormat (bitmap.PixelFormat), 
 						bitmap.Width, bitmap.Height, 0, MapPixelFormat (bitmap.PixelFormat), 
 						PixelType.UnsignedByte, bitmapData.Scan0);
 				}
@@ -97,7 +97,7 @@
 			var result = new Texture (TextureTarget.Texture2D);
 			result.BindTexture (() =>
 			{
-				result.LoadBitmap (bitmap, result._target);
+				result.LoadBitmap (bitmap, result._target, 0);
 				result.SetParameters (parameters);
 				if (useMipmap)
 					GL.GenerateMipmap (MapMipmapTarget (TextureTarget.Texture2D));
@@ -117,12 +117,22 @@
 			return FromBitmap (new Bitmap (path), useMipmap, parameters);
 		}
 
-		public static Texture CubeMapFromFiles (string[] paths, TextureParams parameters)
+		public static Texture CubeMapFromFiles (string[] paths, int lodLevel, TextureParams parameters)
 		{
 			if (paths.Length > 6)
 				throw new ArgumentException ("Too many file paths (cube has only 6 sides)", "paths");
 			var result = new Texture (TextureTarget.TextureCubeMap);
 			result.BindTexture (() =>
+			{
+				result.AddCubeMapLodLevel (paths, lodLevel);
+				result.SetParameters (parameters);
+			});
+			return result;
+		}
+		
+		public void AddCubeMapLodLevel (string[] paths, int lodLevel)
+		{
+			this.BindTexture (() =>
 			{
 				for (int i = 0; i < paths.Length; i++)
 				{
@@ -130,12 +140,10 @@
 					if (!string.IsNullOrEmpty (path))
 					{
 						CheckFileExists (path);
-						result.LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i);
+						LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i, lodLevel);
 					}
 				}
-				result.SetParameters (parameters);
 			});
-			return result;
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

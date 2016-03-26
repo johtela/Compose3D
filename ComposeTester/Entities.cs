@@ -14,9 +14,9 @@
 	using LinqCheck;
 	using Extensions;
 
-	[StructLayout (LayoutKind.Sequential)]
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, 
-		ITextured, ITagged<Vertex>
+		ITextured, ITagged<Vertex>, IReflective
 	{
 		internal Vec3 position;
 		internal Vec3 normal;
@@ -24,6 +24,7 @@
 		internal Vec3 specularColor;
 		internal Vec2 texturePos;
 		internal float shininess;
+		internal float reflectivity;
 		[OmitInGlsl]
 		internal int tag;
 
@@ -73,6 +74,12 @@
 			get { return tag; }
 			set { tag = value; }
 		}
+		
+		float IReflective.Reflectivity
+		{
+			get { return reflectivity; }
+			set { reflectivity = value; }
+		}
 
 		void IVertexInitializer<Vertex>.Initialize (ref Vertex vertex)
 		{
@@ -85,16 +92,21 @@
 				position, diffuseColor, specularColor, normal, tag);
 		}
 	}
+	
+	public class EntityFragment : TexturedFragment
+	{
+		public float vertexReflectivity;
+	}
 
 	public class Entities
 	{
 		public class EntityUniforms : BasicUniforms
 		{
-			public Uniform<Mat4> modelMatrix;
 			[GLArray (4)]
 			public Uniform<Lighting.PointLight[]> pointLights;
 			[GLArray (4)]
 			public Uniform<Sampler2D[]> samplers;
+			public Uniform<SamplerCube> diffuseMap;
 			public Uniform<SamplerCube> environmentMap;
 
 			public new void Initialize (Program program, SceneGraph scene)
@@ -129,7 +141,8 @@
 					for (int i = 0; i < samp.Length; i++)
 						samp[i] = new Sampler2D (i, sampParams);
 					samplers &= samp;
-					environmentMap &= new SamplerCube (4, sampParams);
+					diffuseMap &= new SamplerCube (4, sampParams);
+					environmentMap &= new SamplerCube (5, sampParams);
 				}
 			}
 		}
@@ -159,18 +172,20 @@
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
 
+			var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 			var envTexture = camera.Graph.GlobalLighting.EnvironmentMap;
 
 			using (EntityShader.Scope ())
 				foreach (var mesh in camera.NodesInView <Mesh<Vertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
+					(!Uniforms.diffuseMap).Bind (diffTexture);
 					(!Uniforms.environmentMap).Bind (envTexture);
-					Uniforms.modelMatrix &= mesh.Transform;
-					Uniforms.viewMatrix &= camera.WorldToCamera * mesh.Transform;
+					Uniforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
 					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-					(!Uniforms.environmentMap).Unbind (envTexture);
+					(!Uniforms.diffuseMap).Unbind (envTexture);
+					(!Uniforms.diffuseMap).Unbind (diffTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
 		}
@@ -189,17 +204,17 @@
 
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
-				let viewPos = !u.viewMatrix * new Vec4 (v.position, 1f)
-				let worldPos = !u.modelMatrix * new Vec4 (v.position, 1f)
-				select new TexturedFragment ()
+				let viewPos = !u.modelViewMatrix * new Vec4 (v.position, 1f)
+				select new EntityFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * viewPos,
-					vertexPosition = worldPos[Coord.x, Coord.y, Coord.z],
+					vertexPosition = viewPos[Coord.x, Coord.y, Coord.z],
 					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
 					vertexSpecular = v.specularColor,
 					vertexShininess = v.shininess,
-					texturePosition = v.texturePos
+					texturePosition = v.texturePos,
+					vertexReflectivity = v.reflectivity
 				}
 			);
 		}
@@ -213,7 +228,7 @@
 			(
 				ShaderType.FragmentShader, () =>
 
-				from f in Shader.Inputs<TexturedFragment> ()
+				from f in Shader.Inputs<EntityFragment> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
@@ -230,12 +245,15 @@
 					.Aggregate (dirLight, 
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
-				let ambient = (!u.environmentMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z] *
-					(!u.globalLighting).ambientLightIntensity
+				let envLight = (!u.diffuseMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z]
+				let ambient = envLight * (!u.globalLighting).ambientLightIntensity
+				let reflectDiffuse = fragDiffuse.Mix (
+					Lighting.ReflectedColor (!u.environmentMap, f.vertexPosition, f.vertexNormal),
+					f.vertexReflectivity)	
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, ambient, totalLight.diffuse, 
-						totalLight.specular, fragDiffuse, f.vertexSpecular)
+					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, ambient, 
+						totalLight.diffuse, totalLight.specular, reflectDiffuse, f.vertexSpecular)
 				}
 			);
 		}

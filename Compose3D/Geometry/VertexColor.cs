@@ -15,6 +15,11 @@
 		V Specular { get; set; }
 		float Shininess { get; set; }
 	}
+	
+	public interface IReflective
+	{
+		float Reflectivity { get; set; }
+	}
 
 	public interface IVertexColor<V> : IDiffuseColor<V>, ISpecularColor<V>
 		where V : struct, IVec<V, float>
@@ -81,9 +86,9 @@
             32f);
 
 		public static IVertexColor<V> GreyPlastic = new VertColor (
-			Vec.FromArray<V, float> (0.5f, 0.5f, 0.6f),
 			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
-			32f);
+			Vec.FromArray<V, float> (0.9f, 0.9f, 0.9f),
+			72f);
 
 		public static IVertexColor<V> BluePlastic = new VertColor (
 			Vec.FromArray<V, float> (0.2f, 0.2f, 0.4f),
@@ -130,5 +135,20 @@
             Color (result.Vertices, color);
             return result;
         }
-    }
+		
+		public static void Reflectivity<TVert> (this TVert[] vertices, float reflectivity)
+			where TVert : struct, IReflective
+		{
+			for (int i = 0; i < vertices.Length; i++)
+				vertices [i].Reflectivity = reflectivity;
+		}		
+
+		public static Geometry<TVert> Reflectivity<TVert> (this Geometry<TVert> geometry, float reflectivity)
+			where TVert : struct, IVertex, IReflective
+		{
+			var result = new Wrapper<TVert> (geometry);
+			Reflectivity (result.Vertices, reflectivity);
+			return result;
+		}
+	}
 }

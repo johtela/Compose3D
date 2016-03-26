@@ -52,7 +52,7 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (3f), 
+				intensity: new Vec3 (10f), 
 				direction: new Vec3 (0.75f, 0.75f, -1f),
 				distance: 100f);
 			//var pointLight1 = new PointLight (sceneGraph,
@@ -70,9 +70,10 @@
 
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
-				AmbientLightIntensity = new Vec3 (0.3f),
-				MaxIntensity = 1.5f,
-				GammaCorrection = 1.2f,
+				AmbientLightIntensity = new Vec3 (1f),
+				MaxIntensity = 5f,
+				GammaCorrection = 1.4f,
+				DiffuseMap = _skybox.DiffuseMap,
 				EnvironmentMap = _skybox.EnvironmentMap
 			};
 			_fighter = _entities.CreateScene (sceneGraph);
@@ -85,7 +86,7 @@
 			React.Propagate (
 				React.By<double> (Render),
 				React.By<float> (MoveFighter)
-					.Reduce<double, float> ((s, t) => s + (float)t * 10f, 0f))
+					.Reduce<double, float> ((s, t) => s + (float)t * 25f, 0f))
 				.WhenRendered (this);
 
 			React.By<Vec2> (ResizeViewport)
@@ -163,11 +164,11 @@
 		{
 			_fighter.Offset = new Vec3 (x, 
 				Math.Max (_terrain.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), 0f);
-			var angle = x * 0.03f;
+			var angle = x * 0.02f;
 			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
-			var rotation = Mat.RotationY<Mat4> (angle / 2f);
-			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (25f, 5f, 0f));
+			var rotation = Mat.RotationY<Mat4> (angle * 0.133f);
+			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.277f), 5f, 0f));
 			_camera.Target = _fighter.Offset;
 		}
 	}
-}
+} 

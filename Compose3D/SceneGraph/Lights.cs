@@ -13,6 +13,7 @@
 		public Vec3 AmbientLightIntensity;
 		public float MaxIntensity;
 		public float GammaCorrection;
+		public Texture DiffuseMap;
 		public Texture EnvironmentMap;
 	}
 

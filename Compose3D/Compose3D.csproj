@@ -131,7 +131,9 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler.cs" />
-    <Compile Include="Textures\Texture.cs" />
+    <Compile Include="Textures\Texture.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="Textures\BitmapHelper.cs" />
     <Compile Include="Geometry\Polygon.cs" />
     <Compile Include="Maths\Coord.cs" />

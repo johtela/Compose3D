@@ -150,7 +150,7 @@
 			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / _patchStep;
 			var x = (int)coords.X;
 			var y = (int)coords.Y;
-			if (x >= _meshes.GetLength (0) || y >= _meshes.GetLength (1))
+			if (x < 0f || y < 0f || x >= _meshes.GetLength (0) || y >= _meshes.GetLength (1))
 				return 10f;
 			var mesh = _meshes[x, y];
 			var vertVec = coords.Fraction () * _patchStep;
@@ -179,7 +179,7 @@
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 					{
-						Uniforms.viewMatrix &= worldToCamera * mesh.Transform;
+						Uniforms.modelViewMatrix &= worldToCamera * mesh.Transform;
 						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
 						var lod = distance < 100 ? 0 :
@@ -205,7 +205,7 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
-				let viewPos = !u.viewMatrix * new Vec4 (v.position, 1f)
+				let viewPos = !u.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new TerrainFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * viewPos,

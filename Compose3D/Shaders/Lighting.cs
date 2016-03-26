@@ -3,6 +3,7 @@
 	using System;
 	using Compose3D.Maths;
 	using Compose3D.GLTypes;
+	using Textures;
 
 	public static class Lighting
 	{
@@ -143,6 +144,18 @@
 				() => FogVisibility,
 				(float distance, float density, float gradient) =>
 					1f - GLMath.Exp (-(distance * density).Pow (gradient))
+			);
+		
+		public static readonly Func<SamplerCube, Vec3, Vec3, Vec3> ReflectedColor =
+			GLShader.Function 
+			(
+				() => ReflectedColor,
+				(SamplerCube environmentMap, Vec3 position, Vec3 normal) =>
+				(	
+					from viewDir in (-position.Normalized).ToShader ()
+					let reflectDir = viewDir.Reflect<Vec3, float> (normal)
+					select environmentMap.Texture (reflectDir)[Coord.x, Coord.y, Coord.z]
+				).Evaluate ()
 			);
 				
 		/// <summary>

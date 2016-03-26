@@ -72,6 +72,7 @@
 		public readonly Program SkyboxShader;
 		public readonly SkyboxUniforms Uniforms;
 		public readonly Texture EnvironmentMap;
+		public readonly Texture DiffuseMap;
 
 		private VBO<SkyboxVertex> _vertices;
 		private VBO<int> _indices;
@@ -88,16 +89,18 @@
 				.Translate (0f, -5f);
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
+			var textureParams =	new TextureParams ()
+			{
+				{ TextureParameterName.TextureMagFilter, All.Linear },
+				{ TextureParameterName.TextureMinFilter, All.Linear },
+				{ TextureParameterName.TextureWrapR, All.ClampToEdge },
+				{ TextureParameterName.TextureWrapS, All.ClampToEdge },
+				{ TextureParameterName.TextureWrapT, All.ClampToEdge }
+			};
 			EnvironmentMap = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)),
-				new TextureParams ()
-				{
-					{ TextureParameterName.TextureMagFilter, All.Linear },
-					{ TextureParameterName.TextureMinFilter, All.Linear },
-					{ TextureParameterName.TextureWrapR, All.ClampToEdge },
-					{ TextureParameterName.TextureWrapS, All.ClampToEdge },
-					{ TextureParameterName.TextureWrapT, All.ClampToEdge }
-				});
+				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0, textureParams);
+			DiffuseMap = Texture.CubeMapFromFiles (
+				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0, textureParams);
 		}
 
 		public void Render (Camera camera)

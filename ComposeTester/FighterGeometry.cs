@@ -10,12 +10,12 @@
 	using OpenTK;
 
 	public class FighterGeometry<V, P>
-		where V : struct, IVertex, IVertexColor<Vec3>
+		where V : struct, IVertex, IVertexColor<Vec3>, IReflective
 		where P : struct, IPositional<Vec3>, IDiffuseColor<Vec3>
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<Path<P, Vec3>> Paths;
-		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.Chrome;
+		private static IVertexColor<Vec3> _color = VertexColor<Vec3>.GreyPlastic;
 
         private class Nose
 		{
@@ -273,7 +273,8 @@
 				Geometry = exhaust
 					.SnapVertex (exhaust.Vertices.Furthest (Dir3D.Up).First (), snapToVertex, Axes.Y | Axes.Z)
 					.Translate (0f, -0.02f, 0.02f)
-					.Color (VertexColor<Vec3>.BlackPlastic); 
+					.Color (VertexColor<Vec3>.BlackPlastic)
+					.Reflectivity (0.2f); 
 				
 				FlangeXSection = new Path<P, Vec3> (
 					from n in rear.RearXSection.Nodes
@@ -318,7 +319,8 @@
 					.RotateX (bend.Radians ())
 					.Scale (0.85f, 1f, 1f)
 					.Translate (0f, 0.6f, -2.3f)
-					.Color (VertexColor<Vec3>.BluePlastic);
+					.Color (VertexColor<Vec3>.BluePlastic)
+					.Reflectivity (0.2f);
 			}
 		}
 		

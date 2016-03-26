@@ -273,8 +273,7 @@
 				Geometry = exhaust
 					.SnapVertex (exhaust.Vertices.Furthest (Dir3D.Up).First (), snapToVertex, Axes.Y | Axes.Z)
 					.Translate (0f, -0.02f, 0.02f)
-					.Color (VertexColor<Vec3>.BlackPlastic)
-					.Reflectivity (0.2f); 
+					.Color (VertexColor<Vec3>.BlackPlastic);
 				
 				FlangeXSection = new Path<P, Vec3> (
 					from n in rear.RearXSection.Nodes

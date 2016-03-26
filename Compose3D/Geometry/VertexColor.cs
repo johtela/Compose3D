@@ -82,18 +82,18 @@
 
 		public static IVertexColor<V> BlackPlastic = new VertColor (
             Vec.FromArray<V, float> (0.05f, 0.05f, 0.05f),
-            Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
-            32f);
+            Vec.FromArray<V, float> (0.6f, 0.6f, 0.6f),
+            12f);
 
 		public static IVertexColor<V> GreyPlastic = new VertColor (
-			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
-			Vec.FromArray<V, float> (0.9f, 0.9f, 0.9f),
-			72f);
+			Vec.FromArray<V, float> (0.6f, 0.6f, 0.6f),
+			Vec.FromArray<V, float> (0.3f, 0.3f, 0.3f),
+			10f);
 
 		public static IVertexColor<V> BluePlastic = new VertColor (
-			Vec.FromArray<V, float> (0.2f, 0.2f, 0.4f),
-			Vec.FromArray<V, float> (0.5f, 0.5f, 0.5f),
-			32f);
+			Vec.FromArray<V, float> (0.2f, 0.2f, 0.2f),
+			Vec.FromArray<V, float> (0.7f, 0.7f, 0.7f),
+			72f);
 	}
 
 	public static class ColorHelper

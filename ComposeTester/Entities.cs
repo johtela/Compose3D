@@ -107,7 +107,6 @@
 			[GLArray (4)]
 			public Uniform<Sampler2D[]> samplers;
 			public Uniform<SamplerCube> diffuseMap;
-			public Uniform<SamplerCube> environmentMap;
 
 			public new void Initialize (Program program, SceneGraph scene)
 			{
@@ -142,7 +141,6 @@
 						samp[i] = new Sampler2D (i, sampParams);
 					samplers &= samp;
 					diffuseMap &= new SamplerCube (4, sampParams);
-					environmentMap &= new SamplerCube (5, sampParams);
 				}
 			}
 		}
@@ -159,7 +157,7 @@
 		public TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (MathHelper.PiOver2))
+			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */))
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
@@ -173,18 +171,15 @@
 			GL.DepthFunc (DepthFunction.Less);
 
 			var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
-			var envTexture = camera.Graph.GlobalLighting.EnvironmentMap;
 
 			using (EntityShader.Scope ())
 				foreach (var mesh in camera.NodesInView <Mesh<Vertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
-					(!Uniforms.environmentMap).Bind (envTexture);
 					Uniforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
 					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-					(!Uniforms.diffuseMap).Unbind (envTexture);
 					(!Uniforms.diffuseMap).Unbind (diffTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
@@ -247,9 +242,10 @@
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z]
 				let ambient = envLight * (!u.globalLighting).ambientLightIntensity
-				let reflectDiffuse = fragDiffuse.Mix (
-					Lighting.ReflectedColor (!u.environmentMap, f.vertexPosition, f.vertexNormal),
-					f.vertexReflectivity)	
+				let reflectDiffuse = f.vertexReflectivity > 0f ? 
+					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.vertexPosition, f.vertexNormal), 
+						f.vertexReflectivity) :
+					fragDiffuse
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, ambient, 

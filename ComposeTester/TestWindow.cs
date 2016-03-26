@@ -71,10 +71,9 @@
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
 				AmbientLightIntensity = new Vec3 (1f),
-				MaxIntensity = 5f,
+				MaxIntensity = 4f,
 				GammaCorrection = 1.4f,
 				DiffuseMap = _skybox.DiffuseMap,
-				EnvironmentMap = _skybox.EnvironmentMap
 			};
 			_fighter = _entities.CreateScene (sceneGraph);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrain.CreateScene (sceneGraph), _fighter);
@@ -162,12 +161,13 @@
 
 		private void MoveFighter (float x)
 		{
-			_fighter.Offset = new Vec3 (x, 
-				Math.Max (_terrain.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), 0f);
-			var angle = x * 0.02f;
-			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
-			var rotation = Mat.RotationY<Mat4> (angle * 0.133f);
-			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.277f), 5f, 0f));
+			_fighter.Offset = new Vec3 (0f,
+
+				Math.Max (_terrain.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
+			var angle = x * 0.03f;
+			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
+			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);
+			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 2f, 0f));
 			_camera.Target = _fighter.Offset;
 		}
 	}

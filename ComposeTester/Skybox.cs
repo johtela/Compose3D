@@ -85,8 +85,7 @@
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
 			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
-			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ()
-				.Translate (0f, -5f);
+			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			var textureParams =	new TextureParams ()
@@ -133,7 +132,7 @@
 				select new SkyboxFragment ()
 				{
 					gl_Position = !u.perspectiveMatrix * !u.worldMatrix * new Vec4 (v.position, 1f),
-					texturePos = v.position
+					texturePos = v.position + new Vec3 (0f, 0.5f, 0f)
 				});
 		}
 

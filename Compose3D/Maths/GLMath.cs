@@ -76,7 +76,10 @@
 		[GLFunction ("clamp ({0})")]
 		public static float Clamp (this float value, float min, float max)
 		{
-			return Math.Min (Math.Max (value, min), max);
+			return 
+				value < min ? min :
+				value > max ? max :
+				value;
 		}
 
 		/// <summary>
@@ -87,7 +90,10 @@
 		[GLFunction ("clamp ({0})")]
 		public static double Clamp (this double value, double min, double max)
 		{
-			return Math.Min (Math.Max (value, min), max);
+			return 
+				value < min ? min :
+				value > max ? max :
+				value;
 		}
 
 		/// <summary>

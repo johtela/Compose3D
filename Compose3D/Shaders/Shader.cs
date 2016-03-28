@@ -39,6 +39,12 @@
 		{
 			return state => state.Uniforms<T> ();
 		}
+		
+		[LiftMethod]
+		public static Shader<T> Constants<T> (T constants)
+		{
+			return state => constants;			
+		}
 
 		public static Shader<U> Select<T, U> (this Shader<T> shader, Func<T, U> select)
 		{

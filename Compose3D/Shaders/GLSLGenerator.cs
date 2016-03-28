@@ -156,6 +156,35 @@
 					DeclareVariable (field, field.FieldType, prefix);
         }
 
+		private void DeclareConstants (Expression expr)
+		{
+			var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
+			if (ne == null)
+			{
+				var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
+				if (mie == null)
+					throw new ParseException ("Unsupported shader expression: " + expr);
+				foreach (MemberAssignment assign in mie.Bindings)
+				{
+					var memberType = assign.Member is FieldInfo ?
+						(assign.Member as FieldInfo).FieldType :
+						(assign.Member as PropertyInfo).PropertyType;
+					DeclOut ("const {0} {1} = {2};", GLType (memberType), 
+						assign.Member.Name, ExprToGLSL (assign.Expression));
+				}
+			}
+			else
+			{
+				for (int i = 0; i < ne.Members.Count; i++)
+				{
+					var prop = (PropertyInfo)ne.Members[i];
+					if (!prop.Name.StartsWith ("<>"))
+						DeclOut ("const {0} {1} = {2};", GLType (prop.PropertyType), 
+							prop.Name, ExprToGLSL (ne.Arguments[i]));
+				}
+			}
+		}
+
 		private void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
 		{
 			var type = node.Method.GetGenericArguments () [0];
@@ -163,6 +192,8 @@
 				DeclareVariables (type, "in");
 			else if (node.Method.Name == "Uniforms")
 				DeclareUniforms (type);
+			else if (node.Method.Name == "Constants")
+				DeclareConstants (node.Arguments [0]);
 			else if (node.Method.Name == "ToShader")
 				CodeOut ("{0} {1} = {2};", GLType (type), par.Name, ExprToGLSL (node.Arguments [0]));
 			else
@@ -435,18 +466,16 @@
 			var mce = expr.ExpectSelect ();
 			var me = CastFromBinding (mce.Arguments [0]);
 			if (me != null)
-			{
 				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), me);
-				me = CastFromBinding (mce.Arguments [1].ExpectLambda ().Body);
-				if (me != null)
-				{
-					OutputFromBinding (mce.Arguments [2].GetLambdaParameter (1), me);
-					return mce.Arguments [2].ExpectLambda ().Body;
-				}
-			}
 			else
 				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (LetBinding))
 					.Execute (new Source (mce.Arguments [0].Traverse ()));
+			me = CastFromBinding (mce.Arguments [1].ExpectLambda ().Body);
+			if (me != null)
+			{
+				OutputFromBinding (mce.Arguments [2].GetLambdaParameter (1), me);
+				return mce.Arguments [2].ExpectLambda ().Body;
+			}
 			return mce.Arguments[1].ExpectLambda ().Body;
 		}
 

@@ -25,6 +25,7 @@
 
 		// Scene graph
 		private SceneGraph _sceneGraph;
+		private Terrain.Scene _terrainScene;
 		private Camera _camera;
 		private DirectionalLight _dirLight;
 		private Vec3 _rotation;
@@ -35,13 +36,10 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_skybox = new Skybox ();
-			_terrain = new Terrain ();
-			_entities = new Entities ();
-			_sceneGraph = CreateSceneGraph ();
-			_skybox.Uniforms.Initialize (_skybox.SkyboxShader);
-			_terrain.Uniforms.Initialize (_terrain.TerrainShader, _sceneGraph, _skyColor);
-			_entities.Uniforms.Initialize (_entities.EntityShader, _sceneGraph);
+			_sceneGraph = CreateSceneGraph ();			
+			_skybox = new Skybox (_sceneGraph);
+			_terrain = new Terrain (_sceneGraph, _skyColor);
+			_entities = new Entities (_sceneGraph);
 			SetupReactions ();
 
 			//_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
@@ -73,10 +71,11 @@
 				AmbientLightIntensity = new Vec3 (1f),
 				MaxIntensity = 4f,
 				GammaCorrection = 1.4f,
-				DiffuseMap = _skybox.DiffuseMap,
 			};
-			_fighter = _entities.CreateScene (sceneGraph);
-			sceneGraph.Root.Add (_dirLight, _camera, _terrain.CreateScene (sceneGraph), _fighter);
+			
+			_terrainScene = new Terrain.Scene (sceneGraph);
+			_fighter = Entities.CreateScene (sceneGraph);
+			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter);
 			return sceneGraph;
 		}
 
@@ -153,7 +152,7 @@
 		{
 			var lookVec = LookVec ();
 			var cameraPos = _camera.Position + (lookVec * delta);
-			var terrainHeight = _terrain.Height (cameraPos);
+			var terrainHeight = _terrainScene.Height (cameraPos);
 			_camera.Position = cameraPos.Y >= terrainHeight ? cameraPos :
 				new Vec3 (cameraPos.X, terrainHeight, cameraPos.Z);
 			_camera.Target = _camera.Position + lookVec;
@@ -163,7 +162,7 @@
 		{
 			_fighter.Offset = new Vec3 (0f,
 
-				Math.Max (_terrain.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
+				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
 			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
 			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);

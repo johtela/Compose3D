@@ -52,6 +52,48 @@
 
 	public class Terrain
 	{
+		public class Scene
+		{
+			private TerrainMesh<TerrainVertex>[,] _meshes;
+			private Mat4 _worldToModel;
+
+			public SceneNode Root;
+			
+			public Scene (SceneGraph sceneGraph)
+			{
+				Root = new SceneGroup (sceneGraph, Meshes (sceneGraph))
+					.OffsetOrientAndScale (new Vec3 (-5800f, -10f, -5800f) * 1.5f, new Vec3 (0f), new Vec3 (3f));
+				_worldToModel = Root.Transform.Inverse;
+			}
+
+			private IEnumerable<TerrainMesh<TerrainVertex>> Meshes (SceneGraph sceneGraph)
+			{
+				_meshes = new TerrainMesh<TerrainVertex>[100, 100];
+				for (int x = 0; x < 100; x++)
+					for (int y = 0; y < 100; y++)
+					{
+						var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * _patchStep, y * _patchStep), 
+							new Vec2i (_patchSize, _patchSize), 20f, 0.039999f, 3, 5f, 4f);
+						_meshes[x, y] = mesh;
+						yield return mesh;
+					}
+			}
+
+			public float Height (Vec3 posInWorldSpace)
+			{
+				var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / _patchStep;
+				var x = (int)coords.X;
+				var y = (int)coords.Y;
+				if (x < 0f || y < 0f || x >= _meshes.GetLength (0) || y >= _meshes.GetLength (1))
+					return 10f;
+				var mesh = _meshes[x, y];
+				var vertVec = coords.Fraction () * _patchStep;
+				var vertIndex = ((int)vertVec.Y * _patchSize) + (int)vertVec.X;
+				var vertices = mesh.Patch.Vertices;
+				return vertices != null ? vertices[vertIndex].position.Y : 10f;
+			}
+		}
+		
 		public class TerrainFragment : Fragment
 		{
 			public Vec3 vertexNormal;
@@ -61,16 +103,21 @@
 			public float slope;
 		}
 
-		public class TerrainUniforms : BasicUniforms
+		public class TerrainUniforms : Uniforms
 		{
+			public TransformUniforms Transforms;
+			public LightingUniforms Lighting;
 			public Uniform<Vec3> skyColor;
 			public Uniform<Sampler2D> sandSampler;
 			public Uniform<Sampler2D> rockSampler;
 			public Uniform<Sampler2D> grassSampler;
 
-			public void Initialize (Program program, SceneGraph scene, Vec3 skyCol)
+			public TerrainUniforms (Program program, SceneGraph scene, Vec3 skyCol)
+				: base (program)
 			{
-				base.Initialize (program, scene);
+				Transforms = new TransformUniforms (program);
+				Lighting = new LightingUniforms (program, scene);
+
 				using (program.Scope ())
 				{
 					skyColor &= skyCol;
@@ -98,19 +145,20 @@
 		private Texture _sandTexture;
 		private Texture _rockTexture;
 		private Texture _grassTexture;
-		private TerrainMesh<TerrainVertex>[,] _meshes;
-		private Mat4 _worldToModel;
 
 		private const int _patchSize = 64;
 		private const int _patchStep = 58;
 
-		public Terrain ()
+		public Terrain (SceneGraph sceneGraph, Vec3 skyCol)
 		{
 			TerrainShader = new Program (VertexShader (), FragmentShader ());
-			TerrainShader.InitializeUniforms (Uniforms = new TerrainUniforms ());
+			Uniforms = new TerrainUniforms (TerrainShader, sceneGraph, skyCol);
+			_sandTexture = LoadTexture ("Sand");
+			_rockTexture = LoadTexture ("Rock");
+			_grassTexture = LoadTexture ("Grass");
 		}
 
-		private Texture LoadTexture (string name)
+		private static Texture LoadTexture (string name)
 		{
 			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name), true,
 				new TextureParams ()
@@ -119,44 +167,6 @@
 					{ TextureParameterName.TextureMaxLevel, 10 },
 					{ TextureParameterName.TextureMinFilter, TextureMinFilter.LinearMipmapLinear }
 				});
-		}
-
-		private IEnumerable<TerrainMesh<TerrainVertex>> Meshes (SceneGraph sceneGraph)
-		{
-			_meshes = new TerrainMesh<TerrainVertex>[100, 100];
-			for (int x = 0; x < 100; x++)
-				for (int y = 0; y < 100; y++)
-				{
-					var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * _patchStep, y * _patchStep), 
-						new Vec2i (_patchSize, _patchSize), 20f, 0.039999f, 3, 5f, 4f);
-					_meshes[x, y] = mesh;
-					yield return mesh;
-				}
-		}
-		
-		public SceneNode CreateScene (SceneGraph sceneGraph)
-		{
-			_sandTexture = LoadTexture ("Sand");
-			_rockTexture = LoadTexture ("Rock");
-			_grassTexture = LoadTexture ("Grass");
-			var result = new SceneGroup (sceneGraph, Meshes (sceneGraph))
-				.OffsetOrientAndScale (new Vec3 (-5800f, -10f, -5800f) * 1.5f, new Vec3 (0f), new Vec3 (3f));
-			_worldToModel = result.Transform.Inverse;
-			return result;
-		}
-
-		public float Height (Vec3 posInWorldSpace)
-		{
-			var coords = _worldToModel.Transform (posInWorldSpace)[Coord.x, Coord.z] / _patchStep;
-			var x = (int)coords.X;
-			var y = (int)coords.Y;
-			if (x < 0f || y < 0f || x >= _meshes.GetLength (0) || y >= _meshes.GetLength (1))
-				return 10f;
-			var mesh = _meshes[x, y];
-			var vertVec = coords.Fraction () * _patchStep;
-			var vertIndex = ((int)vertVec.Y * _patchSize) + (int)vertVec.X;
-			var vertices = mesh.Patch.Vertices;
-			return vertices != null ? vertices[vertIndex].position.Y : 10f;
 		}
 
 		public void Render (Camera camera)
@@ -231,12 +241,12 @@
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
 				let rockBlend = GLMath.SmoothStep (0.8f, 0.9f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
-				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.directionalLight).direction,
-					(!u.directionalLight).intensity, f.vertexNormal)
-				let ambient = (!u.globalLighting).ambientLightIntensity
+				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.Lighting.directionalLight).direction,
+					(!u.Lighting.directionalLight).intensity, f.vertexNormal)
+				let ambient = (!u.Lighting.globalLighting).ambientLightIntensity
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, 
+					outputColor = Lighting.GlobalLightIntensity (!u.Lighting.globalLighting, 
 						ambient, diffuseLight, new Vec3 (0f), terrainColor, new Vec3 (0f))
 						.Mix (!u.skyColor, f.visibility)
 				});

@@ -100,7 +100,7 @@
 
 	public class Entities
 	{
-		public class EntityUniforms : BasicUniforms
+		public class EntityUniforms : Uniforms
 		{
 			[GLArray (4)]
 			public Uniform<Lighting.PointLight[]> pointLights;
@@ -108,9 +108,9 @@
 			public Uniform<Sampler2D[]> samplers;
 			public Uniform<SamplerCube> diffuseMap;
 
-			public new void Initialize (Program program, SceneGraph scene)
+			public EntityUniforms (Program program, SceneGraph scene)
+				: base (program)
 			{
-				base.Initialize (program, scene);
 				var numPointLights = 0;
 				var plights = new Lighting.PointLight[4];
 
@@ -147,14 +147,18 @@
 
 		public readonly Program EntityShader;
 		public readonly EntityUniforms Uniforms;
+		public readonly LightingUniforms LightingUniforms;
+		public readonly TransformUniforms Transforms;
 
-		public Entities ()
+		public Entities (SceneGraph sceneGraph)
 		{
 			EntityShader = new Program (VertexShader (), FragmentShader ());
-			EntityShader.InitializeUniforms (Uniforms = new EntityUniforms ());
+			Uniforms = new EntityUniforms (EntityShader, sceneGraph);
+			LightingUniforms = new LightingUniforms (EntityShader, sceneGraph);
+			Transforms = new TransformUniforms (EntityShader);
 		}
 
-		public TransformNode CreateScene (SceneGraph sceneGraph)
+		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
 			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */))
@@ -177,8 +181,8 @@
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
-					Uniforms.Transforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
-					Uniforms.Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+					Transforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
+					Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					(!Uniforms.diffuseMap).Unbind (diffTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
@@ -188,7 +192,7 @@
 		public void UpdateViewMatrix (Mat4 matrix)
 		{
 			using (EntityShader.Scope ())
-				Uniforms.Transforms.perspectiveMatrix &= matrix;
+				Transforms.perspectiveMatrix &= matrix;
 		}
 
 		public static GLShader VertexShader ()
@@ -198,13 +202,13 @@
 				ShaderType.VertexShader, () =>
 
 				from v in Shader.Inputs<Vertex> ()
-				from u in Shader.Uniforms<EntityUniforms> ()
-				let viewPos = !u.Transforms.modelViewMatrix * new Vec4 (v.position, 1f)
+				from t in Shader.Uniforms<TransformUniforms> ()
+				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new EntityFragment ()
 				{
-					gl_Position = !u.Transforms.perspectiveMatrix * viewPos,
+					gl_Position = !t.perspectiveMatrix * viewPos,
 					vertexPosition = viewPos[Coord.x, Coord.y, Coord.z],
-					vertexNormal = (!u.Transforms.normalMatrix * v.normal).Normalized,
+					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
 					vertexSpecular = v.specularColor,
 					vertexShininess = v.shininess,
@@ -225,6 +229,7 @@
 
 				from f in Shader.Inputs<EntityFragment> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
+				from l in Shader.Uniforms<LightingUniforms> ()
 				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.texturePosition) :
@@ -232,8 +237,8 @@
 					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
 					f.vertexDiffuse
-				let dirLight = Lighting.DirLightIntensity (!u.directionalLight, f.vertexPosition, 
-					f.vertexNormal, f.vertexShininess)
+					let dirLight = Lighting.DirLightIntensity (!l.directionalLight, f.vertexPosition, 
+						f.vertexNormal, f.vertexShininess)
 				let totalLight = 
 					(from pl in !u.pointLights
 					 select Lighting.PointLightIntensity (pl, f.vertexPosition, f.vertexNormal, f.vertexShininess))
@@ -241,14 +246,14 @@
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z]
-				let ambient = envLight * (!u.globalLighting).ambientLightIntensity
+					let ambient = envLight * (!l.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.vertexReflectivity > 0f ? 
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.vertexPosition, f.vertexNormal), 
 						f.vertexReflectivity) :
 					fragDiffuse
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.globalLighting, ambient, 
+					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 
 						totalLight.diffuse, totalLight.specular, reflectDiffuse, f.vertexSpecular)
 				}
 			);

@@ -19,13 +19,14 @@
 			public Vec3 texturePos;
 		}
 
-		public class SkyboxUniforms
+		public class SkyboxUniforms : Uniforms
 		{
 			public Uniform<Mat4> worldMatrix;
 			public Uniform<Mat4> perspectiveMatrix;
 			public Uniform<SamplerCube> cubeMap;
 
-			public void Initialize (Program program)
+			public SkyboxUniforms (Program program)
+				: base (program)
 			{
 				using (program.Scope ())
 					cubeMap &= new SamplerCube (0, new SamplerParams ()
@@ -42,7 +43,6 @@
 		public readonly Program SkyboxShader;
 		public readonly SkyboxUniforms Uniforms;
 		public readonly Texture EnvironmentMap;
-		public readonly Texture DiffuseMap;
 
 		private VBO<BasicVertex> _vertices;
 		private VBO<int> _indices;
@@ -51,10 +51,10 @@
 		private readonly string[] _paths = new string[] 
 			{ "sky_right", "sky_left", "sky_top", "sky_bottom", "sky_front", "sky_back" };
 
-		public Skybox ()
+		public Skybox (SceneGraph sceneGraph)
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
-			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
+			Uniforms = new SkyboxUniforms (SkyboxShader);
 			var cube = Extrusion.Cube<BasicVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
 			_vertices = new VBO<BasicVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
@@ -68,7 +68,7 @@
 			};
 			EnvironmentMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0, textureParams);
-			DiffuseMap = Texture.CubeMapFromFiles (
+			sceneGraph.GlobalLighting.DiffuseMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0, textureParams);
 		}
 

@@ -113,7 +113,7 @@
         private void DeclareUniforms (Type type)
         {
 			if (!DefineType (type)) return;
-            foreach (var field in type.GetUniforms ())
+			foreach (var field in type.GetUniformsRecursively ())
             {
                 var uniType = field.FieldType.GetGenericArguments ().Single ();
                 var arrayLen = 0;
@@ -321,18 +321,19 @@
         {
 			var mce = source.Current;
 			var arg0 = CastFromBinding (mce.Arguments[0]);
-			if (arg0 == null)
-				return false;
 			if (mce.Method.IsSelectMany ())
 			{
 				var arg1 = CastFromBinding (mce.GetSelectLambda ().Body);
 				if (arg1 == null)
 					return false;
-				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), arg0);
-				OutputFromBinding (mce.Arguments [2].GetLambdaParameter (0), arg1);
+				if (arg0 != null)
+					OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), arg0);
+				OutputFromBinding (mce.Arguments [2].GetLambdaParameter (1), arg1);
 			}
 			else
 			{
+				if (arg0 == null)
+					return false;
 				var le = mce.Arguments [1].ExpectLambda ();
 				OutputFromBinding (le.Parameters[0], arg0);
 				OutputLet (le.Body.Expect<NewExpression> (ExpressionType.New));

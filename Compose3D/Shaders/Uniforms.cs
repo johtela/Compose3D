@@ -7,20 +7,31 @@
 	using SceneGraph;
 	using Textures;
 
-	public class TransformUniforms
+	public abstract class Uniforms
+	{
+		public Uniforms (Program program)
+		{
+			program.InitializeUniforms (this);			
+		}
+	}
+	
+	public class TransformUniforms : Uniforms
 	{
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
+		
+		public TransformUniforms (Program program) : base (program)
+		{ }
 	}
 
-	public class BasicUniforms
+	public class LightingUniforms : Uniforms
 	{
-		public TransformUniforms Transforms;
 		public Uniform<Lighting.GlobalLight> globalLighting;
 		public Uniform<Lighting.DirectionalLight> directionalLight;
 
-		public void Initialize (Program program, SceneGraph scene)
+		public LightingUniforms (Program program, SceneGraph scene)
+			: base (program)
 		{
 			using (program.Scope ())
 			{

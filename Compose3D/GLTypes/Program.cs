@@ -42,7 +42,7 @@
 
         public void InitializeUniforms<U> (U uniforms) where U : class
         {
-            foreach (var field in typeof (U).GetUniforms ())
+			foreach (var field in uniforms.GetType ().GetUniforms ())
                 field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field));
         }
 

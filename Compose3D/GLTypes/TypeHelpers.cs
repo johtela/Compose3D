@@ -92,8 +92,8 @@
             return type.GetProperties (_bindingFlags);
         }
 
-        public static IEnumerable<FieldInfo> GetUniforms (this Type type)
-        {
+		public static IEnumerable<FieldInfo> GetUniformsRecursively (this Type type)
+		{
 			foreach (var field in type.GetFields (_bindingFlags))
 			{
 				var fieldType = field.FieldType;
@@ -102,10 +102,15 @@
 				else
 					foreach (var subField in GetUniforms (fieldType))
 						yield return subField;
-			}
-            //return from field in type.GetFields (_bindingFlags)
-            //       where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
-            //       select field;
+			}			
+		}
+		
+        public static IEnumerable<FieldInfo> GetUniforms (this Type type)
+        {
+			return from field in type.GetFields (_bindingFlags)
+			       where field.FieldType.IsGenericType &&
+			           field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
+			       select field;
         }
 
         private static void GetArrayFields (Type type, Expression expression, ParameterExpression parameter,

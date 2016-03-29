@@ -179,8 +179,8 @@
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 					{
-						Uniforms.modelViewMatrix &= worldToCamera * mesh.Transform;
-						Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+						Uniforms.Transforms.modelViewMatrix &= worldToCamera * mesh.Transform;
+						Uniforms.Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
 						var lod = distance < 100 ? 0 :
 								  distance < 200 ? 1 :
@@ -196,7 +196,7 @@
 		public void UpdateViewMatrix (Mat4 matrix)
 		{
 			using (TerrainShader.Scope ())
-				Uniforms.perspectiveMatrix &= matrix;
+				Uniforms.Transforms.perspectiveMatrix &= matrix;
 		}
 
 		public static GLShader VertexShader ()
@@ -205,11 +205,11 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
-				let viewPos = !u.modelViewMatrix * new Vec4 (v.position, 1f)
+				let viewPos = !u.Transforms.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new TerrainFragment ()
 				{
-					gl_Position = !u.perspectiveMatrix * viewPos,
-					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
+					gl_Position = !u.Transforms.perspectiveMatrix * viewPos,
+					vertexNormal = (!u.Transforms.normalMatrix * v.normal).Normalized,
 					visibility = Lighting.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),

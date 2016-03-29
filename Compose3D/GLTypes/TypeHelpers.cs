@@ -94,9 +94,18 @@
 
         public static IEnumerable<FieldInfo> GetUniforms (this Type type)
         {
-            return from field in type.GetFields (_bindingFlags)
-                   where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
-                   select field;
+			foreach (var field in type.GetFields (_bindingFlags))
+			{
+				var fieldType = field.FieldType;
+				if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition () == typeof (Uniform<>))
+					yield return field;
+				else
+					foreach (var subField in GetUniforms (fieldType))
+						yield return subField;
+			}
+            //return from field in type.GetFields (_bindingFlags)
+            //       where field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
+            //       select field;
         }
 
         private static void GetArrayFields (Type type, Expression expression, ParameterExpression parameter,

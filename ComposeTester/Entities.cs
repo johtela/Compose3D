@@ -93,7 +93,7 @@
 		}
 	}
 	
-	public class EntityFragment : TexturedFragment
+	public class EntityFragment : TexturedFragment<Vec2>
 	{
 		public float vertexReflectivity;
 	}
@@ -177,8 +177,8 @@
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
-					Uniforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
-					Uniforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+					Uniforms.Transforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
+					Uniforms.Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					(!Uniforms.diffuseMap).Unbind (diffTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
@@ -188,7 +188,7 @@
 		public void UpdateViewMatrix (Mat4 matrix)
 		{
 			using (EntityShader.Scope ())
-				Uniforms.perspectiveMatrix &= matrix;
+				Uniforms.Transforms.perspectiveMatrix &= matrix;
 		}
 
 		public static GLShader VertexShader ()
@@ -199,12 +199,12 @@
 
 				from v in Shader.Inputs<Vertex> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
-				let viewPos = !u.modelViewMatrix * new Vec4 (v.position, 1f)
+				let viewPos = !u.Transforms.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new EntityFragment ()
 				{
-					gl_Position = !u.perspectiveMatrix * viewPos,
+					gl_Position = !u.Transforms.perspectiveMatrix * viewPos,
 					vertexPosition = viewPos[Coord.x, Coord.y, Coord.z],
-					vertexNormal = (!u.normalMatrix * v.normal).Normalized,
+					vertexNormal = (!u.Transforms.normalMatrix * v.normal).Normalized,
 					vertexDiffuse = v.diffuseColor,
 					vertexSpecular = v.specularColor,
 					vertexShininess = v.shininess,

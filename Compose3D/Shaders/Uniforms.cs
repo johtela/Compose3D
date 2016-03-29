@@ -1,15 +1,22 @@
 ﻿namespace Compose3D.Shaders
 {
 	using Extensions;
-	using Compose3D.Maths;
-	using Compose3D.GLTypes;
-	using Compose3D.SceneGraph;
+	using Maths;
+	using GLTypes;
+	using Geometry;
+	using SceneGraph;
+	using Textures;
 
-	public class BasicUniforms
+	public class TransformUniforms
 	{
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
+	}
+
+	public class BasicUniforms
+	{
+		public TransformUniforms Transforms;
 		public Uniform<Lighting.GlobalLight> globalLighting;
 		public Uniform<Lighting.DirectionalLight> directionalLight;
 
@@ -37,5 +44,10 @@
 					.ToVoid ();
 			}
 		}
+	}
+
+	public class WindowUniforms
+	{
+		public Uniform<Sampler2D> textureMap;
 	}
 }

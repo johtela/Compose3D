@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.Textures
 {
-	using GLTypes;
+	using Maths;
 	using OpenTK.Graphics.OpenGL;
 	using System;
 	using System.IO;
@@ -32,6 +32,20 @@
 					GL.GenerateMipmap (MapMipmapTarget (target));
 				SetParameters (parameters);
 			});
+		}
+
+		public Vec2i Size
+		{
+			get
+			{
+				Vec2i result = new Vec2i (0);
+				BindTexture (() =>
+				{
+					GL.GetTexParameter (_target, GetTextureParameter.TextureWidth, out result.X);
+					GL.GetTexParameter (_target, GetTextureParameter.TextureHeight, out result.Y);
+				});
+				return result;
+			}
 		}
 
 		private void BindTexture (Action action)

@@ -12,36 +12,6 @@
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
 
-	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct SkyboxVertex : IVertex
-	{
-		internal Vec3 position;
-		[OmitInGlsl]
-		internal Vec3 normal;
-
-		Vec3 IPositional<Vec3>.Position
-		{
-			get { return position; }
-			set { position = value; }
-		}
-
-		Vec3 IPlanar<Vec3>.Normal
-		{
-			get { return normal; }
-			set
-			{
-				if (value.IsNan ())
-					throw new ArgumentException ("Normal component NaN.");
-				normal = value;
-			}
-		}
-
-		public override string ToString ()
-		{
-			return string.Format ("[Vertex: Position={0}, Normal={1}]", position, normal);
-		}
-	}
-
 	public class Skybox
 	{
 		public class SkyboxFragment : Fragment
@@ -74,7 +44,7 @@
 		public readonly Texture EnvironmentMap;
 		public readonly Texture DiffuseMap;
 
-		private VBO<SkyboxVertex> _vertices;
+		private VBO<BasicVertex> _vertices;
 		private VBO<int> _indices;
 
 		private const float _cubeSize = 20f;
@@ -85,8 +55,8 @@
 		{
 			SkyboxShader = new Program (VertexShader (), FragmentShader ());
 			SkyboxShader.InitializeUniforms (Uniforms = new SkyboxUniforms ());
-			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
-			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
+			var cube = Extrusion.Cube<BasicVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
+			_vertices = new VBO<BasicVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			var textureParams =	new TextureParams ()
 			{
@@ -127,7 +97,7 @@
 		public static GLShader VertexShader ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
-				from v in Shader.Inputs<SkyboxVertex> ()
+				from v in Shader.Inputs<BasicVertex> ()
 				from u in Shader.Uniforms<SkyboxUniforms> ()
 				select new SkyboxFragment ()
 				{

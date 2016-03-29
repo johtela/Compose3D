@@ -54,7 +54,7 @@
 		
 		public ViewingFrustum ShadowFrustum (Camera camera)
 		{
-			var cameraToLight = WorldToLight * camera.WorldToCamera.Inverse;
+			var cameraToLight = WorldToLight * camera.CameraToWorld;
 			var bbox = Aabb<Vec3>.FromPositions (camera.Frustum.Corners.Map (c => cameraToLight.Transform (c)));
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
 				1f, bbox.Size.Z + Distance);

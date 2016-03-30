@@ -23,29 +23,34 @@
 		public Vec4 gl_FragCoord;
 	}
 
-	public interface IVertexFragment
+	public interface IFragmentPosition
 	{
-		Vec3 vertexPosition { get; set; }
-		Vec3 vertexNormal { get; set; }
+		Vec3 fragPosition { get; set; }
+		Vec3 fragNormal { get; set; }
 	}
 
-	public interface IDiffuseFragment
+	public interface IFragmentDiffuse
 	{
-		Vec3 vertexDiffuse { get; set; }
+		Vec3 fragDiffuse { get; set; }
 	}
 	
-	public interface ISpecularFragment
+	public interface IFragmentSpecular
 	{
-		Vec3 vertexSpecular { get; set; }
-		float vertexShininess { get; set; }
+		Vec3 fragSpecular { get; set; }
+		float fragShininess { get; set; }
 	}
 
-	public interface ITexturedFragment<V>
+	public interface IFragmentTexture<V>
 		where V : struct, IVec<V, float>
 	{
-		V texturePosition { get; set; }
+		V fragTexturePos { get; set; }
 	}
 
+	public interface IFragmentReflectivity
+	{
+		float fragReflectivity { get; set; }
+	}
+	
 	public static class FragmentShaders
 	{
 		public static void Use () { }
@@ -62,13 +67,13 @@
 		}
 
 		public static GLShader DirectOutput<F> ()
-			where F : IDiffuseFragment
+			where F : Fragment, IFragmentDiffuse
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<F> ()
 				select new 
 				{
-					outputColor = new Vec3 (f.vertexDiffuse)
+					outputColor = new Vec3 (f.fragDiffuse)
 				});
 		}
 
@@ -81,16 +86,16 @@
 				sampler.Texture (texturePos)[Coord.x, Coord.y, Coord.z]
 			);
 
-		public static GLShader WindowOutput<F, U> ()
-			where F : ITexturedFragment<Vec2>
-			where U : WindowUniforms
+		public static GLShader TexturedOutput<F, U> ()
+			where F : Fragment, IFragmentTexture<Vec2>
+			where U : TextureUniforms
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<F> ()
 				from u in Shader.Uniforms<U> ()
 				select new
 				{
-					outputColor = TextureColor (!u.textureMap, f.texturePosition)
+					outputColor = TextureColor (!u.textureMap, f.fragTexturePos)
 				});
 		}
 	}

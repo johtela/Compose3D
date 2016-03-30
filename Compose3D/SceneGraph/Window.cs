@@ -10,23 +10,22 @@
 	using Textures;
 
 	public class Window<V> : SceneNode 
-		where V : struct, IVertex
+		where V : struct, IVertex, ITextured
 	{
 		public Texture Texture { get; private set; }
-		public Vec2 Position { get; set; }
 		public Vec2 Size { get; set; }
 
 		private Quadrilateral<V> _rectangle;
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		public Window (SceneGraph graph, Texture texture, Vec2 position, Vec2 size)
+		public Window (SceneGraph graph, Texture texture, Vec2 size)
 			: base (graph)
 		{
 			Texture = texture;
-			Position = position;
 			Size = size;
 			_rectangle = Quadrilateral<V>.Rectangle (size.X, size.Y);
+			_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 		}
 
 		public VBO<V> VertexBuffer

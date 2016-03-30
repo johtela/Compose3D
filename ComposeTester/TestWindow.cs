@@ -6,6 +6,7 @@
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
+	using Compose3D.Textures;
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
@@ -22,6 +23,7 @@
 		private Skybox _skybox;
 		private Terrain _terrain;
 		private Entities _entities;
+		private Windows _windows;
 
 		// Scene graph
 		private SceneGraph _sceneGraph;
@@ -40,6 +42,7 @@
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
+			_windows = new Windows ();
 			SetupReactions ();
 
 			//_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
@@ -75,7 +78,18 @@
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
-			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter);
+			
+			var window = new Window<WindowVertex> (sceneGraph,
+				Texture.FromFile (@"Textures/Tulips.jpg", false, new TextureParams ()
+				{
+					{ TextureParameterName.TextureMagFilter, All.Linear },
+					{ TextureParameterName.TextureMinFilter, All.Linear },
+					{ TextureParameterName.TextureWrapS, All.ClampToEdge },
+					{ TextureParameterName.TextureWrapT, All.ClampToEdge }
+				}),
+				new Vec2 (0.8f, 0.8f))
+				.Offset (new Vec3 (-0.5f, 0.5f, 0f));
+			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, window);
 			return sceneGraph;
 		}
 
@@ -118,6 +132,7 @@
 			_skybox.Render (_camera);
 			_terrain.Render (_camera);
 			_entities.Render (_camera);
+			_windows.Render (_camera);
 
 			using (ExampleShaders.PassThrough.Scope ())
 				foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())

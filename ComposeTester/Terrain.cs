@@ -45,7 +45,7 @@
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, Normal={3}, TexturePos={4}]",
+			return string.Format ("[Vertex: position={0}, normal={1}, texturePos={2}]",
 				position, normal, texturePos);
 		}
 	}

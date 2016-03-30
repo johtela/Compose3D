@@ -43,9 +43,9 @@
 			public ShadowUniforms (Program program) : base (program) { }
 		}
 
-		public class DiffuseFragment : Fragment, IDiffuseFragment
+		public class DiffuseFragment : Fragment, IFragmentDiffuse
 		{
-			public Vec3 vertexDiffuse { get; set; }
+			public Vec3 fragDiffuse { get; set; }
 		}
 
 		public static Program PassThrough = new Program (
@@ -55,7 +55,7 @@
 				select new DiffuseFragment ()
 				{
 					gl_Position = new Vec4 (v.position.X, v.position.Y, -1f, 1f),
-					vertexDiffuse = v.diffuse
+					fragDiffuse = v.diffuse
 				}
 			),
 			GLShader.Create (ShaderType.FragmentShader,
@@ -63,7 +63,7 @@
 				from f in Shader.Inputs<DiffuseFragment> ()
 				select new
 				{
-					outputColor = f.vertexDiffuse
+					outputColor = f.fragDiffuse
 				}
 			)
 		);
@@ -74,7 +74,7 @@
 			(
 				ShaderType.VertexShader, () =>
 
-				from v in Shader.Inputs<Vertex> ()
+				from v in Shader.Inputs<EntityVertex> ()
 				from u in Shader.Uniforms<ShadowUniforms> ()
 				select new Fragment ()
 				{

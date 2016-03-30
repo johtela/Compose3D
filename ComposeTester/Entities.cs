@@ -7,21 +7,19 @@
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
-	using OpenTK;
 	using System;
 	using System.Linq;
 	using System.Runtime.InteropServices;
-	using LinqCheck;
 	using Extensions;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, 
-		ITextured, ITagged<Vertex>, IReflective
+	public struct EntityVertex : IVertex, IVertexInitializer<EntityVertex>, IVertexColor<Vec3>, 
+		ITextured, ITagged<EntityVertex>, IReflective
 	{
 		public Vec3 position;
 		public Vec3 normal;
-		public Vec3 diffuseColor;
-		public Vec3 specularColor;
+		public Vec3 diffuse;
+		public Vec3 specular;
 		public Vec2 texturePos;
 		public float shininess;
 		public float reflectivity;
@@ -36,14 +34,14 @@
 
 		Vec3 IDiffuseColor<Vec3>.diffuse
 		{
-			get { return diffuseColor; }
-			set { diffuseColor = value; }
+			get { return diffuse; }
+			set { diffuse = value; }
 		}
 
 		Vec3 ISpecularColor<Vec3>.specular
 		{
-			get { return specularColor; }
-			set { specularColor = value; }
+			get { return specular; }
+			set { specular = value; }
 		}
 
 		float ISpecularColor<Vec3>.shininess
@@ -69,7 +67,7 @@
 			set { texturePos = value; }
 		}
 
-		int ITagged<Vertex>.tag
+		int ITagged<EntityVertex>.tag
 		{
 			get { return tag; }
 			set { tag = value; }
@@ -81,28 +79,28 @@
 			set { reflectivity = value; }
 		}
 
-		void IVertexInitializer<Vertex>.Initialize (ref Vertex vertex)
+		void IVertexInitializer<EntityVertex>.Initialize (ref EntityVertex frag)
 		{
-			vertex.texturePos = new Vec2 (float.PositiveInfinity);
+			frag.texturePos = new Vec2 (float.PositiveInfinity);
 		}
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: Position={0}, DiffuseColor={1}, SpecularColor={2}, Normal={3}, Tag={4}]",
-				position, diffuseColor, specularColor, normal, tag);
+			return string.Format ("[Vertex: position={0}, diffuse={1}, specular={2}, normal={3}, tag={4}]",
+				position, diffuse, specular, normal, tag);
 		}
 	}
 	
-	public class EntityFragment : Fragment, IVertexFragment, IDiffuseFragment, ISpecularFragment, 
-		ITexturedFragment<Vec2>
+	public class EntityFragment : Fragment, IFragmentPosition, IFragmentDiffuse, IFragmentSpecular, 
+		IFragmentTexture<Vec2>, IFragmentReflectivity
 	{
-		public Vec3 vertexPosition { get; set; }
-		public Vec3 vertexNormal { get; set; }
-		public Vec3 vertexDiffuse { get; set; }
-		public Vec3 vertexSpecular { get; set; }
-		public float vertexShininess { get; set; }
-		public float vertexReflectivity { get; set; }
-		public Vec2 texturePosition { get; set; }
+		public Vec3 fragPosition { get; set; }
+		public Vec3 fragNormal { get; set; }
+		public Vec3 fragDiffuse { get; set; }
+		public Vec3 fragSpecular { get; set; }
+		public float fragShininess { get; set; }
+		public float fragReflectivity { get; set; }
+		public Vec2 fragTexturePos { get; set; }
 	}
 
 	public class Entities
@@ -159,7 +157,9 @@
 
 		public Entities (SceneGraph sceneGraph)
 		{
-			EntityShader = new Program (VertexShader (), FragmentShader ());
+			EntityShader = new Program (
+				VertexShaders.BasicShader<EntityVertex, EntityFragment, TransformUniforms> (), 
+				FragmentShader ());
 			Uniforms = new EntityUniforms (EntityShader, sceneGraph);
 			LightingUniforms = new LightingUniforms (EntityShader, sceneGraph);
 			Transforms = new TransformUniforms (EntityShader);
@@ -167,8 +167,8 @@
 
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
-			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
+			var fighter = new FighterGeometry<EntityVertex, PathNode> ();
+			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
@@ -184,7 +184,7 @@
 			var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 
 			using (EntityShader.Scope ())
-				foreach (var mesh in camera.NodesInView <Mesh<Vertex>> ())
+				foreach (var mesh in camera.NodesInView <Mesh<EntityVertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
@@ -202,29 +202,6 @@
 				Transforms.perspectiveMatrix &= matrix;
 		}
 
-		public static GLShader VertexShader ()
-		{
-			return GLShader.Create
-			(
-				ShaderType.VertexShader, () =>
-
-				from v in Shader.Inputs<Vertex> ()
-				from t in Shader.Uniforms<TransformUniforms> ()
-				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
-				select new EntityFragment ()
-				{
-					gl_Position = !t.perspectiveMatrix * viewPos,
-					vertexPosition = viewPos[Coord.x, Coord.y, Coord.z],
-					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
-					vertexDiffuse = v.diffuseColor,
-					vertexSpecular = v.specularColor,
-					vertexShininess = v.shininess,
-					texturePosition = v.texturePos,
-					vertexReflectivity = v.reflectivity
-				}
-			);
-		}
-
 		public static GLShader FragmentShader ()
 		{
 			Lighting.Use ();
@@ -237,31 +214,31 @@
 				from f in Shader.Inputs<EntityFragment> ()
 				from u in Shader.Uniforms<EntityUniforms> ()
 				from l in Shader.Uniforms<LightingUniforms> ()
-				let samplerNo = (f.texturePosition.X / 10f).Truncate ()
+				let samplerNo = (f.fragTexturePos.X / 10f).Truncate ()
 				let fragDiffuse =
-					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.texturePosition) :
-					samplerNo == 1 ? FragmentShaders.TextureColor ((!u.samplers)[1], f.texturePosition - new Vec2 (10f)) :
-					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.texturePosition - new Vec2 (20f)) :
-					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.texturePosition - new Vec2 (30f)) :
-					f.vertexDiffuse
-					let dirLight = Lighting.DirLightIntensity (!l.directionalLight, f.vertexPosition, 
-						f.vertexNormal, f.vertexShininess)
+					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.fragTexturePos) :
+					samplerNo == 1 ? FragmentShaders.TextureColor ((!u.samplers)[1], f.fragTexturePos - new Vec2 (10f)) :
+					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.fragTexturePos - new Vec2 (20f)) :
+					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.fragTexturePos - new Vec2 (30f)) :
+					f.fragDiffuse
+					let dirLight = Lighting.DirLightIntensity (!l.directionalLight, f.fragPosition, 
+						f.fragNormal, f.fragShininess)
 				let totalLight = 
 					(from pl in !u.pointLights
-					 select Lighting.PointLightIntensity (pl, f.vertexPosition, f.vertexNormal, f.vertexShininess))
+					 select Lighting.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess))
 					.Aggregate (dirLight, 
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
-				let envLight = (!u.diffuseMap).Texture (f.vertexNormal)[Coord.x, Coord.y, Coord.z]
+				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
 					let ambient = envLight * (!l.globalLighting).ambientLightIntensity
-				let reflectDiffuse = f.vertexReflectivity > 0f ? 
-					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.vertexPosition, f.vertexNormal), 
-						f.vertexReflectivity) :
+				let reflectDiffuse = f.fragReflectivity > 0f ? 
+					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
+						f.fragReflectivity) :
 					fragDiffuse
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 
-						totalLight.diffuse, totalLight.specular, reflectDiffuse, f.vertexSpecular)
+						totalLight.diffuse, totalLight.specular, reflectDiffuse, f.fragSpecular)
 				}
 			);
 		}

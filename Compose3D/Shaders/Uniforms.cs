@@ -58,10 +58,13 @@
 		}
 	}
 
-	public class WindowUniforms : Uniforms
+	public class TextureUniforms : Uniforms
 	{
 		public Uniform<Sampler2D> textureMap;
 
-		public WindowUniforms (Program program) : base (program) { }
+		public TextureUniforms (Program program, Sampler2D sampler) : base (program) 
+		{
+			textureMap &= sampler;
+		}
 	}
 }

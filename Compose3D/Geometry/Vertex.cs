@@ -5,7 +5,8 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Extensions;
-	
+	using GLTypes;
+
 	/// <summary>
 	/// Interface for objects with any position data.
 	/// </summary>

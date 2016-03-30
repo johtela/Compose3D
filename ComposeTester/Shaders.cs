@@ -13,8 +13,8 @@
 	[StructLayout(LayoutKind.Sequential)]
 	public struct PathNode : IPositional<Vec3>, IDiffuseColor<Vec3>
 	{
-		internal Vec3 position;
-		internal Vec3 color;
+		public Vec3 position;
+		public Vec3 color;
 
 		Vec3 IPositional<Vec3>.Position
 		{
@@ -41,6 +41,11 @@
 			internal Uniform<Mat4> mvpMatrix;
 
 			public ShadowUniforms (Program program) : base (program) { }
+		}
+
+		public class DiffuseFragment : Fragment, IDiffuseFragment
+		{
+			public Vec3 vertexDiffuse { get; set; }
 		}
 
 		public static Program PassThrough = new Program (

@@ -26,7 +26,7 @@
 
     public static class TypeHelpers
     {
-        private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public;
         private static Dictionary<Type, IList<GLStructField>> _structFields = new Dictionary<Type, IList<GLStructField>> ();
 
         private static T GetAttribute<T> (MemberInfo mi) where T : Attribute

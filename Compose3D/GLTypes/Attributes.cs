@@ -6,7 +6,7 @@
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
 
-	[AttributeUsage (AttributeTargets.Field)]
+	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property)]
 	public class OmitInGlslAttribute : Attribute { }
 
 	[AttributeUsage (AttributeTargets.Method)]

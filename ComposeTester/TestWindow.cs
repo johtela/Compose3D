@@ -120,7 +120,7 @@
 			_entities.Render (_camera);
 
 			using (ExampleShaders.PassThrough.Scope ())
-				foreach (var lines in _sceneGraph.Root.Traverse ().OfType <LineSegment<PathNode, Vec3>> ())
+				foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
 					ExampleShaders.PassThrough.DrawLinePath (lines.VertexBuffer);
 
 			SwapBuffers ();

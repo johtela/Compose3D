@@ -18,13 +18,13 @@
 	public struct Vertex : IVertex, IVertexInitializer<Vertex>, IVertexColor<Vec3>, 
 		ITextured, ITagged<Vertex>, IReflective
 	{
-		internal Vec3 position;
-		internal Vec3 normal;
-		internal Vec3 diffuseColor;
-		internal Vec3 specularColor;
-		internal Vec2 texturePos;
-		internal float shininess;
-		internal float reflectivity;
+		public Vec3 position;
+		public Vec3 normal;
+		public Vec3 diffuseColor;
+		public Vec3 specularColor;
+		public Vec2 texturePos;
+		public float shininess;
+		public float reflectivity;
 		[OmitInGlsl]
 		internal int tag;
 
@@ -93,9 +93,15 @@
 		}
 	}
 	
-	public class EntityFragment : TexturedFragment<Vec2>
+	public class EntityFragment : Fragment, IVertexFragment, IDiffuseFragment, ISpecularFragment, ITexturedFragment<Vec2>
 	{
-		public float vertexReflectivity;
+		public Vec3 vertexPosition { get; set; }
+		public Vec3 vertexNormal { get; set; }
+		public Vec3 vertexDiffuse { get; set; }
+		public Vec3 vertexSpecular { get; set; }
+		public float vertexShininess { get; set; }
+		public float vertexReflectivity { get; set; }
+		public Vec2 texturePosition { get; set; }
 	}
 
 	public class Entities

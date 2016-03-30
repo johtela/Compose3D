@@ -23,28 +23,27 @@
 		public Vec4 gl_FragCoord;
 	}
 
-	public class DiffuseFragment : Fragment
+	public interface IVertexFragment
 	{
-		public Vec3 vertexPosition;
-		public Vec3 vertexNormal;
-		public Vec3 vertexDiffuse;		
+		Vec3 vertexPosition { get; set; }
+		Vec3 vertexNormal { get; set; }
+	}
+
+	public interface IDiffuseFragment
+	{
+		Vec3 vertexDiffuse { get; set; }
 	}
 	
-	public class SpecularFragment : DiffuseFragment
+	public interface ISpecularFragment
 	{
-		public Vec3 vertexSpecular;
-		public float vertexShininess;
+		Vec3 vertexSpecular { get; set; }
+		float vertexShininess { get; set; }
 	}
 
-	public class TexturedFragment<V> : SpecularFragment
+	public interface ITexturedFragment<V>
 		where V : struct, IVec<V, float>
 	{
-		public V texturePosition;
-	}
-
-	public class WindowFragment : Fragment
-	{
-		public Vec2 texturePosition;
+		V texturePosition { get; set; }
 	}
 
 	public static class FragmentShaders
@@ -63,7 +62,7 @@
 		}
 
 		public static GLShader DirectOutput<F> ()
-			where F : DiffuseFragment
+			where F : IDiffuseFragment
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<F> ()
@@ -83,7 +82,7 @@
 			);
 
 		public static GLShader WindowOutput<F, U> ()
-			where F : WindowFragment
+			where F : ITexturedFragment<Vec2>
 			where U : WindowUniforms
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>

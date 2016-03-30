@@ -136,7 +136,8 @@
         private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
             var syntax = GLType (memberType); 
-            if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute))))
+            if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
+				member.Name.StartsWith ("<>")))
             {
                 var qualifiers = member.GetQualifiers ();
 				DeclOut (string.IsNullOrEmpty (qualifiers) ?
@@ -147,14 +148,14 @@
 
         private void DeclareVariables (Type type, string prefix)
         {
-			if (!DefineType (type)) return;
-            if (type.Name.StartsWith ("<>"))
-                foreach (var prop in type.GetGLProperties ())
-                    DeclareVariable (prop, prop.PropertyType, prefix);
-            else
-                foreach (var field in type.GetGLFields ())
+			if (!DefineType (type))
+				return;
+            if (!type.Name.StartsWith ("<>"))
+				foreach (var field in type.GetGLFields ())
 					DeclareVariable (field, field.FieldType, prefix);
-        }
+			foreach (var prop in type.GetGLProperties ())
+				DeclareVariable (prop, prop.PropertyType, prefix);
+		}
 
 		private void DeclareConstants (Expression expr)
 		{

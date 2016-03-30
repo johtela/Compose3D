@@ -16,9 +16,9 @@
 	[StructLayout (LayoutKind.Sequential, Pack=4)]
 	public struct TerrainVertex : IVertex, ITextured
 	{
-		internal Vec3 position;
-		internal Vec3 normal;
-		internal Vec2 texturePos;
+		public Vec3 position;
+		public Vec3 normal;
+		public Vec2 texturePos;
 
 		Vec3 IPositional<Vec3>.Position
 		{

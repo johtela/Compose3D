@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Shaders
 {
+	using System;
 	using Extensions;
 	using Maths;
 	using GLTypes;
@@ -11,7 +12,8 @@
 	{
 		public Uniforms (Program program)
 		{
-			program.InitializeUniforms (this);			
+			foreach (var field in GetType ().GetUniforms ())
+				field.SetValue (this, Activator.CreateInstance (field.FieldType, program, field));
 		}
 	}
 	
@@ -21,8 +23,7 @@
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
 		
-		public TransformUniforms (Program program) : base (program)
-		{ }
+		public TransformUniforms (Program program) : base (program)	{ }
 	}
 
 	public class LightingUniforms : Uniforms
@@ -57,8 +58,10 @@
 		}
 	}
 
-	public class WindowUniforms
+	public class WindowUniforms : Uniforms
 	{
 		public Uniform<Sampler2D> textureMap;
+
+		public WindowUniforms (Program program) : base (program) { }
 	}
 }

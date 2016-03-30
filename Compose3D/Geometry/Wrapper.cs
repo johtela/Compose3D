@@ -1,7 +1,6 @@
 ﻿namespace Compose3D.Geometry
 {
 	using System.Collections.Generic;
-	using System.Linq;
 
 	internal class Wrapper<V> : Geometry<V> where V : struct, IVertex
 	{

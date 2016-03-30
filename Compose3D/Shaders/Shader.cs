@@ -35,9 +35,9 @@
 		}
 
 		[LiftMethod]
-		public static Shader<T> Uniforms<T> ()
+		public static Shader<U> Uniforms<U> () where U : Uniforms
 		{
-			return state => state.Uniforms<T> ();
+			return state => state.Uniforms<U> ();
 		}
 		
 		[LiftMethod]

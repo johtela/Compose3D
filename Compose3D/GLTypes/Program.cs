@@ -40,12 +40,6 @@
             return new Uniform<T> (this, name);
         }
 
-        public void InitializeUniforms<U> (U uniforms) where U : class
-        {
-			foreach (var field in uniforms.GetType ().GetUniforms ())
-                field.SetValue (uniforms, Activator.CreateInstance (field.FieldType, this, field));
-        }
-
 		void BindVertices<V> (VBO<V> vertices) where V : struct
 		{
 			var recSize = Marshal.SizeOf (typeof(V));

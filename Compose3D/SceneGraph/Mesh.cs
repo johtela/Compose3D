@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System.Linq;
     using Compose3D.Maths;
     using Geometry;
     using GLTypes;
@@ -50,7 +51,7 @@
             get
             {
                 if (_normalBuffer == null)
-                    _normalBuffer = new VBO<V> (Geometry.Normals, BufferTarget.ArrayBuffer);
+                    _normalBuffer = new VBO<V> (Geometry.Normals ().ToArray (), BufferTarget.ArrayBuffer);
                 return _normalBuffer;
             }
         }

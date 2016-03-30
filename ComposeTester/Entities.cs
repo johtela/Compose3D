@@ -161,7 +161,7 @@
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<Vertex, PathNode> ();
-			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */))
+			return new Mesh<Vertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 

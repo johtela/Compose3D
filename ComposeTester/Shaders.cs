@@ -36,9 +36,11 @@
 
 	public static class ExampleShaders
 	{
-		public class ShadowUniforms
+		public class ShadowUniforms : Uniforms
 		{
 			internal Uniform<Mat4> mvpMatrix;
+
+			public ShadowUniforms (Program program) : base (program) { }
 		}
 
 		public static Program PassThrough = new Program (

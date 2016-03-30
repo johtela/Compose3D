@@ -49,6 +49,7 @@
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
     <Compile Include="Geometry\Circular.cs" />
+    <Compile Include="Geometry\Compacted.cs" />
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="GLTypes\GLObject.cs" />

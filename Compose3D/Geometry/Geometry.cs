@@ -43,7 +43,6 @@
 		private Aabb<Vec3> _boundingBox;
 		private V[] _vertices;
 		private int[] _indices;
-        private V[] _normals;
 
 		protected abstract IEnumerable<V> GenerateVertices ();
 		protected abstract IEnumerable<int> GenerateIndices ();
@@ -84,25 +83,6 @@
 				if (_boundingBox == null)
 					_boundingBox = Aabb<Vec3>.FromPositions (Vertices.Select (v => v.Position));
 				return _boundingBox;
-			}
-		}
-
-        private IEnumerable<V> GenerateNormals ()
-        {
-            foreach (var v in Vertices)
-            {
-                yield return VertexHelpers.New<V> (v.Position, v.Normal);
-                yield return VertexHelpers.New<V> (v.Position + v.Normal, v.Normal);
-            }
-        }
-
-        public V[] Normals
-		{
-			get
-			{
-                if (_normals == null)
-                    _normals = GenerateNormals ().ToArray ();
-                return _normals;
 			}
 		}
 
@@ -169,6 +149,16 @@
 			where V : struct, IVertex
 		{
 			return geometry.SnapVertex (vertex.Position, snapToVertex, snapAxes);
+		}
+
+		public static IEnumerable<V> Normals<V> (this Geometry<V> geometry)
+			where V : struct, IVertex
+		{
+			foreach (var v in geometry.Vertices)
+			{
+				yield return VertexHelpers.New<V> (v.Position, v.Normal);
+				yield return VertexHelpers.New<V> (v.Position + v.Normal, v.Normal);
+			}
 		}
 	}
 }

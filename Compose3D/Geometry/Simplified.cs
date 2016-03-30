@@ -24,24 +24,24 @@
 			for (int i = 0; i < count; i++)
 			{
 				var vert = reduced [i];
-				var normal = vert.Normal;
+				var normal = vert.normal;
 				if (normal != new Vec3 (0f))
 				{
-					var duplicates = (from dupl in _octree.FindByPosition (vert.Position)
+					var duplicates = (from dupl in _octree.FindByPosition (vert.position)
 					                  where !dupl.Equals (vert)
 					                  select dupl);
 					
 					foreach (var dupl in duplicates)
 					{
-						var dnorm = dupl.Item1.Normal;
+						var dnorm = dupl.Item1.normal;
 						if (dnorm.Dot (normal.Normalized) >= _minSmoothAngle)
 						{
 							normal += dnorm;
 							_octree [dupl.Item1] = resCnt;
-							reduced [dupl.Item2].Normal = new Vec3 (0f);
+							reduced [dupl.Item2].normal = new Vec3 (0f);
 						}
 					}
-					vert.Normal = normal.Normalized;
+					vert.normal = normal.Normalized;
 					result [resCnt++] = vert;
 				}
 			}

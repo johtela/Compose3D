@@ -1,4 +1,4 @@
-	namespace Compose3D.Geometry
+namespace Compose3D.Geometry
 {
     using Compose3D.Maths;
     using System;
@@ -7,18 +7,18 @@
 
 	public interface IDiffuseColor<V> where V : struct, IVec<V, float>
 	{
-		V Diffuse { get; set; }
+		V diffuse { get; set; }
 	}
 
 	public interface ISpecularColor<V> where V : struct, IVec<V, float>
 	{
-		V Specular { get; set; }
-		float Shininess { get; set; }
+		V specular { get; set; }
+		float shininess { get; set; }
 	}
 	
 	public interface IReflective
 	{
-		float Reflectivity { get; set; }
+		float reflectivity { get; set; }
 	}
 
 	public interface IVertexColor<V> : IDiffuseColor<V>, ISpecularColor<V>
@@ -31,15 +31,15 @@
 
 		private class VertColor : IVertexColor<V>
         {
-            public V Diffuse { get; set; }
-            public V Specular { get; set; }
-            public float Shininess { get; set; }
+            public V diffuse { get; set; }
+            public V specular { get; set; }
+            public float shininess { get; set; }
 
-            public VertColor (V diffuse, V specular, float shininess)
+            public VertColor (V diff, V spec, float shine)
             {
-                Diffuse = diffuse;
-                Specular = specular;
-                Shininess = shininess;
+                diffuse = diff;
+                specular = spec;
+                shininess = shine;
             }
 
 			public VertColor (V color) : this (color, color.Divide (2f), 100f) { }
@@ -103,7 +103,7 @@
 			where V : struct, IVec<V, float>
 		{
 			for (int i = 0; i < vertices.Length; i++)
-				vertices[i].Diffuse = color;
+				vertices[i].diffuse = color;
 		}
 
 		public static void Color<TVert, V> (this TVert[] vertices, IEnumerable<V> colors)
@@ -112,7 +112,7 @@
 		{
 			var e = colors.GetEnumerator ();
 			for (int i = 0; i < vertices.Length && e.MoveNext (); i++)
-				vertices [i].Diffuse = e.Current;
+				vertices [i].diffuse = e.Current;
 		}
 
 		public static void Color<TVert, V> (this TVert[] vertices, IVertexColor<V> color)
@@ -121,9 +121,9 @@
         {
             for (int i = 0; i < vertices.Length; i++)
             {
-                vertices[i].Diffuse = color.Diffuse;
-                vertices[i].Specular = color.Specular;
-                vertices[i].Shininess = color.Shininess;
+                vertices[i].diffuse = color.diffuse;
+                vertices[i].specular = color.specular;
+                vertices[i].shininess = color.shininess;
             }
         }
 
@@ -140,7 +140,7 @@
 			where TVert : struct, IReflective
 		{
 			for (int i = 0; i < vertices.Length; i++)
-				vertices [i].Reflectivity = reflectivity;
+				vertices [i].reflectivity = reflectivity;
 		}		
 
 		public static Geometry<TVert> Reflectivity<TVert> (this Geometry<TVert> geometry, float reflectivity)

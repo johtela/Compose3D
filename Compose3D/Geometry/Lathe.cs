@@ -64,7 +64,7 @@
 		private static Vec3[] Positions<P> (Path<P, Vec3> path, Axis axis, float angle, Vec3 offset)
 			where P : struct, IPositional<Vec3>
 		{
-			return path.Nodes.Map (v => Rotate (axis, angle, v.Position, offset));
+			return path.Nodes.Map (v => Rotate (axis, angle, v.position, offset));
 		}
 
 		private static Vec3 Rotate (Axis axis, float angle, Vec3 vertex, Vec3 offset)

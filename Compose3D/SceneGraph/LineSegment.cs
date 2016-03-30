@@ -25,7 +25,7 @@
 			get
 			{
 				return Aabb<Vec3>.FromPositions (Path.Nodes.Select (node =>	
-					node.Position.Convert<V, Vec3, float> ()));
+					node.position.Convert<V, Vec3, float> ()));
 			}
 		}
 

@@ -55,7 +55,7 @@
 		private static V SideVertex<V> (V vertex, Vec3 normal)
 			where V : struct, IVertex
 		{
-			return VertexHelpers.New<V> (vertex.Position, normal);
+			return VertexHelpers.New<V> (vertex.position, normal);
 		}
 
 		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
@@ -93,8 +93,8 @@
 		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
 			where V : struct, IVertex
 		{
-			return vertices [index1].Position.CalculateNormal (
-				vertices [index2].Position, backVertices [index1].Position);
+			return vertices [index1].position.CalculateNormal (
+				vertices [index2].position, backVertices [index1].position);
 		}
 
 		private static V[] GetVertices<V, P> (Path<P, Vec3> path, bool flipNormal)
@@ -102,10 +102,10 @@
 			where P : struct, IPositional<Vec3>
 		{
 			var nodes = path.Nodes;
-			var normal = nodes [1].Position.CalculateNormal (nodes [0].Position, nodes [2].Position);
+			var normal = nodes [1].position.CalculateNormal (nodes [0].position, nodes [2].position);
 			if (flipNormal)
 				normal = -normal;
-			return nodes.Select (n => VertexHelpers.New<V> (n.Position, normal)).ToArray ();
+			return nodes.Select (n => VertexHelpers.New<V> (n.position, normal)).ToArray ();
 		}
 
 		private static int ExtrudeOut<V> (Geometry<V>[] geometries, int i, V[] vertices, V[] backVertices,
@@ -134,8 +134,8 @@
 			var vertices = frontFace.Vertices;
 			if (!vertices.AreCoplanar ())
 				throw new ArgumentException ("Geometry is not on completely on the same plane.", "frontFace");
-			var firstNormal = vertices[0].Normal;
-			if (!vertices.All (v => Vec.ApproxEquals (v.Normal, firstNormal)))
+			var firstNormal = vertices[0].normal;
+			if (!vertices.All (v => Vec.ApproxEquals (v.normal, firstNormal)))
 				throw new ArgumentException ("All the normals need to point towards the same direction.", "frontFace");
 
 			var edges = GetEdges (frontFace).ToArray ();
@@ -149,7 +149,7 @@
 
 			foreach (var transform in transforms)
             {
-				backFace = frontFace.ManipulateVertices (v => v.With (transform.Transform (v.Position), -v.Normal));
+				backFace = frontFace.ManipulateVertices (v => v.With (transform.Transform (v.position), -v.normal));
 				var backVertices = backFace.Vertices;
 				i = ExtrudeOut (geometries, i, vertices, backVertices, outerEdges); 
                 vertices = backVertices;
@@ -165,7 +165,7 @@
 			if (depth <= 0f)
 				throw new ArgumentException (
 					"Depth of the extrusion needs to be greater than zero.", "depth");
-			var offs = -frontFace.Vertices[0].Normal * depth;
+			var offs = -frontFace.Vertices[0].normal * depth;
 			return frontFace.Stretch (new Mat4[] { Mat.Translation<Mat4> (offs.X, offs.Y, offs.Z) },
 				true, includeBackFace);
 		}
@@ -173,8 +173,8 @@
 		public static Geometry<V> Inset<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
 			where V : struct, IVertex
 		{
-			var z = frontFace.Vertices.First ().Position.Z;
-			if (!frontFace.Vertices.All (v => v.Position.Z == z))
+			var z = frontFace.Vertices.First ().position.Z;
+			if (!frontFace.Vertices.All (v => v.position.Z == z))
 				throw new ArgumentException (
 					"All the vertices need to be on the XY-plane. I.e. they need to have the " +
 					"same Z-coordinate.", "frontFace");
@@ -225,14 +225,14 @@
 			where V : struct, IVertex
 			where P : struct, IPositional<Vec3>
 		{
-			var z = path.Nodes.First ().Position.Z;
-			if (!path.Nodes.All (p => p.Position.Z.ApproxEquals(z)))
+			var z = path.Nodes.First ().position.Z;
+			if (!path.Nodes.All (p => p.position.Z.ApproxEquals(z)))
 				throw new ArgumentException (
 					"All the nodes of the path need to be on the XY-plane. I.e. they need to have the " +
 					"same Z-coordinate.", "path");
 
 			return Extrude<V, P> (new Path<P, Vec3>[] { path, path.Scale (scaleX, scaleY) }, false, false)
-				.ManipulateVertices (v => v.With (v.Position, new Vec3 (0f, 0f, 1f)))
+				.ManipulateVertices (v => v.With (v.position, new Vec3 (0f, 0f, 1f)))
 				.Simplify ();
 		}
 
@@ -248,7 +248,7 @@
 				throw new ArgumentException (
 					"Slope parameter needs to be greater than zero.", "slope");
 
-			var normal = plane.Vertices[0].Normal;
+			var normal = plane.Vertices[0].normal;
 			var step = depth / numSteps;
 			var scaleRange = 1f - targetScale;
 			var exponent = scaleRange < 0 ? 1f / steepness : steepness;

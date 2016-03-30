@@ -20,13 +20,13 @@
 		public Vec3 normal;
 		public Vec2 texturePos;
 
-		Vec3 IPositional<Vec3>.Position
+		Vec3 IPositional<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.Normal
+		Vec3 IPlanar<Vec3>.normal
 		{
 			get { return normal; }
 			set
@@ -37,7 +37,7 @@
 			}
 		}
 		
-		Vec2 ITextured.TexturePos
+		Vec2 ITextured.texturePos
 		{
 			get { return texturePos; }
 			set { texturePos = value; }

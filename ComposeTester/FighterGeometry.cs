@@ -35,13 +35,13 @@
 						turnAxis: Axis.X, 
 						offset: new Vec3 (0f), 
 						stepAngle: MathHelper.TwoPi / numPoints)
-					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.Position.Y < 0f))
+					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.position.Y < 0f))
 					.RotateY (90f.Radians ())
 					.Color (_color);
 
 				XSection = Path<P, Vec3>.FromVecs (
 					from v in Cone.Vertices.Furthest (Dir3D.Back)
-					select v.Position);
+					select v.position);
 			}
 		}
 
@@ -60,12 +60,12 @@
 				Fuselage = Composite.Create (Stacking.StackBackward (nose.Cone, Fuselage));
 				XSection = Path<P, Vec3>.FromVecs (
 					from v in Fuselage.Vertices.Furthest (Dir3D.Back)
-					where v.Position.Y >= -0.2f
-					select v.Position).Close ();
-				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().Position;
+					where v.position.Y >= -0.2f
+					select v.position).Close ();
+				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().position;
 				Fuselage = Fuselage.ManipulateVertices (Manipulators.Transform<V> (
 					Mat.RotationX<Mat4> (bend.Radians ()).RelativeTo (pivotPoint))
-					.Where (v => v.Position.Z > pivotPoint.Z))
+					.Where (v => v.position.Z > pivotPoint.Z))
 					.Color (_color);
 
 				XSectionStart = XSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
@@ -82,8 +82,8 @@
 			public MainFuselage (CockpitFuselage cockpitFuselage)
 			{
 				XSection = CrossSection (
-					cockpitFuselage.XSectionStart.Position,
-					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y,
+					cockpitFuselage.XSectionStart.position,
+					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().position.Y,
 					cockpitFuselage.XSection.Nodes.Length);
 
 				var transforms = from z in EnumerableExt.Range (0f, -2f, -0.25f)
@@ -124,15 +124,15 @@
 			public EngineIntake (CockpitFuselage cockpitFuselage)
 			{
 				var startNode = cockpitFuselage.XSectionStart;
-                XSection = CrossSection (startNode.Position,
-					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().Position.Y, 20);
+                XSection = CrossSection (startNode.position,
+					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 20);
 
 				var transforms =
 					from s in EnumerableExt.Range (0.25f, 2f, 0.25f)
 					let scaleFactor = 1f + (0.2f * s.Pow (0.5f))
 					select Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (scaleFactor, scaleFactor, 1f)
-						.RelativeTo (new Vec3 (0f, startNode.Position.Y, 0f));
+						.RelativeTo (new Vec3 (0f, startNode.position.Y, 0f));
 				Intake = XSection
 					.Inset<P, V> (0.9f, 0.9f)
 					.Stretch (transforms, true, false)
@@ -141,9 +141,9 @@
 
 				BellyXSection = Path<P, Vec3>.FromVecs (
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
-					where v.Position.Y < -0.1f
-					select v.Position);
-				var scalePoint = new Vec3 (0f, BellyXSection.Nodes.First ().Position.Y, 0f);
+					where v.position.Y < -0.1f
+					select v.position);
+				var scalePoint = new Vec3 (0f, BellyXSection.Nodes.First ().position.Y, 0f);
 				Belly = EnumerableExt.Enumerate (BellyXSection, 
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * 
 						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
@@ -182,7 +182,7 @@
 			{
 				var nodes = 
 					from n in intake.RearXSection.ReverseWinding ().Nodes
-					where n.Position.Y <= -0.2f
+					where n.position.Y <= -0.2f
 					select n;				
 				XSection = new Path<P, Vec3> (nodes);
 				var firstNode = XSection.Nodes.First ();
@@ -192,7 +192,7 @@
 					select XSection.Transform (
 						Mat.Translation<Mat4> (0f, 0f, -s) *
 						Mat.Scaling<Mat4> (1f - (scaleFactor * 0.25f), 1f - scaleFactor, 1f)
-						.RelativeTo (new Vec3 (0f, firstNode.Position.Y, 0f)));
+						.RelativeTo (new Vec3 (0f, firstNode.position.Y, 0f)));
 				RearXSection = paths.Last ();
 				Geometry = paths.Extrude<V, P> (false, false)
 					.Color (_color);
@@ -209,8 +209,8 @@
 
 			public Rear (MainFuselage fuselage, Underside underside)
 			{
-				var pos1 = new P () { Position = fuselage.RearXSection.Nodes.First ().Position + new Vec3 (0f, -0.1f, 0f) };
-				var pos2 = new P () { Position = fuselage.RearXSection.Nodes.Last ().Position + new Vec3 (0f, -0.1f, 0f) };
+				var pos1 = new P () { position = fuselage.RearXSection.Nodes.First ().position + new Vec3 (0f, -0.1f, 0f) };
+				var pos2 = new P () { position = fuselage.RearXSection.Nodes.Last ().position + new Vec3 (0f, -0.1f, 0f) };
 				XSection = +(fuselage.RearXSection + pos2 + underside.RearXSection + pos1);
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + pos2 + 
 					BottomXSection (underside.RearXSection) + pos1);
@@ -222,10 +222,10 @@
 				RearXSection = paths.Last (); 
 				EngineXSection = new Path<P, Vec3> (
 					from n in RearXSection.Nodes
-					where n.Position.X >= -0.9f && n.Position.X <= 0.9f
+					where n.position.X >= -0.9f && n.position.X <= 0.9f
 					select new P () 
 					{ 
-						Position = new Vec3 (n.Position.X.Clamp (-0.75f, 0.75f), n.Position.Y, n.Position.Z)
+						position = new Vec3 (n.position.X.Clamp (-0.75f, 0.75f), n.position.Y, n.position.Z)
 					})
 					.Close ();
 				ExhaustXSection = EngineXSection.Scale (0.8f, 0.7f);
@@ -241,10 +241,10 @@
 			private Path<P, Vec3> BottomXSection (Path<P, Vec3> underside)
 			{
 				var first = underside.Nodes.First (); 
-				var radiusX = first.Position.X;
-				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().Position.Y * 0.8f;
+				var radiusX = first.position.X;
+				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().position.Y * 0.8f;
 				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Nodes.Length)
-					.Translate (0f, 0f, first.Position.Z);
+					.Translate (0f, 0f, first.position.Z);
 			}
 		}
 
@@ -277,14 +277,14 @@
 				
 				FlangeXSection = new Path<P, Vec3> (
 					from n in rear.RearXSection.Nodes
-					where n.Position.X < -0.65f && n.Position.Y < 0.4f
+					where n.position.X < -0.65f && n.position.Y < 0.4f
 					select n)
 					.Close ();
 				FlangeEndXSection = new Path<P, Vec3> (
 					from n in FlangeXSection.Nodes
 					select new P ()
 					{
-						Position = new Vec3 (n.Position.X, n.Position.Y.Clamp (-0.2f, 0.1f), n.Position.Z)
+						position = new Vec3 (n.position.X, n.position.Y.Clamp (-0.2f, 0.1f), n.position.Z)
 					});
 				var center = FlangeEndXSection.Nodes.Center<P, Vec3> ();
 				StabilizerFlange = FlangeXSection.MorphTo (FlangeEndXSection,

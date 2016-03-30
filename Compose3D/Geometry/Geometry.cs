@@ -81,7 +81,7 @@
 			get
 			{
 				if (_boundingBox == null)
-					_boundingBox = Aabb<Vec3>.FromPositions (Vertices.Select (v => v.Position));
+					_boundingBox = Aabb<Vec3>.FromPositions (Vertices.Select (v => v.position));
 				return _boundingBox;
 			}
 		}
@@ -141,14 +141,14 @@
 		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, Vec3 position, V snapToVertex, Axes snapAxes)
 			where V : struct, IVertex
 		{
-			var offset = GetSnapOffset (position, snapToVertex.Position, snapAxes);
+			var offset = GetSnapOffset (position, snapToVertex.position, snapAxes);
 			return geometry.Translate (offset.X, offset.Y, offset.Z);
 		}
 
 		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, V vertex, V snapToVertex, Axes snapAxes)
 			where V : struct, IVertex
 		{
-			return geometry.SnapVertex (vertex.Position, snapToVertex, snapAxes);
+			return geometry.SnapVertex (vertex.position, snapToVertex, snapAxes);
 		}
 
 		public static IEnumerable<V> Normals<V> (this Geometry<V> geometry)
@@ -156,8 +156,8 @@
 		{
 			foreach (var v in geometry.Vertices)
 			{
-				yield return VertexHelpers.New<V> (v.Position, v.Normal);
-				yield return VertexHelpers.New<V> (v.Position + v.Normal, v.Normal);
+				yield return VertexHelpers.New<V> (v.position, v.normal);
+				yield return VertexHelpers.New<V> (v.position + v.normal, v.normal);
 			}
 		}
 	}

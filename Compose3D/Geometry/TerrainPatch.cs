@@ -60,8 +60,8 @@
 				{
 					var height = Height (x, z);
 					var index = Index (x, z);
-					result[index].Position = new Vec3 (Start.X + x, height, Start.Y + z);
-					result [index].TexturePos = new Vec2 (x, z);
+					result[index].position = new Vec3 (Start.X + x, height, Start.Y + z);
+					result [index].texturePos = new Vec2 (x, z);
 				}
 			}
 			return result;
@@ -77,7 +77,7 @@
 					var e = Height (x + 1, z);
 					var n = Height (x, z - 1);
 					var s = Height (x, z + 1);
-					vertices[Index (x, z)].Normal = new Vec3 (w - e, 2f, n - s).Normalized;
+					vertices[Index (x, z)].normal = new Vec3 (w - e, 2f, n - s).Normalized;
 				}
 			}
 		}

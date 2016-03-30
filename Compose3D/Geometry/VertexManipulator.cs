@@ -49,7 +49,7 @@
 			where V : struct, IVertex
 		{
 			var nmat = new Mat3 (matrix).Inverse.Transposed;
-			return v => v.With (matrix.Transform (v.Position), nmat * v.Normal);
+			return v => v.With (matrix.Transform (v.position), nmat * v.normal);
 		}
 
 		public static Manipulator<V> Translate<V> (float offsetX, float offsetY, float offsetZ) 

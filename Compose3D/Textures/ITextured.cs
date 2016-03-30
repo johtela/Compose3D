@@ -15,7 +15,7 @@
         /// <summary>
         /// The texture coordinate of the vertex.
         /// </summary>
-        Vec2 TexturePos { get; set; }
+        Vec2 texturePos { get; set; }
     }
 
     public static class TexturePos
@@ -76,16 +76,16 @@
             var range = maxPos - minPos;
 			var invView = new Vec3 (0f, 0f, 1f);
 			var bbox = Aabb<Vec3>.FromPositions (projected.Vertices.Where (
-				v => v.Normal.Dot (invView) >= minCosAngle).Select (v => v.Position));
+				v => v.normal.Dot (invView) >= minCosAngle).Select (v => v.position));
             var scaleX = range.X / bbox.Size.X;
             var scaleY = range.Y / bbox.Size.Y;
             for (int i = 0; i < geometry.Vertices.Length; i++)
             {
                 var pv = projected.Vertices[i];
-				if (pv.Normal.Dot (invView) >= minCosAngle)
-					geometry.Vertices[i].TexturePos = new Vec2 (
-                        (pv.Position.X - bbox.Left) * scaleX + minPos.X,
-                        1 - ((pv.Position.Y - bbox.Bottom) * scaleY) + minPos.Y);
+				if (pv.normal.Dot (invView) >= minCosAngle)
+					geometry.Vertices[i].texturePos = new Vec2 (
+                        (pv.position.X - bbox.Left) * scaleX + minPos.X,
+                        1 - ((pv.position.Y - bbox.Bottom) * scaleY) + minPos.Y);
             }
         }
 

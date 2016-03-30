@@ -15,7 +15,7 @@
 		/// <summary>
 		/// Position of the object.
 		/// </summary>
-		V Position { get; set; }
+		V position { get; set; }
 	}
 
 	/// <summary>
@@ -26,7 +26,7 @@
 		/// <summary>
 		/// The normal of the object.
 		/// </summary>
-		V Normal { get; set; }
+		V normal { get; set; }
 	}
 
 	/// <summary>
@@ -49,7 +49,7 @@
 		/// <summary>
 		/// Tag can be used to identify a vertex.
 		/// </summary>
-		int Tag { get; set; }
+		int tag { get; set; }
 	}
 
 	public static class Dir3D
@@ -70,8 +70,8 @@
             where V : struct, IVertex
         {
             var vertex = new V ();
-            vertex.Position = position;
-            vertex.Normal = normal;
+            vertex.position = position;
+            vertex.normal = normal;
             if (vertex is IVertexInitializer<V>)
                 (vertex as IVertexInitializer<V>).Initialize (ref vertex);
             return vertex;
@@ -80,8 +80,8 @@
 		public static V With<V>(this V vertex, Vec3 position, Vec3 normal)
 			where V : struct, IVertex
 		{
-			vertex.Position = position;
-			vertex.Normal = normal;
+			vertex.position = position;
+			vertex.normal = normal;
 			return vertex;
 		}
 
@@ -103,10 +103,10 @@
 			foreach (var pos in vertices)
 				for (int i = 0; i < min.Dimensions; i++)
 				{
-					if (min[i] > pos.Position[i])
-						min[i] = pos.Position[i];
-					if (max[i] < pos.Position[i])
-						max[i] = pos.Position[i];
+					if (min[i] > pos.position[i])
+						min[i] = pos.position[i];
+					if (max[i] < pos.position[i])
+						max[i] = pos.position[i];
 				}
 			return Tuple.Create (min, max);
 		}
@@ -115,7 +115,7 @@
 			where P : struct, IPositional<V>
 			where V : struct, IVec<V, float>
 		{
-			return vertices.MaximumItems (v => v.Position.Multiply (direction).Sum ());
+			return vertices.MaximumItems (v => v.position.Multiply (direction).Sum ());
 		}
 		
 		public static IEnumerable<P> Facing<P, V> (this IEnumerable<P> vertices, V direction)
@@ -130,25 +130,25 @@
 		{
 			if (vertices.Count () < 4)
 				return true;
-			var first = EnumerableExt.Next (ref vertices).Position;
-			var ab = EnumerableExt.Next (ref vertices).Position - first;
-			var ac = EnumerableExt.Next (ref vertices).Position - first;
+			var first = EnumerableExt.Next (ref vertices).position;
+			var ab = EnumerableExt.Next (ref vertices).position - first;
+			var ac = EnumerableExt.Next (ref vertices).position - first;
 			var normal = ab.Cross (ac);
 
-			return vertices.All (v => normal.Dot (v.Position - first).ApproxEquals (0f, 0.1f));
+			return vertices.All (v => normal.Dot (v.position - first).ApproxEquals (0f, 0.1f));
 		}
 
 		public static int TagVertex<V> (this Geometry<V> geometry, V vertex) 
 			where V : struct, IVertex, ITagged<V>
 		{
-			geometry.Vertices[geometry.FindVertex (vertex)].Tag = ++_lastTag;
+			geometry.Vertices[geometry.FindVertex (vertex)].tag = ++_lastTag;
 			return _lastTag;
 		}
 
 		public static V FindVertexByTag<V> (this Geometry<V> geometry, int tag)
 			where V : struct, IVertex, ITagged<V>
 		{
-			return geometry.Vertices.First (v => v.Tag == tag);
+			return geometry.Vertices.First (v => v.tag == tag);
 		}
 	}
 }

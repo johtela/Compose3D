@@ -115,19 +115,19 @@
 			{
 				var prev = current.Previous;
 				var next = current.Next;
-				var p0 = vertices[prev.Index].Position;
-				var p1 = vertices[current.Index].Position;
-				var p2 = vertices[next.Index].Position;
+				var p0 = vertices[prev.Index].position;
+				var p1 = vertices[current.Index].position;
+				var p2 = vertices[next.Index].position;
 
 				current.IsEar = current.Where (v => v != current && v != prev && v != next && v.IsReflex)
-					.All (cv => !PointInTriangle (vertices[cv.Index].Position, p0, p1, p2));
+					.All (cv => !PointInTriangle (vertices[cv.Index].position, p0, p1, p2));
 			}
 		}
 
 		private static float AngleBetweenEdges (int prev, int current, int next, V[] vertices)
 		{
-			var vec1 = vertices[prev].Position - vertices[current].Position;
-			var vec2 = vertices[next].Position - vertices[current].Position;
+			var vec1 = vertices[prev].position - vertices[current].position;
+			var vec2 = vertices[next].position - vertices[current].position;
 			var result = GLMath.Atan2 (vec2.Y, vec2.X) - GLMath.Atan2 (vec1.Y, vec1.X);
 			return result < 0 ? MathHelper.TwoPi + result : result;
 		}

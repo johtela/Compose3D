@@ -14,13 +14,13 @@
 		[OmitInGlsl]
 		public Vec3 normal;
 
-		Vec3 IPositional<Vec3>.Position
+		Vec3 IPositional<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.Normal
+		Vec3 IPlanar<Vec3>.normal
 		{
 			get { return normal; }
 			set
@@ -39,13 +39,15 @@
 
 	public static class VertexShaders
 	{
-		public static GLShader Passthrough<F> () where F : Fragment, new ()
+		public static GLShader Passthrough<V, F> ()
+			where V : struct, IVertex
+			where F : Fragment, new ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
-				from v in Shader.Inputs<BasicVertex> ()
+				from v in Shader.Inputs<V> ()
 				select new F ()
 				{
-					gl_Position = new Vec4( v.position, 1f)
+					gl_Position = new Vec4 (v.position, 1f)
 				});
 		}
 

@@ -18,7 +18,7 @@
 
 			public Node (P positional, T data)
             {
-				Children = new Node[1 << positional.Position.Dimensions];
+				Children = new Node[1 << positional.position.Dimensions];
 				Positional = positional;
 				Data = data;
             }
@@ -30,13 +30,13 @@
 		{
 			var result = 0;
 			for (int i = 0; i < position.Dimensions; i++)
-				result |= (position [i] >= node.Positional.Position [i] ? 1 : 0) << i;
+				result |= (position [i] >= node.Positional.position [i] ? 1 : 0) << i;
 			return result;
 		}
 
 		private Node FindParentNode (Node node, P positional, out int index)
 		{
-			index = ChooseChild (node, positional.Position);
+			index = ChooseChild (node, positional.position);
 			var child = node.Children [index]; 
 			return child == null ? node : FindParentNode (child, positional, out index);
 		}
@@ -45,13 +45,13 @@
 		{
 			if (node.Positional.Equals (positional))
 				return node;
-			var child = node.Children [ChooseChild (node, positional.Position)]; 
+			var child = node.Children [ChooseChild (node, positional.position)]; 
 			return child == null ? null : FindNode (child, positional);
 		}
 		
 		private IEnumerable<Node> FindNodesWithPosition (Node node, V position)
 		{
-			if (Vec.ApproxEquals (node.Positional.Position, position))
+			if (Vec.ApproxEquals (node.Positional.position, position))
 				yield return node;
 			var child = node.Children [ChooseChild (node, position)]; 
 			if (child != null)

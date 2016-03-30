@@ -35,12 +35,12 @@
 
 		public bool IsClosed
 		{
-			get { return Nodes.First ().Position.Equals (Nodes.Last ().Position); }
+			get { return Nodes.First ().position.Equals (Nodes.Last ().position); }
 		}
 
 		public static Path<P, V> FromVecs (IEnumerable<V> positions)
 		{
-			return new Path<P, V> (positions.Select (p => new P () { Position = p }));
+			return new Path<P, V> (positions.Select (p => new P () { position = p }));
 		}
 
 		public static Path<P, V> FromVecs (params V[] positions)
@@ -57,7 +57,7 @@
 
 			for (int i = 0; i < numNodes; i++)
 			{
-				nodes[i].Position = spline.Evaluate (curr);
+				nodes[i].position = spline.Evaluate (curr);
 				curr = Math.Min (curr + step, last);
 			}
 			return new Path<P, V> (nodes);
@@ -77,7 +77,7 @@
 			{
 				var pos = Vec.FromArray<V, float> (
 					radiusX * (float)Math.Cos (angle), radiusY * (float)Math.Sin (angle), 0f, 0f);
-				nodes [i] = new P() { Position = pos };
+				nodes [i] = new P() { position = pos };
 				angle = angle + stepAngle;
 			}
 			return new Path<P, V> (nodes);
@@ -85,7 +85,7 @@
 			
 		public Path<P, V> Transform (Mat4 matrix)
 		{
-			return new Path<P, V> (Nodes.Select (n => WithPosition (n, matrix.Transform (n.Position))));
+			return new Path<P, V> (Nodes.Select (n => WithPosition (n, matrix.Transform (n.position))));
 		}
 		
 		public Path<P, V> ReverseWinding ()
@@ -109,7 +109,7 @@
 		
 		private P WithPosition (P node, V position)
 		{
-			node.Position = position;
+			node.position = position;
 			return node;
 		}
 
@@ -117,7 +117,7 @@
 		{
 			CheckSameLengthWith (other);
 			return new Path<P, V> (Nodes.Zip (other.Nodes, 
-				(n1, n2) => WithPosition (n1, n1.Position.Mix (n2.Position, interPos))));
+				(n1, n2) => WithPosition (n1, n1.position.Mix (n2.position, interPos))));
 		}
 		
 		public IEnumerable<Path<P, V>> MorphTo (Path<P, V> other, IEnumerable<Mat4> transforms)

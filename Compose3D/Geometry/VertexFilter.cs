@@ -62,7 +62,7 @@
 			where P : struct, IPlanar<V>
 			where V : struct, IVec<V, float>
 		{
-			return planar.Normal.Dot (direction).ApproxEquals (1f, 0.1f);
+			return planar.normal.Dot (direction).ApproxEquals (1f, 0.1f);
 		}
 	}
 }

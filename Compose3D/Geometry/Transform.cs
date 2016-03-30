@@ -20,8 +20,8 @@
 		{
             return _geometry.Vertices.Select (v =>
             {
-                v.Position = new Vec3 (_matrix * new Vec4 (v.Position, 1f));
-                v.Normal = (_normalMatrix * v.Normal).Normalized;
+                v.position = new Vec3 (_matrix * new Vec4 (v.position, 1f));
+                v.normal = (_normalMatrix * v.normal).Normalized;
                 return v;
             });
         }

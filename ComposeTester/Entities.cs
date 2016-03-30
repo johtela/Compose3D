@@ -28,31 +28,31 @@
 		[OmitInGlsl]
 		internal int tag;
 
-		Vec3 IPositional<Vec3>.Position
+		Vec3 IPositional<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		Vec3 IDiffuseColor<Vec3>.Diffuse
+		Vec3 IDiffuseColor<Vec3>.diffuse
 		{
 			get { return diffuseColor; }
 			set { diffuseColor = value; }
 		}
 
-		Vec3 ISpecularColor<Vec3>.Specular
+		Vec3 ISpecularColor<Vec3>.specular
 		{
 			get { return specularColor; }
 			set { specularColor = value; }
 		}
 
-		float ISpecularColor<Vec3>.Shininess
+		float ISpecularColor<Vec3>.shininess
 		{
 			get { return shininess; }
 			set { shininess = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.Normal
+		Vec3 IPlanar<Vec3>.normal
 		{
 			get { return normal; }
 			set
@@ -63,19 +63,19 @@
 			}
 		}
 
-		Vec2 ITextured.TexturePos
+		Vec2 ITextured.texturePos
 		{
 			get { return texturePos; }
 			set { texturePos = value; }
 		}
 
-		int ITagged<Vertex>.Tag
+		int ITagged<Vertex>.tag
 		{
 			get { return tag; }
 			set { tag = value; }
 		}
 		
-		float IReflective.Reflectivity
+		float IReflective.reflectivity
 		{
 			get { return reflectivity; }
 			set { reflectivity = value; }
@@ -93,7 +93,8 @@
 		}
 	}
 	
-	public class EntityFragment : Fragment, IVertexFragment, IDiffuseFragment, ISpecularFragment, ITexturedFragment<Vec2>
+	public class EntityFragment : Fragment, IVertexFragment, IDiffuseFragment, ISpecularFragment, 
+		ITexturedFragment<Vec2>
 	{
 		public Vec3 vertexPosition { get; set; }
 		public Vec3 vertexNormal { get; set; }

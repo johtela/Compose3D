@@ -4,7 +4,7 @@
 	using OpenTK;
 	using Compose3D.Maths;
 
-	public static class Window
+	public static class WindowReactions
 	{
 		public static void WhenRendered (this Reaction<double> reaction, GameWindow window)
 		{

@@ -93,6 +93,7 @@
 			GL.CullFace (CullFaceMode.Front);
 			GL.FrontFace (FrontFaceDirection.Cw);
 			GL.Disable (EnableCap.DepthTest);
+			GL.Disable (EnableCap.Blend);
 
 			using (SkyboxShader.Scope ())
 			{

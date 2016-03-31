@@ -59,6 +59,7 @@
 			Z = value; 
 			W = value; 
 		}
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -141,6 +142,15 @@
 		}
 
 		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		public Vec4i Divide (Vec4i other)
+		{
+			return new Vec4i (X / other.X, Y / other.Y, Z / other.Z, W / other.W);
+		}
+
+		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
@@ -165,6 +175,7 @@
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -202,6 +213,7 @@
 				}
 			} 
 		}
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -355,6 +367,15 @@
         public static Vec4i operator / (Vec4i vec, int scalar)
         {
             return vec.Divide (scalar);
+        }
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+        public static Vec4i operator / (Vec4i vec, Vec4i scale)
+        {
+            return vec.Divide (scale);
         }
 
 		/// <summary>

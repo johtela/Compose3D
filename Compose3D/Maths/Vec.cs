@@ -49,6 +49,11 @@
 		V Divide (T scalar);
 
 		/// <summary>
+		/// Divide by another vector componentwise.
+		/// </summary>
+		V Divide (V scale);
+
+		/// <summary>
 		/// Calculate the dot product with another vector.
 		/// </summary>
 		T Dot (V other);

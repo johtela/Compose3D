@@ -63,6 +63,12 @@
 <#+		Scalar (dim, vecType, type, "Multiply", "*", ", "); #>
 
 		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+<#+		Binary (dim, vecType, "Divide", "/", ", "); #>
+
+		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
@@ -191,6 +197,15 @@
         public static <#= vecType #> operator / (<#= vecType #> vec, <#= type #> scalar)
         {
             return vec.Divide (scalar);
+        }
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+        public static <#= vecType #> operator / (<#= vecType #> vec, <#= vecType #> scale)
+        {
+            return vec.Divide (scale);
         }
 
 		/// <summary>

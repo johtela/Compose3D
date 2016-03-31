@@ -68,7 +68,7 @@
 			Transform = new TransformUniforms (WindowShader);
 		}
 
-		public void Render (Camera camera)
+		public void Render (SceneGraph scene, Vec2 viewportSize)
 		{
 			GL.Enable (EnableCap.CullFace);
 			GL.CullFace (CullFaceMode.Back);
@@ -77,15 +77,14 @@
 			GL.Enable (EnableCap.Blend);
 			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-			var windows = from node in camera.Graph.Root.Traverse ()
-			              where node is Window<WindowVertex>
-			              select node as Window<WindowVertex>;
-			
 			using (WindowShader.Scope ())
-				foreach (var window in windows)
+				foreach (var window in scene.Root.Traverse ().OfType <Window<WindowVertex>> ())
 				{
+					var texSize = window.Texture.Size * 2;
+					var scalingMat = Mat.Scaling<Mat4> (texSize.X / viewportSize.X, texSize.Y / viewportSize.Y);
+
 					(!Texture.textureMap).Bind (window.Texture);
-					Transform.modelViewMatrix &= window.Transform;
+					Transform.modelViewMatrix &= window.Transform * scalingMat;
 					WindowShader.DrawElements (PrimitiveType.Triangles, window.VertexBuffer, window.IndexBuffer);
 					(!Texture.textureMap).Unbind (window.Texture);
 				}

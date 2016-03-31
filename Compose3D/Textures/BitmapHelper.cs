@@ -20,13 +20,14 @@
 			return bitmap;
 		}
 
-		public static Bitmap TextToBitmapCentered (this string text, int width, int height, float fontSize)
+		public static Bitmap TextToBitmapAligned (this string text, int width, int height, float fontSize,
+			StringAlignment horizAlign, StringAlignment vertAlign)
 		{
 			var font = new Font ("Arial", fontSize);
 			var brush = new SolidBrush (Color.Black);
 			var stringFormat = new StringFormat ();
-			stringFormat.Alignment = StringAlignment.Center;
-			stringFormat.LineAlignment = StringAlignment.Center;
+			stringFormat.Alignment = horizAlign;
+			stringFormat.LineAlignment = vertAlign;
 			return TextToBitmap (text, width, height, PixelFormat.Format32bppArgb, font, brush, stringFormat);
 		}
 	}

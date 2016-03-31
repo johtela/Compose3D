@@ -171,6 +171,7 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+			GL.Disable (EnableCap.Blend);
 
 			var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 

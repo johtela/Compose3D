@@ -51,6 +51,7 @@
 			Y = value; 
 			Z = value; 
 		}
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -130,6 +131,15 @@
 		}
 
 		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		public Vec3 Divide (Vec3 other)
+		{
+			return new Vec3 (X / other.X, Y / other.Y, Z / other.Z);
+		}
+
+		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
@@ -154,6 +164,7 @@
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
 		}
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -189,6 +200,7 @@
 				}
 			} 
 		}
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -326,6 +338,15 @@
         public static Vec3 operator / (Vec3 vec, float scalar)
         {
             return vec.Divide (scalar);
+        }
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+        public static Vec3 operator / (Vec3 vec, Vec3 scale)
+        {
+            return vec.Divide (scale);
         }
 
 		/// <summary>

@@ -13,18 +13,16 @@
 		where V : struct, IVertex, ITextured
 	{
 		public Texture Texture { get; private set; }
-		public Vec2 Size { get; set; }
 
-		private Quadrilateral<V> _rectangle;
+		private Geometry<V> _rectangle;
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		public Window (SceneGraph graph, Texture texture, Vec2 size)
+		public Window (SceneGraph graph, Texture texture)
 			: base (graph)
 		{
 			Texture = texture;
-			Size = size;
-			_rectangle = Quadrilateral<V>.Rectangle (size.X, size.Y);
+			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 		}
 

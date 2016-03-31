@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Linq;
+	using System.Drawing;
 	using Compose3D.Maths;
 	using Compose3D.GLTypes;
 	using Compose3D.Reactive;
@@ -32,7 +33,10 @@
 		private DirectionalLight _dirLight;
 		private Vec3 _rotation;
 		private TransformNode _fighter;
-
+		private Window<WindowVertex> _infoWindow;
+		private int _fpsHistoryCount;
+		private double[] _fpsHistory = new double[10];
+		
 		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
 
 		public TestWindow ()
@@ -79,13 +83,18 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 			
-			var window = new Window<WindowVertex> (sceneGraph,
+			_infoWindow = new Window<WindowVertex> (sceneGraph,
 				//Texture.FromFile (@"Textures/Tulips.jpg", false, Texture.BasicParams),
-				Texture.FromBitmap ("Textual feeling".TextToBitmapCentered (512, 512, 24f), false, Texture.BasicParams),
-				new Vec2 (0.8f, 0.8f))
-				.Offset (new Vec3 (-0.5f, 0.5f, 0f));
-			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, window);
+				Texture.FromBitmap (InfoWindow (0), false, Texture.BasicParams));
+			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
+				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
+		}
+		
+		private Bitmap InfoWindow (int fps)
+		{
+			return string.Format ("FPS: {0}", fps).TextToBitmapAligned (256, 128, 16f, 
+				StringAlignment.Near, StringAlignment.Near);
 		}
 
 		private void SetupReactions ()
@@ -124,10 +133,18 @@
 		{
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			
+			_fpsHistory [_fpsHistoryCount++] = 1.0 / time;
+			if (_fpsHistoryCount == _fpsHistory.Length)
+			{
+				_infoWindow.Texture.UpdateBitmap (InfoWindow ((int)Math.Round (_fpsHistory.Average ())), 
+					TextureTarget.Texture2D, 0);
+				_fpsHistoryCount = 0;
+			}
 			_skybox.Render (_camera);
 			_terrain.Render (_camera);
 			_entities.Render (_camera);
-			_windows.Render (_camera);
+			_windows.Render (_sceneGraph, new Vec2 (Width, Height));
 
 			using (ExampleShaders.PassThrough.Scope ())
 				foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())

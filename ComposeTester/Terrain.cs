@@ -176,6 +176,7 @@
 			GL.Enable (EnableCap.DepthTest);
 			GL.DepthMask (true);
 			GL.DepthFunc (DepthFunction.Less);
+			GL.Disable (EnableCap.Blend);
 
 			var worldToCamera = camera.WorldToCamera;
 			var samplers = new Sampler [] { !Uniforms.sandSampler, !Uniforms.rockSampler, !Uniforms.grassSampler };

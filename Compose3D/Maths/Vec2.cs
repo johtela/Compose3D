@@ -43,6 +43,7 @@
 			X = value; 
 			Y = value; 
 		}
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -119,6 +120,15 @@
 		}
 
 		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		public Vec2 Divide (Vec2 other)
+		{
+			return new Vec2 (X / other.X, Y / other.Y);
+		}
+
+		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
@@ -143,6 +153,7 @@
 		{
 			return X == other.X && Y == other.Y;
 		}
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -176,6 +187,7 @@
 				}
 			} 
 		}
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -298,6 +310,15 @@
         public static Vec2 operator / (Vec2 vec, float scalar)
         {
             return vec.Divide (scalar);
+        }
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+        public static Vec2 operator / (Vec2 vec, Vec2 scale)
+        {
+            return vec.Divide (scale);
         }
 
 		/// <summary>

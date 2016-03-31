@@ -14,6 +14,7 @@
 		internal TextureTarget _target;
 		internal int _glTexture;
 		private bool _bound;
+		private PixelFormat _pixelFormat;
 
 		public Texture (TextureTarget target)
 		{
@@ -28,6 +29,7 @@
 		{
 			BindTexture (() =>
 			{
+				_pixelFormat = format;
 				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
 				if (useMipmap)
 					GL.GenerateMipmap (MapMipmapTarget (target));
@@ -42,13 +44,13 @@
 				Vec2i result = new Vec2i (0);
 				BindTexture (() =>
 				{
-					GL.GetTexParameter (_target, GetTextureParameter.TextureWidth, out result.X);
-					GL.GetTexParameter (_target, GetTextureParameter.TextureHeight, out result.Y);
+					GL.GetTexLevelParameter (_target, 0, GetTextureParameter.TextureWidth, out result.X);
+					GL.GetTexLevelParameter (_target, 0, GetTextureParameter.TextureHeight, out result.Y);
 				});
 				return result;
 			}
 		}
-
+		
 		private void BindTexture (Action action)
 		{
 			if (_bound)
@@ -96,9 +98,9 @@
 					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 				try
 				{
+					_pixelFormat = MapPixelFormat (bitmap.PixelFormat);
 					GL.TexImage2D (target, lodLevel, MapPixelInternalFormat (bitmap.PixelFormat), 
-						bitmap.Width, bitmap.Height, 0, MapPixelFormat (bitmap.PixelFormat), 
-						PixelType.UnsignedByte, bitmapData.Scan0);
+						bitmap.Width, bitmap.Height, 0, _pixelFormat, PixelType.UnsignedByte, bitmapData.Scan0);
 				}
 				finally
 				{
@@ -107,6 +109,30 @@
 			});
 		}
 
+		public void UpdateBitmap (Bitmap bitmap, TextureTarget target, int lodLevel)
+		{
+			BindTexture (() =>
+			{
+				var size = Size;
+				if (bitmap.Width != size.X || bitmap.Height != size.Y)
+					throw new ArgumentException ("The bitmap dimensions must be same as the texture's");
+				if (MapPixelFormat (bitmap.PixelFormat) != _pixelFormat)
+					throw new ArgumentException ("The pixel format of the bitmap must be same as the texture's");
+				
+				var bitmapData = bitmap.LockBits (new Rectangle (0, 0, bitmap.Width, bitmap.Height),
+					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+				try
+				{
+					GL.TexSubImage2D (target, lodLevel, 0, 0, size.X, size.Y, _pixelFormat,
+						PixelType.UnsignedByte, bitmapData.Scan0);
+				}
+				finally
+				{
+					bitmap.UnlockBits (bitmapData);
+				}
+			});
+		}
+		
 		public static Texture FromBitmap (Bitmap bitmap, bool useMipmap, TextureParams parameters)
 		{
 			var result = new Texture (TextureTarget.Texture2D);

@@ -4,7 +4,7 @@
 	using OpenTK.Input;
 	using Extensions;
 
-	public static class Keyboard
+	public static class KeyboardReactions
 	{
 		public static void WhenAnyKeyDown (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{

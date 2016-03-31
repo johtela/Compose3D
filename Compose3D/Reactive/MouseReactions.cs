@@ -5,7 +5,7 @@
 	using OpenTK.Input;
 	using Compose3D.Maths;
 
-	public static class Mouse
+	public static class MouseReactions
 	{
 		public static void WhenMouseMovesOn (this Reaction<MouseMoveEventArgs> reaction, GameWindow window)
 		{

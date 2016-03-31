@@ -85,11 +85,8 @@
     <Compile Include="Geometry\Aligning.cs" />
     <Compile Include="Geometry\Simplified.cs" />
     <Compile Include="Geometry\VertexColor.cs" />
-    <Compile Include="Reactive\Mouse.cs" />
-    <Compile Include="Reactive\Window.cs" />
     <Compile Include="Reactive\Reaction.cs" />
     <Compile Include="Geometry\Primitive.cs" />
-    <Compile Include="Reactive\Keyboard.cs" />
     <Compile Include="SceneGraph\LineSegment.cs" />
     <Compile Include="SceneGraph\Scene.cs" />
     <Compile Include="SceneGraph\SceneGraph.cs" />
@@ -202,6 +199,9 @@
     <Compile Include="Maths\Plane.cs" />
     <Compile Include="DataStructures\IntervalTree.cs" />
     <Compile Include="Geometry\TerrainPatch.cs" />
+    <Compile Include="Reactive\WindowReactions.cs" />
+    <Compile Include="Reactive\MouseReactions.cs" />
+    <Compile Include="Reactive\KeyboardReactions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />

@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Textures
 {
-	using System;
 	using System.Drawing;
+	using System.Drawing.Drawing2D;
 	using System.Drawing.Imaging;
 
 	public static class BitmapHelper
@@ -12,7 +12,9 @@
 			var bitmap = new Bitmap (width, height, pixelFormat);
 			using (var gfx = Graphics.FromImage (bitmap))
 			{
+				gfx.SmoothingMode = SmoothingMode.AntiAlias;
 				gfx.Clear (Color.Transparent);
+				gfx.FillRectangle (new SolidBrush (Color.FromArgb (50, 50, 50, 50)), new Rectangle (0, 0, width, height));
 				gfx.DrawString (text, font, brush, new RectangleF (0f, 0f, width, height), stringFormat);
 			}
 			return bitmap;
@@ -20,8 +22,8 @@
 
 		public static Bitmap TextToBitmapCentered (this string text, int width, int height, float fontSize)
 		{
-			var font = new Font ("Monospace", fontSize);
-			var brush = new SolidBrush (Color.White);
+			var font = new Font ("Arial", fontSize);
+			var brush = new SolidBrush (Color.Black);
 			var stringFormat = new StringFormat ();
 			stringFormat.Alignment = StringAlignment.Center;
 			stringFormat.LineAlignment = StringAlignment.Center;

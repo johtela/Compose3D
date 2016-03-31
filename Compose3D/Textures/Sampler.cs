@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using OpenTK.Graphics.OpenGL;
 	using System;
+	using Extensions;	
 
 	public class SamplerParams : Params<SamplerParameterName, object> { }
 
@@ -71,6 +72,21 @@
 					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);
 				else
 					throw new ArgumentException ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
+			}
+		}
+
+		public static SamplerParams BasicParams
+		{
+			get
+			{
+				return new SamplerParams ()
+				{
+					{ SamplerParameterName.TextureMagFilter, All.Linear },
+					{ SamplerParameterName.TextureMinFilter, All.Linear },
+					{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
+					{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
+					{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
+				};
 			}
 		}
 	}

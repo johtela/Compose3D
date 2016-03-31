@@ -5,6 +5,7 @@
 	using System;
 	using System.IO;
 	using System.Drawing;
+	using Extensions;
 
 	public class TextureParams : Params<TextureParameterName, object> { }
 
@@ -210,6 +211,21 @@
 					return GenerateMipmapTarget.TextureCubeMapArray;
 				default:
 					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
+			}
+		}
+
+		public static TextureParams BasicParams
+		{
+			get
+			{
+				return new TextureParams ()
+				{
+					{ TextureParameterName.TextureMagFilter, All.Linear },
+					{ TextureParameterName.TextureMinFilter, All.Linear },
+					{ TextureParameterName.TextureWrapR, All.ClampToEdge },
+					{ TextureParameterName.TextureWrapS, All.ClampToEdge },
+					{ TextureParameterName.TextureWrapT, All.ClampToEdge }
+				};
 			}
 		}
 	}

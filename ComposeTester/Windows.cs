@@ -3,7 +3,6 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.InteropServices;
-	using Extensions;
 	using Compose3D.GLTypes;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
@@ -65,15 +64,7 @@
 			WindowShader = new Program (
 				VertexShaders.TransformedTexture<WindowVertex, WindowFragment, TransformUniforms> (), 
 				FragmentShaders.TexturedOutput<WindowFragment, TextureUniforms> ());
-			Texture = new TextureUniforms (WindowShader, 
-				new Sampler2D (0, new SamplerParams ()
-				{
-					{ SamplerParameterName.TextureMagFilter, All.Linear },
-					{ SamplerParameterName.TextureMinFilter, All.Linear },
-					{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
-						
-				}));
+			Texture = new TextureUniforms (WindowShader, new Sampler2D (0, Sampler.BasicParams));
 			Transform = new TransformUniforms (WindowShader);
 		}
 
@@ -83,6 +74,8 @@
 			GL.CullFace (CullFaceMode.Back);
 			GL.FrontFace (FrontFaceDirection.Cw);
 			GL.Disable (EnableCap.DepthTest);
+			GL.Enable (EnableCap.Blend);
+			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
 			var windows = from node in camera.Graph.Root.Traverse ()
 			              where node is Window<WindowVertex>

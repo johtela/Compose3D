@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Shaders
 {
 	using System;
-	using Extensions;
+	using System.Linq;
 	using Maths;
 	using GLTypes;
 	using Geometry;
@@ -46,14 +46,12 @@
 						inverseGamma = 1f / gl.GammaCorrection
 					};
 				}
-				scene.Root.Traverse ()
-					.WhenOfType<SceneNode, DirectionalLight> (dirLight =>
-						directionalLight &= new Lighting.DirectionalLight ()
-						{
-							direction = dirLight.Direction,
-							intensity = dirLight.Intensity
-						})
-					.ToVoid ();
+				var dirLight = scene.Root.Traverse ().OfType<DirectionalLight> ().First ();
+				directionalLight &= new Lighting.DirectionalLight ()
+				{
+					direction = dirLight.Direction,
+					intensity = dirLight.Intensity
+				};
 			}
 		}
 	}

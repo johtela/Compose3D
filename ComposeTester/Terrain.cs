@@ -11,7 +11,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
-	using Extensions;
 
 	[StructLayout (LayoutKind.Sequential, Pack=4)]
 	public struct TerrainVertex : IVertex, ITextured
@@ -98,7 +97,7 @@
 		{
 			public Vec3 vertexNormal;
 			public float visibility;
-			public Vec2 vertexTexPos;
+			public Vec2 fragTexPos;
 			public float height;
 			public float slope;
 		}
@@ -223,7 +222,7 @@
 					visibility = Lighting.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
-					vertexTexPos = v.texturePos / 15f
+					fragTexPos = v.texturePos / 15f
 				});
 		}
 
@@ -234,21 +233,25 @@
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<TerrainUniforms> ()
-				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.vertexTexPos)
-				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.vertexTexPos)
-				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.vertexTexPos)
+				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.fragTexPos)
+				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.fragTexPos)
+				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.fragTexPos)
 				let sandBlend = GLMath.SmoothStep (2f, 4f, f.height)
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
 				let rockBlend = GLMath.SmoothStep (0.8f, 0.9f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
-				let diffuseLight = Lighting.LightDiffuseIntensity ((!u.Lighting.directionalLight).direction,
-					(!u.Lighting.directionalLight).intensity, f.vertexNormal)
+				let diffuseLight = Lighting.LightDiffuseIntensity (
+					(!u.Lighting.directionalLight).direction,
+					(!u.Lighting.directionalLight).intensity, 
+					f.vertexNormal)
 				let ambient = (!u.Lighting.globalLighting).ambientLightIntensity
+				let litColor = Lighting.GlobalLightIntensity (
+						!u.Lighting.globalLighting,
+						ambient, diffuseLight,
+						new Vec3 (0f), terrainColor, new Vec3 (0f))
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.Lighting.globalLighting, 
-						ambient, diffuseLight, new Vec3 (0f), terrainColor, new Vec3 (0f))
-						.Mix (!u.skyColor, f.visibility)
+					outputColor = litColor.Mix (!u.skyColor, f.visibility)
 				});
 		}
 	}

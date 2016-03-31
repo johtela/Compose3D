@@ -10,7 +10,6 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.InteropServices;
-	using Extensions;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct EntityVertex : IVertex, IVertexInitializer<EntityVertex>, IVertexColor<Vec3>, 
@@ -120,32 +119,24 @@
 				var plights = new Lighting.PointLight[4];
 
 				using (program.Scope ())
-				{
-					scene.Root.Traverse ()
-						.WhenOfType<SceneNode, PointLight> (pointLight =>
-							plights[numPointLights++] = new Lighting.PointLight
-							{
-								position = pointLight.Position,
-								intensity = pointLight.Intensity,
-								linearAttenuation = pointLight.LinearAttenuation,
-								quadraticAttenuation = pointLight.QuadraticAttenuation
-							})
-						.ToVoid ();
+				{ 
+					foreach (var pointLight in scene.Root.Traverse ().OfType<PointLight> ())
+					{
+						plights[numPointLights++] = new Lighting.PointLight
+						{
+							position = pointLight.Position,
+							intensity = pointLight.Intensity,
+							linearAttenuation = pointLight.LinearAttenuation,
+							quadraticAttenuation = pointLight.QuadraticAttenuation
+						};
+					}
 					pointLights &= plights;
 
 					var samp = new Sampler2D[4];
-					var sampParams = new SamplerParams ()
-					{
-						{ SamplerParameterName.TextureMagFilter, All.Linear },
-						{ SamplerParameterName.TextureMinFilter, All.Linear },
-						{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-						{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
-						{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
-					};
 					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i, sampParams);
+						samp[i] = new Sampler2D (i, Sampler.BasicParams);
 					samplers &= samp;
-					diffuseMap &= new SamplerCube (4, sampParams);
+					diffuseMap &= new SamplerCube (4, Sampler.BasicParams);
 				}
 			}
 		}

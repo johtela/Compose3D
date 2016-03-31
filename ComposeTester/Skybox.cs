@@ -59,14 +59,7 @@
 				: base (program)
 			{
 				using (program.Scope ())
-					cubeMap &= new SamplerCube (0, new SamplerParams ()
-					{
-						{ SamplerParameterName.TextureMagFilter, All.Linear },
-						{ SamplerParameterName.TextureMinFilter, All.Linear },
-						{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-						{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
-						{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
-					});
+					cubeMap &= new SamplerCube (0, Sampler.BasicParams);
 			}
 		}
 
@@ -88,18 +81,10 @@
 			var cube = Extrusion.Cube<SkyboxVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();
 			_vertices = new VBO<SkyboxVertex> (cube.Vertices, BufferTarget.ArrayBuffer);
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
-			var textureParams =	new TextureParams ()
-			{
-				{ TextureParameterName.TextureMagFilter, All.Linear },
-				{ TextureParameterName.TextureMinFilter, All.Linear },
-				{ TextureParameterName.TextureWrapR, All.ClampToEdge },
-				{ TextureParameterName.TextureWrapS, All.ClampToEdge },
-				{ TextureParameterName.TextureWrapT, All.ClampToEdge }
-			};
 			EnvironmentMap = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0, textureParams);
+				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0, Texture.BasicParams);
 			sceneGraph.GlobalLighting.DiffuseMap = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0, textureParams);
+				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0, Texture.BasicParams);
 		}
 
 		public void Render (Camera camera)

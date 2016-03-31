@@ -80,13 +80,8 @@
 			_fighter = Entities.CreateScene (sceneGraph);
 			
 			var window = new Window<WindowVertex> (sceneGraph,
-				Texture.FromFile (@"Textures/Tulips.jpg", false, new TextureParams ()
-				{
-					{ TextureParameterName.TextureMagFilter, All.Linear },
-					{ TextureParameterName.TextureMinFilter, All.Linear },
-					{ TextureParameterName.TextureWrapS, All.ClampToEdge },
-					{ TextureParameterName.TextureWrapT, All.ClampToEdge }
-				}),
+				//Texture.FromFile (@"Textures/Tulips.jpg", false, Texture.BasicParams),
+				Texture.FromBitmap ("Textual feeling".TextToBitmapCentered (512, 512, 24f), false, Texture.BasicParams),
 				new Vec2 (0.8f, 0.8f))
 				.Offset (new Vec3 (-0.5f, 0.5f, 0f));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, window);

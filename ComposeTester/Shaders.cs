@@ -4,9 +4,7 @@
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
 	using Compose3D.Shaders;
-    using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
-	using System;
 	using System.Linq;
 	using System.Runtime.InteropServices;
 

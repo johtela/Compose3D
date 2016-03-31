@@ -95,7 +95,7 @@
 				from u in Shader.Uniforms<U> ()
 				select new
 				{
-					outputColor = TextureColor (!u.textureMap, f.fragTexturePos)
+					outputColor = (!u.textureMap).Texture (f.fragTexturePos)
 				});
 		}
 	}

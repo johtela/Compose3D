@@ -14,7 +14,7 @@
 			{
 				gfx.SmoothingMode = SmoothingMode.AntiAlias;
 				gfx.Clear (Color.Transparent);
-				gfx.FillRectangle (new SolidBrush (Color.FromArgb (50, 50, 50, 50)), new Rectangle (0, 0, width, height));
+				gfx.FillRectangle (new SolidBrush (Color.FromArgb (100, 100, 100, 50)), new Rectangle (0, 0, width, height));
 				gfx.DrawString (text, font, brush, new RectangleF (0f, 0f, width, height), stringFormat);
 			}
 			return bitmap;

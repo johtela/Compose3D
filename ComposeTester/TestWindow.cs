@@ -34,8 +34,8 @@
 		private Vec3 _rotation;
 		private TransformNode _fighter;
 		private Window<WindowVertex> _infoWindow;
-		private int _fpsHistoryCount;
-		private double[] _fpsHistory = new double[10];
+		private int _fpsCount;
+		private double _fpsTime;
 		
 		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
 
@@ -134,12 +134,13 @@
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
-			_fpsHistory [_fpsHistoryCount++] = 1.0 / time;
-			if (_fpsHistoryCount == _fpsHistory.Length)
+			_fpsTime += time;
+			if (++_fpsCount == 10)
 			{
-				_infoWindow.Texture.UpdateBitmap (InfoWindow ((int)Math.Round (_fpsHistory.Average ())), 
+				_infoWindow.Texture.UpdateBitmap (InfoWindow ((int)Math.Round (10.0 / _fpsTime)), 
 					TextureTarget.Texture2D, 0);
-				_fpsHistoryCount = 0;
+				_fpsCount = 0;
+				_fpsTime = 0.0;
 			}
 			_skybox.Render (_camera);
 			_terrain.Render (_camera);

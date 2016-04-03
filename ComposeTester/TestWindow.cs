@@ -102,31 +102,37 @@
 			React.Propagate (
 				React.By<double> (Render),
 				React.By<float> (MoveFighter)
-					.Reduce<double, float> ((s, t) => s + (float)t * 25f, 0f))
-				.WhenRendered (this);
+					.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
+				.WhenRendered (this)
+				.Evoke ();
 
 			React.By<Vec2> (ResizeViewport)
-				.WhenResized (this);
+				.WhenResized (this)
+				.Evoke ();
 
 			React.By<Vec3> (RotateCamera)
-				.Map<MouseMoveEventArgs, Vec3> (e =>
+				.Select<MouseMoveEventArgs, Vec3> (e =>
 					new Vec3 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f, 0f))
-				.Filter (e => e.Mouse.IsButtonDown (MouseButton.Left))
-				.WhenMouseMovesOn (this);
+				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
+				.WhenMouseMovesOn (this)
+				.Evoke ();
 
 			React.By<float> (MoveCamera)
-				.Map (delta => delta * -0.2f)
-				.WhenMouseWheelDeltaChangesOn (this);
+				.Select (delta => delta * -0.2f)
+				.WhenMouseWheelDeltaChangesOn (this)
+				.Evoke ();
 			
 			React.By<float> (MoveCamera)
-				.Map<Key, float> (key => key == Key.W ? 1f : -1f)
-				.WhenKeyDown (this, Key.W, Key.S);
+				.Select<Key, float> (key => key == Key.W ? 1f : -1f)
+				.WhenKeyDown (this, Key.W, Key.S)
+				.Evoke ();
 
 			React.By<Vec3> (RotateCamera)
-				.Map<Key, Vec3> (key => key == Key.A ? 
+				.Select<Key, Vec3> (key => key == Key.A ? 
 					new Vec3 (0f, 0.01f, 0f) : 
 					new Vec3 (0f, -0.01f, 0f))
-				.WhenKeyDown (this, Key.A, Key.D);
+				.WhenKeyDown (this, Key.A, Key.D)
+				.Evoke ();
 		}
 
 		private void Render (double time)
@@ -189,7 +195,6 @@
 		private void MoveFighter (float x)
 		{
 			_fighter.Offset = new Vec3 (0f,
-
 				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
 			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));

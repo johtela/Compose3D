@@ -52,22 +52,22 @@
 			};
 		}
 
-		public static Reaction<T> Map<T, U> (this Reaction<U> reaction, Func<T, U> func)
+		public static Reaction<T> Select<T, U> (this Reaction<U> reaction, Func<T, U> func)
 		{
 			return input => reaction (func (input));
 		}
 
-		public static Reaction<T> Map<T> (this Reaction<T> reaction, Func<T, T> func)
+		public static Reaction<T> Select<T> (this Reaction<T> reaction, Func<T, T> func)
 		{
 			return input => reaction (func (input));
 		}
 
-		public static Reaction<T> Filter<T> (this Reaction<T> reaction, Func<T, bool> predicate)
+		public static Reaction<T> Where<T> (this Reaction<T> reaction, Func<T, bool> predicate)
 		{
 			return input => predicate (input) ? reaction (input) : true;
 		}
 
-		public static Reaction<T> Reduce<T, U> (this Reaction<U> reaction, Func<U, T, U> func, U initial)
+		public static Reaction<T> Aggregate<T, U> (this Reaction<U> reaction, Func<U, T, U> func, U initial)
 		{
 			var current = initial;
 			return input =>
@@ -141,29 +141,29 @@
 			return input => condition (input) ? reaction (input) : false;
 		}
 
-		private class EventListener<T> where T : EventArgs
-		{
-			private Reaction<T> _reaction;
-			private EventHandler<T> _eventHandler;
-			
-			public EventListener (Reaction<T> reaction, EventHandler<T> eventHandler)
-			{
-				_reaction = reaction;
-				_eventHandler = eventHandler;
-			}
-			
-			public void Listen (object sender, T eventArgs)
-			{
-				if (!_reaction (eventArgs))
-					_eventHandler -= Listen;
-			}
-		}
-		
-		public static void ToEvent<T> (this Reaction<T> reaction, EventHandler<T> eventHandler) 
+		public static Reaction<Reaction<T>> ToEvent<T> (this Reaction<T> reaction, 
+			Action<EventHandler<T>> subscribe, Action<EventHandler<T>> unsubscribe)
 			where T : EventArgs
 		{
-			var listener = new EventListener<T> (reaction, eventHandler);
-			eventHandler += listener.Listen;
+			return continuation =>
+			{
+				EventHandler<T> handler = null;
+				handler = (sender, args) =>
+				{
+					if (!reaction (args))
+					{
+						unsubscribe (handler);
+						continuation (args);
+					}
+				};
+				subscribe (handler);
+				return true;
+			};
+		}
+		
+		public static void Evoke<T> (this Reaction<Reaction<T>> reaction)
+		{
+			reaction (value => false);
 		}
 	}
 }

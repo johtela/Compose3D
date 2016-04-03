@@ -7,41 +7,38 @@
 
 	public static class KeyboardReactions
 	{
-		public static void WhenAnyKeyDown (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
+		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyDown (
+			this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
-			EventHandler<KeyboardKeyEventArgs> handler = null;
-			handler = (sender, args) =>
-			{
-				if (!reaction (args))
-					window.KeyDown -= handler;
-			};
-			window.KeyDown += handler;
+			return reaction.ToEvent<KeyboardKeyEventArgs> (
+				handler => window.KeyDown += handler,
+				handler => window.KeyDown -= handler);
 		}
 
-		public static void WhenAnyKeyDown (this Reaction<Key> reaction, GameWindow window)
+		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyDown (this Reaction<Key> reaction, 
+			GameWindow window)
 		{
-			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenAnyKeyDown (window);
+			return WhenAnyKeyDown (reaction.Select<KeyboardKeyEventArgs, Key> (e => e.Key), window);
 		}
 
-		public static void WhenKeyDown (this Reaction<Key> reaction, GameWindow window, params Key[] keys)
+		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenKeyDown (this Reaction<Key> reaction, 
+			GameWindow window, params Key[] keys)
 		{
-			reaction.Filter (key => key.In (keys)).WhenAnyKeyDown (window);
+			return reaction.Where (key => key.In (keys)).WhenAnyKeyDown (window);
 		}
 
-		public static void WhenAnyKeyUp (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
+		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyUp (
+			this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
-			EventHandler<KeyboardKeyEventArgs> handler = null;
-			handler = (sender, args) =>
-			{
-				if (!reaction (args))
-					window.KeyUp -= handler;
-			};
-			window.KeyUp += handler;
+			return reaction.ToEvent<KeyboardKeyEventArgs> (
+				handler => window.KeyUp += handler,
+				handler => window.KeyUp -= handler);
 		}
 
-		public static void WhenAnyKeyUp (this Reaction<Key> reaction, GameWindow window)
+		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyUp (this Reaction<Key> reaction, 
+			GameWindow window)
 		{
-			reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key).WhenAnyKeyUp (window);
+			return WhenAnyKeyUp (reaction.Select<KeyboardKeyEventArgs, Key> (e => e.Key), window);
 		}
 	}
 }

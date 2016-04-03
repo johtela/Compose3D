@@ -6,36 +6,32 @@
 
 	public static class WindowReactions
 	{
-		public static void WhenRendered (this Reaction<FrameEventArgs> reaction, GameWindow window)
+		public static Reaction<Reaction<FrameEventArgs>> WhenRendered (this Reaction<FrameEventArgs> reaction, 
+			GameWindow window)
 		{
-			EventHandler<FrameEventArgs> handler = null;
-			handler = (sender, args) =>
-			{
-				if (!reaction (args))
-					window.RenderFrame -= handler;
-			};
-			window.RenderFrame += handler;
+			return reaction.ToEvent<FrameEventArgs> (
+				handler => window.RenderFrame += handler,
+				handler => window.RenderFrame -= handler);
 		}
 
-		public static void WhenRendered (this Reaction<double> reaction, GameWindow window)
+		public static Reaction<Reaction<FrameEventArgs>> WhenRendered (this Reaction<double> reaction, 
+			GameWindow window)
 		{
-			WhenRendered (reaction.Map<FrameEventArgs, double> (e => e.Time), window);
+			return WhenRendered (reaction.Select<FrameEventArgs, double> (e => e.Time), window);
 		}
 
-		public static void WhenResized (this Reaction<EventArgs> reaction, GameWindow window)
+		public static Reaction<Reaction<EventArgs>> WhenResized (this Reaction<EventArgs> reaction, 
+			GameWindow window)
 		{
-			EventHandler<EventArgs> handler = null;
-			handler = (sender, args) =>
-			{
-				if (!reaction (args))
-					window.Resize -= handler;
-			};
-			window.Resize += handler;
+			return reaction.ToEvent<EventArgs> (
+				handler => window.Resize += handler,
+				handler => window.Resize -= handler);
 		}
 		
-		public static void WhenResized (this Reaction<Vec2> reaction, GameWindow window)
+		public static Reaction<Reaction<EventArgs>> WhenResized (this Reaction<Vec2> reaction, 
+			GameWindow window)
 		{
-			WhenResized (reaction.Map<EventArgs, Vec2> (e => 
+			return WhenResized (reaction.Select<EventArgs, Vec2> (e => 
 				new Vec2 (window.ClientSize.Width, window.ClientSize.Height)), window);
 		}
 	}

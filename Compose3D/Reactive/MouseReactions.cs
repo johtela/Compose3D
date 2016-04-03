@@ -9,7 +9,13 @@
 	{
 		public static void WhenMouseMovesOn (this Reaction<MouseMoveEventArgs> reaction, GameWindow window)
 		{
-			window.MouseMove += reaction.ToEvent ();
+			EventHandler<MouseMoveEventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.MouseMove -= handler;
+			};
+			window.MouseMove += handler;
 		}
 
 		public static void WhenMouseXYChangesOn (this Reaction<Vec2> reaction, GameWindow window)
@@ -20,7 +26,13 @@
 
 		public static void WhenMouseWheelRollsOn (this Reaction<MouseWheelEventArgs> reaction, GameWindow window)
 		{
-			window.MouseWheel += reaction.ToEvent ();
+			EventHandler<MouseWheelEventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.MouseWheel -= handler;
+			};
+			window.MouseWheel += handler;
 		}
 
 		public static void WhenMouseWheelDeltaChangesOn (this Reaction<float> reaction, GameWindow window)

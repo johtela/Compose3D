@@ -6,16 +6,37 @@
 
 	public static class WindowReactions
 	{
-		public static void WhenRendered (this Reaction<double> reaction, GameWindow window)
+		public static void WhenRendered (this Reaction<FrameEventArgs> reaction, GameWindow window)
 		{
-			window.RenderFrame += reaction.Map<FrameEventArgs, double> (e => e.Time).ToEvent ();
+			EventHandler<FrameEventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.RenderFrame -= handler;
+			};
+			window.RenderFrame += handler;
 		}
 
+		public static void WhenRendered (this Reaction<double> reaction, GameWindow window)
+		{
+			WhenRendered (reaction.Map<FrameEventArgs, double> (e => e.Time), window);
+		}
+
+		public static void WhenResized (this Reaction<EventArgs> reaction, GameWindow window)
+		{
+			EventHandler<EventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.Resize -= handler;
+			};
+			window.Resize += handler;
+		}
+		
 		public static void WhenResized (this Reaction<Vec2> reaction, GameWindow window)
 		{
-			window.Resize += reaction.Map<EventArgs, Vec2> (e => 
-				new Vec2 (window.ClientSize.Width, window.ClientSize.Height)).ToEvent ();
+			WhenResized (reaction.Map<EventArgs, Vec2> (e => 
+				new Vec2 (window.ClientSize.Width, window.ClientSize.Height)), window);
 		}
 	}
 }
-

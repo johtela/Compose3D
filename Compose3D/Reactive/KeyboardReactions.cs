@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Reactive
 {
+	using System;
 	using OpenTK;
 	using OpenTK.Input;
 	using Extensions;
@@ -8,7 +9,13 @@
 	{
 		public static void WhenAnyKeyDown (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
-			window.KeyDown += reaction.ToEvent ();
+			EventHandler<KeyboardKeyEventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.KeyDown -= handler;
+			};
+			window.KeyDown += handler;
 		}
 
 		public static void WhenAnyKeyDown (this Reaction<Key> reaction, GameWindow window)
@@ -23,7 +30,13 @@
 
 		public static void WhenAnyKeyUp (this Reaction<KeyboardKeyEventArgs> reaction, GameWindow window)
 		{
-			window.KeyUp += reaction.ToEvent ();
+			EventHandler<KeyboardKeyEventArgs> handler = null;
+			handler = (sender, args) =>
+			{
+				if (!reaction (args))
+					window.KeyUp -= handler;
+			};
+			window.KeyUp += handler;
 		}
 
 		public static void WhenAnyKeyUp (this Reaction<Key> reaction, GameWindow window)

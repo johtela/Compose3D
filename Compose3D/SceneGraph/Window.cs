@@ -12,18 +12,23 @@
 	public class Window<V> : SceneNode 
 		where V : struct, IVertex, ITextured
 	{
-		public Texture Texture { get; private set; }
+		public Texture Texture { get; set; }
 
 		private Geometry<V> _rectangle;
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		public Window (SceneGraph graph, Texture texture)
+		public Window (SceneGraph graph)
 			: base (graph)
 		{
-			Texture = texture;
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
+		}
+
+		public Window (SceneGraph graph, Texture texture)
+			: this (graph)
+		{
+			Texture = texture;
 		}
 
 		public VBO<V> VertexBuffer

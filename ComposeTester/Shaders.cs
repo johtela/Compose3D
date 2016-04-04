@@ -34,13 +34,6 @@
 
 	public static class ExampleShaders
 	{
-		public class ShadowUniforms : Uniforms
-		{
-			internal Uniform<Mat4> mvpMatrix;
-
-			public ShadowUniforms (Program program) : base (program) { }
-		}
-
 		public class DiffuseFragment : Fragment, IFragmentDiffuse
 		{
 			public Vec3 fragDiffuse { get; set; }
@@ -65,35 +58,6 @@
 				}
 			)
 		);
-
-		public static GLShader ShadowVertexShader ()
-		{
-			return GLShader.Create
-			(
-				ShaderType.VertexShader, () =>
-
-				from v in Shader.Inputs<EntityVertex> ()
-				from u in Shader.Uniforms<ShadowUniforms> ()
-				select new Fragment ()
-				{
-					gl_Position = !u.mvpMatrix * new Vec4 (v.position, 1f)
-				}
-			);
-		}
-		
-		public static GLShader ShadowFragmentShader ()
-		{
-			return GLShader.Create
-			(
-				ShaderType.FragmentShader, () =>
-
-				from f in Shader.Inputs<Fragment> ()
-				select new
-				{
-					fragmentDepth = f.gl_FragCoord.Z
-				}
-			);
-		}
 	}
 }
 

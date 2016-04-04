@@ -22,6 +22,7 @@
 
 		// Renderers
 		private Skybox _skybox;
+		private Shadows _shadows;
 		private Terrain _terrain;
 		private Entities _entities;
 		private Windows _windows;
@@ -34,6 +35,7 @@
 		private Vec3 _rotation;
 		private TransformNode _fighter;
 		private Window<WindowVertex> _infoWindow;
+		private Window<WindowVertex> _shadowWindow;
 		private int _fpsCount;
 		private double _fpsTime;
 		
@@ -42,6 +44,7 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
+			_shadows = new Shadows ();
 			_sceneGraph = CreateSceneGraph ();			
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
@@ -84,10 +87,11 @@
 			_fighter = Entities.CreateScene (sceneGraph);
 			
 			_infoWindow = new Window<WindowVertex> (sceneGraph,
-				//Texture.FromFile (@"Textures/Tulips.jpg", false, Texture.BasicParams),
 				Texture.FromBitmap (InfoWindow (0), false, Texture.BasicParams));
+			_shadowWindow = new Window<WindowVertex> (sceneGraph, _shadows.DepthTexture);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
-				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
+				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)),
+				_shadowWindow.Offset (new Vec3 (0f, 0.95f, 0f)));
 			return sceneGraph;
 		}
 		
@@ -137,6 +141,8 @@
 
 		private void Render (double time)
 		{
+			_shadows.Render (_camera);
+
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
@@ -153,9 +159,9 @@
 			_entities.Render (_camera);
 			_windows.Render (_sceneGraph, new Vec2 (Width, Height));
 
-			using (ExampleShaders.PassThrough.Scope ())
-				foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
-					ExampleShaders.PassThrough.DrawLinePath (lines.VertexBuffer);
+			//using (ExampleShaders.PassThrough.Scope ())
+			//	foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
+			//		ExampleShaders.PassThrough.DrawLinePath (lines.VertexBuffer);
 
 			SwapBuffers ();
 		}

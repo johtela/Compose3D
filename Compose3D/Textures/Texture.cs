@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Textures
 {
 	using Maths;
+	using GLTypes;
 	using OpenTK.Graphics.OpenGL;
 	using System;
 	using System.IO;
@@ -9,11 +10,10 @@
 
 	public class TextureParams : Params<TextureParameterName, object> { }
 
-	public class Texture
+	public class Texture : GLObject
 	{
 		internal TextureTarget _target;
 		internal int _glTexture;
-		private bool _bound;
 		private PixelFormat _pixelFormat;
 
 		public Texture (TextureTarget target)
@@ -27,14 +27,14 @@
 			TextureParams parameters)
 			: this (target)
 		{
-			BindTexture (() =>
+			using (Scope ())
 			{
 				_pixelFormat = format;
 				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
 				if (useMipmap)
 					GL.GenerateMipmap (MapMipmapTarget (target));
 				SetParameters (parameters);
-			});
+			}
 		}
 
 		public Vec2i Size
@@ -42,40 +42,30 @@
 			get
 			{
 				Vec2i result = new Vec2i (0);
-				BindTexture (() =>
+				using (Scope ())
 				{
 					GL.GetTexLevelParameter (_target, 0, GetTextureParameter.TextureWidth, out result.X);
 					GL.GetTexLevelParameter (_target, 0, GetTextureParameter.TextureHeight, out result.Y);
-				});
+				}
 				return result;
 			}
 		}
-		
-		private void BindTexture (Action action)
+
+		public override void Use ()
 		{
-			if (_bound)
-				action ();
-			else
-			{
-				GL.BindTexture (_target, _glTexture);
-				try
-				{
-					_bound = true;
-					action ();
-				}
-				finally
-				{
-					GL.BindTexture (_target, 0);
-					_bound = false;
-				}
-			}
+			GL.BindTexture (_target, _glTexture);
+		}
+
+		public override void Release ()
+		{
+			GL.BindTexture (_target, 0);
 		}
 
 		public void SetParameters (TextureParams parameters)
 		{
 			if (parameters == null)
 				return;
-			BindTexture (() =>
+			using (Scope ())
 			{
 				foreach (var param in parameters)
 				{
@@ -84,18 +74,18 @@
 					else if (param.Item2 is float)
 						GL.TexParameter (_target, param.Item1, (float)param.Item2);
 					else
-						throw new ArgumentException ("Unsupported texture parameter Item2 type: " + 
+						throw new ArgumentException ("Unsupported texture parameter Item2 type: " +
 							param.Item2.GetType ());
 				}
-			});
+			}
 		}
 
 		public void LoadBitmap (Bitmap bitmap, TextureTarget target, int lodLevel)
 		{
-			BindTexture (() =>
+			using (Scope ())
 			{
 				var bitmapData = bitmap.LockBits (new Rectangle (0, 0, bitmap.Width, bitmap.Height),
-					System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+				System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 				try
 				{
 					_pixelFormat = MapPixelFormat (bitmap.PixelFormat);
@@ -106,12 +96,12 @@
 				{
 					bitmap.UnlockBits (bitmapData);
 				}
-			});
+			}
 		}
 
 		public void UpdateBitmap (Bitmap bitmap, TextureTarget target, int lodLevel)
 		{
-			BindTexture (() =>
+			using (Scope ())
 			{
 				var size = Size;
 				if (bitmap.Width != size.X || bitmap.Height != size.Y)
@@ -130,19 +120,19 @@
 				{
 					bitmap.UnlockBits (bitmapData);
 				}
-			});
+			}
 		}
 		
 		public static Texture FromBitmap (Bitmap bitmap, bool useMipmap, TextureParams parameters)
 		{
 			var result = new Texture (TextureTarget.Texture2D);
-			result.BindTexture (() =>
+			using (result.Scope ())
 			{
 				result.LoadBitmap (bitmap, result._target, 0);
 				result.SetParameters (parameters);
 				if (useMipmap)
 					GL.GenerateMipmap (MapMipmapTarget (TextureTarget.Texture2D));
-			});
+			}
 			return result;
 		}
 
@@ -163,17 +153,17 @@
 			if (paths.Length > 6)
 				throw new ArgumentException ("Too many file paths (cube has only 6 sides)", "paths");
 			var result = new Texture (TextureTarget.TextureCubeMap);
-			result.BindTexture (() =>
+			using (result.Scope ())
 			{
 				result.AddCubeMapLodLevel (paths, lodLevel);
 				result.SetParameters (parameters);
-			});
+			}
 			return result;
 		}
 		
 		public void AddCubeMapLodLevel (string[] paths, int lodLevel)
 		{
-			this.BindTexture (() =>
+			using (Scope ())
 			{
 				for (int i = 0; i < paths.Length; i++)
 				{
@@ -184,7 +174,7 @@
 						LoadBitmap (new Bitmap (path), TextureTarget.TextureCubeMapPositiveX + i, lodLevel);
 					}
 				}
-			});
+			}
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

@@ -9,7 +9,7 @@
 		private FramebufferTarget _target;
 		internal int _glFramebuffer;
 
-		private Framebuffer (FramebufferTarget target)
+		public Framebuffer (FramebufferTarget target)
 		{
 			_target = target;
 			_glFramebuffer = GL.GenFramebuffer ();
@@ -25,36 +25,33 @@
 			GL.BindFramebuffer (_target, 0);
 		}
 
-		private void BindRenderbuffer (Action action)
+		private void CheckStatus ()
 		{
-			Use ();
-			try
-			{
-				action ();
-				var status = GL.CheckFramebufferStatus (_target);
-				if (status != FramebufferErrorCode.FramebufferComplete)
-					throw new GLError ("Could not initialize framebuffer. ErrorCode: " + status.ToString ());
-			}
-			finally
-			{
-				Release ();
-			}
+			var status = GL.CheckFramebufferStatus (_target);
+			if (status != FramebufferErrorCode.FramebufferComplete)
+				throw new GLError ("Could not initialize framebuffer. ErrorCode: " + status.ToString ());
 		}
 
 		public void AddTexture (FramebufferAttachment attachment, Texture texture)
 		{
-			BindRenderbuffer (() => GL.FramebufferTexture (_target, attachment, texture._glTexture, 0));
+			using (texture.Scope ())
+			using (Scope ())
+			{
+				GL.FramebufferTexture (_target, attachment, texture._glTexture, 0);
+				CheckStatus ();
+			}
 		}
 
 		public void AddRenderbuffer (FramebufferAttachment attachment, RenderbufferStorage storage, int width, int height)
 		{
-			BindRenderbuffer (() =>
+			using (Scope ())
 			{
 				var rb = GL.GenRenderbuffer ();
 				GL.BindRenderbuffer (RenderbufferTarget.Renderbuffer, rb);
 				GL.RenderbufferStorage (RenderbufferTarget.Renderbuffer, storage, width, height);
 				GL.FramebufferRenderbuffer (_target, attachment, RenderbufferTarget.Renderbuffer, rb);
-			});
+				CheckStatus ();
+			}
 		}
 	}
 }

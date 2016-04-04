@@ -170,33 +170,34 @@
 
 		public void Render (Camera camera)
 		{
-			GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Back);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Enable (EnableCap.DepthTest);
-			GL.DepthMask (true);
-			GL.DepthFunc (DepthFunction.Less);
-			GL.Disable (EnableCap.Blend);
-
-			var worldToCamera = camera.WorldToCamera;
-			var samplers = new Sampler [] { !Uniforms.sandSampler, !Uniforms.rockSampler, !Uniforms.grassSampler };
-			var textures = new Texture [] { _sandTexture, _rockTexture, _grassTexture };
-			
 			using (TerrainShader.Scope ())
 			{
+				GL.Enable (EnableCap.CullFace);
+				GL.CullFace (CullFaceMode.Back);
+				GL.FrontFace (FrontFaceDirection.Cw);
+				GL.Enable (EnableCap.DepthTest);
+				GL.DepthMask (true);
+				GL.DepthFunc (DepthFunction.Less);
+				GL.Disable (EnableCap.Blend);
+				GL.DrawBuffer (DrawBufferMode.Back);
+
+				var worldToCamera = camera.WorldToCamera;
+				var samplers = new Sampler[] { !Uniforms.sandSampler, !Uniforms.rockSampler, !Uniforms.grassSampler };
+				var textures = new Texture[] { _sandTexture, _rockTexture, _grassTexture };
+
 				Sampler.Bind (samplers, textures);
 				foreach (var mesh in camera.NodesInView<TerrainMesh<TerrainVertex>> ())
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 					{
-						Uniforms.Transforms.modelViewMatrix &= worldToCamera * mesh.Transform;
-						Uniforms.Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+						Uniforms.Lighting.UpdateDirectionalLight (camera);
+						Uniforms.Transforms.UpdateModelViewAndNormalMatrices (worldToCamera * mesh.Transform);
 						var distance = -(worldToCamera * mesh.BoundingBox).Front;
 						var lod = distance < 100 ? 0 :
 								  distance < 200 ? 1 :
 								  2;
-						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer, 
-							mesh.IndexBuffers [lod]);
+						TerrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer,
+							mesh.IndexBuffers[lod]);
 					}
 				}
 				Sampler.Unbind (samplers, textures);

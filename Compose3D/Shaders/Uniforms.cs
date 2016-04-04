@@ -24,6 +24,12 @@
 		public Uniform<Mat3> normalMatrix;
 		
 		public TransformUniforms (Program program) : base (program)	{ }
+
+		public void UpdateModelViewAndNormalMatrices (Mat4 modelView)
+		{
+			modelViewMatrix &= modelView;
+			normalMatrix &= new Mat3 (modelView).Inverse.Transposed;
+		}
 	}
 
 	public class LightingUniforms : Uniforms
@@ -46,13 +52,17 @@
 						inverseGamma = 1f / gl.GammaCorrection
 					};
 				}
-				var dirLight = scene.Root.Traverse ().OfType<DirectionalLight> ().First ();
-				directionalLight &= new Lighting.DirectionalLight ()
-				{
-					direction = dirLight.Direction,
-					intensity = dirLight.Intensity
-				};
 			}
+		}
+
+		public void UpdateDirectionalLight (Camera camera)
+		{
+			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+			directionalLight &= new Lighting.DirectionalLight ()
+			{
+				direction = dirLight.DirectionInCameraSpace (camera),
+				intensity = dirLight.Intensity
+			};
 		}
 	}
 

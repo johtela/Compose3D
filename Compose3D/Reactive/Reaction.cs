@@ -11,11 +11,6 @@
 	/// </summary>
 	public static class React
 	{
-		public static Reaction<T> By<T> (Func<T, bool> func)
-		{
-			return new Reaction<T> (func);
-		}
-
 		public static Reaction<T> By<T> (Action<T> action)
 		{
 			return input =>

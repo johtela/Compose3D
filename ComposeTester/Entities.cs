@@ -165,27 +165,31 @@
 
 		public void Render (Camera camera)
 		{
-			GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Back);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Enable (EnableCap.DepthTest);
-			GL.DepthMask (true);
-			GL.DepthFunc (DepthFunction.Less);
-			GL.Disable (EnableCap.Blend);
-
-			var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
-
 			using (EntityShader.Scope ())
-				foreach (var mesh in camera.NodesInView <Mesh<EntityVertex>> ())
+			{
+				GL.Enable (EnableCap.CullFace);
+				GL.CullFace (CullFaceMode.Back);
+				GL.FrontFace (FrontFaceDirection.Cw);
+				GL.Enable (EnableCap.DepthTest);
+				GL.DepthMask (true);
+				GL.DepthFunc (DepthFunction.Less);
+				GL.Disable (EnableCap.Blend);
+				GL.DrawBuffer (DrawBufferMode.Back);
+
+				var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
+				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+
+				foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
-					Transforms.modelViewMatrix &= camera.WorldToCamera * mesh.Transform;
-					Transforms.normalMatrix &= new Mat3 (mesh.Transform).Inverse.Transposed;
+					LightingUniforms.UpdateDirectionalLight (camera);
+					Transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					(!Uniforms.diffuseMap).Unbind (diffTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
+			}
 		}
 
 		public void UpdateViewMatrix (Mat4 matrix)

@@ -42,22 +42,26 @@
 			Direction = direction.Normalized;
 		}
 
-		public Mat4 WorldToLight
+		public Vec3 DirectionInCameraSpace (Camera camera)
 		{
-			get 
-			{
-				return Mat.Translation<Mat4> (0f, 0f, -Distance) *
-					Mat.RotationY<Mat4> (-Direction.YRotation ()) *
-					Mat.RotationX<Mat4> (-Direction.XRotation ());
-			}
+			return new Mat3 (camera.WorldToCamera) * Direction;
+		}
+
+		public Mat4 CameraToLight (Camera camera)
+		{
+			var cf = camera.Frustum;
+			var extent = (cf.Far - cf.Near) / 2f;
+			var target = new Vec3 ((cf.Right + cf.Left) / 2f, (cf.Top + cf.Bottom) / 2f, -extent);
+			var camDir = DirectionInCameraSpace (camera);
+			var eye = camDir * extent + target;
+			return Mat.LookAt (eye, target, new Vec3 (0f, 1f, 0f));
 		}
 		
 		public ViewingFrustum ShadowFrustum (Camera camera)
 		{
-			var cameraToLight = WorldToLight * camera.CameraToWorld;
-			var bbox = Aabb<Vec3>.FromPositions (camera.Frustum.Corners.Map (c => cameraToLight.Transform (c)));
-			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
-				1f, bbox.Size.Z + Distance);
+			var cf = camera.Frustum;
+			var extent = cf.Far - cf.Near;
+			return new ViewingFrustum (FrustumKind.Orthographic, extent, extent, 0f, extent);
 		}
 	}
 

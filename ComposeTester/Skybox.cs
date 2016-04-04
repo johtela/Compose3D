@@ -89,14 +89,15 @@
 
 		public void Render (Camera camera)
 		{
-			GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Front);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Disable (EnableCap.DepthTest);
-			GL.Disable (EnableCap.Blend);
-
 			using (SkyboxShader.Scope ())
 			{
+				GL.Enable (EnableCap.CullFace);
+				GL.CullFace (CullFaceMode.Front);
+				GL.FrontFace (FrontFaceDirection.Cw);
+				GL.Disable (EnableCap.DepthTest);
+				GL.Disable (EnableCap.Blend);
+				GL.DrawBuffer (DrawBufferMode.Back);
+
 				(!Uniforms.cubeMap).Bind (EnvironmentMap);
 				Uniforms.worldMatrix &= camera.WorldToCamera.RemoveTranslation ();
 				SkyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);

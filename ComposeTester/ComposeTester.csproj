@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Entities.cs" />
     <Compile Include="FighterGeometry.cs" />
+    <Compile Include="Shadows.cs" />
     <Compile Include="Skybox.cs" />
     <Compile Include="Terrain.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />

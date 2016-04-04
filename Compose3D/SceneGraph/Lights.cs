@@ -32,13 +32,13 @@
 	public class DirectionalLight : Light
 	{
 		public Vec3 Direction;
-		public float Distance;
+		public float MaxShadowDepth;
 		
-		public DirectionalLight (SceneGraph graph, Vec3 intensity, Vec3 direction, float distance)
+		public DirectionalLight (SceneGraph graph, Vec3 intensity, Vec3 direction, float maxShadowDepth)
 			: base (graph)
 		{
 			Intensity = intensity;
-			Distance = distance;
+			MaxShadowDepth = maxShadowDepth;
 			Direction = direction.Normalized;
 		}
 
@@ -50,7 +50,7 @@
 		public Mat4 CameraToLight (Camera camera)
 		{
 			var cf = camera.Frustum;
-			var extent = (cf.Far - cf.Near) / 2f;
+			var extent = MaxShadowDepth / 2f;
 			var target = new Vec3 ((cf.Right + cf.Left) / 2f, (cf.Top + cf.Bottom) / 2f, -extent);
 			var camDir = DirectionInCameraSpace (camera);
 			var eye = camDir * extent + target;
@@ -59,9 +59,7 @@
 		
 		public ViewingFrustum ShadowFrustum (Camera camera)
 		{
-			var cf = camera.Frustum;
-			var extent = cf.Far - cf.Near;
-			return new ViewingFrustum (FrustumKind.Orthographic, extent, extent, 0f, extent);
+			return new ViewingFrustum (FrustumKind.Orthographic, MaxShadowDepth, MaxShadowDepth, 0f, MaxShadowDepth);
 		}
 	}
 

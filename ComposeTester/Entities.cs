@@ -10,6 +10,7 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.InteropServices;
+	using OpenTK;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct EntityVertex : IVertex, IVertexInitializer<EntityVertex>, IVertexColor<Vec3>, 
@@ -159,7 +160,7 @@
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<EntityVertex, PathNode> ();
-			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
+			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (MathHelper.PiOver2).Compact ())
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 

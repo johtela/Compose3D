@@ -27,6 +27,7 @@
 		public readonly Framebuffer DepthFramebuffer;
 
 		private const int _textureSize = 256;
+		private const float _maxDepth = 100f;
 
 		public Shadows ()
 		{
@@ -51,6 +52,7 @@
 			using (DepthTexture.Scope ())
 			using (ShadowShader.Scope ())
 			{
+				GL.Viewport (new System.Drawing.Size (_textureSize, _textureSize));
 				GL.Enable (EnableCap.CullFace);
 				GL.CullFace (CullFaceMode.Back);
 				GL.FrontFace (FrontFaceDirection.Cw);
@@ -63,7 +65,8 @@
 
 				var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 				var shadowFrustum = light.ShadowFrustum (camera);
-				var vpMatrix = shadowFrustum.CameraToScreen * /* light.CameraToLight (camera) **/  camera.WorldToCamera;
+				var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLight (camera) * 
+					camera.WorldToCamera;
 
 				foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 				{

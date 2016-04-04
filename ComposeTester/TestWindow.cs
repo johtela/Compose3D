@@ -62,7 +62,7 @@
 			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (10f), 
 				direction: new Vec3 (0.75f, 0.75f, -1f),
-				distance: 100f);
+				maxShadowDepth: 100f);
 			//var pointLight1 = new PointLight (sceneGraph,
 			//	intensity: new Vec3 (2f),
 			//	position: new Vec3 (100f, 100f, -100f),
@@ -79,19 +79,19 @@
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
 				AmbientLightIntensity = new Vec3 (1f),
-				MaxIntensity = 4f,
+				MaxIntensity = 5f,
 				GammaCorrection = 1.4f,
 			};
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 			
-			_infoWindow = new Window<WindowVertex> (sceneGraph,
+			_infoWindow = new Window<WindowVertex> (sceneGraph, true,
 				Texture.FromBitmap (InfoWindow (0), false, Texture.BasicParams));
-			_shadowWindow = new Window<WindowVertex> (sceneGraph, _shadows.DepthTexture);
+			_shadowWindow = new Window<WindowVertex> (sceneGraph, false, _shadows.DepthTexture);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)),
-				_shadowWindow.Offset (new Vec3 (0f, 0.95f, 0f)));
+				_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
 			return sceneGraph;
 		}
 		
@@ -143,6 +143,7 @@
 		{
 			_shadows.Render (_camera);
 
+			GL.Viewport (ClientSize);
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
@@ -173,7 +174,6 @@
 			_skybox.UpdateViewMatrix (viewMatrix);
 			_terrain.UpdateViewMatrix (viewMatrix);
 			_entities.UpdateViewMatrix (viewMatrix);
-			GL.Viewport (ClientSize);
 		}
 
 		private Vec3 LookVec ()
@@ -200,10 +200,10 @@
 
 		private void MoveFighter (float x)
 		{
-			_fighter.Offset = new Vec3 (0f,
-				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
+			_fighter.Offset = new Vec3 (x,
+				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), 0f);
 			var angle = x * 0.03f;
-			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
+			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
 			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);
 			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 2f, 0f));
 			_camera.Target = _fighter.Offset;

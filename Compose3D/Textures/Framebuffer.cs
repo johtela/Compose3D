@@ -37,7 +37,17 @@
 			using (texture.Scope ())
 			using (Scope ())
 			{
-				GL.FramebufferTexture (_target, attachment, texture._glTexture, 0);
+				switch (texture._target)
+				{
+					case TextureTarget.Texture1D:
+						GL.FramebufferTexture1D (_target, attachment, texture._target, texture._glTexture, 0);
+						break;
+					case TextureTarget.Texture2D:
+						GL.FramebufferTexture2D (_target, attachment, texture._target, texture._glTexture, 0);
+						break;
+					default:
+						throw new ArgumentException ("Incompatible attachment texture target");
+				}
 				CheckStatus ();
 			}
 		}

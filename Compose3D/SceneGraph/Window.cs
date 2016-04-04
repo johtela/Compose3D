@@ -18,15 +18,18 @@
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		public Window (SceneGraph graph)
+		public Window (SceneGraph graph, bool flipVertically)
 			: base (graph)
 		{
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
-			_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
+			if (flipVertically)
+				_rectangle.ApplyTextureFront (1f, new Vec2 (0f, 1f), new Vec2 (1f, 0f));
+			else
+				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 		}
 
-		public Window (SceneGraph graph, Texture texture)
-			: this (graph)
+		public Window (SceneGraph graph, bool flipVertically, Texture texture)
+			: this (graph, flipVertically)
 		{
 			Texture = texture;
 		}

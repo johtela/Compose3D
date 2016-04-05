@@ -318,8 +318,8 @@
 					.RotateX (bend.Radians ())
 					.Scale (0.85f, 1f, 1f)
 					.Translate (0f, 0.6f, -2.3f)
-					.Color (VertexColor<Vec3>.BluePlastic)
-					.Reflectivity (0.2f);
+					.Color (VertexColor<Vec3>.DarkGlass)
+					.Reflectivity (0.4f);
 			}
 		}
 		

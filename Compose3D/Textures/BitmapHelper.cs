@@ -3,6 +3,7 @@
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
 	using System.Drawing.Imaging;
+	using System.Drawing.Text;
 
 	public static class BitmapHelper
 	{
@@ -13,6 +14,7 @@
 			using (var gfx = Graphics.FromImage (bitmap))
 			{
 				gfx.SmoothingMode = SmoothingMode.AntiAlias;
+				gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
 				gfx.Clear (Color.Transparent);
 				gfx.FillRectangle (new SolidBrush (Color.FromArgb (100, 100, 100, 50)), new Rectangle (0, 0, width, height));
 				gfx.DrawString (text, font, brush, new RectangleF (0f, 0f, width, height), stringFormat);

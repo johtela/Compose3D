@@ -90,8 +90,8 @@ namespace Compose3D.Geometry
 			Vec.FromArray<V, float> (0.3f, 0.3f, 0.3f),
 			10f);
 
-		public static IVertexColor<V> BluePlastic = new VertColor (
-			Vec.FromArray<V, float> (0.2f, 0.2f, 0.2f),
+		public static IVertexColor<V> DarkGlass = new VertColor (
+			Vec.FromArray<V, float> (0.0f, 0.0f, 0.0f),
 			Vec.FromArray<V, float> (0.7f, 0.7f, 0.7f),
 			72f);
 	}

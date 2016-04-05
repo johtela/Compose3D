@@ -64,7 +64,14 @@
 			WindowShader = new Program (
 				VertexShaders.TransformedTexture<WindowVertex, WindowFragment, TransformUniforms> (), 
 				FragmentShaders.TexturedOutput<WindowFragment, TextureUniforms> ());
-			Texture = new TextureUniforms (WindowShader, new Sampler2D (0, Sampler.BasicParams));
+			Texture = new TextureUniforms (WindowShader, new Sampler2D (0,
+				new SamplerParams ()
+				{
+					{ SamplerParameterName.TextureMagFilter, All.Nearest },
+					{ SamplerParameterName.TextureMinFilter, All.Nearest },
+					{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
+					{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
+				}));
 			Transform = new TransformUniforms (WindowShader);
 		}
 

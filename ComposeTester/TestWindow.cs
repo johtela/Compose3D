@@ -16,10 +16,6 @@
 
 	public class TestWindow : GameWindow
 	{
-		//// OpenGL objects
-		//private Program _shadowShader;
-		//private ExampleShaders.ShadowUniforms _shadowUniforms;
-
 		// Renderers
 		private Skybox _skybox;
 		private Shadows _shadows;
@@ -51,9 +47,6 @@
 			_entities = new Entities (_sceneGraph);
 			_windows = new Windows ();
 			SetupReactions ();
-
-			//_shadowShader = new Program (ExampleShaders.ShadowVertexShader (), ExampleShaders.ShadowFragmentShader ());
-			//_shadowShader.InitializeUniforms (_shadowUniforms = new ExampleShaders.ShadowUniforms ());
 		}
 
 		private SceneGraph CreateSceneGraph ()
@@ -79,7 +72,7 @@
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
 				AmbientLightIntensity = new Vec3 (1f),
-				MaxIntensity = 5f,
+				MaxIntensity = 4.5f,
 				GammaCorrection = 1.4f,
 			};
 			
@@ -141,7 +134,8 @@
 
 		private void Render (double time)
 		{
-			_shadows.Render (_camera);
+			var meshes = _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ();
+			_shadows.Render (_camera, meshes);
 
 			GL.Viewport (ClientSize);
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
@@ -157,12 +151,8 @@
 			}
 			_skybox.Render (_camera);
 			_terrain.Render (_camera);
-			_entities.Render (_camera);
+			_entities.Render (_camera, meshes);
 			_windows.Render (_sceneGraph, new Vec2 (Width, Height));
-
-			//using (ExampleShaders.PassThrough.Scope ())
-			//	foreach (var lines in _sceneGraph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
-			//		ExampleShaders.PassThrough.DrawLinePath (lines.VertexBuffer);
 
 			SwapBuffers ();
 		}

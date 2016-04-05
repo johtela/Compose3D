@@ -26,7 +26,7 @@
 		public readonly Texture DepthTexture;
 		public readonly Framebuffer DepthFramebuffer;
 
-		private const int _textureSize = 256;
+		private const int _textureSize = 512;
 		private const float _maxDepth = 100f;
 
 		public Shadows ()
@@ -46,7 +46,7 @@
 			DepthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, DepthTexture);
 		}
 
-		public void Render (Camera camera)
+		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
 		{
 			using (DepthFramebuffer.Scope ())
 			using (DepthTexture.Scope ())
@@ -68,7 +68,7 @@
 				var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLight (camera) * 
 					camera.WorldToCamera;
 
-				foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
+				foreach (var mesh in meshes)
 				{
 					Uniforms.mvpMatrix &= vpMatrix * mesh.Transform;
 					ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);

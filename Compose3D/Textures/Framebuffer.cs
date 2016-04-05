@@ -46,7 +46,8 @@
 						GL.FramebufferTexture2D (_target, attachment, texture._target, texture._glTexture, 0);
 						break;
 					default:
-						throw new ArgumentException ("Incompatible attachment texture target");
+						GL.FramebufferTexture (_target, attachment, texture._glTexture, 0);
+						break;
 				}
 				CheckStatus ();
 			}

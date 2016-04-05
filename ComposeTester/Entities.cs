@@ -164,7 +164,7 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
-		public void Render (Camera camera)
+		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
 		{
 			using (EntityShader.Scope ())
 			{
@@ -180,7 +180,7 @@
 				var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 
-				foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
+				foreach (var mesh in meshes)
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
 					(!Uniforms.diffuseMap).Bind (diffTexture);

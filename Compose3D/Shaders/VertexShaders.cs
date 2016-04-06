@@ -53,7 +53,7 @@
 		public static GLShader BasicShader<V, F, U> ()
 			where V : struct, IVertex, IVertexColor<Vec3>, ITextured, IReflective
 			where F : Fragment, IFragmentPosition, IFragmentDiffuse, IFragmentSpecular, IFragmentTexture<Vec2>, 
-					  IFragmentReflectivity, new ()
+					  IFragmentReflectivity, IFragmentShadow, new ()
 			where U : TransformUniforms
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
@@ -69,7 +69,8 @@
 					fragSpecular = v.specular,
 					fragShininess = v.shininess,
 					fragTexturePos = v.texturePos,
-					fragReflectivity = v.reflectivity
+					fragReflectivity = v.reflectivity,
+					fragPositionLightSpace = !t.lightSpaceMatrix * viewPos
 				});
 		}
 	}

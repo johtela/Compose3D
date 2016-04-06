@@ -170,8 +170,7 @@
 					var memberType = assign.Member is FieldInfo ?
 						(assign.Member as FieldInfo).FieldType :
 						(assign.Member as PropertyInfo).PropertyType;
-					DeclOut ("const {0} {1} = {2};", GLType (memberType), 
-						assign.Member.Name, ExprToGLSL (assign.Expression));
+					OutputConst (memberType, assign.Member.Name, assign.Expression);
 				}
 			}
 			else
@@ -180,10 +179,24 @@
 				{
 					var prop = (PropertyInfo)ne.Members[i];
 					if (!prop.Name.StartsWith ("<>"))
-						DeclOut ("const {0} {1} = {2};", GLType (prop.PropertyType), 
-							prop.Name, ExprToGLSL (ne.Arguments[i]));
+						OutputConst (prop.PropertyType, prop.Name, ne.Arguments[i]);
 				}
 			}
+		}
+
+		private void OutputConst (Type constType, string name, Expression value)
+		{
+			if (constType.IsArray)
+			{
+				var elemType = constType.GetElementType ();
+				var elemGLType = GLType (elemType);
+				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
+				CodeOut ("const {0} {1}[{2}] = {0}[] ( {3} );",
+					elemGLType, name, nai.Expressions.Count,
+					nai.Expressions.Select (ExprToGLSL).SeparateWith (", "));
+			}
+			else
+				CodeOut ("const {0} {1} = {2};", GLType (constType), name, ExprToGLSL (value));
 		}
 
 		private void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
@@ -408,9 +421,10 @@
 		public void OutputForLoop (MethodCallExpression expr)
         {
 			var array = expr.Arguments[0];
-            var field = array.SkipUnary (ExpressionType.Not)
-                .Expect<MemberExpression> (ExpressionType.MemberAccess).Member as FieldInfo;
-            if (field == null)
+            var member  = array.SkipUnary (ExpressionType.Not)
+                .Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
+			var field = member as FieldInfo;
+			if (field == null)
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference. Encountered: " + array);
             var attr = field.ExpectGLArrayAttribute ();

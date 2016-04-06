@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Shaders
 {
 	using System;
+	using System.Linq;
 	using Compose3D.Maths;
 	using Compose3D.GLTypes;
 	using Textures;
@@ -155,7 +156,39 @@
 					from viewDir in (-position.Normalized).ToShader ()
 					let reflectDir = viewDir.Reflect<Vec3, float> (normal)
 					select environmentMap.Texture (reflectDir)[Coord.x, Coord.y, Coord.z]
-				).Evaluate ()
+				)
+				.Evaluate ()
+			);
+
+		public static readonly Func<Sampler2D, Vec4, float> ShadowFactor =
+			GLShader.Function
+			(
+				() => ShadowFactor,
+				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
+				(
+					from c in Shader.Constants (new
+					{
+						samplePoints = new Vec2[] 
+						{ 
+							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
+ 							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
+							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
+						}
+					})
+					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
+					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).Z
+					let currentDepth = texCoords.Z - 0.001f
+					let shadow = currentDepth < closestDepth ? 1.0f : 0.2f
+					let mapSize = shadowMap.Size (0)
+					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
+					//let pcfShadow = (from samplePoint in c.samplePoints
+					//				 let sampleCoords = texCoords[Coord.x, Coord.y] + (samplePoint * texelSize)
+					//				 select shadowMap.Texture (sampleCoords).Z)
+					//				.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.2f))
+					select shadow
+				)
+				.Evaluate ()
 			);
 				
 		/// <summary>

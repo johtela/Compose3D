@@ -14,6 +14,7 @@
 		public float MaxIntensity;
 		public float GammaCorrection;
 		public Texture DiffuseMap;
+		public Texture ShadowMap;
 	}
 
 	/// <summary>
@@ -47,7 +48,7 @@
 			return new Mat3 (camera.WorldToCamera) * Direction;
 		}
 
-		public Mat4 CameraToLight (Camera camera)
+		public Mat4 CameraToLightSpace (Camera camera)
 		{
 			var cf = camera.Frustum;
 			var extent = MaxShadowDepth / 2f;
@@ -55,6 +56,11 @@
 			var camDir = DirectionInCameraSpace (camera);
 			var eye = camDir * extent + target;
 			return Mat.LookAt (eye, target, new Vec3 (0f, 1f, 0f));
+		}
+
+		public Mat4 CameraToShadowFrustum (Camera camera)
+		{
+			return ShadowFrustum (camera).CameraToScreen * CameraToLightSpace (camera);
 		}
 		
 		public ViewingFrustum ShadowFrustum (Camera camera)

@@ -40,12 +40,13 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
-			_shadows = new Shadows ();
-			_sceneGraph = CreateSceneGraph ();			
+			_sceneGraph = CreateSceneGraph ();
+			_shadows = new Shadows (_sceneGraph);
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
 			_windows = new Windows ();
+			//AddShadowWindow ();
 			SetupReactions ();
 		}
 
@@ -54,13 +55,8 @@
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (10f), 
-				direction: new Vec3 (0.75f, 0.75f, -1f),
+				direction: new Vec3 (0.7f, 1f, -0.7f),
 				maxShadowDepth: 100f);
-			//var pointLight1 = new PointLight (sceneGraph,
-			//	intensity: new Vec3 (2f),
-			//	position: new Vec3 (100f, 100f, -100f),
-			//	linearAttenuation: 0.00001f,
-			//	quadraticAttenuation: 0.00001f);
 
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (0f, 10f, 10f), 
@@ -81,13 +77,17 @@
 			
 			_infoWindow = new Window<WindowVertex> (sceneGraph, true,
 				Texture.FromBitmap (InfoWindow (0), false, Texture.BasicParams));
-			_shadowWindow = new Window<WindowVertex> (sceneGraph, false, _shadows.DepthTexture);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
-				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)),
-				_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
+				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
 		}
-		
+
+		private void AddShadowWindow ()
+		{
+			_shadowWindow = new Window<WindowVertex> (_sceneGraph, false, _shadows.DepthTexture);
+			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f))); 
+		}
+
 		private Bitmap InfoWindow (int fps)
 		{
 			return string.Format ("FPS: {0}", fps).TextToBitmapAligned (256, 128, 16f, 
@@ -190,10 +190,10 @@
 
 		private void MoveFighter (float x)
 		{
-			_fighter.Offset = new Vec3 (x,
-				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), 0f);
+			_fighter.Offset = new Vec3 (0f,
+				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
 			var angle = x * 0.03f;
-			_fighter.Orientation = new Vec3 (GLMath.Cos (angle), 0f, 0f);
+			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
 			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);
 			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 2f, 0f));
 			_camera.Target = _fighter.Offset;

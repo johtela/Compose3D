@@ -26,24 +26,24 @@
 		public readonly Texture DepthTexture;
 		public readonly Framebuffer DepthFramebuffer;
 
-		private const int _textureSize = 512;
-		private const float _maxDepth = 100f;
+		private const int _textureSize = 2048;
 
-		public Shadows ()
+		public Shadows (SceneGraph scene)
 		{
 			ShadowShader = new Program (VertexShader (), FragmentShader ());
 			Uniforms = new ShadowUniforms (ShadowShader);
-			DepthTexture = new Texture (TextureTarget.Texture2D, false, PixelInternalFormat.DepthComponent16,
+			DepthTexture = new Texture (TextureTarget.Texture2D, false, PixelInternalFormat.DepthComponent32f,
 				_textureSize, _textureSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero,
 				new TextureParams ()
 				{
-					{ TextureParameterName.TextureMagFilter, TextureMagFilter.Nearest },
-					{ TextureParameterName.TextureMinFilter, TextureMinFilter.Nearest },
+					{ TextureParameterName.TextureMagFilter, TextureMagFilter.Linear },
+					{ TextureParameterName.TextureMinFilter, TextureMinFilter.Linear },
 					{ TextureParameterName.TextureWrapS, TextureWrapMode.ClampToEdge },
 					{ TextureParameterName.TextureWrapT, TextureWrapMode.ClampToEdge }
 				});
 			DepthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			DepthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, DepthTexture);
+			scene.GlobalLighting.ShadowMap = DepthTexture;
 		}
 
 		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
@@ -65,7 +65,7 @@
 
 				var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 				var shadowFrustum = light.ShadowFrustum (camera);
-				var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLight (camera) * 
+				var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLightSpace (camera) * 
 					camera.WorldToCamera;
 
 				foreach (var mesh in meshes)

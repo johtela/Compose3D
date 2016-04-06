@@ -92,7 +92,7 @@
 	}
 	
 	public class EntityFragment : Fragment, IFragmentPosition, IFragmentDiffuse, IFragmentSpecular, 
-		IFragmentTexture<Vec2>, IFragmentReflectivity
+		IFragmentTexture<Vec2>, IFragmentReflectivity, IFragmentShadow
 	{
 		public Vec3 fragPosition { get; set; }
 		public Vec3 fragNormal { get; set; }
@@ -101,6 +101,7 @@
 		public float fragShininess { get; set; }
 		public float fragReflectivity { get; set; }
 		public Vec2 fragTexturePos { get; set; }
+		public Vec4 fragPositionLightSpace { get; set; }
 	}
 
 	public class Entities
@@ -135,9 +136,9 @@
 
 					var samp = new Sampler2D[4];
 					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i, Sampler.BasicParams);
+						samp[i] = new Sampler2D (i + 1, Sampler.BasicParams);
 					samplers &= samp;
-					diffuseMap &= new SamplerCube (4, Sampler.BasicParams);
+					diffuseMap &= new SamplerCube (5, Sampler.BasicParams);
 				}
 			}
 		}
@@ -160,7 +161,7 @@
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<EntityVertex, PathNode> ();
-			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (MathHelper.PiOver2).Compact ())
+			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
@@ -177,17 +178,21 @@
 				GL.Disable (EnableCap.Blend);
 				GL.DrawBuffer (DrawBufferMode.Back);
 
+				var shadowTexture = camera.Graph.GlobalLighting.ShadowMap;
 				var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 
 				foreach (var mesh in meshes)
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
+					(!LightingUniforms.shadowMap).Bind (shadowTexture);
 					(!Uniforms.diffuseMap).Bind (diffTexture);
+					Transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
 					LightingUniforms.UpdateDirectionalLight (camera);
 					Transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 					(!Uniforms.diffuseMap).Unbind (diffTexture);
+					(!LightingUniforms.shadowMap).Unbind (shadowTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
 			}
@@ -232,10 +237,11 @@
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
+				let shadow = Lighting.ShadowFactor (!l.shadowMap, f.fragPositionLightSpace)
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 
-						totalLight.diffuse, totalLight.specular, reflectDiffuse, f.fragSpecular)
+						totalLight.diffuse * shadow, totalLight.specular * shadow, reflectDiffuse, f.fragSpecular)
 				}
 			);
 		}

@@ -172,21 +172,23 @@
 						{ 
 							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
  							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
-							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
+							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f),
+							new Vec2 (-2f, -1f), new Vec2 (2f, -1f), new Vec2 (-1f, -2f), new Vec2 (-1f, 2f),
+							new Vec2 (-2f, 0f), new Vec2 (2f, 0f), new Vec2 (0f, -2f), new Vec2 (0f, 2f),
+							new Vec2 (-2f, 1f), new Vec2 (2f, 1f), new Vec2 (1f, -2f), new Vec2 (1f, 2f)
 						}
 					})
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
 					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).Z
 					let currentDepth = texCoords.Z - 0.001f
-					let shadow = currentDepth < closestDepth ? 1.0f : 0.2f
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					//let pcfShadow = (from samplePoint in c.samplePoints
-					//				 let sampleCoords = texCoords[Coord.x, Coord.y] + (samplePoint * texelSize)
-					//				 select shadowMap.Texture (sampleCoords).Z)
-					//				.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.2f))
-					select shadow
+					let pcfShadow = (from samplePoint in c.samplePoints
+									 let sampleCoords = texCoords[Coord.x, Coord.y] + (samplePoint * texelSize)
+									 select shadowMap.Texture (sampleCoords).Z)
+									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.2f))
+					select pcfShadow / 21f
 				)
 				.Evaluate ()
 			);

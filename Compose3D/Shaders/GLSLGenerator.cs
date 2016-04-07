@@ -20,6 +20,7 @@
 		private StringBuilder _code;
 		private HashSet<Type> _typesDefined;
 		private HashSet<Function> _funcRefs;
+		private Dictionary<string, Constant> _constants;
         private int _localVarCount;
         private int _tabLevel;
 
@@ -29,6 +30,7 @@
 			_code = new StringBuilder ();
             _typesDefined = new HashSet<Type> ();
 			_funcRefs = new HashSet<Function> ();
+			_constants = new Dictionary<string, Constant> ();
         }
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
@@ -186,6 +188,7 @@
 
 		private void OutputConst (Type constType, string name, Expression value)
 		{
+			_constants.Add (name, new Constant (constType, name, value));
 			if (constType.IsArray)
 			{
 				var elemType = constType.GetElementType ();
@@ -193,7 +196,7 @@
 				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
 				CodeOut ("const {0} {1}[{2}] = {0}[] ( {3} );",
 					elemGLType, name, nai.Expressions.Count,
-					nai.Expressions.Select (ExprToGLSL).SeparateWith (", "));
+					nai.Expressions.Select (ExprToGLSL).SeparateWith (",\n\t"));
 			}
 			else
 				CodeOut ("const {0} {1} = {2};", GLType (constType), name, ExprToGLSL (value));
@@ -423,16 +426,26 @@
 			var array = expr.Arguments[0];
             var member  = array.SkipUnary (ExpressionType.Not)
                 .Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
+			var len = 0;
 			var field = member as FieldInfo;
-			if (field == null)
+			if (field != null)
+				len = field.ExpectGLArrayAttribute ().Length;
+			else if (_constants.ContainsKey (member.Name))
+			{
+				var constant = _constants[member.Name];
+				if (!constant.Type.IsArray)
+					throw new ParseException ("Invalid array expression. Referenced constant is not an array.");
+				var nai = constant.Value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
+				len = nai.Expressions.Count;
+			}
+			else
 				throw new ParseException ("Invalid array expression. " +
-					"Expected uniform field reference. Encountered: " + array);
-            var attr = field.ExpectGLArrayAttribute ();
-            var indexVar = NewLocalVar ("ind");
+					"Expected uniform field reference or constant array. Encountered: " + array);
+			var indexVar = NewLocalVar ("ind");
 			var item = expr.Method.IsSelect () ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
-            CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, attr.Length);
+            CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
             CodeOut ("{");
             _tabLevel++;
             CodeOut ("{0} {1} = {2}[{3}];", GLType (item.Type), item.Name, 

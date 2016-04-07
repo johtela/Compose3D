@@ -368,7 +368,7 @@
             for (int i = 0; i < ne.Members.Count; i++)
             {
                 var prop = (PropertyInfo)ne.Members[i];
-                if (!prop.Name.StartsWith ("<>"))
+                if (!(prop.Name.StartsWith ("<>") || ne.Arguments[i] is ParameterExpression))
                 {
                     var type = GLType (prop.PropertyType);
                     var aggr = Aggregate (ne.Arguments[i]);

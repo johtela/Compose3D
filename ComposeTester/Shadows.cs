@@ -36,7 +36,7 @@
 				_textureSize, _textureSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero,
 				new TextureParams ()
 				{
-					{ TextureParameterName.TextureMagFilter, TextureMagFilter.Linear },
+					{ TextureParameterName.TextureMagFilter, TextureMagFilter.Linear  },
 					{ TextureParameterName.TextureMinFilter, TextureMinFilter.Linear },
 					{ TextureParameterName.TextureWrapS, TextureWrapMode.ClampToEdge },
 					{ TextureParameterName.TextureWrapT, TextureWrapMode.ClampToEdge }

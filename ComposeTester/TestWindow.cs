@@ -97,9 +97,9 @@
 		private void SetupReactions ()
 		{
 			React.Propagate (
-				React.By<double> (Render),
-				React.By<float> (MoveFighter)
-					.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
+				React.By<double> (Render))
+				//React.By<float> (MoveFighter)
+				//	.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
 				.WhenRendered (this)
 				.Evoke ();
 
@@ -195,7 +195,7 @@
 			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
 			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);
-			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 2f, 0f));
+			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 5f, 0f));
 			_camera.Target = _fighter.Offset;
 		}
 	}

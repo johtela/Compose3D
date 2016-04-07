@@ -356,7 +356,7 @@
 		/// Available only in the fragment shader, the function returns the partial derivative of `value` with 
 		/// respect to the window x coordinate. Not implmented in C#.
 		/// </summary>
-		[GLFunction ("dFdx ({0}))")]
+		[GLFunction ("dFdx ({0})")]
 		public static float dFdx (this float value)
 		{
 			throw new NotImplementedException ();
@@ -366,7 +366,7 @@
 		/// Available only in the fragment shader, the function returns the partial derivative of `value` with 
 		/// respect to the window y coordinate. Not implmented in C#.
 		/// </summary>
-		[GLFunction ("dFdx ({0}))")]
+		[GLFunction ("dFdy ({0})")]
 		public static float dFdy (this float value)
 		{
 			throw new NotImplementedException ();

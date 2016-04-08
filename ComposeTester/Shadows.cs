@@ -26,7 +26,7 @@
 		public readonly Texture DepthTexture;
 		public readonly Framebuffer DepthFramebuffer;
 
-		private const int _textureSize = 2048;
+		private const int _textureSize = 4096;
 
 		public Shadows (SceneGraph scene)
 		{

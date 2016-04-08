@@ -160,20 +160,6 @@
 				.Evaluate ()
 			);
 
-		public static readonly Func<Vec3, float, float> RandomAngle =
-			GLShader.Function
-			(
-				() => RandomAngle,
-				(Vec3 seed, float freq) =>
-				(
-					from dt in (seed * freq).Floor ().Dot (new Vec3 (53.1215f, 21.1352f, 9.1322f)).ToShader ()
-					select dt.Sin ().Fraction () * 2105.2354f * 6.283285f
-				)
-				.Evaluate ()
-			);
-
-
-
 		public static readonly Func<Sampler2D, Vec4, float> ShadowFactor =
 			GLShader.Function
 			(
@@ -183,10 +169,10 @@
 					from con in Shader.Constants (new
 					{
 						kernel = new Vec2[] 
-						{ 
-							new Vec2 (0.95581f, -0.18159f), new Vec2(0.50147f, -0.35807f), new Vec2(0.69607f, 0.35559f),
-							new Vec2 (-0.0036825f, -0.59150f), new Vec2 (0.15930f, 0.089750f), new Vec2 (-0.65031f, 0.058189f),
-							new Vec2 (0.11915f, 0.78449f), new Vec2 (-0.34296f, 0.51575f), new Vec2 (-0.60380f, -0.41527f)
+						{
+							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
+ 							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
+							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
 						}
 					})
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
@@ -194,13 +180,8 @@
 					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).Z
 					let currentDepth = texCoords.Z - 0.001f
 					let mapSize = shadowMap.Size (0)
-					let texelSize = new Vec2 (2f / mapSize.X, 2f / mapSize.Y)
-					let angle = RandomAngle (projCoords, 15f)
-					let s = angle.Sin ()
-					let c = angle.Cos ()
+					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
 					let pcfShadow = (from point in con.kernel
-									 let rotatedPoint = new Vec2 (point.X * c + point.Y * s,
-										point.X * -s + point.Y * c)
 									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
 									 select shadowMap.Texture (sampleCoords).Z)
 									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.15f))

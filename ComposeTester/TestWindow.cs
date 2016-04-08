@@ -97,9 +97,9 @@
 		private void SetupReactions ()
 		{
 			React.Propagate (
-				React.By<double> (Render))
-				//React.By<float> (MoveFighter)
-				//	.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
+				React.By<double> (Render),
+				React.By<float> (MoveFighter)
+					.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
 				.WhenRendered (this)
 				.Evoke ();
 
@@ -191,7 +191,7 @@
 		private void MoveFighter (float x)
 		{
 			_fighter.Offset = new Vec3 (0f,
-				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x);
+				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x - 5000f);
 			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
 			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);

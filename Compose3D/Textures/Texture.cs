@@ -8,7 +8,36 @@
 	using System.Drawing;
 	using Extensions;
 
-	public class TextureParams : Params<TextureParameterName, object> { }
+	public class TextureParams : Params<TextureParameterName, object> 
+	{
+		public static TextureParams Create (bool linear, bool wrap)
+		{
+			var result = new TextureParams ();
+			if (linear)
+			{
+				result.Add (TextureParameterName.TextureMagFilter, All.Linear);
+				result.Add (TextureParameterName.TextureMinFilter, All.Linear);
+			}
+			else
+			{
+				result.Add (TextureParameterName.TextureMagFilter, All.Nearest);
+				result.Add (TextureParameterName.TextureMinFilter, All.Nearest);
+			}
+			if (wrap)
+			{
+				result.Add (TextureParameterName.TextureWrapR, All.Repeat);
+				result.Add (TextureParameterName.TextureWrapS, All.Repeat);
+				result.Add (TextureParameterName.TextureWrapT, All.Repeat);					
+			}
+			else
+			{
+				result.Add (TextureParameterName.TextureWrapR, All.ClampToEdge);
+				result.Add (TextureParameterName.TextureWrapS, All.ClampToEdge);
+				result.Add (TextureParameterName.TextureWrapT, All.ClampToEdge);
+			}
+			return result;
+		}
+	}
 
 	public class Texture : GLObject
 	{
@@ -227,21 +256,6 @@
 					return GenerateMipmapTarget.TextureCubeMapArray;
 				default:
 					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
-			}
-		}
-
-		public static TextureParams BasicParams
-		{
-			get
-			{
-				return new TextureParams ()
-				{
-					{ TextureParameterName.TextureMagFilter, All.Linear },
-					{ TextureParameterName.TextureMinFilter, All.Linear },
-					{ TextureParameterName.TextureWrapR, All.ClampToEdge },
-					{ TextureParameterName.TextureWrapS, All.ClampToEdge },
-					{ TextureParameterName.TextureWrapT, All.ClampToEdge }
-				};
 			}
 		}
 	}

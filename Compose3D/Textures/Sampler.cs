@@ -6,7 +6,36 @@
 	using System;
 	using Extensions;	
 
-	public class SamplerParams : Params<SamplerParameterName, object> { }
+	public class SamplerParams : Params<SamplerParameterName, object> 
+	{
+		public static SamplerParams Create (bool linear, bool wrap)
+		{
+			var result = new SamplerParams ();
+			if (linear)
+			{
+				result.Add (SamplerParameterName.TextureMagFilter, All.Linear);
+				result.Add (SamplerParameterName.TextureMinFilter, All.Linear);
+			}
+			else
+			{
+				result.Add (SamplerParameterName.TextureMagFilter, All.Nearest);
+				result.Add (SamplerParameterName.TextureMinFilter, All.Nearest);
+			}
+			if (wrap)
+			{
+				result.Add (SamplerParameterName.TextureWrapR, All.Repeat);
+				result.Add (SamplerParameterName.TextureWrapS, All.Repeat);
+				result.Add (SamplerParameterName.TextureWrapT, All.Repeat);					
+			}
+			else
+			{
+				result.Add (SamplerParameterName.TextureWrapR, All.ClampToEdge);
+				result.Add (SamplerParameterName.TextureWrapS, All.ClampToEdge);
+				result.Add (SamplerParameterName.TextureWrapT, All.ClampToEdge);
+			}
+			return result;
+		}
+	}
 
 	public abstract class Sampler
 	{
@@ -72,21 +101,6 @@
 					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);
 				else
 					throw new ArgumentException ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
-			}
-		}
-
-		public static SamplerParams BasicParams
-		{
-			get
-			{
-				return new SamplerParams ()
-				{
-					{ SamplerParameterName.TextureMagFilter, All.Linear },
-					{ SamplerParameterName.TextureMinFilter, All.Linear },
-					{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
-				};
 			}
 		}
 	}

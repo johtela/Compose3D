@@ -136,9 +136,9 @@
 
 					var samp = new Sampler2D[4];
 					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i + 1, Sampler.BasicParams);
+						samp[i] = new Sampler2D (i + 1, SamplerParams.Create (true, false));
 					samplers &= samp;
-					diffuseMap &= new SamplerCube (5, Sampler.BasicParams);
+					diffuseMap &= new SamplerCube (5, SamplerParams.Create (true, false));
 				}
 			}
 		}

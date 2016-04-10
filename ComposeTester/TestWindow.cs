@@ -76,7 +76,7 @@
 			_fighter = Entities.CreateScene (sceneGraph);
 			
 			_infoWindow = new Window<WindowVertex> (sceneGraph, true,
-				Texture.FromBitmap (InfoWindow (0), false, Texture.BasicParams));
+				Texture.FromBitmap (InfoWindow (0), false, TextureParams.Create (true, false)));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;

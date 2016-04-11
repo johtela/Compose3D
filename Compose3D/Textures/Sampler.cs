@@ -1,59 +1,23 @@
 ﻿namespace Compose3D.Textures
 {
-	using GLTypes;
-	using System.Collections.Generic;
 	using OpenTK.Graphics.OpenGL;
+	using Geometry;
 	using System;
-	using Extensions;	
+	using Extensions;
 
-	public class SamplerParams : Params<SamplerParameterName, object> 
-	{
-		public static SamplerParams Create (bool linear, bool wrap)
-		{
-			var result = new SamplerParams ();
-			if (linear)
-			{
-				result.Add (SamplerParameterName.TextureMagFilter, All.Linear);
-				result.Add (SamplerParameterName.TextureMinFilter, All.Linear);
-			}
-			else
-			{
-				result.Add (SamplerParameterName.TextureMagFilter, All.Nearest);
-				result.Add (SamplerParameterName.TextureMinFilter, All.Nearest);
-			}
-			if (wrap)
-			{
-				result.Add (SamplerParameterName.TextureWrapR, All.Repeat);
-				result.Add (SamplerParameterName.TextureWrapS, All.Repeat);
-				result.Add (SamplerParameterName.TextureWrapT, All.Repeat);					
-			}
-			else
-			{
-				result.Add (SamplerParameterName.TextureWrapR, All.ClampToEdge);
-				result.Add (SamplerParameterName.TextureWrapS, All.ClampToEdge);
-				result.Add (SamplerParameterName.TextureWrapT, All.ClampToEdge);
-			}
-			return result;
-		}
-	}
+	public class SamplerParams : Params<SamplerParameterName, object> { }
 
 	public abstract class Sampler
 	{
 		internal int _glSampler;
 		internal int _texUnit;
 
-		public Sampler () : this (0) {}
+		public Sampler () : this (0) { }
 
 		public Sampler (int texUnit)
 		{
 			_glSampler = GL.GenSampler ();
 			_texUnit = texUnit;
-		}
-
-		public Sampler (int texUnit, SamplerParams parameters)
-			: this (texUnit)
-		{
-			SetParameters (parameters);
 		}
 
 		public void Bind (Texture texture)
@@ -88,21 +52,90 @@
 			if (textures.Length > samplers.Length)
 				throw new ArgumentException ("The number of textures exceeds the number of samplers");
 		}
+	}
 
-		private void SetParameters (SamplerParams parameters)
+	public static class SamplerModifiers
+	{
+		public static S Parameters<S> (this S sampler, SamplerParams parameters)
+			where S : Sampler
 		{
-			if (parameters == null)
-				return;
 			foreach (var param in parameters)
 			{
 				if (param.Item2 is int || param.Item2.GetType ().IsEnum)
-					GL.SamplerParameter (_glSampler, param.Item1, (int)param.Item2);
+					GL.SamplerParameter (sampler._glSampler, param.Item1, (int)param.Item2);
 				else if (param.Item2 is float)
-					GL.SamplerParameter (_glSampler, param.Item1, (float)param.Item2);
+					GL.SamplerParameter (sampler._glSampler, param.Item1, (float)param.Item2);
 				else
 					throw new ArgumentException ("Unsupported sampler parameter value type: " + param.Item2.GetType ());
 			}
+			return sampler;
+		}
+
+		public static S MinNearestColor<S> (this S sampler)
+			where S : Sampler
+		{
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			return sampler;
+		}
+
+		public static S MagNearestColor<S> (this S sampler)
+			where S : Sampler
+		{
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			return sampler;
+		}
+
+		public static S NearestColor<S> (this S sampler)
+			where S : Sampler
+		{
+			return sampler.MinNearestColor ().MagNearestColor ();
+		}
+
+		public static S MinLinearFiltered<S> (this S sampler)
+			where S : Sampler
+		{
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+			return sampler;
+		}
+
+		public static S MagLinearFiltered<S> (this S sampler)
+			where S : Sampler
+		{
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			return sampler;
+		}
+
+		public static S LinearFiltered<S> (this S sampler)
+			where S : Sampler
+		{
+			return sampler.MinLinearFiltered ().MagLinearFiltered ();
+		}
+
+		public static S ClampToEdges<S> (this S sampler, Axes edgeAxes)
+			where S : Sampler
+		{
+			if ((edgeAxes & Axes.X) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+			if ((edgeAxes & Axes.Y) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+			if ((edgeAxes & Axes.Z) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+			return sampler;
+		}
+
+		public static S Mipmapped<S> (this S sampler, bool linearFilteringWithinMipLevel = true,
+			bool linearFilteringBetweenMipLevels = true)
+			where S : Sampler
+		{
+			var filtering = linearFilteringWithinMipLevel ?
+				linearFilteringBetweenMipLevels ?
+					TextureMinFilter.LinearMipmapLinear :
+					TextureMinFilter.LinearMipmapNearest :
+				linearFilteringBetweenMipLevels ?
+					TextureMinFilter.NearestMipmapLinear :
+					TextureMinFilter.NearestMipmapNearest;
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)filtering);
+			return sampler;
 		}
 	}
 }
-

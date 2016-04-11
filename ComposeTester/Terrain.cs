@@ -120,21 +120,10 @@
 				using (program.Scope ())
 				{
 					skyColor &= skyCol;
-					sandSampler &= CreateSampler (0);
-					rockSampler &= CreateSampler (1);
-					grassSampler &= CreateSampler (2);
+					sandSampler &= new Sampler2D (0);
+					rockSampler &= new Sampler2D (1);
+					grassSampler &= new Sampler2D (2);
 				}
-			}
-			
-			private Sampler2D CreateSampler (int index)
-			{
-				return new Sampler2D (index, new SamplerParams ()
-				{
-					{ SamplerParameterName.TextureMagFilter, All.Mipmap },
-					{ SamplerParameterName.TextureMinFilter, All.Mipmap },
-					{ SamplerParameterName.TextureWrapR, All.Repeat },
-					{ SamplerParameterName.TextureWrapS, All.Repeat }
-				});				
 			}
 		}
 		
@@ -159,13 +148,7 @@
 
 		private static Texture LoadTexture (string name)
 		{
-			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name), true,
-				new TextureParams ()
-				{
-					{ TextureParameterName.TextureBaseLevel, 0 },
-					{ TextureParameterName.TextureMaxLevel, 10 },
-					{ TextureParameterName.TextureMinFilter, TextureMinFilter.LinearMipmapLinear }
-				});
+			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name)).Mipmapped ();
 		}
 
 		public void Render (Camera camera)

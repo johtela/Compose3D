@@ -32,15 +32,8 @@
 		{
 			ShadowShader = new Program (VertexShader (), FragmentShader ());
 			Uniforms = new ShadowUniforms (ShadowShader);
-			DepthTexture = new Texture (TextureTarget.Texture2D, false, PixelInternalFormat.DepthComponent32f,
-				_textureSize, _textureSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero,
-				new TextureParams ()
-				{
-					{ TextureParameterName.TextureMagFilter, TextureMagFilter.Linear  },
-					{ TextureParameterName.TextureMinFilter, TextureMinFilter.Linear },
-					{ TextureParameterName.TextureWrapS, TextureWrapMode.ClampToEdge },
-					{ TextureParameterName.TextureWrapT, TextureWrapMode.ClampToEdge }
-				});
+			DepthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent32f,
+				_textureSize, _textureSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 			DepthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			DepthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, DepthTexture);
 			scene.GlobalLighting.ShadowMap = DepthTexture;

@@ -4,7 +4,7 @@
 	using System.Linq;
 	using System.Drawing;
 	using Compose3D.Maths;
-	using Compose3D.GLTypes;
+	using Compose3D.Geometry;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Textures;
@@ -12,7 +12,6 @@
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
-	using Extensions;
 
 	public class TestWindow : GameWindow
 	{
@@ -74,9 +73,8 @@
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
-			
-			_infoWindow = new Window<WindowVertex> (sceneGraph, true,
-				Texture.FromBitmap (InfoWindow (0), false, TextureParams.Create (true, false)));
+
+			_infoWindow = new Window<WindowVertex> (sceneGraph, true, Texture.FromBitmap (InfoWindow (0)));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;

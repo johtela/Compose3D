@@ -2,42 +2,14 @@
 {
 	using Maths;
 	using GLTypes;
+	using Geometry;
 	using OpenTK.Graphics.OpenGL;
 	using System;
 	using System.IO;
 	using System.Drawing;
 	using Extensions;
 
-	public class TextureParams : Params<TextureParameterName, object> 
-	{
-		public static TextureParams Create (bool linear, bool wrap)
-		{
-			var result = new TextureParams ();
-			if (linear)
-			{
-				result.Add (TextureParameterName.TextureMagFilter, All.Linear);
-				result.Add (TextureParameterName.TextureMinFilter, All.Linear);
-			}
-			else
-			{
-				result.Add (TextureParameterName.TextureMagFilter, All.Nearest);
-				result.Add (TextureParameterName.TextureMinFilter, All.Nearest);
-			}
-			if (wrap)
-			{
-				result.Add (TextureParameterName.TextureWrapR, All.Repeat);
-				result.Add (TextureParameterName.TextureWrapS, All.Repeat);
-				result.Add (TextureParameterName.TextureWrapT, All.Repeat);					
-			}
-			else
-			{
-				result.Add (TextureParameterName.TextureWrapR, All.ClampToEdge);
-				result.Add (TextureParameterName.TextureWrapS, All.ClampToEdge);
-				result.Add (TextureParameterName.TextureWrapT, All.ClampToEdge);
-			}
-			return result;
-		}
-	}
+	public class TextureParams : Params<TextureParameterName, object> { }
 
 	public class Texture : GLObject
 	{
@@ -51,18 +23,14 @@
 			_glTexture = GL.GenTexture ();
 		}
 
-		public Texture (TextureTarget target, bool useMipmap, PixelInternalFormat internalFormat,
-			int width, int height, PixelFormat format, PixelType type, IntPtr pixels, 
-			TextureParams parameters)
+		public Texture (TextureTarget target, PixelInternalFormat internalFormat,
+			int width, int height, PixelFormat format, PixelType type, IntPtr pixels)
 			: this (target)
 		{
 			using (Scope ())
 			{
 				_pixelFormat = format;
 				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
-				if (useMipmap)
-					GL.GenerateMipmap (MapMipmapTarget (target));
-				SetParameters (parameters);
 			}
 		}
 
@@ -90,23 +58,23 @@
 			GL.BindTexture (_target, 0);
 		}
 
-		public void SetParameters (TextureParams parameters)
+		public Texture Parameters (TextureParams parameters)
 		{
-			if (parameters == null)
-				return;
-			using (Scope ())
-			{
-				foreach (var param in parameters)
+			if (parameters != null)
+				using (Scope ())
 				{
-					if (param.Item2 is int || param.Item2.GetType ().IsEnum)
-						GL.TexParameter (_target, param.Item1, (int)param.Item2);
-					else if (param.Item2 is float)
-						GL.TexParameter (_target, param.Item1, (float)param.Item2);
-					else
-						throw new ArgumentException ("Unsupported texture parameter Item2 type: " +
-							param.Item2.GetType ());
+					foreach (var param in parameters)
+					{
+						if (param.Item2 is int || param.Item2.GetType ().IsEnum)
+							GL.TexParameter (_target, param.Item1, (int)param.Item2);
+						else if (param.Item2 is float)
+							GL.TexParameter (_target, param.Item1, (float)param.Item2);
+						else
+							throw new ArgumentException ("Unsupported texture parameter Item2 type: " +
+								param.Item2.GetType ());
+					}
 				}
-			}
+			return this;
 		}
 
 		public void LoadBitmap (Bitmap bitmap, TextureTarget target, int lodLevel)
@@ -152,16 +120,11 @@
 			}
 		}
 		
-		public static Texture FromBitmap (Bitmap bitmap, bool useMipmap, TextureParams parameters)
+		public static Texture FromBitmap (Bitmap bitmap)
 		{
 			var result = new Texture (TextureTarget.Texture2D);
 			using (result.Scope ())
-			{
 				result.LoadBitmap (bitmap, result._target, 0);
-				result.SetParameters (parameters);
-				if (useMipmap)
-					GL.GenerateMipmap (MapMipmapTarget (TextureTarget.Texture2D));
-			}
 			return result;
 		}
 
@@ -171,22 +134,19 @@
 				throw new ArgumentException ("Could not find texture file: " + path);
 		}
 
-		public static Texture FromFile (string path, bool useMipmap, TextureParams parameters)
+		public static Texture FromFile (string path)
 		{
 			CheckFileExists (path);
-			return FromBitmap (new Bitmap (path), useMipmap, parameters);
+			return FromBitmap (new Bitmap (path));
 		}
 
-		public static Texture CubeMapFromFiles (string[] paths, int lodLevel, TextureParams parameters)
+		public static Texture CubeMapFromFiles (string[] paths, int lodLevel)
 		{
 			if (paths.Length > 6)
 				throw new ArgumentException ("Too many file paths (cube has only 6 sides)", "paths");
 			var result = new Texture (TextureTarget.TextureCubeMap);
 			using (result.Scope ())
-			{
 				result.AddCubeMapLodLevel (paths, lodLevel);
-				result.SetParameters (parameters);
-			}
 			return result;
 		}
 		
@@ -204,6 +164,59 @@
 					}
 				}
 			}
+		}
+
+		public Texture MinLinearFiltered ()
+		{
+			using (Scope ())
+				GL.TexParameter (_target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+			return this;
+		}
+
+		public Texture MagLinearFiltered ()
+		{
+			using (Scope ())
+				GL.TexParameter (_target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			return this;
+		}
+
+		public Texture LinearFiltered ()
+		{
+			return MinLinearFiltered ().MagLinearFiltered ();
+		}
+
+		public Texture ClampToEdges (Axes edgeAxes)
+		{
+			using (Scope ())
+			{
+				if ((edgeAxes & Axes.X) != 0)
+					GL.TexParameter (_target, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+				if ((edgeAxes & Axes.Y) != 0)
+					GL.TexParameter (_target, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+				if ((edgeAxes & Axes.Z) != 0)
+					GL.TexParameter (_target, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+			}
+			return this;
+		}
+
+		public Texture Mipmapped (int baseLevel = 0, int maxLevel = 10, bool linearFilteringWithinMipLevel = true,
+			bool linearFilteringBetweenMipLevels = true)
+		{
+			using (Scope ())
+			{
+				GL.GenerateMipmap (MapMipmapTarget (_target));
+				GL.TexParameter (_target, TextureParameterName.TextureBaseLevel, baseLevel);
+				GL.TexParameter (_target, TextureParameterName.TextureMaxLevel, maxLevel);
+				var filtering = linearFilteringWithinMipLevel ?
+					linearFilteringBetweenMipLevels ? 
+						TextureMinFilter.LinearMipmapLinear : 
+						TextureMinFilter.LinearMipmapNearest :
+					linearFilteringBetweenMipLevels ? 
+						TextureMinFilter.NearestMipmapLinear : 
+						TextureMinFilter.NearestMipmapNearest;
+				GL.TexParameter (_target, TextureParameterName.TextureMinFilter, (int)filtering);
+			}
+			return this;
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

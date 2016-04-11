@@ -1,24 +1,23 @@
-﻿
-namespace Compose3D.Textures
+﻿namespace Compose3D.Textures
 {
-	using System.Collections.Generic;
-    using Compose3D.Maths;
+	using Maths;
 	using GLTypes;
-	using OpenTK.Graphics.OpenGL;
 
 	[GLType ("sampler1D")]
     public class Sampler1D : Sampler
     {
     	public Sampler1D () : base () {}
 
-    	public Sampler1D (int texUnit, SamplerParams parameters) 
-    		: base (texUnit, parameters) {}
+    	public Sampler1D (int texUnit) 
+    		: base (texUnit) {}
     	
 		[GLFunction ("textureSize ({0})")]
 		public int Size (int lod)
 		{
 			return default (int);
 		}
+
+
 		[GLFunction ("texture ({0})")]
 		public Vec4 Texture (float pos)
 		{
@@ -30,5 +29,6 @@ namespace Compose3D.Textures
 		{
 			return default (Vec4);
 		}
+
 	}
 }

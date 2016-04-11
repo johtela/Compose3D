@@ -60,14 +60,7 @@
 						inverseGamma = 1f / gl.GammaCorrection
 					};
 				}
-				shadowMap &= new Sampler2D (0, new SamplerParams ()
-				{
-					{ SamplerParameterName.TextureMagFilter, All.Linear },
-					{ SamplerParameterName.TextureMinFilter, All.Linear },
-					{ SamplerParameterName.TextureWrapR, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapS, All.ClampToEdge },
-					{ SamplerParameterName.TextureWrapT, All.ClampToEdge }
-				});
+				shadowMap &= new Sampler2D (0).NearestColor ().ClampToEdges (Axes.All);
 			}
 		}
 

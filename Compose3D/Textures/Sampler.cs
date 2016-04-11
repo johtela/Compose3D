@@ -91,24 +91,24 @@
 			return sampler.MinNearestColor ().MagNearestColor ();
 		}
 
-		public static S MinLinearFiltered<S> (this S sampler)
+		public static S MinLinearFiltering<S> (this S sampler)
 			where S : Sampler
 		{
 			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 			return sampler;
 		}
 
-		public static S MagLinearFiltered<S> (this S sampler)
+		public static S MagLinearFiltering<S> (this S sampler)
 			where S : Sampler
 		{
 			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 			return sampler;
 		}
 
-		public static S LinearFiltered<S> (this S sampler)
+		public static S LinearFiltering<S> (this S sampler)
 			where S : Sampler
 		{
-			return sampler.MinLinearFiltered ().MagLinearFiltered ();
+			return sampler.MinLinearFiltering ().MagLinearFiltering ();
 		}
 
 		public static S ClampToEdges<S> (this S sampler, Axes edgeAxes)

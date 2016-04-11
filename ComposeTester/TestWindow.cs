@@ -40,7 +40,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_shadows = new Shadows (_sceneGraph);
+			_shadows = new Shadows (_sceneGraph, 4096, ShadowMapType.Variance);
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);

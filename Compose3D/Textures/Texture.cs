@@ -166,23 +166,23 @@
 			}
 		}
 
-		public Texture MinLinearFiltered ()
+		public Texture MinLinearFiltering ()
 		{
 			using (Scope ())
 				GL.TexParameter (_target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 			return this;
 		}
 
-		public Texture MagLinearFiltered ()
+		public Texture MagLinearFiltering ()
 		{
 			using (Scope ())
 				GL.TexParameter (_target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 			return this;
 		}
 
-		public Texture LinearFiltered ()
+		public Texture LinearFiltering ()
 		{
-			return MinLinearFiltered ().MagLinearFiltered ();
+			return MinLinearFiltering ().MagLinearFiltering ();
 		}
 
 		public Texture ClampToEdges (Axes edgeAxes)

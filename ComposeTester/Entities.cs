@@ -136,9 +136,9 @@
 
 					var samp = new Sampler2D[4];
 					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i + 1).LinearFiltered ().ClampToEdges (Axes.All);
+						samp[i] = new Sampler2D (i + 1).LinearFiltering ().ClampToEdges (Axes.All);
 					samplers &= samp;
-					diffuseMap &= new SamplerCube (5).LinearFiltered ().ClampToEdges (Axes.All);
+					diffuseMap &= new SamplerCube (5).LinearFiltering ().ClampToEdges (Axes.All);
 				}
 			}
 		}
@@ -237,7 +237,8 @@
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
-				let shadow = Lighting.ShadowFactor (!l.shadowMap, f.fragPositionLightSpace)
+//				let shadow = Lighting.PcfShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace, 0.002f)
+				let shadow = Lighting.VarianceShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace)
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 

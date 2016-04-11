@@ -60,7 +60,7 @@
 						inverseGamma = 1f / gl.GammaCorrection
 					};
 				}
-				shadowMap &= new Sampler2D (0).NearestColor ().ClampToEdges (Axes.All);
+				shadowMap &= new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All);
 			}
 		}
 

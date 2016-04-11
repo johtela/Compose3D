@@ -160,11 +160,11 @@
 				.Evaluate ()
 			);
 
-		public static readonly Func<Sampler2D, Vec4, float> ShadowFactor =
+		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
 			GLShader.Function
 			(
-				() => ShadowFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
+				() => PcfShadowMapFactor,
+				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
 				(
 					from con in Shader.Constants (new
 					{
@@ -177,19 +177,47 @@
 					})
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).Z
-					let currentDepth = texCoords.Z - 0.001f
+					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).X
+					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
 					let pcfShadow = (from point in con.kernel
 									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-									 select shadowMap.Texture (sampleCoords).Z)
+									 select shadowMap.Texture (sampleCoords).X)
 									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.15f))
 					select pcfShadow / 9f
 				)
 				.Evaluate ()
 			);
 
+		public static readonly Func<float, float, float, float> LinearStep = 
+			GLShader.Function
+			(
+				() => LinearStep,
+				(float value, float low, float high) =>
+					((value - low) / (high - low)).Clamp (0f, 1f)
+			);
+		
+		public static readonly Func<Sampler2D, Vec4, float> VarianceShadowMapFactor =
+			GLShader.Function
+			(
+				() => VarianceShadowMapFactor,
+				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
+				(
+					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
+					let currentDepth = texCoords.Z
+					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
+					let p = GLMath.Step (currentDepth, moments.X)
+					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.00002f)
+					let d = currentDepth - moments.X
+					let pmax = LinearStep (variance / (variance + d * d), 0.2f, 1f)
+					select Math.Min (Math.Max (p, pmax), 1f)
+				)
+				.Evaluate ()
+			);
+					
+		
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of
 		/// this class.

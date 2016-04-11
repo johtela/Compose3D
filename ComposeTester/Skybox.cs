@@ -59,7 +59,7 @@
 				: base (program)
 			{
 				using (program.Scope ())
-					cubeMap &= new SamplerCube (0).LinearFiltered ().ClampToEdges (Axes.All);
+					cubeMap &= new SamplerCube (0).LinearFiltering ().ClampToEdges (Axes.All);
 			}
 		}
 
@@ -83,10 +83,10 @@
 			_indices = new VBO<int> (cube.Indices, BufferTarget.ElementArrayBuffer);
 			EnvironmentMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0)
-				.LinearFiltered ().ClampToEdges (Axes.All);
+				.LinearFiltering ().ClampToEdges (Axes.All);
 			sceneGraph.GlobalLighting.DiffuseMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0)
-				.LinearFiltered ().ClampToEdges (Axes.All);
+				.LinearFiltering ().ClampToEdges (Axes.All);
 		}
 
 		public void Render (Camera camera)

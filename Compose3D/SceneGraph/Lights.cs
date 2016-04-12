@@ -51,7 +51,7 @@
 		public Mat4 CameraToLightSpace (Camera camera)
 		{
 			var cf = camera.Frustum;
-			var extent = MaxShadowDepth / 2f;
+			var extent = MaxShadowDepth * 0.4f;
 			var target = new Vec3 ((cf.Right + cf.Left) / 2f, (cf.Top + cf.Bottom) / 2f, -extent);
 			var camDir = DirectionInCameraSpace (camera);
 			var eye = camDir * extent + target;

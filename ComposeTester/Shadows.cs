@@ -71,7 +71,7 @@
 				GL.DepthFunc (DepthFunction.Less);
 				GL.Disable (EnableCap.Blend);
 				GL.DrawBuffer (_type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front);
-				GL.Clear (ClearBufferMask.DepthBufferBit);
+				GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 				var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 				var shadowFrustum = light.ShadowFrustum (camera);

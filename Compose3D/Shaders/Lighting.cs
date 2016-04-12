@@ -160,11 +160,11 @@
 				.Evaluate ()
 			);
 
-		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
+		public static readonly Func<Sampler2D, Vec3, float, float> PercentageCloserFiltering =
 			GLShader.Function
 			(
-				() => PcfShadowMapFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
+				() => PercentageCloserFiltering,
+				(Sampler2D shadowMap, Vec3 texCoords, float bias) =>
 				(
 					from con in Shader.Constants (new
 					{
@@ -175,8 +175,6 @@
 							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
 						}
 					})
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
-					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
 					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).X
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
@@ -184,12 +182,37 @@
 					let pcfShadow = (from point in con.kernel
 									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
 									 select shadowMap.Texture (sampleCoords).X)
-									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.15f))
+									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
 					select pcfShadow / 9f
 				)
 				.Evaluate ()
 			);
+		
+		public static readonly Func<Vec3, bool> InShadowFrustum =
+			GLShader.Function
+			(
+				() => InShadowFrustum,
+				(Vec3 texCoords) =>
+				texCoords.X >= 0f && texCoords.Y >= 0f && texCoords.Z >= 0f &&
+				texCoords.X <= 1f && texCoords.Y <= 1f && texCoords.Z <= 1f
+			);
+		
 
+		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
+			GLShader.Function
+			(
+				() => PcfShadowMapFactor,
+				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
+				(
+					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
+					select InShadowFrustum (texCoords) ? 
+						PercentageCloserFiltering (shadowMap, texCoords, bias) : 1f
+				)
+				.Evaluate ()
+			);
+		
+		
 		public static readonly Func<float, float, float, float> LinearStep = 
 			GLShader.Function
 			(
@@ -198,6 +221,23 @@
 					((value - low) / (high - low)).Clamp (0f, 1f)
 			);
 		
+		public static readonly Func<Sampler2D, Vec3, float> SummedAreaVariance =
+			GLShader.Function
+			(
+				() => SummedAreaVariance,
+				(Sampler2D shadowMap, Vec3 texCoords) =>
+				(
+					from currentDepth in texCoords.Z.ToShader ()
+					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
+					let p = GLMath.Step (currentDepth, moments.X)
+					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.00002f)
+					let d = currentDepth - moments.X
+					let pmax = LinearStep (variance / (variance + d * d), 0f, 1f)
+					select Math.Min (Math.Max (p, pmax), 1f)
+				)
+				.Evaluate ()
+			);
+					
 		public static readonly Func<Sampler2D, Vec4, float> VarianceShadowMapFactor =
 			GLShader.Function
 			(
@@ -206,17 +246,10 @@
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					let currentDepth = texCoords.Z
-					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
-					let p = GLMath.Step (currentDepth, moments.X)
-					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.00002f)
-					let d = currentDepth - moments.X
-					let pmax = LinearStep (variance / (variance + d * d), 0.2f, 1f)
-					select Math.Min (Math.Max (p, pmax), 1f)
+					select InShadowFrustum (texCoords) ? SummedAreaVariance (shadowMap, texCoords) : 1f
 				)
 				.Evaluate ()
 			);
-					
 		
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of

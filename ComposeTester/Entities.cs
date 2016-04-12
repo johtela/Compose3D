@@ -237,8 +237,8 @@
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
-//				let shadow = Lighting.PcfShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace, 0.002f)
-				let shadow = Lighting.VarianceShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace)
+				let shadow = Lighting.PcfShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace, 0.0015f)
+//				let shadow = Lighting.VarianceShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace)
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 

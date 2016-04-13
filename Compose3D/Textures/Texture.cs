@@ -16,11 +16,13 @@
 		internal TextureTarget _target;
 		internal int _glTexture;
 		private PixelFormat _pixelFormat;
+		private PixelType _pixelType;
 
 		public Texture (TextureTarget target)
 		{
 			_target = target;
 			_glTexture = GL.GenTexture ();
+			_pixelType = PixelType.UnsignedByte;
 		}
 
 		public Texture (TextureTarget target, PixelInternalFormat internalFormat,
@@ -30,8 +32,34 @@
 			using (Scope ())
 			{
 				_pixelFormat = format;
+				_pixelType = PixelType;
 				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
 			}
+		}
+
+		public TextureTarget Target
+		{
+			get { return _target; }
+		}
+
+		public PixelFormat PixelFormat
+		{
+			get { return _pixelFormat; }
+		}
+
+		public PixelInternalFormat PixelInternalFormat
+		{
+			get
+			{
+				int result;
+				GL.GetTexParameter (_target, GetTextureParameter.TextureInternalFormat, out result);
+				return (PixelInternalFormat)result;
+			}
+		}
+
+		public PixelType PixelType
+		{
+			get { return _pixelType; }
 		}
 
 		public Vec2i Size
@@ -87,7 +115,7 @@
 				{
 					_pixelFormat = MapPixelFormat (bitmap.PixelFormat);
 					GL.TexImage2D (target, lodLevel, MapPixelInternalFormat (bitmap.PixelFormat), 
-						bitmap.Width, bitmap.Height, 0, _pixelFormat, PixelType.UnsignedByte, bitmapData.Scan0);
+						bitmap.Width, bitmap.Height, 0, _pixelFormat, _pixelType, bitmapData.Scan0);
 				}
 				finally
 				{
@@ -111,7 +139,7 @@
 				try
 				{
 					GL.TexSubImage2D (target, lodLevel, 0, 0, size.X, size.Y, _pixelFormat,
-						PixelType.UnsignedByte, bitmapData.Scan0);
+						_pixelType, bitmapData.Scan0);
 				}
 				finally
 				{

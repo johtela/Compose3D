@@ -8,6 +8,36 @@
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
 
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
+	public struct PositionalVertex : IVertex
+	{
+		public Vec3 position;
+		[OmitInGlsl]
+		public Vec3 normal;
+
+		Vec3 IPositional<Vec3>.position
+		{
+			get { return position; }
+			set { position = value; }
+		}
+
+		Vec3 IPlanar<Vec3>.normal
+		{
+			get { return normal; }
+			set
+			{
+				if (value.IsNan ())
+					throw new ArgumentException ("Normal component NaN.");
+				normal = value;
+			}
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[Vertex: Position={0}, Normal={1}]", position, normal);
+		}
+	}
+
 	public static class VertexShaders
 	{
 		public static GLShader Passthrough<V, F> ()

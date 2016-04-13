@@ -40,7 +40,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_shadows = new Shadows (_sceneGraph, 4096, ShadowMapType.Depth);
+			_shadows = new Shadows (_sceneGraph, 4096, ShadowMapType.Variance);
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
@@ -55,7 +55,7 @@
 			_dirLight = new DirectionalLight (sceneGraph,
 				intensity: new Vec3 (10f), 
 				direction: new Vec3 (0.7f, 1f, -0.7f),
-				maxShadowDepth: 150f);
+				maxShadowDepth: 200f);
 
 			_camera = new Camera (sceneGraph,
 				position: new Vec3 (0f, 10f, 10f), 

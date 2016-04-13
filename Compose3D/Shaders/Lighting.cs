@@ -194,7 +194,7 @@
 				() => InShadowFrustum,
 				(Vec3 texCoords) =>
 				texCoords.X >= 0f && texCoords.Y >= 0f && texCoords.Z >= 0f &&
-				texCoords.X <= 1f && texCoords.Y <= 1f && texCoords.Z <= 1f
+				texCoords.X < 0.9f && texCoords.Y < 0.9f && texCoords.Z < 0.9f
 			);
 		
 
@@ -230,7 +230,7 @@
 					from currentDepth in texCoords.Z.ToShader ()
 					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
 					let p = GLMath.Step (currentDepth, moments.X)
-					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.00002f)
+					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.0000001f)
 					let d = currentDepth - moments.X
 					let pmax = LinearStep (variance / (variance + d * d), 0f, 1f)
 					select Math.Min (Math.Max (p, pmax), 1f)

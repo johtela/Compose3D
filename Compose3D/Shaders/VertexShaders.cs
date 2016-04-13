@@ -38,6 +38,43 @@
 		}
 	}
 
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
+	public struct TexturedVertex : IVertex, ITextured
+	{
+		public Vec3 position;
+		public Vec2 texturePos;
+		[OmitInGlsl]
+		public Vec3 normal;
+
+		Vec3 IPositional<Vec3>.position
+		{
+			get { return position; }
+			set { position = value; }
+		}
+
+		Vec2 ITextured.texturePos
+		{
+			get { return texturePos; }
+			set { texturePos = value; }
+		}
+
+		Vec3 IPlanar<Vec3>.normal
+		{
+			get { return normal; }
+			set
+			{
+				if (value.IsNan ())
+					throw new ArgumentException ("Normal component NaN.");
+				normal = value;
+			}
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[Vertex: position={0}, texturePos={1}]", position, texturePos);
+		}
+	}
+
 	public static class VertexShaders
 	{
 		public static GLShader Passthrough<V, F> ()

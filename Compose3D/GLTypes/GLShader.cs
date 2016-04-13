@@ -62,7 +62,7 @@
 		{
 			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
-		}
+		}	
 
 		public static Func<T1, T2, T3, T4, TRes> Function<T1, T2, T3, T4, TRes> (
 			Expression<Func<Func<T1, T2, T3, T4, TRes>>> member, 

@@ -188,13 +188,13 @@
 				.Evaluate ()
 			);
 		
-		public static readonly Func<Vec3, bool> InShadowFrustum =
+		public static readonly Func<Vec3, float, float, bool> Between =
 			GLShader.Function
 			(
-				() => InShadowFrustum,
-				(Vec3 texCoords) =>
-				texCoords.X >= 0f && texCoords.Y >= 0f && texCoords.Z >= 0f &&
-				texCoords.X < 0.9f && texCoords.Y < 0.9f && texCoords.Z < 0.9f
+				() => Between,
+				(Vec3 texCoords, float low, float high) =>
+				texCoords.X >= low && texCoords.Y >= low && texCoords.Z >= low &&
+				texCoords.X <= high && texCoords.Y <= high && texCoords.Z <= high
 			);
 		
 
@@ -206,7 +206,7 @@
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select InShadowFrustum (texCoords) ? 
+					select Between (texCoords, 0f, 1f) ? 
 						PercentageCloserFiltering (shadowMap, texCoords, bias) : 1f
 				)
 				.Evaluate ()
@@ -246,7 +246,7 @@
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select InShadowFrustum (texCoords) ? SummedAreaVariance (shadowMap, texCoords) : 1f
+					select Between (texCoords, 0f, 0.9f) ? SummedAreaVariance (shadowMap, texCoords) : 1f
 				)
 				.Evaluate ()
 			);

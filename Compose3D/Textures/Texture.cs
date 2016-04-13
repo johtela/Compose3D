@@ -15,6 +15,7 @@
 	{
 		internal TextureTarget _target;
 		internal int _glTexture;
+		private PixelInternalFormat _pixelInternalFormat;
 		private PixelFormat _pixelFormat;
 		private PixelType _pixelType;
 
@@ -22,7 +23,6 @@
 		{
 			_target = target;
 			_glTexture = GL.GenTexture ();
-			_pixelType = PixelType.UnsignedByte;
 		}
 
 		public Texture (TextureTarget target, PixelInternalFormat internalFormat,
@@ -31,8 +31,9 @@
 		{
 			using (Scope ())
 			{
+				_pixelInternalFormat = internalFormat;
 				_pixelFormat = format;
-				_pixelType = PixelType;
+				_pixelType = type;
 				GL.TexImage2D (target, 0, internalFormat, width, height, 0, format, type, pixels);
 			}
 		}
@@ -49,12 +50,7 @@
 
 		public PixelInternalFormat PixelInternalFormat
 		{
-			get
-			{
-				int result;
-				GL.GetTexParameter (_target, GetTextureParameter.TextureInternalFormat, out result);
-				return (PixelInternalFormat)result;
-			}
+			get { return _pixelInternalFormat; }
 		}
 
 		public PixelType PixelType
@@ -113,8 +109,10 @@
 				System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 				try
 				{
+					_pixelInternalFormat = MapPixelInternalFormat (bitmap.PixelFormat);
 					_pixelFormat = MapPixelFormat (bitmap.PixelFormat);
-					GL.TexImage2D (target, lodLevel, MapPixelInternalFormat (bitmap.PixelFormat), 
+					_pixelType = PixelType.UnsignedByte;
+					GL.TexImage2D (target, lodLevel, _pixelInternalFormat, 
 						bitmap.Width, bitmap.Height, 0, _pixelFormat, _pixelType, bitmapData.Scan0);
 				}
 				finally

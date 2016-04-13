@@ -7,6 +7,7 @@
 	using Compose3D.Geometry;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
+	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK;
 	using OpenTK.Graphics;
@@ -29,8 +30,8 @@
 		private DirectionalLight _dirLight;
 		private Vec3 _rotation;
 		private TransformNode _fighter;
-		private Window<WindowVertex> _infoWindow;
-		private Window<WindowVertex> _shadowWindow;
+		private Window<TexturedVertex> _infoWindow;
+		private Window<TexturedVertex> _shadowWindow;
 		private int _fpsCount;
 		private double _fpsTime;
 		
@@ -40,12 +41,12 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_shadows = new Shadows (_sceneGraph, 4096, ShadowMapType.Variance);
+			_shadows = new Shadows (_sceneGraph, 4000, ShadowMapType.Variance);
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
 			_windows = new Windows ();
-			//AddShadowWindow ();
+//			AddShadowWindow ();
 			SetupReactions ();
 		}
 
@@ -74,7 +75,7 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 
-			_infoWindow = new Window<WindowVertex> (sceneGraph, true, Texture.FromBitmap (InfoWindow (0)));
+			_infoWindow = new Window<TexturedVertex> (sceneGraph, true, Texture.FromBitmap (InfoWindow (0)));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
@@ -82,7 +83,7 @@
 
 		private void AddShadowWindow ()
 		{
-			_shadowWindow = new Window<WindowVertex> (_sceneGraph, false, _shadows.DepthTexture);
+			_shadowWindow = new Window<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
 			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f))); 
 		}
 

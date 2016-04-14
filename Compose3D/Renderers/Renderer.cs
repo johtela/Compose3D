@@ -2,54 +2,44 @@
 {
 	using System;
 	using System.Linq;
+	using OpenTK.Graphics.OpenGL;
 
-	public struct Renderer<T>
-	{
-		private Action<T> _action;
-
-		public Renderer (Action<T> action)
-		{
-			_action = action;
-		}
-
-		public static Renderer<T> operator > (Renderer<T> first, Renderer<T> second)
-		{
-			return new Renderer<T> (a =>
-			{
-				first._action (a);
-				second._action (a);
-			});
-		}
-
-		public static Renderer<T> operator < (Renderer<T> second, Renderer<T> first)
-		{
-			return new Renderer<T> (a =>
-			{
-				first._action (a);
-				second._action (a);
-			});
-		}
-
-		public static Renderer<T> operator | (Renderer<T> first, Func<T, bool> condition)
-		{
-			return new Renderer<T> (a =>
-			{
-				if (condition (a)) first._action (a);
-			});
-		}
-	}
-
-	public static class Renderer
+	public delegate void Renderer ();
+	
+	public static class Render
 	{ 
-		public static Renderer<T> Do<T> (Action<T> action)
+		public static Renderer Do (Action action)
 		{
-			return new Renderer<T> (action);
+			return new Renderer (action);
 		}
-
-		public static void Test ()
+		
+		public static Renderer Culling (this Renderer render, CullFaceMode mode = CullFaceMode.Back, 
+			FrontFaceDirection frontFace = FrontFaceDirection.Cw)
 		{
-			var foo = Renderer.Do<int> (a => Console.WriteLine ()) >
-				Renderer.Do<int> (b => Console.WriteLine ()) | (i => i < 2);
+			GL.Enable (EnableCap.CullFace);
+			GL.CullFace (mode);
+			GL.FrontFace (frontFace);
+			render ();
+			GL.Disable (EnableCap.CullFace);
+		}
+		
+		public static Renderer DepthTest (this Renderer render, DepthFunction depthFunction = DepthFunction.Less)
+		{
+			GL.Enable (EnableCap.DepthTest);
+			GL.DepthMask (true);
+			GL.DepthFunc (depthFunction);
+			render ();
+			GL.Disable (EnableCap.DepthTest);
+		}
+		
+		public static Renderer Blending (this Renderer render, 
+			BlendingFactorSrc source = BlendingFactorSrc.Src1Alpha,
+			BlendingFactorDest destination = BlendingFactorDest.OneMinusSrc1Alpha)
+		{
+			GL.Enable (EnableCap.Blend);
+			GL.BlendFunc (source, destination);
+			render ();
+			GL.Disable (EnableCap.Blend);
 		}
 	}
 }

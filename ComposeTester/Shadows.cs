@@ -30,7 +30,6 @@
 
 		private int _mapSize;
 		private ShadowMapType _type;
-		private TextureFilter _filter;
 
 		public Shadows (SceneGraph scene, int mapSize, ShadowMapType type)
 		{
@@ -45,7 +44,6 @@
 				DepthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
 					_mapSize, _mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 				DepthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, DepthTexture);
-				scene.GlobalLighting.ShadowMap = DepthTexture;
 			}
 			else
 			{
@@ -54,32 +52,8 @@
 				DepthFramebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, DepthTexture);
 				DepthFramebuffer.AddRenderbuffer (FramebufferAttachment.DepthAttachment, 
 					RenderbufferStorage.DepthComponent16, _mapSize, _mapSize);
-				_filter = TextureFilter.Create (DepthTexture, () =>
-					from u in Shader.Uniforms<TextureUniforms> ()
-					from f in Shader.Inputs<TextureFilter.TexturedFragment> ()
-					from con in Shader.Constants (new
-					{
-						kernel = new Vec2[] 
-						{
-							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
-							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
-							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
-						}
-					})
-					let texSize = (!u.textureMap).Size (0)
-					let texelSize = new Vec2 (1f / texSize.X, 1f / texSize.Y)
-					let total = (from point in con.kernel
-						let sampleCoords = f.fragTexturePos[Coord.x, Coord.y] + (point * texelSize)
-						select (!u.textureMap).Texture (sampleCoords)[Coord.x, Coord.y])
-						.Aggregate (new Vec2 (0f), (sum, depth) => sum + depth)
-					select new
-					{
-						moments = total / 9f
-					}
-				);
-//				scene.GlobalLighting.ShadowMap = _filter.Output;				
-				scene.GlobalLighting.ShadowMap = DepthTexture;
 			}
+			scene.GlobalLighting.ShadowMap = DepthTexture;
 		}
 
 		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
@@ -110,7 +84,6 @@
 					ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 				}
 			}
-//			_filter.Apply ();
 		}
 
 		public static GLShader VertexShader ()

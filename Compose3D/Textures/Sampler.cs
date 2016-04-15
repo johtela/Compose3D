@@ -3,6 +3,7 @@
 	using OpenTK.Graphics.OpenGL;
 	using Geometry;
 	using System;
+	using System.Collections.Generic;
 	using Extensions;
 
 	public class SamplerParams : Params<SamplerParameterName, object> { }
@@ -51,6 +52,18 @@
 		{
 			if (textures.Length > samplers.Length)
 				throw new ArgumentException ("The number of textures exceeds the number of samplers");
+		}
+
+		public static void Bind (IDictionary<Sampler, Texture> bindings)
+		{
+			foreach (var binding in bindings)
+				binding.Key.Bind (binding.Value);
+		}
+
+		public static void Unbind (IDictionary<Sampler, Texture> bindings)
+		{
+			foreach (var binding in bindings)
+				binding.Key.Unbind (binding.Value);
 		}
 	}
 

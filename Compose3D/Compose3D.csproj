@@ -59,7 +59,7 @@
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Maths\Noise.cs" />
-    <Compile Include="Renderers\Renderer.cs" />
+    <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="DataStructures\Octree.cs" />

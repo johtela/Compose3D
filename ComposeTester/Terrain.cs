@@ -166,13 +166,16 @@
 				GL.DrawBuffer (DrawBufferMode.Back);
 
 				var worldToCamera = camera.WorldToCamera;
-				var samplers = new Sampler[] { !Uniforms.Lighting.shadowMap, !Uniforms.sandSampler, 
-					!Uniforms.rockSampler, !Uniforms.grassSampler };
-				var textures = new Texture[] { camera.Graph.GlobalLighting.ShadowMap, _sandTexture, 
-					_rockTexture, _grassTexture };
 				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+				var bindings = new Dictionary<Sampler, Texture> ()
+				{
+					{ !Uniforms.Lighting.shadowMap, camera.Graph.GlobalLighting.ShadowMap },
+					{ !Uniforms.sandSampler, _sandTexture },
+					{ !Uniforms.rockSampler, _rockTexture },
+					{ !Uniforms.grassSampler, _grassTexture }
+				};
 
-				Sampler.Bind (samplers, textures);
+				Sampler.Bind (bindings);
 				foreach (var mesh in camera.NodesInView<TerrainMesh<TerrainVertex>> ())
 				{
 					if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
@@ -188,7 +191,7 @@
 							mesh.IndexBuffers[lod]);
 					}
 				}
-				Sampler.Unbind (samplers, textures);
+				Sampler.Unbind (bindings);
 			}
 		}
 

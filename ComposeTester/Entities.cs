@@ -8,6 +8,7 @@
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
 	using OpenTK;
@@ -181,20 +182,23 @@
 				var shadowTexture = camera.Graph.GlobalLighting.ShadowMap;
 				var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
 				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+				var bindings = new Dictionary<Sampler, Texture> ()
+				{
+					{ !LightingUniforms.shadowMap, shadowTexture },
+					{ !Uniforms.diffuseMap, diffTexture }
+				};
+				Sampler.Bind (bindings);
 
 				foreach (var mesh in meshes)
 				{
 					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
-					(!LightingUniforms.shadowMap).Bind (shadowTexture);
-					(!Uniforms.diffuseMap).Bind (diffTexture);
 					Transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
 					LightingUniforms.UpdateDirectionalLight (camera);
 					Transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-					(!Uniforms.diffuseMap).Unbind (diffTexture);
-					(!LightingUniforms.shadowMap).Unbind (shadowTexture);
 					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
 				}
+				Sampler.Unbind (bindings);
 			}
 		}
 

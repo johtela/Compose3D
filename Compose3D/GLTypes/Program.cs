@@ -35,11 +35,6 @@
 			GL.UseProgram (0);
 		}
 
-        public Uniform<T> GetUniform<T> (string name)
-        {
-            return new Uniform<T> (this, name);
-        }
-
 		void BindVertices<V> (VBO<V> vertices) where V : struct
 		{
 			var recSize = Marshal.SizeOf (typeof(V));

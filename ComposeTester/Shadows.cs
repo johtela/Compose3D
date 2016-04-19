@@ -6,7 +6,7 @@
 	using Extensions;
 	using Compose3D.GLTypes;
 	using Compose3D.Maths;
-	using Compose3D.Geometry;
+	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
@@ -14,83 +14,68 @@
 
 	public enum ShadowMapType { Depth, Variance }
 	
-	public class Shadows
+	public class Shadows : Uniforms
 	{
-		public class ShadowUniforms : Uniforms
+		public Uniform<Mat4> mvpMatrix;
+		private static Program ShadowShader;
+
+		private Shadows (Program program) : base (program) { }
+
+		public static Reaction<Tuple<Camera, Mesh<EntityVertex>[]>> Renderer (SceneGraph scene,
+			int mapSize, ShadowMapType type)
 		{
-			public Uniform<Mat4> mvpMatrix;
-
-			public ShadowUniforms (Program program) : base (program) { }
-		}
-
-		public readonly Program ShadowShader;
-		public readonly ShadowUniforms Uniforms;
-		public readonly Texture DepthTexture;
-		public readonly Framebuffer DepthFramebuffer;
-
-		private int _mapSize;
-		private ShadowMapType _type;
-
-		public Shadows (SceneGraph scene, int mapSize, ShadowMapType type)
-		{
-			_mapSize = mapSize;
-			_type = type;
-			DepthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
-			ShadowShader = new Program (VertexShader (), 
+			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
+			ShadowShader = new Program (VertexShader (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
-			Uniforms = new ShadowUniforms (ShadowShader);
+			var uniforms = new Shadows (ShadowShader);
+			Texture depthTexture;
 			if (type == ShadowMapType.Depth)
 			{
-				DepthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
-					_mapSize, _mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
-				DepthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, DepthTexture);
+				depthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
+					mapSize, mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				depthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, depthTexture);
 			}
 			else
 			{
-				DepthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.Rg32f,
-					_mapSize, _mapSize, PixelFormat.Rg, PixelType.Float, IntPtr.Zero);					
-				DepthFramebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, DepthTexture);
-				DepthFramebuffer.AddRenderbuffer (FramebufferAttachment.DepthAttachment, 
-					RenderbufferStorage.DepthComponent16, _mapSize, _mapSize);
+				depthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.Rg32f,
+					mapSize, mapSize, PixelFormat.Rg, PixelType.Float, IntPtr.Zero);
+				depthFramebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, depthTexture);
+				depthFramebuffer.AddRenderbuffer (FramebufferAttachment.DepthAttachment,
+					RenderbufferStorage.DepthComponent16, mapSize, mapSize);
 			}
-			scene.GlobalLighting.ShadowMap = DepthTexture;
+			scene.GlobalLighting.ShadowMap = depthTexture;
+
+			return React.By<Camera, Mesh<EntityVertex>[]> (uniforms.Render)
+				.DrawBuffer (type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front)
+				.DepthTest ()
+				.Culling ()
+				.Viewport (new Vec2i (mapSize, mapSize))
+				.Program (ShadowShader)
+				.Texture (depthTexture)
+				.Framebuffer (depthFramebuffer);
 		}
 
-		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
+		private void Render (Camera camera, Mesh<EntityVertex>[] meshes)
 		{
-			using (DepthFramebuffer.Scope ())
-			using (DepthTexture.Scope ())
-			using (ShadowShader.Scope ())
+			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+
+			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+			var shadowFrustum = light.ShadowFrustum (camera);
+			var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLightSpace (camera) *
+				camera.WorldToCamera;
+
+			foreach (var mesh in meshes)
 			{
-				GL.Viewport (new System.Drawing.Size (_mapSize, _mapSize));
-				GL.Enable (EnableCap.CullFace);
-				GL.CullFace (CullFaceMode.Back);
-				GL.FrontFace (FrontFaceDirection.Cw);
-				GL.Enable (EnableCap.DepthTest);
-				GL.DepthMask (true);
-				GL.DepthFunc (DepthFunction.Less);
-				GL.Disable (EnableCap.Blend);
-				GL.DrawBuffer (_type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front);
-				GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-
-				var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
-				var shadowFrustum = light.ShadowFrustum (camera);
-				var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLightSpace (camera) * 
-					camera.WorldToCamera;
-
-				foreach (var mesh in meshes)
-				{
-					Uniforms.mvpMatrix &= vpMatrix * mesh.Transform;
-					ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-				}
+				mvpMatrix &= vpMatrix * mesh.Transform;
+				ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 			}
 		}
 
-		public static GLShader VertexShader ()
+		private static GLShader VertexShader ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<EntityVertex> ()
-				from u in Shader.Uniforms<ShadowUniforms> ()
+				from u in Shader.Uniforms<Shadows> ()
 				select new Fragment ()
 				{
 					gl_Position = !u.mvpMatrix * new Vec4 (v.position, 1f)
@@ -98,7 +83,7 @@
 			);
 		}
 
-		public static GLShader DepthFragmentShader ()
+		private static GLShader DepthFragmentShader ()
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<Fragment> ()
@@ -109,7 +94,7 @@
 			);
 		}
 
-		public static GLShader VarianceFragmentShader ()
+		private static GLShader VarianceFragmentShader ()
 		{
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<Fragment> ()

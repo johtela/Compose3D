@@ -18,7 +18,7 @@
 	{
 		// Renderers
 		private Skybox _skybox;
-		private Shadows _shadows;
+		private Reaction<Tuple<Camera, Mesh<EntityVertex>[]>> _shadowRenderer;
 		private Terrain _terrain;
 		private Entities _entities;
 		private Windows _windows;
@@ -41,7 +41,7 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_shadows = new Shadows (_sceneGraph, 4000, ShadowMapType.Variance);
+			_shadowRenderer = Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance);
 			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
@@ -96,6 +96,8 @@
 		private void SetupReactions ()
 		{
 			React.Propagate (
+				_shadowRenderer.Select<double, Tuple<Camera, Mesh<EntityVertex>[]>> (_ => 
+					Tuple.Create (_camera, _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ())),
 				React.By<double> (Render),
 				React.By<float> (MoveFighter)
 					.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
@@ -134,7 +136,6 @@
 		private void Render (double time)
 		{
 			var meshes = _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ();
-			_shadows.Render (_camera, meshes);
 
 			GL.Viewport (ClientSize);
 			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);

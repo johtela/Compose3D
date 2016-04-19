@@ -1,9 +1,8 @@
 ﻿namespace Compose3D.Reactive
 {
-	using System;
 	using System.Collections.Generic;
-	using System.Linq;
 	using GLTypes;
+	using Maths;
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
 
@@ -124,6 +123,19 @@
 				Sampler.Bind (bindings);
 				var result = render (input);
 				Sampler.Unbind (bindings);
+				return result;
+			};
+		}
+
+		public static Reaction<T> Viewport<T> (this Reaction<T> render, Vec2i size)
+		{
+			return input =>
+			{
+				var oldSize = new int[4];
+				GL.GetInteger (GetPName.Viewport, oldSize);
+				GL.Viewport (0, 0, size.X, size.Y);
+				var result = render (input);
+				GL.Viewport (oldSize[0], oldSize[1], oldSize[2], oldSize[3]);
 				return result;
 			};
 		}

@@ -160,5 +160,10 @@
 		{
 			reaction (value => false);
 		}
+
+		public static bool Evoke<T, U> (this Reaction<Tuple<T, U>> reaction, T param1, U param2)
+		{
+			return reaction (Tuple.Create (param1, param2));
+		}
 	}
 }

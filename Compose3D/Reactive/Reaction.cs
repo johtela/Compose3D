@@ -81,21 +81,14 @@
 			};
 		}
 
-		public static Reaction<T> Propagate<T> (params Reaction<T>[] reactions)
+		public static Reaction<T> And<T> (this Reaction<T> reaction, Reaction<T> other)
 		{
-			var done = new bool [reactions.Length];
-			return input =>
-			{
-				var cont = false;
-				for (int i = 0; i < reactions.Length; i++)
-					if (!done[i])
-					{
-						done[i] = !reactions[i] (input);
-						if (!done[i])
-							cont = true;
-					}
-				return cont;
-			};
+			return input => reaction (input) ? other (input) : false;
+		}
+
+		public static Reaction<T> Or<T> (this Reaction<T> reaction, Reaction<T> other)
+		{
+			return input => reaction (input) ? true : other (input);
 		}
 
 		public static Reaction<T> Buffer<T> (this Reaction<T[]> reaction, int bufferSize)

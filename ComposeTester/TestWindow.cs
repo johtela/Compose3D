@@ -17,8 +17,6 @@
 	public class TestWindow : GameWindow
 	{
 		// Renderers
-		private Skybox _skybox;
-		private Reaction<Tuple<Camera, Mesh<EntityVertex>[]>> _shadowRenderer;
 		private Terrain _terrain;
 		private Entities _entities;
 		private Windows _windows;
@@ -41,13 +39,11 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_shadowRenderer = Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance);
-			_skybox = new Skybox (_sceneGraph);
 			_terrain = new Terrain (_sceneGraph, _skyColor);
 			_entities = new Entities (_sceneGraph);
 			_windows = new Windows ();
-//			AddShadowWindow ();
 			SetupReactions ();
+//			AddShadowWindow ();
 		}
 
 		private SceneGraph CreateSceneGraph ()
@@ -95,18 +91,24 @@
 
 		private void SetupReactions ()
 		{
-			React.Propagate (
-				_shadowRenderer.Select<double, Tuple<Camera, Mesh<EntityVertex>[]>> (_ => 
-					Tuple.Create (_camera, _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ())),
-				React.By<double> (Render),
-				React.By<float> (MoveFighter)
-					.Aggregate<double, float> ((s, t) => s + (float)t * 25f, 0f))
-				.WhenRendered (this)
-				.Evoke ();
+			Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance)
+				.Select ((double _) => Tuple.Create (
+					_camera, _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ()))
+			.And ((Skybox.Renderer (_sceneGraph, _skyColor).Select ((double _) => _camera))
+				.And (React.By<double> (Render)))
+				.Viewport (this)
+			.And (React.By<float> (MoveFighter)
+				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f))
+			.WhenRendered (this).Evoke ();
 
-			React.By<Vec2> (ResizeViewport)
-				.WhenResized (this)
-				.Evoke ();
+			React.By<Mat4> (ResizeViewport)
+			.And (Skybox.UpdateViewMatrix ())
+			.Select ((Vec2 size) =>
+			{
+				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
+				return _camera.Frustum.CameraToScreen;					
+			})
+			.WhenResized (this).Evoke ();
 
 			React.By<Vec3> (RotateCamera)
 				.Select<MouseMoveEventArgs, Vec3> (e =>
@@ -137,10 +139,6 @@
 		{
 			var meshes = _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ();
 
-			GL.Viewport (ClientSize);
-			GL.ClearColor (_skyColor.X, _skyColor.Y, _skyColor.Z, 1f);
-			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			
 			_fpsTime += time;
 			if (++_fpsCount == 10)
 			{
@@ -149,7 +147,6 @@
 				_fpsCount = 0;
 				_fpsTime = 0.0;
 			}
-			_skybox.Render (_camera);
 			_terrain.Render (_camera);
 			_entities.Render (_camera, meshes);
 			_windows.Render (_sceneGraph, new Vec2 (Width, Height));
@@ -157,11 +154,8 @@
 			SwapBuffers ();
 		}
 
-		private void ResizeViewport (Vec2 size)
+		private void ResizeViewport (Mat4 viewMatrix)
 		{
-			_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
-			var viewMatrix = _camera.Frustum.CameraToScreen;
-			_skybox.UpdateViewMatrix (viewMatrix);
 			_terrain.UpdateViewMatrix (viewMatrix);
 			_entities.UpdateViewMatrix (viewMatrix);
 		}

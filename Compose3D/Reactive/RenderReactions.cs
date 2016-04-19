@@ -4,6 +4,7 @@
 	using GLTypes;
 	using Maths;
 	using Textures;
+	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
 
 	public static class Render
@@ -139,5 +140,17 @@
 				return result;
 			};
 		}
-	}
-}
+		
+		public static Reaction<T> Viewport<T> (this Reaction<T> render, GameWindow window)
+		{
+			return input =>
+			{
+				var oldSize = new int[4];
+				GL.GetInteger (GetPName.Viewport, oldSize);
+				GL.Viewport (0, 0, window.ClientSize.Width, window.ClientSize.Height);
+				var result = render (input);
+				GL.Viewport (oldSize[0], oldSize[1], oldSize[2], oldSize[3]);
+				return result;
+			};
+		}
+	}}

@@ -27,7 +27,7 @@
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			ShadowShader = new Program (VertexShader (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
-			var uniforms = new Shadows (ShadowShader);
+			var shadows = new Shadows (ShadowShader);
 			Texture depthTexture;
 			if (type == ShadowMapType.Depth)
 			{
@@ -45,7 +45,7 @@
 			}
 			scene.GlobalLighting.ShadowMap = depthTexture;
 
-			return React.By<Camera, Mesh<EntityVertex>[]> (uniforms.Render)
+			return React.By<Camera, Mesh<EntityVertex>[]> (shadows.Render)
 				.DrawBuffer (type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front)
 				.DepthTest ()
 				.Culling ()
@@ -57,6 +57,7 @@
 
 		private void Render (Camera camera, Mesh<EntityVertex>[] meshes)
 		{
+			GL.Disable (EnableCap.Blend);
 			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();

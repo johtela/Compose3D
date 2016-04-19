@@ -30,5 +30,16 @@
 			GL.BufferData (bufferType, size, elements, BufferUsageHint.StaticDraw);
 			_count = elements.Length;
 		}
+
+		public override bool Equals (object obj)
+		{
+			var other = obj as VBO<T>;
+			return other != null && other._glvbo == _glvbo;
+		}
+
+		public override int GetHashCode ()
+		{
+			return _glvbo.GetHashCode ();
+		}
 	}
 }

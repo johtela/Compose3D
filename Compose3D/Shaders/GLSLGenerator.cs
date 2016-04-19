@@ -34,20 +34,29 @@
         }
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
-        {
+		{
 			var builder = new GLSLGenerator ();
-            var glslVersion = GL.GetString(StringName.ShadingLanguageVersion);
-            var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
-            if (!match.Success || match.Groups.Count != 3)
-                throw new ParseException ("Invalid GLSL version string: " + glslVersion);
-            var version = match.Groups[1].Value + match.Groups[2].Value;
-            builder.DeclareVariables (typeof (T), "out");
-            builder.OutputShader (shader);
-            return string.Format ("#version {0}\nprecision highp float;\n", version) +
-				builder._decl.ToString() +
+			builder.DeclareVariables (typeof (T), "out");
+			builder.OutputShader (shader);
+			return BuildShaderCode (builder);
+		}
+
+		private static string BuildShaderCode (GLSLGenerator builder)
+		{
+			return string.Format ("#version {0}\nprecision highp float;\n", GetGLSLVersion ()) +
+				builder._decl.ToString () +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();
-        }
+		}
+
+		private static string GetGLSLVersion ()
+		{
+			var glslVersion = GL.GetString (StringName.ShadingLanguageVersion);
+			var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
+			if (!match.Success || match.Groups.Count != 3)
+				throw new ParseException ("Invalid GLSL version string: " + glslVersion);
+			return match.Groups[1].Value + match.Groups[2].Value;
+		}
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{

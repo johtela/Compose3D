@@ -1,12 +1,14 @@
 ﻿namespace Compose3D.GLTypes
 {
     using System;
+	using System.Collections.Generic;
     using System.Runtime.InteropServices;
     using OpenTK.Graphics.OpenGL;
 
 	public class Program : GLObject
 	{
 		internal int _glProgram;
+		private Dictionary<object, int> _vertexArrays = new Dictionary<object, int> ();
 
 		public Program (int glProgram)
 		{
@@ -25,19 +27,11 @@
             GC.Collect ();
         }
 
-		public override void Use ()
+		private int CreateVertexArray<V> (VBO<V> vertices) where V : struct
 		{
-			GL.UseProgram (_glProgram);
-		}
-
-		public override void Release ()
-		{
-			GL.UseProgram (0);
-		}
-
-		void BindVertices<V> (VBO<V> vertices) where V : struct
-		{
-			var recSize = Marshal.SizeOf (typeof(V));
+			int vao = GL.GenVertexArray ();
+			GL.BindVertexArray (vao);
+			var recSize = Marshal.SizeOf (typeof (V));
 			var offset = 0;
 			GL.BindBuffer (BufferTarget.ArrayBuffer, vertices._glvbo);
 			foreach (var attr in VertexAttr.GetAttributes<V> ())
@@ -50,6 +44,29 @@
 				}
 				offset += attr.Size;
 			}
+			return vao;
+		}
+
+		private void BindVertices<V> (VBO<V> vertices) where V : struct
+		{
+			int vao;
+			if (_vertexArrays.TryGetValue (vertices, out vao))
+			{
+				GL.BindVertexArray (vao);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, vertices._glvbo);
+			}
+			else
+				_vertexArrays.Add (vertices, CreateVertexArray<V> (vertices));
+		}
+
+		public override void Use ()
+		{
+			GL.UseProgram (_glProgram);
+		}
+
+		public override void Release ()
+		{
+			GL.UseProgram (0);
 		}
 
 		public void DrawElements<V> (PrimitiveType primitive, VBO<V> vertices, VBO<int> indices) 
@@ -60,6 +77,7 @@
 			GL.DrawElements (primitive, indices._count, DrawElementsType.UnsignedInt, 0);
 			GL.BindBuffer (BufferTarget.ElementArrayBuffer, 0);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+			GL.BindVertexArray (0);
 		}
 
 		public void DrawNormals<V> (VBO<V> vertices) where V : struct
@@ -67,7 +85,7 @@
 			BindVertices (vertices);
 			GL.DrawArrays (PrimitiveType.Lines, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
-			GL.UseProgram (0);
+			GL.BindVertexArray (0);
 		}
 
 		public void DrawLinePath<V> (VBO<V> vertices) where V : struct
@@ -75,6 +93,7 @@
 			BindVertices (vertices);
 			GL.DrawArrays (PrimitiveType.LineStrip, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+			GL.BindVertexArray (0);
 		}
 	}
 }

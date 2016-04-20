@@ -21,7 +21,8 @@
 		private Terrain.Scene _terrainScene;
 		private Camera _camera;
 		private DirectionalLight _dirLight;
-		private Vec3 _rotation;
+		private Vec2 _rotation;
+		private float _zoom;
 		private TransformNode _fighter;
 		private Window<TexturedVertex> _infoWindow;
 		private Window<TexturedVertex> _shadowWindow;
@@ -33,6 +34,8 @@
 		public TestWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
+			_rotation = new Vec2 ();
+			_zoom = 20f;
 			_sceneGraph = CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
@@ -81,7 +84,7 @@
 			var windowRender = Windows.Renderer (_sceneGraph)
 				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 
-			var moveFighter = React.By<float> (MoveFighter)
+			var moveFighter = React.By<float> (UpdateFighterAndCamera)
 				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
 
 			React.By<double> (UpdateFPS)
@@ -107,28 +110,16 @@
 
 		private void SetupCameraMovement ()
 		{
-			React.By<Vec3> (RotateCamera)
-				.Select<MouseMoveEventArgs, Vec3> (e =>
-					new Vec3 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f, 0f))
+			React.By<Vec2> (RotateCamera)
+				.Select ((MouseMoveEventArgs e) =>
+					new Vec2 (e.YDelta.Radians () / 2f, e.XDelta.Radians () / 2f))
 				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
-			React.By<float> (MoveCamera)
-				.Select (delta => delta * -0.2f)
+			React.By<float> (ZoomCamera)
+				.Select (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
-				.Evoke ();
-			
-			React.By<float> (MoveCamera)
-				.Select<Key, float> (key => key == Key.W ? 1f : -1f)
-				.WhenKeyDown (this, Key.W, Key.S)
-				.Evoke ();
-
-			React.By<Vec3> (RotateCamera)
-				.Select<Key, Vec3> (key => key == Key.A ? 
-					new Vec3 (0f, 0.01f, 0f) : 
-					new Vec3 (0f, -0.01f, 0f))
-				.WhenKeyDown (this, Key.A, Key.D)
 				.Evoke ();
 		}
 
@@ -158,34 +149,27 @@
 
 		private Vec3 LookVec ()
 		{
-			return (Mat.RotationX<Mat4> (_rotation.X) * Mat.RotationY<Mat4> (_rotation.Y))
-				.Transform (new Vec3 (0f, 0f, -1f));
+			return (Mat.RotationX<Mat4> (_rotation.Y) * Mat.RotationY<Mat4> (_rotation.X))
+				.Transform (new Vec3 (0f, 0f, -1f)) * _zoom;
 		}
 
-		private void RotateCamera (Vec3 rot)
+		private void RotateCamera (Vec2 rot)
 		{
 			_rotation += rot;
-			_camera.Target = _camera.Position + LookVec ();
 		}
 
-		private void MoveCamera (float delta)
+		private void ZoomCamera (float delta)
 		{
-			var lookVec = LookVec ();
-			var cameraPos = _camera.Position + (lookVec * delta);
-			var terrainHeight = _terrainScene.Height (cameraPos);
-			_camera.Position = cameraPos.Y >= terrainHeight ? cameraPos :
-				new Vec3 (cameraPos.X, terrainHeight, cameraPos.Z);
-			_camera.Target = _camera.Position + lookVec;
+			_zoom += delta;
 		}
 
-		private void MoveFighter (float x)
+		private void UpdateFighterAndCamera (float x)
 		{
 			_fighter.Offset = new Vec3 (0f,
 				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x - 5000f);
 			var angle = x * 0.03f;
 			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
-			var rotation = Mat.RotationY<Mat4> (angle * 0.233f);
-			_camera.Position = _fighter.Offset + rotation.Transform (new Vec3 (50f * GLMath.Cos (angle * 0.177f), 5f, 0f));
+			_camera.Position = _fighter.Offset + LookVec ();
 			_camera.Target = _fighter.Offset;
 		}
 	}

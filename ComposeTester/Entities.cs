@@ -223,13 +223,13 @@
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
-					let ambient = envLight * (!u.lighting.globalLighting).ambientLightIntensity
+				let ambient = envLight * (!u.lighting.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.fragReflectivity > 0f ? 
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
-//				let shadow = Lighting.PcfShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace, 0.0015f)
-				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
+				let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
+//				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
 				select new
 				{
 					outputColor = Lighting.GlobalLightIntensity (!u.lighting.globalLighting, ambient, 

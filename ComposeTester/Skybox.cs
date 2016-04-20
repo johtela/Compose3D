@@ -52,9 +52,7 @@
 			var environmentMap = Texture.CubeMapFromFiles (
 				_paths.Map (s => string.Format (@"Textures/{0}.bmp", s)), 0)
 				.LinearFiltering ().ClampToEdges (Axes.All);
-			sceneGraph.GlobalLighting.DiffuseMap = Texture.CubeMapFromFiles (
-				_paths.Map (s => string.Format (@"Textures/{0}_scaled.bmp", s)), 0)
-				.LinearFiltering ().ClampToEdges (Axes.All);
+			sceneGraph.GlobalLighting.DiffuseMap = environmentMap;
 			
 			return React.By<Camera> (_skybox.Render)
 				.BindSamplers (new Dictionary<Sampler, Texture> () 

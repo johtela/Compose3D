@@ -59,7 +59,7 @@
 
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
-				AmbientLightIntensity = new Vec3 (1f),
+				AmbientLightIntensity = new Vec3 (0.5f),
 				MaxIntensity = 4.5f,
 				GammaCorrection = 1.4f,
 			};
@@ -75,7 +75,7 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance)
+			var shadowRender= Shadows.Renderer (_sceneGraph, 5000, ShadowMapType.Depth)
 				.Select ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
@@ -112,7 +112,7 @@
 		{
 			React.By<Vec2> (RotateCamera)
 				.Select ((MouseMoveEventArgs e) =>
-					new Vec2 (e.YDelta.Radians () / 2f, e.XDelta.Radians () / 2f))
+					new Vec2 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f))
 				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this)
 				.Evoke ();
@@ -149,8 +149,8 @@
 
 		private Vec3 LookVec ()
 		{
-			return (Mat.RotationX<Mat4> (_rotation.Y) * Mat.RotationY<Mat4> (_rotation.X))
-				.Transform (new Vec3 (0f, 0f, -1f)) * _zoom;
+			return (Quat.FromAxisAngle (Dir3D.Up, _rotation.Y) * Quat.FromAxisAngle (Dir3D.Right, _rotation.X))
+				.RotateVec3 (Dir3D.Front) * _zoom;
 		}
 
 		private void RotateCamera (Vec2 rot)

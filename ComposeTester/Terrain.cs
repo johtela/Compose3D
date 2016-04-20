@@ -224,8 +224,9 @@
 					(!u.lighting.directionalLight).intensity, 
 					f.vertexNormal)
 				let ambient = (!u.lighting.globalLighting).ambientLightIntensity
-//				let shadow = Lighting.PcfShadowMapFactor (!u.Lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
-				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
+//				let shadow = 1f
+				let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
+//				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
 				let litColor = Lighting.GlobalLightIntensity (
 						!u.lighting.globalLighting,
 						ambient, diffuseLight * shadow,

@@ -16,11 +16,6 @@
 
 	public class TestWindow : GameWindow
 	{
-		// Renderers
-		private Terrain _terrain;
-		private Entities _entities;
-		private Windows _windows;
-
 		// Scene graph
 		private SceneGraph _sceneGraph;
 		private Terrain.Scene _terrainScene;
@@ -39,10 +34,8 @@
 			: base (800, 600, GraphicsMode.Default, "Compose3D")
 		{
 			_sceneGraph = CreateSceneGraph ();
-			_terrain = new Terrain (_sceneGraph, _skyColor);
-			_entities = new Entities (_sceneGraph);
-			_windows = new Windows ();
-			SetupReactions ();
+			SetupRendering ();
+			SetupCameraMovement ();
 //			AddShadowWindow ();
 		}
 
@@ -77,39 +70,43 @@
 			return sceneGraph;
 		}
 
-		private void AddShadowWindow ()
+		private void SetupRendering ()
 		{
-			_shadowWindow = new Window<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
-			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f))); 
-		}
+			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance)
+				.Select ((double _) => _camera);
 
-		private Bitmap InfoWindow (int fps)
-		{
-			return string.Format ("FPS: {0}", fps).TextToBitmapAligned (128, 64, 16f, 
-				StringAlignment.Near, StringAlignment.Near);
-		}
+			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
+			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor);
+			var entityRender = Entities.Renderer (_sceneGraph);
+			var windowRender = Windows.Renderer (_sceneGraph)
+				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 
-		private void SetupReactions ()
-		{
-			Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance)
-				.Select ((double _) => Tuple.Create (
-					_camera, _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ()))
-			.And ((Skybox.Renderer (_sceneGraph, _skyColor).Select ((double _) => _camera))
-				.And (React.By<double> (Render)))
-				.Viewport (this)
-			.And (React.By<float> (MoveFighter)
-				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f))
+			var moveFighter = React.By<float> (MoveFighter)
+				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
+
+			React.By<double> (UpdateFPS)
+			.And (shadowRender
+				.And (skyboxRender
+					.And (terrainRender)
+					.And (entityRender)
+					.Select ((double _) => _camera)
+				.And (windowRender)
+				.Viewport (this)))
+			.And (moveFighter)
+			.SwapBuffers (this)
 			.WhenRendered (this).Evoke ();
 
-			React.By<Mat4> (ResizeViewport)
-			.And (Skybox.UpdateViewMatrix ())
+			Entities.UpdatePerspectiveMatrix()
+			.And (Skybox.UpdatePerspectiveMatrix ())
+			.And (Terrain.UpdatePerspectiveMatrix ())
 			.Select ((Vec2 size) =>
-			{
-				_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f);
-				return _camera.Frustum.CameraToScreen;					
-			})
+				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f))
+				.CameraToScreen)
 			.WhenResized (this).Evoke ();
+		}
 
+		private void SetupCameraMovement ()
+		{
 			React.By<Vec3> (RotateCamera)
 				.Select<MouseMoveEventArgs, Vec3> (e =>
 					new Vec3 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f, 0f))
@@ -135,10 +132,20 @@
 				.Evoke ();
 		}
 
-		private void Render (double time)
+		private void AddShadowWindow ()
 		{
-			var meshes = _camera.NodesInView<Mesh<EntityVertex>> ().ToArray ();
+			_shadowWindow = new Window<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
+			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
+		}
 
+		private Bitmap InfoWindow (int fps)
+		{
+			return string.Format ("FPS: {0}", fps).TextToBitmapAligned (128, 64, 16f,
+				StringAlignment.Near, StringAlignment.Near);
+		}
+
+		private void UpdateFPS (double time)
+		{
 			_fpsTime += time;
 			if (++_fpsCount == 10)
 			{
@@ -147,17 +154,6 @@
 				_fpsCount = 0;
 				_fpsTime = 0.0;
 			}
-			_terrain.Render (_camera);
-			_entities.Render (_camera, meshes);
-			_windows.Render (_sceneGraph, new Vec2 (Width, Height));
-
-			SwapBuffers ();
-		}
-
-		private void ResizeViewport (Mat4 viewMatrix)
-		{
-			_terrain.UpdateViewMatrix (viewMatrix);
-			_entities.UpdateViewMatrix (viewMatrix);
 		}
 
 		private Vec3 LookVec ()

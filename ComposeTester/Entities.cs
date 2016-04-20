@@ -3,6 +3,7 @@
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
+	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
@@ -11,7 +12,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
-	using OpenTK;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct EntityVertex : IVertex, IVertexInitializer<EntityVertex>, IVertexColor<Vec3>, 
@@ -105,59 +105,50 @@
 		public Vec4 fragPositionLightSpace { get; set; }
 	}
 
-	public class Entities
+	public class Entities : Uniforms
 	{
-		public class EntityUniforms : Uniforms
+		[GLArray (4)]
+		public Uniform<Lighting.PointLight[]> pointLights;
+		[GLArray (4)]
+		public Uniform<Sampler2D[]> samplers;
+		public Uniform<SamplerCube> diffuseMap;
+
+		public LightingUniforms lighting;
+		public TransformUniforms transforms;
+
+		public Entities (Program program, SceneGraph scene)
+			: base (program)
 		{
-			[GLArray (4)]
-			public Uniform<Lighting.PointLight[]> pointLights;
-			[GLArray (4)]
-			public Uniform<Sampler2D[]> samplers;
-			public Uniform<SamplerCube> diffuseMap;
+			var numPointLights = 0;
+			var plights = new Lighting.PointLight[4];
 
-			public EntityUniforms (Program program, SceneGraph scene)
-				: base (program)
-			{
-				var numPointLights = 0;
-				var plights = new Lighting.PointLight[4];
-
-				using (program.Scope ())
-				{ 
-					foreach (var pointLight in scene.Root.Traverse ().OfType<PointLight> ())
+			using (program.Scope ())
+			{ 
+				foreach (var pointLight in scene.Root.Traverse ().OfType<PointLight> ())
+				{
+					plights[numPointLights++] = new Lighting.PointLight
 					{
-						plights[numPointLights++] = new Lighting.PointLight
-						{
-							position = pointLight.Position,
-							intensity = pointLight.Intensity,
-							linearAttenuation = pointLight.LinearAttenuation,
-							quadraticAttenuation = pointLight.QuadraticAttenuation
-						};
-					}
-					pointLights &= plights;
-
-					var samp = new Sampler2D[4];
-					for (int i = 0; i < samp.Length; i++)
-						samp[i] = new Sampler2D (i + 1).LinearFiltering ().ClampToEdges (Axes.All);
-					samplers &= samp;
-					diffuseMap &= new SamplerCube (5).LinearFiltering ().ClampToEdges (Axes.All);
+						position = pointLight.Position,
+						intensity = pointLight.Intensity,
+						linearAttenuation = pointLight.LinearAttenuation,
+						quadraticAttenuation = pointLight.QuadraticAttenuation
+					};
 				}
+				pointLights &= plights;
+
+				var samp = new Sampler2D[4];
+				for (int i = 0; i < samp.Length; i++)
+					samp[i] = new Sampler2D (i + 1).LinearFiltering ().ClampToEdges (Axes.All);
+				samplers &= samp;
+				diffuseMap &= new SamplerCube (5).LinearFiltering ().ClampToEdges (Axes.All);
+
+				lighting = new LightingUniforms (program, scene);
+				transforms = new TransformUniforms (program);
 			}
 		}
 
-		public readonly Program EntityShader;
-		public readonly EntityUniforms Uniforms;
-		public readonly LightingUniforms LightingUniforms;
-		public readonly TransformUniforms Transforms;
-
-		public Entities (SceneGraph sceneGraph)
-		{
-			EntityShader = new Program (
-				VertexShaders.BasicShader<EntityVertex, EntityFragment, TransformUniforms> (), 
-				FragmentShader ());
-			Uniforms = new EntityUniforms (EntityShader, sceneGraph);
-			LightingUniforms = new LightingUniforms (EntityShader, sceneGraph);
-			Transforms = new TransformUniforms (EntityShader);
-		}
+		private static Program _entityShader;
+		private static Entities _entities;
 
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
@@ -166,49 +157,46 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
-		public void Render (Camera camera, Mesh<EntityVertex>[] meshes)
+		public static Reaction<Camera> Renderer (SceneGraph sceneGraph)
 		{
-			using (EntityShader.Scope ())
+			_entityShader = new Program (
+				VertexShaders.BasicShader<EntityVertex, EntityFragment, TransformUniforms> (), 
+				FragmentShader ());
+			_entities = new Entities (_entityShader, sceneGraph);
+
+			return React.By<Camera> (_entities.Render)
+				.BindSamplers (new Dictionary<Sampler, Texture> ()
+				{
+					{ !_entities.lighting.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
+					{ !_entities.diffuseMap, sceneGraph.GlobalLighting.DiffuseMap }
+				})
+				.DepthTest ()
+				.Culling ()
+				.Program (_entityShader);
+		}
+
+		private void Render (Camera camera)
+		{
+			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+
+			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
-				GL.Enable (EnableCap.CullFace);
-				GL.CullFace (CullFaceMode.Back);
-				GL.FrontFace (FrontFaceDirection.Cw);
-				GL.Enable (EnableCap.DepthTest);
-				GL.DepthMask (true);
-				GL.DepthFunc (DepthFunction.Less);
-				GL.Disable (EnableCap.Blend);
-				GL.DrawBuffer (DrawBufferMode.Back);
-
-				var shadowTexture = camera.Graph.GlobalLighting.ShadowMap;
-				var diffTexture = camera.Graph.GlobalLighting.DiffuseMap;
-				var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
-				var bindings = new Dictionary<Sampler, Texture> ()
-				{
-					{ !LightingUniforms.shadowMap, shadowTexture },
-					{ !Uniforms.diffuseMap, diffTexture }
-				};
-				Sampler.Bind (bindings);
-
-				foreach (var mesh in meshes)
-				{
-					Sampler.Bind (!Uniforms.samplers, mesh.Textures);
-					Transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
-					LightingUniforms.UpdateDirectionalLight (camera);
-					Transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
-					EntityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
-					Sampler.Unbind (!Uniforms.samplers, mesh.Textures);
-				}
-				Sampler.Unbind (bindings);
+				Sampler.Bind (!samplers, mesh.Textures);
+				transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
+				lighting.UpdateDirectionalLight (camera);
+				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
+				_entityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				Sampler.Unbind (!samplers, mesh.Textures);
 			}
 		}
 
-		public void UpdateViewMatrix (Mat4 matrix)
+		public static Reaction<Mat4> UpdatePerspectiveMatrix ()
 		{
-			using (EntityShader.Scope ())
-				Transforms.perspectiveMatrix &= matrix;
+			return React.By<Mat4> (matrix => _entities.transforms.perspectiveMatrix &= matrix)
+				.Program (_entityShader);
 		}
 
-		public static GLShader FragmentShader ()
+		private static GLShader FragmentShader ()
 		{
 			Lighting.Use ();
 			FragmentShaders.Use ();
@@ -218,8 +206,7 @@
 				ShaderType.FragmentShader, () =>
 
 				from f in Shader.Inputs<EntityFragment> ()
-				from u in Shader.Uniforms<EntityUniforms> ()
-				from l in Shader.Uniforms<LightingUniforms> ()
+				from u in Shader.Uniforms<Entities> ()
 				let samplerNo = (f.fragTexturePos.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.fragTexturePos) :
@@ -227,7 +214,7 @@
 					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.fragTexturePos - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.fragTexturePos - new Vec2 (30f)) :
 					f.fragDiffuse
-					let dirLight = Lighting.DirLightIntensity (!l.directionalLight, f.fragPosition, 
+					let dirLight = Lighting.DirLightIntensity (!u.lighting.directionalLight, f.fragPosition, 
 						f.fragNormal, f.fragShininess)
 				let totalLight = 
 					(from pl in !u.pointLights
@@ -236,16 +223,16 @@
 						(total, pointLight) => new Lighting.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
-					let ambient = envLight * (!l.globalLighting).ambientLightIntensity
+					let ambient = envLight * (!u.lighting.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.fragReflectivity > 0f ? 
 					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
 //				let shadow = Lighting.PcfShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace, 0.0015f)
-				let shadow = Lighting.VarianceShadowMapFactor (!l.shadowMap, f.fragPositionLightSpace)
+				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!l.globalLighting, ambient, 
+					outputColor = Lighting.GlobalLightIntensity (!u.lighting.globalLighting, ambient, 
 						totalLight.diffuse * shadow, totalLight.specular * shadow, reflectDiffuse, f.fragSpecular)
 				}
 			);

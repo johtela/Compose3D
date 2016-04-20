@@ -74,7 +74,7 @@
 			_skyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);
 		}
 
-		public static Reaction<Mat4> UpdateViewMatrix ()
+		public static Reaction<Mat4> UpdatePerspectiveMatrix ()
 		{
 			return React.By<Mat4> (matrix => _skybox.perspectiveMatrix &= matrix)
 				.Program (_skyboxShader);

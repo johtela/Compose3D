@@ -1,11 +1,10 @@
 ﻿namespace ComposeTester
 {
-	using System;
 	using System.Linq;
-	using System.Runtime.InteropServices;
 	using Compose3D.GLTypes;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
+	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
@@ -18,40 +17,47 @@
 			public Vec2 fragTexturePos { get; set; }
 		}
 
-		public readonly Program WindowShader;
-		public readonly TextureUniforms Texture;
-		public readonly TransformUniforms Transform;
+		private TextureUniforms texture;
+		private TransformUniforms transform;
 
-		public Windows ()
+		private static Program _windowShader;
+		private static Windows _windows;
+		private static SceneGraph _scene;
+
+		private Windows ()
 		{
-			WindowShader = new Program (
-				VertexShaders.TransformedTexture<TexturedVertex, WindowFragment, TransformUniforms> (), 
-				FragmentShaders.TexturedOutput<WindowFragment, TextureUniforms> ());
-			Texture = new TextureUniforms (WindowShader, new Sampler2D (0).NearestColor ()
+			texture = new TextureUniforms (_windowShader, new Sampler2D (0).NearestColor ()
 				.ClampToEdges (Axes.X | Axes.Y));
-			Transform = new TransformUniforms (WindowShader);
+			transform = new TransformUniforms (_windowShader);
 		}
 
-		public void Render (SceneGraph scene, Vec2 viewportSize)
+		public static Reaction<Vec2> Renderer (SceneGraph scene)
 		{
-			GL.Enable (EnableCap.CullFace);
-			GL.CullFace (CullFaceMode.Back);
-			GL.FrontFace (FrontFaceDirection.Cw);
-			GL.Disable (EnableCap.DepthTest);
-			GL.Enable (EnableCap.Blend);
-			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			_windowShader = new Program (
+				VertexShaders.TransformedTexture<TexturedVertex, WindowFragment, TransformUniforms> (),
+				FragmentShaders.TexturedOutput<WindowFragment, TextureUniforms> ());
+			_windows = new Windows ();
+			_scene = scene;
 
-			using (WindowShader.Scope ())
-				foreach (var window in scene.Root.Traverse ().OfType <Window<TexturedVertex>> ())
-				{
-					var texSize = window.Texture.Size * 2;
-					var scalingMat = Mat.Scaling<Mat4> (texSize.X / viewportSize.X, texSize.Y / viewportSize.Y);
+			return React.By<Vec2> (_windows.Render)
+				.Blending ()
+				.Culling ()
+				.Program (_windowShader);
+		}
 
-					(!Texture.textureMap).Bind (window.Texture);
-					Transform.modelViewMatrix &= window.Transform * scalingMat;
-					WindowShader.DrawElements (PrimitiveType.Triangles, window.VertexBuffer, window.IndexBuffer);
-					(!Texture.textureMap).Unbind (window.Texture);
-				}
+		private void Render (Vec2 viewportSize)
+		{
+			foreach (var window in _scene.Root.Traverse ().OfType<Window<TexturedVertex>> ())
+			{
+				var texSize = window.Texture.Size * 2;
+				var scalingMat = Mat.Scaling<Mat4> (texSize.X / viewportSize.X, texSize.Y / viewportSize.Y);
+
+				(!texture.textureMap).Bind (window.Texture);
+				transform.perspectiveMatrix &= new Mat4 (1f);
+				transform.modelViewMatrix &= window.Transform * scalingMat;
+				_windowShader.DrawElements (PrimitiveType.Triangles, window.VertexBuffer, window.IndexBuffer);
+				(!texture.textureMap).Unbind (window.Texture);
+			}
 		}
 	}
 }

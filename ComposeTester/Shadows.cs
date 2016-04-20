@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Linq;
-	using System.Runtime.InteropServices;
 	using Extensions;
 	using Compose3D.GLTypes;
 	using Compose3D.Maths;
@@ -21,7 +20,7 @@
 
 		private Shadows (Program program) : base (program) { }
 
-		public static Reaction<Tuple<Camera, Mesh<EntityVertex>[]>> Renderer (SceneGraph scene,
+		public static Reaction<Camera> Renderer (SceneGraph scene,
 			int mapSize, ShadowMapType type)
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
@@ -45,7 +44,7 @@
 			}
 			scene.GlobalLighting.ShadowMap = depthTexture;
 
-			return React.By<Camera, Mesh<EntityVertex>[]> (shadows.Render)
+			return React.By<Camera> (shadows.Render)
 				.DrawBuffer (type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front)
 				.DepthTest ()
 				.Culling ()
@@ -55,9 +54,8 @@
 				.Framebuffer (depthFramebuffer);
 		}
 
-		private void Render (Camera camera, Mesh<EntityVertex>[] meshes)
+		private void Render (Camera camera)
 		{
-			GL.Disable (EnableCap.Blend);
 			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
@@ -65,7 +63,7 @@
 			var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLightSpace (camera) *
 				camera.WorldToCamera;
 
-			foreach (var mesh in meshes)
+			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				mvpMatrix &= vpMatrix * mesh.Transform;
 				ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);

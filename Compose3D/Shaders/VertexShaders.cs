@@ -112,7 +112,7 @@
 				from u in Shader.Uniforms<U> ()
 				select new F ()
 				{
-					gl_Position = !u.modelViewMatrix * new Vec4 (v.position, 1f),
+					gl_Position = !u.perspectiveMatrix * !u.modelViewMatrix * new Vec4 (v.position, 1f),
 					fragTexturePos = v.texturePos
 				});
 		}			

@@ -56,6 +56,5 @@
 		{
 			return shader.Bind (a => project (a).Bind (b => select (a, b).ToShader ()));
 		}
-
 	}
 }

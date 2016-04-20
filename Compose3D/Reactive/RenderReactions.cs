@@ -59,8 +59,8 @@
 		}
 		
 		public static Reaction<T> Blending<T> (this Reaction<T> render, 
-			BlendingFactorSrc source = BlendingFactorSrc.Src1Alpha,
-			BlendingFactorDest destination = BlendingFactorDest.OneMinusSrc1Alpha)
+			BlendingFactorSrc source = BlendingFactorSrc.SrcAlpha,
+			BlendingFactorDest destination = BlendingFactorDest.OneMinusSrcAlpha)
 		{
 			return input =>
 			{
@@ -150,6 +150,16 @@
 				GL.Viewport (0, 0, window.ClientSize.Width, window.ClientSize.Height);
 				var result = render (input);
 				GL.Viewport (oldSize[0], oldSize[1], oldSize[2], oldSize[3]);
+				return result;
+			};
+		}
+
+		public static Reaction<T> SwapBuffers<T> (this Reaction<T> render, GameWindow window)
+		{
+			return input =>
+			{
+				var result = render (input);
+				window.SwapBuffers ();
 				return result;
 			};
 		}

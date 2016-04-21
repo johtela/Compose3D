@@ -319,7 +319,7 @@
                     // adjust the row-swap toggle
                     toggle = -toggle;                 
                 }
-                if (Math.Abs (matrix[c][c]).ApproxEquals (0f))
+                if (matrix[c][c] == 0f)
                     throw new ArgumentException ("Matrix is singular", "matrix");
                 for (int r = c + 1; r < rows; ++r)
                 {

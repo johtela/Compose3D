@@ -153,7 +153,7 @@
 				() => ReflectedColor,
 				(SamplerCube environmentMap, Vec3 position, Vec3 normal) =>
 				(	
-					from viewDir in (-position.Normalized).ToShader ()
+					from viewDir in position.Normalized.ToShader ()
 					let reflectDir = viewDir.Reflect<Vec3, float> (normal)
 					select environmentMap.Texture (reflectDir)[Coord.x, Coord.y, Coord.z]
 				)

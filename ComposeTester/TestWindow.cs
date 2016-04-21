@@ -156,8 +156,6 @@
 		private void RotateCamera (Vec2 rot)
 		{
 			_rotation += rot;
-			var extent = MathHelper.PiOver2 - 0.3f;
-			_rotation.Y = _rotation.Y.Clamp (-extent, extent);
 		}
 
 		private void ZoomCamera (float delta)

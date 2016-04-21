@@ -26,7 +26,7 @@
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			ShadowShader = new Program (
 				VertexShader (),
-				GeometryShaders.Passthrough<Primitive, PerVertex> (),
+//				GeometryShaders.Passthrough<Primitive, PerVertexOut> (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 			var shadows = new Shadows (ShadowShader);
 			Texture depthTexture;

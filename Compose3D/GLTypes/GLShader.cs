@@ -43,7 +43,7 @@
 		/// </summary>
 		public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive,
 			PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
-			where V : PerVertex, new ()
+			where V : PerVertexOut, new ()
 		{
 			var source = GLSLGenerator.CreateGeometryShader (vertexCount, inputPrimitive, outputPrimitive, func);
 			Console.WriteLine (source);

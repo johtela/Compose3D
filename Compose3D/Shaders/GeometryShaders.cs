@@ -4,20 +4,26 @@
 	using Maths;
 	using OpenTK.Graphics.OpenGL;
 
-	public class PerVertex
+	public class PerVertexIn
 	{
 		[Builtin]
 		public Vec4 gl_Position;
 		[Builtin]
-		float gl_PointSize;
+		public float gl_PointSize;
 		[Builtin]
-		float[] gl_ClipDistance;
+		public float[] gl_ClipDistance;
+	}
+	
+	public class PerVertexOut : PerVertexIn
+	{
+		[Builtin]
+		public int gl_Layer;
 	}
 
 	public class Primitive
 	{
 		[Builtin]
-		public PerVertex[] gl_in;
+		public PerVertexIn[] gl_in;
 		[Builtin]
 		public int gl_PrimitiveIDIn;
 		[Builtin]
@@ -28,9 +34,9 @@
 	{
 		public static GLShader Passthrough<P, V> ()
 			where P : Primitive
-			where V : PerVertex, new ()
+			where V : PerVertexOut, new ()
 		{
-			return GLShader.CreateGeometryShader (3,
+			return GLShader.CreateGeometryShader<V> (3,
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<P> ()
 				select new V[3]

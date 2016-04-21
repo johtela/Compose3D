@@ -41,13 +41,13 @@
 		/// Shader creation for geometry and tesselation shaders. They return multiple results 
 		/// instead of one.
 		/// </summary>
-		public static GLShader Create<T> (ShaderType type, int resultSize, Expression<Func<Shader<T[]>>> func)
+		public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive,
+			PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
+			where V : PerVertex, new ()
 		{
-			if (type != ShaderType.GeometryShader)
-				throw new ArgumentException ("Currently only supported shader type is geometry shader.", "type");
-			var source = GLSLGenerator.CreateShader (func);
+			var source = GLSLGenerator.CreateGeometryShader (vertexCount, inputPrimitive, outputPrimitive, func);
 			Console.WriteLine (source);
-			return new GLShader (type, source);
+			return new GLShader (ShaderType.GeometryShader, source);
 		}
 
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)

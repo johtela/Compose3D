@@ -1,6 +1,5 @@
 ﻿namespace Compose3D.Shaders
 {
-    using Compose3D;
 	using GLTypes;
     using OpenTK.Graphics.OpenGL;
     using System;
@@ -36,6 +35,18 @@
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
 		{
 			var builder = new GLSLGenerator ();
+			builder.DeclareVariables (typeof (T), "out");
+			builder.OutputShader (shader);
+			return BuildShaderCode (builder);
+		}
+
+		public static string CreateGeometryShader<T> (int vertexCount, PrimitiveType inputPrimitive,
+			PrimitiveType outputPrimitive, Expression<Func<Shader<T[]>>> shader)
+		{
+			var builder = new GLSLGenerator ();
+			builder.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
+			builder.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
+				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
 			builder.DeclareVariables (typeof (T), "out");
 			builder.OutputShader (shader);
 			return BuildShaderCode (builder);
@@ -146,11 +157,11 @@
 
         private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
-            var syntax = GLType (memberType); 
             if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
 				member.Name.StartsWith ("<>")))
             {
-                var qualifiers = member.GetQualifiers ();
+				var syntax = GLType (memberType);
+				var qualifiers = member.GetQualifiers ();
 				DeclOut (string.IsNullOrEmpty (qualifiers) ?
                     string.Format ("{0} {1} {2};", prefix, syntax, member.Name) :
                     string.Format ("{0} {1} {2} {3};", qualifiers, prefix, syntax, member.Name));

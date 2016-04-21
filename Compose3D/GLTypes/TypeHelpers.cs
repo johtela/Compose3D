@@ -6,8 +6,6 @@
     using System.Reflection;
     using OpenTK.Graphics.OpenGL;
     using System.Collections.Generic;
-    using System.Text;
-    using System.Globalization;
 	using Extensions;
 
     public class GLStructField
@@ -174,5 +172,37 @@
             }
             return result;
         }
-    }
+
+		public static string MapInputGSPrimitive (this PrimitiveType type)
+		{
+			switch (type)
+			{
+				case PrimitiveType.Points: return "points";
+				case PrimitiveType.Lines:
+				case PrimitiveType.LineLoop:
+				case PrimitiveType.LineStrip: return "lines";
+				case PrimitiveType.LinesAdjacency:
+				case PrimitiveType.LineStripAdjacency: return "lines_adjacency";
+				case PrimitiveType.Triangles:
+				case PrimitiveType.TriangleStrip:
+				case PrimitiveType.TriangleFan: return "triangles";
+				case PrimitiveType.TrianglesAdjacency:
+				case PrimitiveType.TriangleStripAdjacency: return "triangles_adjacency";
+				default: throw new ArgumentException (
+					"Unsupported geometry shader input primitive type: " + type);
+			}
+		}
+
+		public static string MapOutputGSPrimitive (this PrimitiveType type)
+		{
+			switch (type)
+			{
+				case PrimitiveType.Points: return "points";
+				case PrimitiveType.LineStrip: return "line_strip";
+				case PrimitiveType.TriangleStrip: return "triangle_strip";
+				default: throw new ArgumentException (
+					"Unsupported geometry shader output primitive type: " + type);
+			}
+		}
+	}
 }

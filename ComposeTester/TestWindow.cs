@@ -112,7 +112,7 @@
 		{
 			React.By<Vec2> (RotateCamera)
 				.Select ((MouseMoveEventArgs e) =>
-					new Vec2 (-e.YDelta.Radians () / 2f, -e.XDelta.Radians () / 2f))
+					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
 				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this)
 				.Evoke ();
@@ -149,13 +149,15 @@
 
 		private Vec3 LookVec ()
 		{
-			return (Quat.FromAxisAngle (Dir3D.Up, _rotation.Y) * Quat.FromAxisAngle (Dir3D.Right, _rotation.X))
+			return (Quat.FromAxisAngle (Dir3D.Up, _rotation.X) * Quat.FromAxisAngle (Dir3D.Right, _rotation.Y))
 				.RotateVec3 (Dir3D.Front) * _zoom;
 		}
 
 		private void RotateCamera (Vec2 rot)
 		{
 			_rotation += rot;
+			var extent = MathHelper.PiOver2 - 0.3f;
+			_rotation.Y = _rotation.Y.Clamp (-extent, extent);
 		}
 
 		private void ZoomCamera (float delta)

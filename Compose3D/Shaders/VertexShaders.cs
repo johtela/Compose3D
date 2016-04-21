@@ -99,7 +99,8 @@
 				{
 					gl_Position = new Vec4 (v.position, 1f),
 					fragTexturePos = v.texturePos
-				});
+				}
+			);
 		}			
 
 		public static GLShader TransformedTexture<V, F, U> ()

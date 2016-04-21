@@ -98,6 +98,7 @@
     <Compile Include="SceneGraph\StaticMesh.cs" />
     <Compile Include="SceneGraph\TerrainMesh.cs" />
     <Compile Include="SceneGraph\Window.cs" />
+    <Compile Include="Shaders\GeometryShaders.cs" />
     <Compile Include="Shaders\Lighting.cs" />
     <Compile Include="Shaders\TextureFilter.cs" />
     <Compile Include="Shaders\Uniforms.cs" />

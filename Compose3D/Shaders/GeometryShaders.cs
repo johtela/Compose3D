@@ -4,6 +4,7 @@
 	using Maths;
 	using OpenTK.Graphics.OpenGL;
 
+	[GLType ("gl_PerVertex")]
 	public class PerVertexIn
 	{
 		[Builtin]
@@ -41,9 +42,9 @@
 				from p in Shader.Inputs<P> ()
 				select new V[3]
 				{
-					new V() { gl_Position = p.gl_in[0].gl_Position },
-					new V() { gl_Position = p.gl_in[1].gl_Position },
-					new V() { gl_Position = p.gl_in[2].gl_Position }
+					new V() { gl_Position = p.gl_in[0].gl_Position, gl_Layer = 0 },
+					new V() { gl_Position = p.gl_in[1].gl_Position, gl_Layer = 0 },
+					new V() { gl_Position = p.gl_in[2].gl_Position, gl_Layer = 0 }
 				}
 			);
 		}

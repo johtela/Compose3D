@@ -15,7 +15,11 @@
 	
 	public class Shadows : Uniforms
 	{
-		public Uniform<Mat4> mvpMatrix;
+		public Uniform<Mat4> modelViewMatrix;
+		public Uniform<Mat4> viewLightMatrix;
+		[GLArray(4)]
+		public Uniform<float[]> splitPlanes;
+
 		private static Program ShadowShader;
 
 		private Shadows (Program program) : base (program) { }
@@ -25,8 +29,8 @@
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			ShadowShader = new Program (
-				VertexShader (),
-//				GeometryShaders.Passthrough<Primitive, PerVertexOut> (),
+				VertexShaderCascaded (),
+				GeometryShaderCascaded (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 			var shadows = new Shadows (ShadowShader);
 			Texture depthTexture;
@@ -61,13 +65,12 @@
 			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
-			var shadowFrustum = light.ShadowFrustum (camera);
-			var vpMatrix = shadowFrustum.CameraToScreen * light.CameraToLightSpace (camera) *
-				camera.WorldToCamera;
+			var worlToCamera = camera.WorldToCamera;
+			viewLightMatrix &= light.ShadowFrustum (camera).CameraToScreen * light.CameraToLightSpace (camera);
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
-				mvpMatrix &= vpMatrix * mesh.Transform;
+				modelViewMatrix &= worlToCamera * mesh.Transform;
 				ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 			}
 		}
@@ -79,7 +82,48 @@
 				from u in Shader.Uniforms<Shadows> ()
 				select new Fragment ()
 				{
-					gl_Position = !u.mvpMatrix * new Vec4 (v.position, 1f)
+					gl_Position = !u.viewLightMatrix * !u.modelViewMatrix * new Vec4 (v.position, 1f)
+				}
+			);
+		}
+
+		private static GLShader VertexShaderCascaded ()
+		{
+			return GLShader.Create (ShaderType.VertexShader, () =>
+				from v in Shader.Inputs<EntityVertex> ()
+				from u in Shader.Uniforms<Shadows> ()
+				select new Fragment ()
+				{
+					gl_Position = !u.modelViewMatrix * new Vec4 (v.position, 1f)
+				}
+			);
+		}
+
+		public static GLShader GeometryShaderCascaded ()
+		{
+			return GLShader.CreateGeometryShader (3,
+				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
+				from p in Shader.Inputs<Primitive> ()
+				from u in Shader.Uniforms<Shadows> ()
+				let maxZ = Enumerable.Range (0, 3).Aggregate (-1000000f, 
+					(float max, int i) => Math.Max (max, p.gl_in[i].gl_Position.Z))
+				select new PerVertexOut[3]
+				{
+					new PerVertexOut ()
+					{
+						gl_Position = !u.viewLightMatrix * p.gl_in[0].gl_Position,
+						gl_Layer = 0
+					},
+					new PerVertexOut ()
+					{
+						gl_Position = !u.viewLightMatrix * p.gl_in[1].gl_Position,
+						gl_Layer = 0
+					},
+					new PerVertexOut ()
+					{
+						gl_Position = !u.viewLightMatrix * p.gl_in[2].gl_Position,
+						gl_Layer = 0
+					}
 				}
 			);
 		}

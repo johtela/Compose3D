@@ -137,6 +137,11 @@
             return true;
         }
 
+		public static bool IsRange (this MethodInfo mi)
+		{
+			return mi.DeclaringType == typeof (Enumerable) && mi.Name == "Range";
+		}
+
 		public static bool IsEvaluate (this MethodInfo mi)
 		{
 			return mi.DeclaringType == typeof (Shader) || mi.Name == "Evaluate";

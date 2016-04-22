@@ -48,7 +48,7 @@
 			builder.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
 			builder.DeclareVariables (typeof (T), "out");
-			builder.OutputShader (shader);
+			builder.OutputGeometryShader (shader);
 			return BuildShaderCode (builder);
 		}
 
@@ -145,12 +145,9 @@
                     arrayLen = arrAttr.Length;
                     uniType = uniType.GetElementType ();
                 }
-                var glAttr = uniType.GetGLAttribute ();
-                if (glAttr == null)
-                    throw new ArgumentException ("Unsupported uniform type: " + uniType.Name);
-                if (glAttr is GLStruct)
+                if (uniType.GetGLAttribute () is GLStruct)
                     OutputStruct (uniType);
-				DeclOut ("uniform {0} {1}{2};", glAttr.Syntax, field.Name, 
+				DeclOut ("uniform {0} {1}{2};", GLType (uniType), field.Name, 
                     arrayLen > 0 ? "[" + arrayLen + "]" : "");
             }
         }
@@ -423,7 +420,7 @@
 					ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
 			}
 			else
-				OutputForLoop (node);
+				IterateArray (node);
             CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
@@ -433,7 +430,7 @@
 		public void ParseFor (MethodCallExpression mce)
 		{
 			if (mce.Arguments[0].GetSelect () == null)
-				OutputForLoop (mce);
+				IterateArray (mce);
 			else
 				Parse.ExactlyOne (ForLoop).IfFail (new ParseException (
 					"Must have exactly one from clause in the beginning of aggregate expression."))
@@ -441,7 +438,7 @@
 					.Execute (new Source (mce.Arguments[0].Traverse ()));
 		}
 
-		public void OutputForLoop (MethodCallExpression expr)
+		public void IterateArray (MethodCallExpression expr)
         {
 			var array = expr.Arguments[0];
             var member  = array.SkipUnary (ExpressionType.Not)
@@ -472,10 +469,41 @@
                 ExprToGLSL (array), indexVar);
         }
 
+		public void OutputForLoop (MethodCallExpression expr)
+		{
+			var array = expr.Arguments[0];
+			var member = array.SkipUnary (ExpressionType.Not)
+				.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
+			var len = 0;
+			var field = member as FieldInfo;
+			if (field != null)
+				len = field.ExpectGLArrayAttribute ().Length;
+			else if (_constants.ContainsKey (member.Name))
+			{
+				var constant = _constants[member.Name];
+				if (!constant.Type.IsArray)
+					throw new ParseException ("Invalid array expression. Referenced constant is not an array.");
+				var nai = constant.Value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
+				len = nai.Expressions.Count;
+			}
+			else
+				throw new ParseException ("Invalid array expression. " +
+					"Expected uniform field reference or constant array. Encountered: " + array);
+			var indexVar = NewLocalVar ("ind");
+			var item = expr.Method.IsSelect () ?
+				expr.GetSelectLambda ().Parameters[0] :
+				expr.Arguments[2].ExpectLambda ().Parameters[1];
+			CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
+			CodeOut ("{");
+			_tabLevel++;
+			CodeOut ("{0} {1} = {2}[{3}];", GLType (item.Type), item.Name,
+				ExprToGLSL (array), indexVar);
+		}
+
 		public bool ForLoop (Source source)
 		{
 			var se = source.Current;
-			OutputForLoop (se);
+			IterateArray (se);
 			OutputLet (se.GetSelectLambda ().Body.Expect<NewExpression> (ExpressionType.New));
 			return true;
 		}
@@ -502,6 +530,19 @@
             }
         }
 
+		public void ReturnArrayOfVertices (Expression expr)
+		{
+			var nai = expr.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
+			foreach (var subExpr in nai.Expressions)
+			{
+				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
+				foreach (MemberAssignment assign in mie.Bindings)
+					CodeOut ("{0} = {1};", assign.Member.Name, ExprToGLSL (assign.Expression));
+				CodeOut ("EmitVertex ();");
+			}
+			CodeOut ("EndPrimitive ();");
+		}
+
 		public void OutputShader (LambdaExpression expr)
         {
 			StartMain ();
@@ -509,6 +550,14 @@
             Return (retExpr);
 			EndFunction ();
         }
+
+		public void OutputGeometryShader (LambdaExpression expr)
+		{
+			StartMain ();
+			var retExpr = ParseShader (expr.Body);
+			ReturnArrayOfVertices (retExpr);
+			EndFunction ();
+		}
 
 		Expression ParseShader (Expression expr)
 		{

@@ -420,7 +420,13 @@
 					ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
 			}
 			else
-				IterateArray (node);
+			{
+				var mce = node.Arguments [0].CastExpr<MethodCallExpression> (ExpressionType.Call);
+				if (mce != null && mce.Method.IsRange ())
+					OutputForLoop (node);
+				else
+					IterateArray (node);
+			}
             CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
@@ -471,33 +477,15 @@
 
 		public void OutputForLoop (MethodCallExpression expr)
 		{
-			var array = expr.Arguments[0];
-			var member = array.SkipUnary (ExpressionType.Not)
-				.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
-			var len = 0;
-			var field = member as FieldInfo;
-			if (field != null)
-				len = field.ExpectGLArrayAttribute ().Length;
-			else if (_constants.ContainsKey (member.Name))
-			{
-				var constant = _constants[member.Name];
-				if (!constant.Type.IsArray)
-					throw new ParseException ("Invalid array expression. Referenced constant is not an array.");
-				var nai = constant.Value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				len = nai.Expressions.Count;
-			}
-			else
-				throw new ParseException ("Invalid array expression. " +
-					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = NewLocalVar ("ind");
-			var item = expr.Method.IsSelect () ?
+			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
+			var start = (int)range.Arguments [0].Expect<ConstantExpression> (ExpressionType.Constant).Value;
+			var len = (int)range.Arguments [1].Expect<ConstantExpression> (ExpressionType.Constant).Value;
+			var indexVar = expr.Method.IsSelect () ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
-			CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
+			CodeOut ("for (int {0} = {1}; {0} < {2}; {0}++)", indexVar, start, len);
 			CodeOut ("{");
 			_tabLevel++;
-			CodeOut ("{0} {1} = {2}[{3}];", GLType (item.Type), item.Name,
-				ExprToGLSL (array), indexVar);
 		}
 
 		public bool ForLoop (Source source)

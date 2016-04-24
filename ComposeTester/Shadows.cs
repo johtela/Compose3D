@@ -29,6 +29,7 @@
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			ShadowShader = new Program (
+//				VertexShader (),
 				VertexShaderCascaded (),
 				GeometryShaderCascaded (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
@@ -101,12 +102,12 @@
 
 		public static GLShader GeometryShaderCascaded ()
 		{
-			return GLShader.CreateGeometryShader (3,
+			return GLShader.CreateGeometryShader<PerVertexOut> (3,
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				let maxZ = Enumerable.Range (0, 3).Aggregate (-1000000f, 
-					(float max, int i) => Math.Max (max, p.gl_in[i].gl_Position.Z))
+					(float m, int i) => Math.Max (m, p.gl_in[i].gl_Position.Z))
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()

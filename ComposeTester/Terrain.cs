@@ -73,7 +73,7 @@
 					for (int y = 0; y < 100; y++)
 					{
 						var mesh = new TerrainMesh<TerrainVertex> (sceneGraph, new Vec2i (x * _patchStep, y * _patchStep), 
-							new Vec2i (_patchSize, _patchSize), 20f, 0.039999f, 3, 5f, 4f);
+							new Vec2i (_patchSize, _patchSize), 20f, 0.03999f, 3, 5f, 4f);
 						_meshes[x, y] = mesh;
 						yield return mesh;
 					}
@@ -167,7 +167,7 @@
 			{
 				if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 				{
-					transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
+					transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
 					lighting.UpdateDirectionalLight (camera);
 					transforms.UpdateModelViewAndNormalMatrices (worldToCamera * mesh.Transform);
 					var distance = -(worldToCamera * mesh.BoundingBox).Front;

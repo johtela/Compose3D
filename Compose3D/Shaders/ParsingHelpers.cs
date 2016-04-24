@@ -6,6 +6,7 @@
     using System.Linq.Expressions;
     using System.Reflection;
 	using GLTypes;
+	using Extensions;
 	
     public class Source
     {
@@ -139,7 +140,8 @@
 
 		public static bool IsRange (this MethodInfo mi)
 		{
-			return mi.DeclaringType == typeof (Enumerable) && mi.Name == "Range";
+			return (mi.DeclaringType == typeof (Enumerable) || mi.DeclaringType == typeof (EnumerableExt))
+				&& mi.Name == "Range";
 		}
 
 		public static bool IsEvaluate (this MethodInfo mi)

@@ -61,8 +61,8 @@
             { GetMethod (mathT, "Pow", doubleT, doubleT), "pow ({0})" },
             { GetMethod (mathT, "Exp", doubleT), "exp ({0})" },
             { GetMethod (mathT, "Log", doubleT), "log ({0})" },
-            { GetMethod (mathT, "Sqrt", doubleT), "sqrt ({0})" },
-        };
+            { GetMethod (mathT, "Sqrt", doubleT), "sqrt ({0})" }
+		};
 
         private static Dictionary<ExpressionType, string> _operators = new Dictionary<ExpressionType, string>
         {
@@ -80,7 +80,8 @@
             { ExpressionType.AndAlso, "{0} && {1}" },
             { ExpressionType.OrElse, "{0} || {1}" },
             { ExpressionType.Not, "!{0}" },
-            { ExpressionType.ArrayIndex, "{0} [{1}]" }
+            { ExpressionType.ArrayIndex, "{0} [{1}]" },
+            { ExpressionType.ArrayLength, "{0}.length ()" }
         };
  
         public static string Type (Type type)
@@ -99,7 +100,7 @@
 			return result;
         }
 
-        public static string Operator (ExpressionType et)
+		public static string Operator (ExpressionType et)
         {
 			string result;
 			if (!_operators.TryGetValue (et, out result))

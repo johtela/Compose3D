@@ -64,37 +64,30 @@
 			}
 		}
 
+		public Vec4 XYPlaneAtZ (float Z)
+		{
+			return Kind == FrustumKind.Perspective ?
+				new Vec4 ((Left / Near) * Z, (Bottom / Near) * Z, (Right / Near) * Z, (Top / Near) * Z) :
+				new Vec4 (Left, Bottom, Right, Top);
+		}
+
 		public Vec3[] Corners
 		{
 			get
 			{
 				if (_corners == null)
 				{
-					float backLeft, backRight, backBottom, backTop;
-					if (Kind == FrustumKind.Perspective)
-					{
-						backLeft = (Left / Near) * Far;
-						backRight = (Right / Near) * Far;
-						backBottom = (Bottom / Near) * Far;
-						backTop = (Top / Near) * Far;
-					}
-					else
-					{
-						backLeft = Left;
-						backRight = Right;
-						backBottom = Bottom;
-						backTop = Top;
-					}
+					var backPlane = XYPlaneAtZ (Far);
 					_corners = new Vec3[8]
 					{
 						new Vec3 (Left, Bottom, -Near),
 						new Vec3 (Left, Top, -Near),
 						new Vec3 (Right, Top, -Near),
 						new Vec3 (Right, Bottom, -Near),
-						new Vec3 (backLeft, backBottom, -Far),
-						new Vec3 (backLeft, backTop, -Far),
-						new Vec3 (backRight, backTop, -Far),
-						new Vec3 (backRight, backBottom, -Far)
+						new Vec3 (backPlane.X, backPlane.Y, -Far),
+						new Vec3 (backPlane.X, backPlane.W, -Far),
+						new Vec3 (backPlane.Z, backPlane.W, -Far),
+						new Vec3 (backPlane.Z, backPlane.Y, -Far)
 					};
 				}
 				return _corners;
@@ -118,7 +111,7 @@
 		public static ViewingFrustum FromBBox (Aabb<Vec3> bbox)
 		{
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
-				1f, bbox.Size.Z);
+				-bbox.Front, -bbox.Back);
 		}
 	}
 }

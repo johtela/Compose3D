@@ -477,13 +477,22 @@
 
 		public void OutputForLoop (MethodCallExpression expr)
 		{
-			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
-			var start = (int)range.Arguments [0].Expect<ConstantExpression> (ExpressionType.Constant).Value;
-			var len = (int)range.Arguments [1].Expect<ConstantExpression> (ExpressionType.Constant).Value;
 			var indexVar = expr.Method.IsSelect () ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
-			CodeOut ("for (int {0} = {1}; {0} < {2}; {0}++)", indexVar, start, len);
+			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
+			var start = ExprToGLSL (range.Arguments[0]);
+			if (range.Method.DeclaringType == typeof (Enumerable))
+			{
+				var len = ExprToGLSL (range.Arguments[1]);
+				CodeOut ("for (int {0} = {1}; {0} < {2}; {0}++)", indexVar, start, len);
+			}
+			else
+			{
+				var end = ExprToGLSL (range.Arguments[1]);
+				var step = ExprToGLSL (range.Arguments[2]);
+				CodeOut ("for (int {0} = {1}; {0} != {2}; {0} += {3})", indexVar, start, end, step);
+			}
 			CodeOut ("{");
 			_tabLevel++;
 		}

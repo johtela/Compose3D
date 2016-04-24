@@ -182,7 +182,7 @@
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				Sampler.Bind (!samplers, mesh.Textures);
-				transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowFrustum (camera));
+				transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
 				lighting.UpdateDirectionalLight (camera);
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 				_entityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);

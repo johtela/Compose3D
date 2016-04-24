@@ -29,7 +29,7 @@
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			ShadowShader = new Program (
-//				VertexShader (),
+				//VertexShader (),
 				VertexShaderCascaded (),
 				GeometryShaderCascaded (),
 				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
@@ -67,7 +67,7 @@
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			var worlToCamera = camera.WorldToCamera;
-			viewLightMatrix &= light.ShadowFrustum (camera).CameraToScreen * light.CameraToLightSpace (camera);
+			viewLightMatrix &= light.CameraToShadowProjection (camera);
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
@@ -108,22 +108,24 @@
 				from u in Shader.Uniforms<Shadows> ()
 				let maxZ = Enumerable.Range (0, 3).Aggregate (-1000000f, 
 					(float m, int i) => Math.Max (m, p.gl_in[i].gl_Position.Z))
+				let layer = EnumerableExt.Range ((!u.splitPlanes).Length - 1, 0, -1).Aggregate (0,
+					(int l, int i) => maxZ > (!u.splitPlanes)[i] ? i : l)
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()
 					{
 						gl_Position = !u.viewLightMatrix * p.gl_in[0].gl_Position,
-						gl_Layer = 0
+						gl_Layer = layer
 					},
 					new PerVertexOut ()
 					{
 						gl_Position = !u.viewLightMatrix * p.gl_in[1].gl_Position,
-						gl_Layer = 0
+						gl_Layer = layer
 					},
 					new PerVertexOut ()
 					{
 						gl_Position = !u.viewLightMatrix * p.gl_in[2].gl_Position,
-						gl_Layer = 0
+						gl_Layer = layer
 					}
 				}
 			);

@@ -255,6 +255,19 @@
                 new Vec4 (-(right + left) * invWidth, -(top + bottom) * invHeight, -(zFar + zNear) * invDepth, 1f));
         }
 
+		public static Mat4 LookAt (Vec3 direction, Vec3 up)
+		{
+			var zaxis = -direction.Normalized;
+			var xaxis = up.Cross (zaxis).Normalized;
+			var yaxis = zaxis.Cross (xaxis);
+
+			return new Mat4 (
+				xaxis.X, yaxis.X, zaxis.X, 0f,
+				xaxis.Y, yaxis.Y, zaxis.Y, 0f,
+				xaxis.Z, yaxis.Z, zaxis.Z, 0f,
+				0f, 0f, 0f, 1f);
+		}
+
 		public static Mat4 LookAt (Vec3 eye, Vec3 target, Vec3 up)
 		{
 			var zaxis = (eye - target).Normalized;

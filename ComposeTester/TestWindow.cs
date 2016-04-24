@@ -39,7 +39,7 @@
 			_sceneGraph = CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
-//			AddShadowWindow ();
+			//AddShadowWindow ();
 		}
 
 		private SceneGraph CreateSceneGraph ()

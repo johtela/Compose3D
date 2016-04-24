@@ -48,24 +48,30 @@
 			return new Mat3 (camera.WorldToCamera) * Direction;
 		}
 
-		public Mat4 CameraToLightSpace (Camera camera)
+		public Mat4 CameraToShadowProjection (Camera camera)
 		{
-			var cf = camera.Frustum;
-			var extent = MaxShadowDepth * 0.4f;
-			var target = new Vec3 ((cf.Right + cf.Left) / 2f, (cf.Top + cf.Bottom) / 2f, -extent);
-			var camDir = DirectionInCameraSpace (camera);
-			var eye = camDir * extent + target;
-			return Mat.LookAt (eye, target, new Vec3 (0f, 1f, 0f));
+			var extent = MaxShadowDepth * 0.5f;
+			var lightLookAt = -DirectionInCameraSpace (camera);
+			var camToLight = Mat.Translation<Mat4> (0f, 0f, -extent)
+				* Mat.LookAt (lightLookAt, new Vec3 (0f, 1f, 0f))
+				* Mat.Translation<Mat4> (0f, 0f, extent);
+			var shadowFrustum = new ViewingFrustum (FrustumKind.Orthographic, MaxShadowDepth, MaxShadowDepth,
+				0f, MaxShadowDepth);
+			return shadowFrustum.CameraToScreen * camToLight;
 		}
 
-		public Mat4 CameraToShadowFrustum (Camera camera)
+		public Mat4[] CameraToCascadedShadowProjections (Camera camera, int count)
 		{
-			return ShadowFrustum (camera).CameraToScreen * CameraToLightSpace (camera);
-		}
-		
-		public ViewingFrustum ShadowFrustum (Camera camera)
-		{
-			return new ViewingFrustum (FrustumKind.Orthographic, MaxShadowDepth, MaxShadowDepth, 0f, MaxShadowDepth);
+			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
+			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count);
+			var result = new Mat4[count];
+			for (int i = 0; i < count; i++)
+			{
+				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
+				var shadowFrustum = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
+				result[i] = shadowFrustum.CameraToScreen * camToLight;
+			}
+			return result;
 		}
 	}
 

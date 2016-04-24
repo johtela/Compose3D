@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using DataStructures;
@@ -11,8 +12,11 @@
 		public Vec3 Position;
 		public Vec3 Target;
 		public Vec3 UpDirection;
-		public ViewingFrustum Frustum;
-		
+
+		private ViewingFrustum _frustum;
+		private ViewingFrustum[] _splitFrustums;
+		private float _logarithmicWeight;
+
 		public Camera (SceneGraph graph, Vec3 position, Vec3 target, Vec3 upDirection, ViewingFrustum frustum, 
 			float aspectRatio) : base (graph)
 		{
@@ -52,6 +56,60 @@
 		public Mat4 CameraToWorld
 		{
 			get { return WorldToCamera.Inverse; }
-		}		
+		}
+
+		public ViewingFrustum Frustum
+		{
+			get { return _frustum; }
+ 			set
+			{
+				_frustum = value;
+				_splitFrustums = null;
+			}
+		}
+
+		public ViewingFrustum[] SplitFrustumsForCascadedShadowMaps (int splitCount, 
+			float logarithmicWeight = 0.5f)
+		{
+			if (_splitFrustums == null || _splitFrustums.Length != splitCount ||
+				_logarithmicWeight != logarithmicWeight)
+			{
+				_splitFrustums = CreateSplitFrustums (splitCount, logarithmicWeight);
+				_logarithmicWeight = logarithmicWeight;
+			}
+			return _splitFrustums;
+		}
+
+		private float[] CSMFrustumSplit (int splitCount, float logarithmicWeight)
+		{
+			if (logarithmicWeight < 0f || logarithmicWeight > 1f)
+				throw new ArgumentException ("Logarithmic weight must be between 0f and 1f", "logarithmicWeight");
+			var result = new float[splitCount + 1];
+			var n = _frustum.Near;
+			var f = _frustum.Far;
+			result[0] = n;
+			for (int i = 1; i < splitCount; i++)
+			{
+				var factor = (float)i / (float)splitCount;
+				var log = n * (f / n).Pow (factor);
+				var lin = n + (f - n) * factor;
+				result[i] = log * logarithmicWeight + lin * (1 - logarithmicWeight);
+			}
+			result[splitCount] = f;
+			return result;
+		}
+
+		private ViewingFrustum[] CreateSplitFrustums (int splitCount, float logarithmicWeight)
+		{
+			var splits = CSMFrustumSplit (splitCount, logarithmicWeight);
+			var result = new ViewingFrustum[splitCount];
+			for (int i = 0; i < splitCount; i++)
+			{
+				var nearPlane = _frustum.XYPlaneAtZ (splits[i]);
+				result[i] = new ViewingFrustum (_frustum.Kind, nearPlane.X, nearPlane.Z, nearPlane.Y,
+					nearPlane.W, splits[i], splits[i + 1]);
+			}
+			return result;
+		}
 	}
 }	

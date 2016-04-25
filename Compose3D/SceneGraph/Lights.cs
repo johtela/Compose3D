@@ -3,6 +3,7 @@
 	using DataStructures;
 	using Maths;
 	using Extensions;
+	using Shaders;
 	using Textures;
 
 	/// <summary>
@@ -56,20 +57,21 @@
 				* Mat.LookAt (lightLookAt, new Vec3 (0f, 1f, 0f))
 				* Mat.Translation<Mat4> (0f, 0f, extent);
 			var shadowFrustum = new ViewingFrustum (FrustumKind.Orthographic, MaxShadowDepth, MaxShadowDepth,
-				0f, MaxShadowDepth);
+				0f, -MaxShadowDepth);
 			return shadowFrustum.CameraToScreen * camToLight;
 		}
 
-		public Mat4[] CameraToCascadedShadowProjections (Camera camera, int count)
+		public Lighting.ShadowFrustum[] CascadedShadowFrustums (Camera camera, int count)
 		{
 			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
 			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count);
-			var result = new Mat4[count];
+			var result = new Lighting.ShadowFrustum[count];
 			for (int i = 0; i < count; i++)
 			{
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
 				var shadowFrustum = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				result[i] = shadowFrustum.CameraToScreen * camToLight;
+				result[i].frontPlane = splitFrustums[i].Near;
+				result[i].viewLightMatrix = shadowFrustum.CameraToScreen * camToLight;
 			}
 			return result;
 		}

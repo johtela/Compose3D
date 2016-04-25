@@ -53,6 +53,13 @@
 			}
 		}
 
+		[GLStruct ("ShadowFrustum")]
+		public struct ShadowFrustum
+		{
+			public float frontPlane;
+			public Mat4 viewLightMatrix;
+		}
+
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
 			GLShader.Function 
 			(
@@ -212,7 +219,6 @@
 				.Evaluate ()
 			);
 		
-		
 		public static readonly Func<float, float, float, float> LinearStep = 
 			GLShader.Function
 			(
@@ -250,7 +256,19 @@
 				)
 				.Evaluate ()
 			);
-		
+
+		//public static readonly Func<Sampler2DArray, ShadowFrustum[], Vec4, float> CascadedShadowMapFactor =
+		//	GLShader.Function
+		//	(
+		//		() => CascadedShadowMapFactor,
+		//		(Sampler2DArray shadowMap, ShadowFrustum[] frustums, Vec4 posInLightSpace) =>
+		//		(
+		//			from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+
+		//		)
+		//		.Evaluate ()
+		//	);
+
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of
 		/// this class.

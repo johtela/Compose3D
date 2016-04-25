@@ -104,10 +104,20 @@
     <Compile Include="Shaders\Uniforms.cs" />
     <Compile Include="Shaders\VertexShaders.cs" />
     <Compile Include="Textures\ITextured.cs" />
+    <Compile Include="Textures\Samper1DArray.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Samper1DArray.tt</DependentUpon>
+    </Compile>
     <Compile Include="Textures\Sampler1D.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Sampler1D.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\Sampler2DArray.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sampler2DArray.tt</DependentUpon>
     </Compile>
     <Compile Include="Textures\Sampler3D.cs">
       <DependentUpon>Sampler3D.tt</DependentUpon>
@@ -282,6 +292,10 @@
     <None Include="Textures\SamplerTemplate.tt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Textures\Samper1DArray.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Samper1DArray.cs</LastGenOutput>
+    </Content>
     <Content Include="Textures\Sampler2D.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler2D.cs</LastGenOutput>
@@ -289,6 +303,10 @@
     <Content Include="Textures\Sampler1D.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Sampler1D.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler2DArray.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2DArray.cs</LastGenOutput>
     </Content>
     <Content Include="Textures\Sampler3D.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

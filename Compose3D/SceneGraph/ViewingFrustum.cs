@@ -23,6 +23,9 @@
 
 		public ViewingFrustum (FrustumKind kind, float left, float right, float bottom, float top, float near, float far)
 		{
+			if (left >= right || bottom >= top || far >= near)
+				throw new ArgumentException ("Invalid frustum dimensions; " +
+					"left >= rigth or bottom >= top or far >= near.");
 			Kind = kind;
 			Left = left;
 			Right = right;
@@ -34,6 +37,8 @@
 		
 		public ViewingFrustum (FrustumKind kind, float width, float height, float near, float far)
 		{
+			if (far >= near)
+				throw new ArgumentException ("Invalid frustum dimensions; far >= near.");
 			Kind = kind;
 			Near = near;
 			Far = far;
@@ -58,8 +63,8 @@
 			{ 
 				if (!_cameraToScreen.HasValue)
 					_cameraToScreen = Kind == FrustumKind.Perspective ?
-						Mat.PerspectiveProjection (Left, Right, Bottom, Top, Near, Far) :
-						Mat.OrthographicProjection (Left, Right, Bottom, Top, Near, Far);
+						Mat.PerspectiveProjection (Left, Right, Bottom, Top, -Near, -Far) :
+						Mat.OrthographicProjection (Left, Right, Bottom, Top, -Near, -Far);
 				return _cameraToScreen.Value; 
 			}
 		}
@@ -80,14 +85,14 @@
 					var backPlane = XYPlaneAtZ (Far);
 					_corners = new Vec3[8]
 					{
-						new Vec3 (Left, Bottom, -Near),
-						new Vec3 (Left, Top, -Near),
-						new Vec3 (Right, Top, -Near),
-						new Vec3 (Right, Bottom, -Near),
-						new Vec3 (backPlane.X, backPlane.Y, -Far),
-						new Vec3 (backPlane.X, backPlane.W, -Far),
-						new Vec3 (backPlane.Z, backPlane.W, -Far),
-						new Vec3 (backPlane.Z, backPlane.Y, -Far)
+						new Vec3 (Left, Bottom, Near),
+						new Vec3 (Left, Top, Near),
+						new Vec3 (Right, Top, Near),
+						new Vec3 (Right, Bottom, Near),
+						new Vec3 (backPlane.X, backPlane.Y, Far),
+						new Vec3 (backPlane.X, backPlane.W, Far),
+						new Vec3 (backPlane.Z, backPlane.W, Far),
+						new Vec3 (backPlane.Z, backPlane.Y, Far)
 					};
 				}
 				return _corners;
@@ -111,7 +116,7 @@
 		public static ViewingFrustum FromBBox (Aabb<Vec3> bbox)
 		{
 			return new ViewingFrustum (FrustumKind.Orthographic, bbox.Left, bbox.Right, bbox.Bottom, bbox.Top,
-				-bbox.Front, -bbox.Back);
+				bbox.Front, bbox.Back);
 		}
 	}
 }

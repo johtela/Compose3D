@@ -38,6 +38,19 @@
 			}
 		}
 
+		public Texture (TextureTarget target, PixelInternalFormat internalFormat,
+			int width, int height, int depth, PixelFormat format, PixelType type, IntPtr pixels)
+			: this (target)
+		{
+			using (Scope ())
+			{
+				_pixelInternalFormat = internalFormat;
+				_pixelFormat = format;
+				_pixelType = type;
+				GL.TexImage3D (target, 0, internalFormat, width, height, depth, 0, format, type, pixels);
+			}
+		}
+
 		public TextureTarget Target
 		{
 			get { return _target; }

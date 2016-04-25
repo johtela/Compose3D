@@ -15,30 +15,43 @@
 	
 	public class Shadows : Uniforms
 	{
+		public const int CascadedShadowMapCount = 4;
+
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> viewLightMatrix;
-		[GLArray(4)]
-		public Uniform<float[]> splitPlanes;
+		[GLArray(CascadedShadowMapCount)]
+		public Uniform<Lighting.ShadowFrustum[]> cascadedFrustums;
 
-		private static Program ShadowShader;
+		private static Program _shadowShader;
+		private bool _cascaded;
 
 		private Shadows (Program program) : base (program) { }
 
 		public static Reaction<Camera> Renderer (SceneGraph scene,
-			int mapSize, ShadowMapType type)
+			int mapSize, ShadowMapType type, bool cascaded)
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
-			ShadowShader = new Program (
-				//VertexShader (),
-				VertexShaderCascaded (),
-				GeometryShaderCascaded (),
-				type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
-			var shadows = new Shadows (ShadowShader);
+			_shadowShader = cascaded ?
+				new Program (
+					VertexShaderCascaded (),
+					GeometryShaderCascaded (),
+					DepthFragmentShader ()) :
+				new Program (
+					VertexShader (),
+					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
+
+			var shadows = new Shadows (_shadowShader);
+			shadows._cascaded = cascaded;
+
 			Texture depthTexture;
-			if (type == ShadowMapType.Depth)
+			if (type == ShadowMapType.Depth || cascaded)
 			{
-				depthTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
-					mapSize, mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				depthTexture = cascaded ?
+					new Texture (TextureTarget.Texture2DArray, PixelInternalFormat.DepthComponent16,
+						mapSize, mapSize, CascadedShadowMapCount, PixelFormat.DepthComponent, PixelType.Float, 
+						IntPtr.Zero) :
+					new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
+						mapSize, mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 				depthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, depthTexture);
 			}
 			else
@@ -56,7 +69,7 @@
 				.DepthTest ()
 				.Culling ()
 				.Viewport (new Vec2i (mapSize, mapSize))
-				.Program (ShadowShader)
+				.Program (_shadowShader)
 				.Texture (depthTexture)
 				.Framebuffer (depthFramebuffer);
 		}
@@ -67,12 +80,15 @@
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			var worlToCamera = camera.WorldToCamera;
-			viewLightMatrix &= light.CameraToShadowProjection (camera);
+			if (_cascaded)
+				cascadedFrustums &= light.CascadedShadowFrustums (camera, CascadedShadowMapCount);
+			else
+				viewLightMatrix &= light.CameraToShadowProjection (camera);
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				modelViewMatrix &= worlToCamera * mesh.Transform;
-				ShadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_shadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 			}
 		}
 
@@ -102,29 +118,32 @@
 
 		public static GLShader GeometryShaderCascaded ()
 		{
+			Lighting.Use ();
 			return GLShader.CreateGeometryShader<PerVertexOut> (3,
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				let maxZ = Enumerable.Range (0, 3).Aggregate (-1000000f, 
 					(float m, int i) => Math.Max (m, p.gl_in[i].gl_Position.Z))
-				let layer = EnumerableExt.Range ((!u.splitPlanes).Length - 1, 0, -1).Aggregate (0,
-					(int l, int i) => maxZ > (!u.splitPlanes)[i] ? i : l)
+				let layer = EnumerableExt.Range ((!u.cascadedFrustums).Length - 1, 0, -1)
+					.Aggregate (0, (int l, int i) => 
+						maxZ > (!u.cascadedFrustums)[i].frontPlane ? i : l)
+				let viewLight = (!u.cascadedFrustums)[layer].viewLightMatrix
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()
 					{
-						gl_Position = !u.viewLightMatrix * p.gl_in[0].gl_Position,
+						gl_Position = viewLight * p.gl_in[0].gl_Position,
 						gl_Layer = layer
 					},
 					new PerVertexOut ()
 					{
-						gl_Position = !u.viewLightMatrix * p.gl_in[1].gl_Position,
+						gl_Position = viewLight * p.gl_in[1].gl_Position,
 						gl_Layer = layer
 					},
 					new PerVertexOut ()
 					{
-						gl_Position = !u.viewLightMatrix * p.gl_in[2].gl_Position,
+						gl_Position = viewLight * p.gl_in[2].gl_Position,
 						gl_Layer = layer
 					}
 				}

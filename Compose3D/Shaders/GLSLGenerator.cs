@@ -32,16 +32,22 @@
 			_constants = new Dictionary<string, Constant> ();
         }
 
-		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
+		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
 			var builder = new GLSLGenerator ();
 			builder.DeclareVariables (typeof (T), "out");
 			builder.OutputShader (shader);
-			return BuildShaderCode (builder);
+			return BuildShaderCode (builder, version);
 		}
 
-		public static string CreateGeometryShader<T> (int vertexCount, PrimitiveType inputPrimitive,
-			PrimitiveType outputPrimitive, Expression<Func<Shader<T[]>>> shader)
+		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
+		{
+			return CreateShader<T> (GetGLSLVersion (), shader);
+		}
+
+		public static string CreateGeometryShader<T> (string version, int vertexCount, 
+			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, 
+			Expression<Func<Shader<T[]>>> shader)
 		{
 			var builder = new GLSLGenerator ();
 			builder.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
@@ -49,12 +55,22 @@
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
 			builder.DeclareVariables (typeof (T), "out");
 			builder.OutputGeometryShader (shader);
-			return BuildShaderCode (builder);
+			return BuildShaderCode (builder, version);
 		}
 
-		private static string BuildShaderCode (GLSLGenerator builder)
+		public static string CreateGeometryShader<T> (int vertexCount,
+			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
+			Expression<Func<Shader<T[]>>> shader)
 		{
-			return string.Format ("#version {0}\nprecision highp float;\n", GetGLSLVersion ()) +
+			var currVersion = GetGLSLVersion ();
+			var minVersion = "150";
+			var version = string.Compare (currVersion, minVersion) > 0 ? currVersion : minVersion;
+			return CreateGeometryShader<T> (version, vertexCount, inputPrimitive, outputPrimitive, shader);
+		}
+
+		private static string BuildShaderCode (GLSLGenerator builder, string version)
+		{
+			return string.Format ("#version {0}\nprecision highp float;\n", version) +
 				builder._decl.ToString () +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();

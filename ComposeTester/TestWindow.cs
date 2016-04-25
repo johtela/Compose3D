@@ -54,7 +54,7 @@
 				position: new Vec3 (0f, 10f, 10f), 
 				target: new Vec3 (0f, 10f, -1f), 
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, 1f, 400f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -400f),
 				aspectRatio: 1f);
 
 			sceneGraph.GlobalLighting = new GlobalLighting ()
@@ -75,7 +75,7 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 5000, ShadowMapType.Depth)
+			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Depth, false)
 				.Select ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
@@ -103,7 +103,7 @@
 			.And (Skybox.UpdatePerspectiveMatrix ())
 			.And (Terrain.UpdatePerspectiveMatrix ())
 			.Select ((Vec2 size) =>
-				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, 1f, 400f))
+				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
 				.CameraToScreen)
 			.WhenResized (this).Evoke ();
 		}

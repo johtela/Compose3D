@@ -14,7 +14,7 @@
 		[Test]
 		public void TestOrthographicCullingPlanes ()
 		{
-			var vf = new ViewingFrustum (FrustumKind.Orthographic, 2f, 2f, 1f, 100f);
+			var vf = new ViewingFrustum (FrustumKind.Orthographic, 2f, 2f, -1f, -100f);
 			var cp = vf.CullingPlanes (new Mat4 (1f));
 
 			Check.AreEqual (1, cp[0].Distance);
@@ -34,7 +34,7 @@
 		[Test]
 		public void TestPerspectiveCullingPlanes ()
 		{
-			var vf = new ViewingFrustum (FrustumKind.Perspective, 2f, 2f, 1f, 100f);
+			var vf = new ViewingFrustum (FrustumKind.Perspective, 2f, 2f, -1f, -100f);
 			var cp = vf.CullingPlanes (new Mat4 (1f));
 
 			Check.AreEqual (0f, cp[0].Distance);

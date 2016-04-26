@@ -332,8 +332,9 @@
                     // adjust the row-swap toggle
                     toggle = -toggle;                 
                 }
-                if (matrix[c][c] == 0f)
-                    throw new ArgumentException ("Matrix is singular", "matrix");
+				if (matrix[c][c] == 0f)
+					matrix[c][c] = 0.000001f;
+					//throw new ArgumentException ("Matrix is singular", "matrix");
                 for (int r = c + 1; r < rows; ++r)
                 {
                     matrix[r][c] /= matrix[c][c];

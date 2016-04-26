@@ -115,7 +115,7 @@
 		public Uniform<Sampler2D[]> samplers;
 		public Uniform<SamplerCube> diffuseMap;
 		[GLArray (Shadows.CascadedShadowMapCount)]
-		public Uniform<Lighting.ShadowFrustum[]> csmFrustums;
+		public Uniform<Mat4[]> csmViewLightMatrices;
 		public Uniform<Sampler2DArray> shadowMap;
 
 		public LightingUniforms lighting;
@@ -184,8 +184,7 @@
 		private void Render (Camera camera, Shadows shadows)
 		{
 			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
-			var csmf = !shadows.cascadedFrustums;
-			csmFrustums &= csmf;
+			csmViewLightMatrices &= !shadows.csmViewLightMatrices;
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
@@ -210,9 +209,11 @@
 				from v in Shader.Inputs<EntityVertex> ()
 				from u in Shader.Uniforms<Entities> ()
 				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = Enumerable.Range (0, (!u.csmFrustums).Length)
-					.Aggregate (0, (int res, int i) =>
-						viewPos.Z <= (!u.csmFrustums)[i].frontPlane && viewPos.Z >= (!u.csmFrustums)[i].backPlane ? i : res)
+				let csm = Enumerable.Range (0, (!u.csmViewLightMatrices).Length)
+					.Aggregate (-1, (int best, int i) =>
+						best < 0 && Lighting.Between (
+							((!u.csmViewLightMatrices)[i] * viewPos)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+							i : best)
 				select new EntityFragment ()
 				{
 					gl_Position = !u.transforms.perspectiveMatrix * viewPos,
@@ -224,7 +225,7 @@
 					fragTexturePos = v.texturePos,
 					fragReflectivity = v.reflectivity,
 					fragShadowMap = csm,
-					fragPositionLightSpace = (!u.csmFrustums)[csm].viewLightMatrix * viewPos
+					fragPositionLightSpace = (!u.csmViewLightMatrices)[csm] * viewPos
 				});
 		}
 

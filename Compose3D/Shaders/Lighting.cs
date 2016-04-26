@@ -54,14 +54,6 @@
 			}
 		}
 
-		[GLStruct ("ShadowFrustum")]
-		public struct ShadowFrustum
-		{
-			public float frontPlane;
-			public float backPlane;
-			public Mat4 viewLightMatrix;
-		}
-
 		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
 			GLShader.Function 
 			(
@@ -295,7 +287,7 @@
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select Between (texCoords, 0f, 1f) ?
+					select Between (texCoords, 0f, 1f) ? 
 						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
 				)
 				.Evaluate ()

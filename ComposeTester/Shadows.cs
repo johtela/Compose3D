@@ -15,12 +15,12 @@
 	
 	public class Shadows : Uniforms
 	{
-		public const int CascadedShadowMapCount = 5;
+		public const int CascadedShadowMapCount = 4;
 
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> viewLightMatrix;
 		[GLArray(CascadedShadowMapCount)]
-		public Uniform<Lighting.ShadowFrustum[]> cascadedFrustums;
+		public Uniform<Mat4[]> csmViewLightMatrices;
 
 		private static Program _shadowShader;
 		private static Shadows _instance;
@@ -82,13 +82,12 @@
 
 		private void Render (Camera camera)
 		{
-			//GL.DrawBuffers (1, new DrawBuffersEnum[] { DrawBuffersEnum.None });
 			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			var worlToCamera = camera.WorldToCamera;
 			if (_cascaded)
-				cascadedFrustums &= light.CascadedShadowFrustums (camera, CascadedShadowMapCount);
+				csmViewLightMatrices &= light.CascadedShadowFrustums (camera, CascadedShadowMapCount);
 			else
 				viewLightMatrix &= light.CameraToShadowProjection (camera);
 
@@ -130,14 +129,14 @@
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
-				let sum = Enumerable.Range (0, 3).Aggregate (0f,
-					(float s, int i) => s + p.gl_in[i].gl_Position.Z)
-				let avgZ = sum / 3f
-				let layer = Enumerable.Range (0, (!u.cascadedFrustums).Length)
-					.Aggregate (0, (int l, int i) =>
-						avgZ <= (!u.cascadedFrustums)[i].frontPlane && avgZ >= (!u.cascadedFrustums)[i].backPlane ? i : l)
-				//let layer = 0
-				let viewLight = (!u.cascadedFrustums)[layer].viewLightMatrix
+				let avg = (p.gl_in[0].gl_Position + p.gl_in[1].gl_Position 
+					+ p.gl_in[2].gl_Position) / 3f
+				let layer = Enumerable.Range (0, (!u.csmViewLightMatrices).Length)
+					.Aggregate (-1, (int best, int i) =>
+						best < 0 && Lighting.Between (
+							((!u.csmViewLightMatrices)[i] * avg)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+							i : best)
+				let viewLight = (!u.csmViewLightMatrices)[layer]
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()

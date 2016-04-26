@@ -2,6 +2,7 @@
 {
 	using OpenTK.Graphics.OpenGL;
 	using Geometry;
+	using Maths;
 	using System;
 	using System.Collections.Generic;
 	using Extensions;
@@ -133,6 +134,23 @@
 				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
 			if ((edgeAxes & Axes.Z) != 0)
 				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+			return sampler;
+		}
+
+		public static S ClampToBorder<S> (this S sampler, Vec4 color, Axes edgeAxes)
+			where S : Sampler
+		{
+			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureBorderColor, 
+				color.ToArray<Vec4, float>());
+			if ((edgeAxes & Axes.X) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapS, 
+					(int)TextureWrapMode.ClampToBorder);
+			if ((edgeAxes & Axes.Y) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapT, 
+					(int)TextureWrapMode.ClampToBorder);
+			if ((edgeAxes & Axes.Z) != 0)
+				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapR, 
+					(int)TextureWrapMode.ClampToBorder);
 			return sampler;
 		}
 

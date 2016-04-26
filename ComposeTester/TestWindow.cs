@@ -75,12 +75,12 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Depth, false)
+			var shadowRender= Shadows.Renderer (_sceneGraph, 2000, ShadowMapType.Depth, true)
 				.Select ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor);
-			var entityRender = Entities.Renderer (_sceneGraph);
+			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance);
 			var windowRender = Windows.Renderer (_sceneGraph)
 				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 

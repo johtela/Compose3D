@@ -5,6 +5,7 @@
 	using Compose3D.Maths;
 	using Compose3D.GLTypes;
 	using Textures;
+	using Extensions;
 
 	public static class Lighting
 	{
@@ -57,6 +58,7 @@
 		public struct ShadowFrustum
 		{
 			public float frontPlane;
+			public float backPlane;
 			public Mat4 viewLightMatrix;
 		}
 
@@ -257,17 +259,47 @@
 				.Evaluate ()
 			);
 
-		//public static readonly Func<Sampler2DArray, ShadowFrustum[], Vec4, float> CascadedShadowMapFactor =
-		//	GLShader.Function
-		//	(
-		//		() => CascadedShadowMapFactor,
-		//		(Sampler2DArray shadowMap, ShadowFrustum[] frustums, Vec4 posInLightSpace) =>
-		//		(
-		//			from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+		public static readonly Func<Sampler2DArray, Vec3, float, float, float> csmPCFiltering =
+			GLShader.Function
+			(
+				() => csmPCFiltering,
+				(Sampler2DArray shadowMap, Vec3 texCoords, float mapIndex, float bias) =>
+				(
+					from con in Shader.Constants (new
+					{
+						kernel = new Vec2[]
+						{
+							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
+ 							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
+							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
+						}
+					})
+					let closestDepth = shadowMap.Texture (new Vec3 (texCoords.X, texCoords.Y, mapIndex)).X
+					let currentDepth = texCoords.Z - bias
+					let mapSize = shadowMap.Size (0)
+					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
+					let pcfShadow = (from point in con.kernel
+									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
+									 select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
+									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
+					select pcfShadow / 9f
+				)
+				.Evaluate ()
+			);
 
-		//		)
-		//		.Evaluate ()
-		//	);
+		public static readonly Func<Sampler2DArray, Vec4, float, float, float> CascadedShadowMapFactor =
+			GLShader.Function
+			(
+				() => CascadedShadowMapFactor,
+				(Sampler2DArray shadowMap, Vec4 posInLightSpace, float mapIndex, float bias) =>
+				(
+					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
+					select Between (texCoords, 0f, 1f) ?
+						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
+				)
+				.Evaluate ()
+			);
 
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of

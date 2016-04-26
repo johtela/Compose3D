@@ -23,7 +23,6 @@
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
-		public Uniform<Mat4> lightSpaceMatrix;
 		
 		public TransformUniforms (Program program) : base (program)	{ }
 
@@ -32,18 +31,12 @@
 			modelViewMatrix &= modelView;
 			normalMatrix &= new Mat3 (modelView).Inverse.Transposed;
 		}
-
-		public void UpdateLightSpaceMatrix (Mat4 lightSpace)
-		{
-			lightSpaceMatrix &= lightSpace;
-		}
 	}
 
 	public class LightingUniforms : Uniforms
 	{
 		public Uniform<Lighting.GlobalLight> globalLighting;
 		public Uniform<Lighting.DirectionalLight> directionalLight;
-		public Uniform<Sampler2D> shadowMap;
 
 		public LightingUniforms (Program program, SceneGraph scene)
 			: base (program)
@@ -60,7 +53,6 @@
 						inverseGamma = 1f / gl.GammaCorrection
 					};
 				}
-				shadowMap &= new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All);
 			}
 		}
 
@@ -72,6 +64,23 @@
 				direction = dirLight.DirectionInCameraSpace (camera),
 				intensity = dirLight.Intensity
 			};
+		}
+	}
+
+	public class ShadowUniforms : Uniforms
+	{
+		public Uniform<Mat4> lightSpaceMatrix;
+		public Uniform<Sampler2D> shadowMap;
+
+		public ShadowUniforms (Program program) : base (program)
+		{
+			using (program.Scope ())
+				shadowMap &= new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All);
+		}
+
+		public void UpdateLightSpaceMatrix (Mat4 lightSpace)
+		{
+			lightSpaceMatrix &= lightSpace;
 		}
 	}
 

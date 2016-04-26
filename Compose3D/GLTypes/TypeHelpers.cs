@@ -25,7 +25,7 @@
     public static class TypeHelpers
     {
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public;
-        private static Dictionary<Type, IList<GLStructField>> _structFields = new Dictionary<Type, IList<GLStructField>> ();
+        private static Dictionary<string, IList<GLStructField>> _structFields = new Dictionary<string, IList<GLStructField>> ();
 
         private static T GetAttribute<T> (MemberInfo mi) where T : Attribute
         {
@@ -147,15 +147,22 @@
             }
         }
 
+		private static string GetKey (Type type, string prefix)
+		{
+			return prefix + "@" + type.FullName;
+		}
+
         public static IEnumerable<GLStructField> GetGLStructFields (this Type type, string prefix)
         {
             IList<GLStructField> result;
-            if (!_structFields.TryGetValue (type, out result))
+			var key = GetKey (type, prefix);
+
+			if (!_structFields.TryGetValue (key, out result))
             {
                 result = new List<GLStructField> ();
                 var expression = Expression.Parameter (typeof (object), "obj");
                 GetStructFields (type, Expression.Convert (expression, type), expression, result, prefix);
-                _structFields.Add (type, result);
+                _structFields.Add (key, result);
             }
             return result;
         }
@@ -163,12 +170,14 @@
         public static IEnumerable<GLStructField> GetGLArrayElements (this Type type, string prefix, int arrayLen)
         {
             IList<GLStructField> result;
-            if (!_structFields.TryGetValue (type, out result))
+			var key = GetKey (type, prefix);
+
+			if (!_structFields.TryGetValue (key, out result))
             {
                 result = new List<GLStructField> ();
                 var expression = Expression.Parameter (typeof (object), "obj");
                 GetArrayFields (type, Expression.Convert (expression, type), expression, result, prefix, arrayLen);
-                _structFields.Add (type, result);
+                _structFields.Add (key, result);
             }
             return result;
         }

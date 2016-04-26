@@ -15,7 +15,7 @@
 	
 	public class Shadows : Uniforms
 	{
-		public const int CascadedShadowMapCount = 4;
+		public const int CascadedShadowMapCount = 5;
 
 		public Uniform<Mat4> modelViewMatrix;
 		public Uniform<Mat4> viewLightMatrix;
@@ -23,7 +23,13 @@
 		public Uniform<Lighting.ShadowFrustum[]> cascadedFrustums;
 
 		private static Program _shadowShader;
+		private static Shadows _instance;
 		private bool _cascaded;
+
+		public static Shadows Instance
+		{
+			get { return _instance; }
+		}
 
 		private Shadows (Program program) : base (program) { }
 
@@ -40,8 +46,8 @@
 					VertexShader (),
 					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 
-			var shadows = new Shadows (_shadowShader);
-			shadows._cascaded = cascaded;
+			_instance = new Shadows (_shadowShader);
+			_instance._cascaded = cascaded;
 
 			Texture depthTexture;
 			if (type == ShadowMapType.Depth || cascaded)
@@ -64,7 +70,7 @@
 			}
 			scene.GlobalLighting.ShadowMap = depthTexture;
 
-			return React.By<Camera> (shadows.Render)
+			return React.By<Camera> (_instance.Render)
 				.DrawBuffer (type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front)
 				.DepthTest ()
 				.Culling ()
@@ -76,6 +82,7 @@
 
 		private void Render (Camera camera)
 		{
+			//GL.DrawBuffers (1, new DrawBuffersEnum[] { DrawBuffersEnum.None });
 			GL.Clear (ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
@@ -123,11 +130,13 @@
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
-				let maxZ = Enumerable.Range (0, 3).Aggregate (-1000000f, 
-					(float m, int i) => Math.Max (m, p.gl_in[i].gl_Position.Z))
-				let layer = EnumerableExt.Range ((!u.cascadedFrustums).Length - 1, 0, -1)
-					.Aggregate (0, (int l, int i) => 
-						maxZ > (!u.cascadedFrustums)[i].frontPlane ? i : l)
+				let sum = Enumerable.Range (0, 3).Aggregate (0f,
+					(float s, int i) => s + p.gl_in[i].gl_Position.Z)
+				let avgZ = sum / 3f
+				let layer = Enumerable.Range (0, (!u.cascadedFrustums).Length)
+					.Aggregate (0, (int l, int i) =>
+						avgZ <= (!u.cascadedFrustums)[i].frontPlane && avgZ >= (!u.cascadedFrustums)[i].backPlane ? i : l)
+				//let layer = 0
 				let viewLight = (!u.cascadedFrustums)[layer].viewLightMatrix
 				select new PerVertexOut[3]
 				{

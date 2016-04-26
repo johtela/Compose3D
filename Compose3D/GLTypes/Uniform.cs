@@ -26,8 +26,10 @@
 			{ typeof(Mat3), (u, o) => GL.UniformMatrix3 (u, 1, false, Mat.ToArray<Mat3, float> ((Mat3)o)) },
 			{ typeof(Mat4), (u, o) => GL.UniformMatrix4 (u, 1, false, Mat.ToArray<Mat4, float> ((Mat4)o)) },
 			{ typeof(Sampler1D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler1DArray), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
 			{ typeof(Sampler1DShadow), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
 			{ typeof(Sampler2D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
+			{ typeof(Sampler2DArray), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
 			{ typeof(Sampler2DShadow), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
 			{ typeof(Sampler3D), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) },
 			{ typeof(SamplerCube), (u, o) => GL.Uniform1 (u, ((Sampler)o)._texUnit) }

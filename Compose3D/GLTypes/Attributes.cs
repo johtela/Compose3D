@@ -12,7 +12,7 @@
 	[AttributeUsage (AttributeTargets.Method)]
 	public class LiftMethodAttribute : Attribute { }
 
-    [AttributeUsage (AttributeTargets.Field)]
+    [AttributeUsage (AttributeTargets.Field | AttributeTargets.Property)]
     public class GLQualifierAttribute : Attribute
     {
         public string Qualifier;

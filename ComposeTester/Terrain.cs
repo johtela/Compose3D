@@ -143,7 +143,7 @@
 			return React.By<Camera> (_terrain.Render)
 				.BindSamplers (new Dictionary<Sampler, Texture> ()
 				{
-					{ !_terrain.lighting.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
+					//{ !_terrain.lighting.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
 					{ !_terrain.sandSampler, sandTexture },
 					{ !_terrain.rockSampler, rockTexture },
 					{ !_terrain.grassSampler, grassTexture }
@@ -167,7 +167,7 @@
 			{
 				if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 				{
-					transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
+					//transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
 					lighting.UpdateDirectionalLight (camera);
 					transforms.UpdateModelViewAndNormalMatrices (worldToCamera * mesh.Transform);
 					var distance = -(worldToCamera * mesh.BoundingBox).Front;
@@ -201,7 +201,7 @@
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
 					fragTexturePos = v.texturePos / 15f,
-					fragPositionLightSpace = !u.transforms.lightSpaceMatrix * viewPos
+					//fragPositionLightSpace = !u.transforms.lightSpaceMatrix * viewPos
 				});
 		}
 
@@ -224,9 +224,9 @@
 					(!u.lighting.directionalLight).intensity, 
 					f.vertexNormal)
 				let ambient = (!u.lighting.globalLighting).ambientLightIntensity
-//				let shadow = 1f
-				let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
-//				let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
+				let shadow = 1f
+				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
+				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
 				let litColor = Lighting.GlobalLightIntensity (
 						!u.lighting.globalLighting,
 						ambient, diffuseLight * shadow,

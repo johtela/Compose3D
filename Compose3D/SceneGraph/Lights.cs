@@ -71,6 +71,7 @@
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
 				var shadowFrustum = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
 				result[i].frontPlane = splitFrustums[i].Near;
+				result[i].backPlane = splitFrustums[i].Far;
 				result[i].viewLightMatrix = shadowFrustum.CameraToScreen * camToLight;
 			}
 			return result;

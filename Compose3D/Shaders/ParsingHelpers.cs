@@ -53,6 +53,30 @@
         public ParseException (string msg) : base (msg) { }
     }
 
+	internal class ExpressionReplacer<T> : ExpressionVisitor
+		where T : Expression
+	{
+		private ExpressionType _type;
+		private Func<T, Expression> _replacer;
+
+		public ExpressionReplacer (ExpressionType type, Func<T, Expression> replacer)
+		{
+			_type = type;
+			_replacer = replacer;
+		}
+
+		public override Expression Visit (Expression node)
+		{
+			if (node is T && node.NodeType == _type)
+			{
+				var newNode = _replacer ((T)node);
+				if (newNode != node)
+					return newNode;
+			}
+			return base.Visit (node);
+		}
+	}
+
     public static class Parse
     {
         public static T CastExpr<T> (this Expression expr, ExpressionType type) where T : Expression
@@ -160,6 +184,13 @@
             return func (lambdaExpr, newExpr);
         }
 
+		public static Expression ReplaceSubExpression<T> (this Expression expression, ExpressionType type, 
+			Func<T, Expression> replace) where T : Expression
+		{
+			var er = new ExpressionReplacer<T> (type, replace);
+			return er.Visit (expression);
+		}
+
         public static Parser ExactlyOne (this Parser parser)
         {
             return source =>
@@ -230,3 +261,4 @@
         }
     }
 }
+

@@ -75,6 +75,21 @@
 		}
 	}
 
+	public class TransformUniforms : Uniforms
+	{
+		public Uniform<Mat4> modelViewMatrix;
+		public Uniform<Mat4> perspectiveMatrix;
+		public Uniform<Mat3> normalMatrix;
+
+		public TransformUniforms (Program program) : base (program) { }
+
+		public void UpdateModelViewAndNormalMatrices (Mat4 modelView)
+		{
+			modelViewMatrix &= modelView;
+			normalMatrix &= new Mat3 (modelView).Inverse.Transposed;
+		}
+	}
+
 	public static class VertexShaders
 	{
 		public static GLShader Passthrough<V, F> ()

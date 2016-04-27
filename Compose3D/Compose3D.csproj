@@ -52,6 +52,7 @@
     <Compile Include="Geometry\Compacted.cs" />
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
+    <Compile Include="GLTypes\FixedArray.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>
@@ -100,8 +101,8 @@
     <Compile Include="SceneGraph\Window.cs" />
     <Compile Include="Shaders\GeometryShaders.cs" />
     <Compile Include="Shaders\Lighting.cs" />
+    <Compile Include="Shaders\ShadowShaders.cs" />
     <Compile Include="Shaders\TextureFilter.cs" />
-    <Compile Include="Shaders\Uniforms.cs" />
     <Compile Include="Shaders\VertexShaders.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Samper1DArray.cs">

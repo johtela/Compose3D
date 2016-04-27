@@ -110,28 +110,26 @@
 	public class Entities : Uniforms
 	{
 		[GLArray (4)]
-		public Uniform<Lighting.PointLight[]> pointLights;
+		public Uniform<LightingShaders.PointLight[]> pointLights;
 		[GLArray (4)]
 		public Uniform<Sampler2D[]> samplers;
 		public Uniform<SamplerCube> diffuseMap;
-		[GLArray (Shadows.CascadedShadowMapCount)]
-		public Uniform<Mat4[]> csmViewLightMatrices;
-		public Uniform<Sampler2DArray> shadowMap;
 
 		public LightingUniforms lighting;
 		public TransformUniforms transforms;
+		public CascadedShadowUniforms shadows;
 
 		public Entities (Program program, SceneGraph scene)
 			: base (program)
 		{
 			var numPointLights = 0;
-			var plights = new Lighting.PointLight[4];
+			var plights = new LightingShaders.PointLight[4];
 
 			using (program.Scope ())
 			{ 
 				foreach (var pointLight in scene.Root.Traverse ().OfType<PointLight> ())
 				{
-					plights[numPointLights++] = new Lighting.PointLight
+					plights[numPointLights++] = new LightingShaders.PointLight
 					{
 						position = pointLight.Position,
 						intensity = pointLight.Intensity,
@@ -141,7 +139,6 @@
 				}
 				pointLights &= plights;
 
-				shadowMap &= new Sampler2DArray (0).LinearFiltering ().ClampToEdges (Axes.All);
 				var samp = new Sampler2D[4];
 				for (int i = 0; i < samp.Length; i++)
 					samp[i] = new Sampler2D (i + 1).LinearFiltering ().ClampToEdges (Axes.All);
@@ -150,6 +147,8 @@
 
 				lighting = new LightingUniforms (program, scene);
 				transforms = new TransformUniforms (program);
+				shadows = new CascadedShadowUniforms (program,
+					new Sampler2DArray (0).LinearFiltering ().ClampToEdges (Axes.All));
 			}
 		}
 
@@ -159,21 +158,21 @@
 		public static TransformNode CreateScene (SceneGraph sceneGraph)
 		{
 			var fighter = new FighterGeometry<EntityVertex, PathNode> ();
-			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f /* MathHelper.PiOver2 */).Compact ())
+			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f).Compact ())
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
-		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, Shadows shadows)
+		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, CascadedShadowUniforms shadowSource)
 		{
 			_entityShader = new Program (
 				VertexShader (), 
 				FragmentShader ());
 			_entities = new Entities (_entityShader, sceneGraph);
 
-			return React.By<Camera> (cam => _entities.Render (cam, shadows))
+			return React.By<Camera> (cam => _entities.Render (cam, shadowSource))
 				.BindSamplers (new Dictionary<Sampler, Texture> ()
 				{
-					{ !_entities.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
+					{ !_entities.shadows.csmShadowMap, sceneGraph.GlobalLighting.ShadowMap },
 					{ !_entities.diffuseMap, sceneGraph.GlobalLighting.DiffuseMap }
 				})
 				.DepthTest ()
@@ -181,15 +180,14 @@
 				.Program (_entityShader);
 		}
 
-		private void Render (Camera camera, Shadows shadows)
+		private void Render (Camera camera, CascadedShadowUniforms shadowSource)
 		{
 			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
-			csmViewLightMatrices &= !shadows.csmViewLightMatrices;
+			shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				Sampler.Bind (!samplers, mesh.Textures);
-				//transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
 				lighting.UpdateDirectionalLight (camera);
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 				_entityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
@@ -209,10 +207,10 @@
 				from v in Shader.Inputs<EntityVertex> ()
 				from u in Shader.Uniforms<Entities> ()
 				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = Enumerable.Range (0, (!u.csmViewLightMatrices).Length)
+				let csm = Enumerable.Range (0, (!u.shadows.viewLightMatrices).Length)
 					.Aggregate (-1, (int best, int i) =>
-						best < 0 && Lighting.Between (
-							((!u.csmViewLightMatrices)[i] * viewPos)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+						best < 0 && ShadowShaders.Between (
+							((!u.shadows.viewLightMatrices)[i] * viewPos)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)
 				select new EntityFragment ()
 				{
@@ -225,13 +223,13 @@
 					fragTexturePos = v.texturePos,
 					fragReflectivity = v.reflectivity,
 					fragShadowMap = csm,
-					fragPositionLightSpace = (!u.csmViewLightMatrices)[csm] * viewPos
+					fragPositionLightSpace = (!u.shadows.viewLightMatrices)[csm] * viewPos
 				});
 		}
 
 		private static GLShader FragmentShader ()
 		{
-			Lighting.Use ();
+			LightingShaders.Use ();
 			FragmentShaders.Use ();
 			
 			return GLShader.Create
@@ -247,26 +245,27 @@
 					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.fragTexturePos - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.fragTexturePos - new Vec2 (30f)) :
 					f.fragDiffuse
-					let dirLight = Lighting.DirLightIntensity (!u.lighting.directionalLight, f.fragPosition, 
+					let dirLight = LightingShaders.DirLightIntensity (!u.lighting.directionalLight, f.fragPosition, 
 						f.fragNormal, f.fragShininess)
 				let totalLight = 
 					(from pl in !u.pointLights
-					 select Lighting.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess))
+					 select LightingShaders.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess))
 					.Aggregate (dirLight, 
-						(total, pointLight) => new Lighting.DiffuseAndSpecular (
+						(total, pointLight) => new LightingShaders.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
 				let ambient = envLight * (!u.lighting.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.fragReflectivity > 0f ? 
-					fragDiffuse.Mix (Lighting.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
+					fragDiffuse.Mix (LightingShaders.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
 				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
 				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let shadow = Lighting.CascadedShadowMapFactor (!u.shadowMap, f.fragPositionLightSpace, f.fragShadowMap, 0.0015f)
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!u.shadows.csmShadowMap, f.fragPositionLightSpace, 
+					f.fragShadowMap, 0.0015f)
 				select new
 				{
-					outputColor = Lighting.GlobalLightIntensity (!u.lighting.globalLighting, ambient, 
+					outputColor = LightingShaders.GlobalLightIntensity (!u.lighting.globalLighting, ambient, 
 						totalLight.diffuse * shadow, totalLight.specular * shadow, reflectDiffuse, f.fragSpecular)
 				}
 			);

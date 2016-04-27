@@ -2,12 +2,47 @@
 {
 	using System;
 	using System.Linq;
-	using Compose3D.Maths;
-	using Compose3D.GLTypes;
+	using Maths;
+	using GLTypes;
 	using Textures;
+	using SceneGraph;
 	using Extensions;
 
-	public static class Lighting
+	public class LightingUniforms : Uniforms
+	{
+		public Uniform<LightingShaders.GlobalLight> globalLighting;
+		public Uniform<LightingShaders.DirectionalLight> directionalLight;
+
+		public LightingUniforms (Program program, SceneGraph scene)
+			: base (program)
+		{
+			using (program.Scope ())
+			{
+				var gl = scene.GlobalLighting;
+				if (gl != null)
+				{
+					globalLighting &= new LightingShaders.GlobalLight ()
+					{
+						ambientLightIntensity = gl.AmbientLightIntensity,
+						maxintensity = gl.MaxIntensity,
+						inverseGamma = 1f / gl.GammaCorrection
+					};
+				}
+			}
+		}
+
+		public void UpdateDirectionalLight (Camera camera)
+		{
+			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
+			directionalLight &= new LightingShaders.DirectionalLight ()
+			{
+				direction = dirLight.DirectionInCameraSpace (camera),
+				intensity = dirLight.Intensity
+			};
+		}
+	}
+
+	public static class LightingShaders
 	{
 		[GLStruct ("DirectionalLight")]
 		public struct DirectionalLight
@@ -160,139 +195,7 @@
 				)
 				.Evaluate ()
 			);
-
-		public static readonly Func<Sampler2D, Vec3, float, float> PercentageCloserFiltering =
-			GLShader.Function
-			(
-				() => PercentageCloserFiltering,
-				(Sampler2D shadowMap, Vec3 texCoords, float bias) =>
-				(
-					from con in Shader.Constants (new
-					{
-						kernel = new Vec2[] 
-						{
-							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
- 							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
-							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
-						}
-					})
-					let closestDepth = shadowMap.Texture (texCoords[Coord.x, Coord.y]).X
-					let currentDepth = texCoords.Z - bias
-					let mapSize = shadowMap.Size (0)
-					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let pcfShadow = (from point in con.kernel
-									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-									 select shadowMap.Texture (sampleCoords).X)
-									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
-					select pcfShadow / 9f
-				)
-				.Evaluate ()
-			);
 		
-		public static readonly Func<Vec3, float, float, bool> Between =
-			GLShader.Function
-			(
-				() => Between,
-				(Vec3 texCoords, float low, float high) =>
-				texCoords.X >= low && texCoords.Y >= low && texCoords.Z >= low &&
-				texCoords.X <= high && texCoords.Y <= high && texCoords.Z <= high
-			);
-		
-
-		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
-			GLShader.Function
-			(
-				() => PcfShadowMapFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
-				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
-					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select Between (texCoords, 0f, 1f) ? 
-						PercentageCloserFiltering (shadowMap, texCoords, bias) : 1f
-				)
-				.Evaluate ()
-			);
-		
-		public static readonly Func<float, float, float, float> LinearStep = 
-			GLShader.Function
-			(
-				() => LinearStep,
-				(float value, float low, float high) =>
-					((value - low) / (high - low)).Clamp (0f, 1f)
-			);
-		
-		public static readonly Func<Sampler2D, Vec3, float> SummedAreaVariance =
-			GLShader.Function
-			(
-				() => SummedAreaVariance,
-				(Sampler2D shadowMap, Vec3 texCoords) =>
-				(
-					from currentDepth in texCoords.Z.ToShader ()
-					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
-					let p = GLMath.Step (currentDepth, moments.X)
-					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.0000001f)
-					let d = currentDepth - moments.X
-					let pmax = LinearStep (variance / (variance + d * d), 0f, 1f)
-					select Math.Min (Math.Max (p, pmax), 1f)
-				)
-				.Evaluate ()
-			);
-					
-		public static readonly Func<Sampler2D, Vec4, float> VarianceShadowMapFactor =
-			GLShader.Function
-			(
-				() => VarianceShadowMapFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
-				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
-					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select Between (texCoords, 0f, 0.9f) ? SummedAreaVariance (shadowMap, texCoords) : 1f
-				)
-				.Evaluate ()
-			);
-
-		public static readonly Func<Sampler2DArray, Vec3, float, float, float> csmPCFiltering =
-			GLShader.Function
-			(
-				() => csmPCFiltering,
-				(Sampler2DArray shadowMap, Vec3 texCoords, float mapIndex, float bias) =>
-				(
-					from con in Shader.Constants (new
-					{
-						kernel = new Vec2[]
-						{
-							new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
- 							new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
-							new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f)
-						}
-					})
-					let closestDepth = shadowMap.Texture (new Vec3 (texCoords.X, texCoords.Y, mapIndex)).X
-					let currentDepth = texCoords.Z - bias
-					let mapSize = shadowMap.Size (0)
-					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let pcfShadow = (from point in con.kernel
-									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-									 select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
-									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
-					select pcfShadow / 9f
-				)
-				.Evaluate ()
-			);
-
-		public static readonly Func<Sampler2DArray, Vec4, float, float, float> CascadedShadowMapFactor =
-			GLShader.Function
-			(
-				() => CascadedShadowMapFactor,
-				(Sampler2DArray shadowMap, Vec4 posInLightSpace, float mapIndex, float bias) =>
-				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
-					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select Between (texCoords, 0f, 1f) ? 
-						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
-				)
-				.Evaluate ()
-			);
-
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of
 		/// this class.

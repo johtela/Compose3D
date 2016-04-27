@@ -15,12 +15,10 @@
 	
 	public class Shadows : Uniforms
 	{
-		public const int CascadedShadowMapCount = 4;
-
+		// Uniforms
 		public Uniform<Mat4> modelViewMatrix;
-		public Uniform<Mat4> viewLightMatrix;
-		[GLArray(CascadedShadowMapCount)]
-		public Uniform<Mat4[]> csmViewLightMatrices;
+		public ShadowUniforms shadowUniforms;
+		public CascadedShadowUniforms csmUniforms;
 
 		private static Program _shadowShader;
 		private static Shadows _instance;
@@ -31,7 +29,14 @@
 			get { return _instance; }
 		}
 
-		private Shadows (Program program) : base (program) { }
+		private Shadows (Program program, bool cascaded) : base (program)
+		{
+			_cascaded = cascaded;
+			if (_cascaded)
+				csmUniforms = new CascadedShadowUniforms (program);
+			else
+				shadowUniforms = new ShadowUniforms (program);
+		}
 
 		public static Reaction<Camera> Renderer (SceneGraph scene,
 			int mapSize, ShadowMapType type, bool cascaded)
@@ -46,16 +51,15 @@
 					VertexShader (),
 					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 
-			_instance = new Shadows (_shadowShader);
-			_instance._cascaded = cascaded;
+			_instance = new Shadows (_shadowShader, cascaded);
 
 			Texture depthTexture;
 			if (type == ShadowMapType.Depth || cascaded)
 			{
 				depthTexture = cascaded ?
 					new Texture (TextureTarget.Texture2DArray, PixelInternalFormat.DepthComponent16,
-						mapSize, mapSize, CascadedShadowMapCount, PixelFormat.DepthComponent, PixelType.Float, 
-						IntPtr.Zero) :
+						mapSize, mapSize, CascadedShadowUniforms.CascadedShadowMapCount, PixelFormat.DepthComponent, 
+						PixelType.Float, IntPtr.Zero) :
 					new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
 						mapSize, mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 				depthFramebuffer.AddTexture (FramebufferAttachment.DepthAttachment, depthTexture);
@@ -87,9 +91,9 @@
 			var light = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			var worlToCamera = camera.WorldToCamera;
 			if (_cascaded)
-				csmViewLightMatrices &= light.CascadedShadowFrustums (camera, CascadedShadowMapCount);
+				csmUniforms.UpdateLightSpaceMatrices (camera, light);
 			else
-				viewLightMatrix &= light.CameraToShadowProjection (camera);
+				shadowUniforms.UpdateLightSpaceMatrix (light.CameraToShadowProjection (camera));
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
@@ -105,7 +109,8 @@
 				from u in Shader.Uniforms<Shadows> ()
 				select new Fragment ()
 				{
-					gl_Position = !u.viewLightMatrix * !u.modelViewMatrix * new Vec4 (v.position, 1f)
+					gl_Position = !u.shadowUniforms.lightSpaceMatrix * !u.modelViewMatrix * 
+						new Vec4 (v.position, 1f)
 				}
 			);
 		}
@@ -124,19 +129,19 @@
 
 		public static GLShader GeometryShaderCascaded ()
 		{
-			Lighting.Use ();
+			ShadowShaders.Use ();
 			return GLShader.CreateGeometryShader<PerVertexOut> (3,
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				let avg = (p.gl_in[0].gl_Position + p.gl_in[1].gl_Position 
 					+ p.gl_in[2].gl_Position) / 3f
-				let layer = Enumerable.Range (0, (!u.csmViewLightMatrices).Length)
+				let layer = Enumerable.Range (0, (!u.csmUniforms.viewLightMatrices).Length)
 					.Aggregate (-1, (int best, int i) =>
-						best < 0 && Lighting.Between (
-							((!u.csmViewLightMatrices)[i] * avg)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+						best < 0 && ShadowShaders.Between (
+							((!u.csmUniforms.viewLightMatrices)[i] * avg)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)
-				let viewLight = (!u.csmViewLightMatrices)[layer]
+				let viewLight = (!u.csmUniforms.viewLightMatrices)[layer]
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()

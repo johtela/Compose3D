@@ -55,7 +55,17 @@
 	{
 		Vec4 fragPositionLightSpace { get; set; }
 	}
-	
+
+	public class TextureUniforms : Uniforms
+	{
+		public Uniform<Sampler2D> textureMap;
+
+		public TextureUniforms (Program program, Sampler2D sampler) : base (program)
+		{
+			textureMap &= sampler;
+		}
+	}
+
 	public static class FragmentShaders
 	{
 		public static void Use () { }

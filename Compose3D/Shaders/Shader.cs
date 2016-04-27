@@ -3,6 +3,15 @@
 	using System;
 	using GLTypes;
 
+	public abstract class Uniforms
+	{
+		public Uniforms (Program program)
+		{
+			foreach (var field in GetType ().GetUniforms ())
+				field.SetValue (this, Activator.CreateInstance (field.FieldType, program, field));
+		}
+	}
+
 	public delegate T Shader<T> (ShaderState state); 
 
 	public static class Shader

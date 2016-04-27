@@ -201,7 +201,6 @@
     <Compile Include="Geometry\Lathe.cs" />
     <Compile Include="Geometry\VertexManipulator.cs" />
     <Compile Include="Shaders\Shader.cs" />
-    <Compile Include="Shaders\ShaderState.cs" />
     <Compile Include="Shaders\ParsingHelpers.cs" />
     <Compile Include="Shaders\GLSLGenerator.cs" />
     <Compile Include="Geometry\Transformable.cs" />

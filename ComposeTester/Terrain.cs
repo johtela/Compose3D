@@ -174,7 +174,6 @@
 			{
 				if (mesh.VertexBuffer != null && mesh.IndexBuffers != null)
 				{
-					//transforms.UpdateLightSpaceMatrix (dirLight.CameraToShadowProjection (camera));
 					lighting.UpdateDirectionalLight (camera);
 					transforms.UpdateModelViewAndNormalMatrices (worldToCamera * mesh.Transform);
 					var distance = -(worldToCamera * mesh.BoundingBox).Front;
@@ -199,22 +198,20 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<Terrain> ()
+				from t in Shader.Uniforms<TransformUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = Enumerable.Range (0, (!u.shadows.viewLightMatrices).Length)
-					.Aggregate (-1, (int best, int i) =>
-						best < 0 && ShadowShaders.Between (
-							((!u.shadows.viewLightMatrices)[i] * viewPos)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-							i : best)
+				let csm = ShadowShaders.SelectCascadedShadowMap (viewPos)
 				select new TerrainFragment ()
 				{
-					gl_Position = !u.transforms.perspectiveMatrix * viewPos,
-					vertexNormal = (!u.transforms.normalMatrix * v.normal).Normalized,
+					gl_Position = !t.perspectiveMatrix * viewPos,
+					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
 					visibility = LightingShaders.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
 					fragTexturePos = v.texturePos / 15f,
 					fragShadowMap = csm,
-					fragPositionLightSpace = (!u.shadows.viewLightMatrices)[csm] * viewPos
+					fragPositionLightSpace = (!c.viewLightMatrices)[csm] * viewPos
 				});
 		}
 
@@ -225,6 +222,8 @@
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<Terrain> ()
+				from l in Shader.Uniforms<LightingUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.fragTexturePos)
 				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.fragTexturePos)
 				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.fragTexturePos)
@@ -233,16 +232,15 @@
 				let rockBlend = GLMath.SmoothStep (0.8f, 0.9f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
 				let diffuseLight = LightingShaders.LightDiffuseIntensity (
-					(!u.lighting.directionalLight).direction,
-					(!u.lighting.directionalLight).intensity, 
+					(!l.directionalLight).direction,
+					(!l.directionalLight).intensity, 
 					f.vertexNormal)
-				let ambient = (!u.lighting.globalLighting).ambientLightIntensity
-				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
+				let ambient = (!l.globalLighting).ambientLightIntensity
+				//let shadow = Lighting.PcfShadowMapFactor (!lu.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
 				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!u.shadows.csmShadowMap, f.fragPositionLightSpace, 
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, f.fragPositionLightSpace, 
 					f.fragShadowMap, 0f)
-				let litColor = LightingShaders.GlobalLightIntensity (
-						!u.lighting.globalLighting,
+				let litColor = LightingShaders.GlobalLightIntensity (!l.globalLighting,
 						ambient, diffuseLight * shadow,
 						new Vec3 (0f), terrainColor, new Vec3 (0f))
 				select new

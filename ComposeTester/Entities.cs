@@ -205,25 +205,22 @@
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<EntityVertex> ()
-				from u in Shader.Uniforms<Entities> ()
-				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = Enumerable.Range (0, (!u.shadows.viewLightMatrices).Length)
-					.Aggregate (-1, (int best, int i) =>
-						best < 0 && ShadowShaders.Between (
-							((!u.shadows.viewLightMatrices)[i] * viewPos)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-							i : best)
+				from t in Shader.Uniforms<TransformUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
+				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
+				let csm = ShadowShaders.SelectCascadedShadowMap (viewPos)
 				select new EntityFragment ()
 				{
-					gl_Position = !u.transforms.perspectiveMatrix * viewPos,
+					gl_Position = !t.perspectiveMatrix * viewPos,
 					fragPosition = viewPos[Coord.x, Coord.y, Coord.z],
-					fragNormal = (!u.transforms.normalMatrix * v.normal).Normalized,
+					fragNormal = (!t.normalMatrix * v.normal).Normalized,
 					fragDiffuse = v.diffuse,
 					fragSpecular = v.specular,
 					fragShininess = v.shininess,
 					fragTexturePos = v.texturePos,
 					fragReflectivity = v.reflectivity,
 					fragShadowMap = csm,
-					fragPositionLightSpace = (!u.shadows.viewLightMatrices)[csm] * viewPos
+					fragPositionLightSpace = (!c.viewLightMatrices)[csm] * viewPos
 				});
 		}
 
@@ -238,6 +235,8 @@
 
 				from f in Shader.Inputs<EntityFragment> ()
 				from u in Shader.Uniforms<Entities> ()
+				from l in Shader.Uniforms<LightingUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let samplerNo = (f.fragTexturePos.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.fragTexturePos) :
@@ -245,7 +244,7 @@
 					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.fragTexturePos - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.fragTexturePos - new Vec2 (30f)) :
 					f.fragDiffuse
-					let dirLight = LightingShaders.DirLightIntensity (!u.lighting.directionalLight, f.fragPosition, 
+					let dirLight = LightingShaders.DirLightIntensity (!l.directionalLight, f.fragPosition, 
 						f.fragNormal, f.fragShininess)
 				let totalLight = 
 					(from pl in !u.pointLights
@@ -254,18 +253,18 @@
 						(total, pointLight) => new LightingShaders.DiffuseAndSpecular (
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
-				let ambient = envLight * (!u.lighting.globalLighting).ambientLightIntensity
+				let ambient = envLight * (!l.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.fragReflectivity > 0f ? 
 					fragDiffuse.Mix (LightingShaders.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity) :
 					fragDiffuse
 				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
 				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!u.shadows.csmShadowMap, f.fragPositionLightSpace, 
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, f.fragPositionLightSpace, 
 					f.fragShadowMap, 0.0015f)
 				select new
 				{
-					outputColor = LightingShaders.GlobalLightIntensity (!u.lighting.globalLighting, ambient, 
+					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 
 						totalLight.diffuse * shadow, totalLight.specular * shadow, reflectDiffuse, f.fragSpecular)
 				}
 			);

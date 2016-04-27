@@ -151,7 +151,7 @@
         private void DeclareUniforms (Type type)
         {
 			if (!DefineType (type)) return;
-			foreach (var field in type.GetUniformsRecursively ())
+			foreach (var field in type.GetUniforms ())
             {
                 var uniType = field.FieldType.GetGenericArguments ().Single ();
                 var arrayLen = 0;

@@ -134,14 +134,11 @@
 				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let avg = (p.gl_in[0].gl_Position + p.gl_in[1].gl_Position 
 					+ p.gl_in[2].gl_Position) / 3f
-				let layer = Enumerable.Range (0, (!u.csmUniforms.viewLightMatrices).Length)
-					.Aggregate (-1, (int best, int i) =>
-						best < 0 && ShadowShaders.Between (
-							((!u.csmUniforms.viewLightMatrices)[i] * avg)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-							i : best)
-				let viewLight = (!u.csmUniforms.viewLightMatrices)[layer]
+				let layer = ShadowShaders.SelectCascadedShadowMap (avg)
+				let viewLight = (!c.viewLightMatrices)[layer]
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()

@@ -90,19 +90,6 @@
             return type.GetProperties (_bindingFlags);
         }
 
-		public static IEnumerable<FieldInfo> GetUniformsRecursively (this Type type)
-		{
-			foreach (var field in type.GetFields (_bindingFlags))
-			{
-				var fieldType = field.FieldType;
-				if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition () == typeof (Uniform<>))
-					yield return field;
-				else
-					foreach (var subField in GetUniforms (fieldType))
-						yield return subField;
-			}			
-		}
-		
         public static IEnumerable<FieldInfo> GetUniforms (this Type type)
         {
 			return from field in type.GetFields (_bindingFlags)

@@ -556,11 +556,33 @@
 			CodeOut ("EndPrimitive ();");
 		}
 
+		public void ConditionalReturn (Expression expr, Action<Expression> returnAction)
+		{
+			var ce = expr.CastExpr<ConditionalExpression> (ExpressionType.Conditional);
+			if (ce == null)
+				returnAction (expr);
+			else
+			{
+				CodeOut ("if ({0})", ExprToGLSL (ce.Test));
+				CodeOut ("{");
+				_tabLevel++;
+				returnAction (ce.IfTrue);
+				_tabLevel--;
+				CodeOut ("}");
+				CodeOut ("else");
+				CodeOut ("{");
+				_tabLevel++;
+				ConditionalReturn (ce.IfFalse, returnAction);
+				_tabLevel--;
+				CodeOut ("}");
+			}
+		}
+
 		public void OutputShader (LambdaExpression expr)
         {
 			StartMain ();
 			var retExpr = ParseShader (expr.Body);
-            Return (retExpr);
+            ConditionalReturn (retExpr, Return);
 			EndFunction ();
         }
 
@@ -568,7 +590,7 @@
 		{
 			StartMain ();
 			var retExpr = ParseShader (expr.Body);
-			ReturnArrayOfVertices (retExpr);
+			ConditionalReturn (retExpr, ReturnArrayOfVertices);
 			EndFunction ();
 		}
 

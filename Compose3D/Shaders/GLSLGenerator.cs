@@ -401,34 +401,32 @@
             for (int i = 0; i < ne.Members.Count; i++)
             {
                 var prop = (PropertyInfo)ne.Members[i];
-                if (!(prop.Name.StartsWith ("<>") || ne.Arguments[i] is ParameterExpression))
-                {
-                    var type = GLType (prop.PropertyType);
-                    var aggr = Aggregate (ne.Arguments[i]);
-                    if (aggr != null)
-                        CodeOut ("{0} {1} = {2};", type, prop.Name, aggr);
-                    else
-                    {
-                        var val = ExprToGLSL (ne.Arguments[i]);
-                        if (prop.Name != val)
-                            CodeOut ("{0} {1} = {2};", type, prop.Name, val);
-                    }
-                }
+				if (!(prop.Name.StartsWith ("<>") || ne.Arguments[i] is ParameterExpression))
+				{
+					var type = GLType (prop.PropertyType);
+					var val = ExprToGLSL (RemoveAggregates (ne.Arguments[i]));
+					if (prop.Name != val)
+						CodeOut ("{0} {1} = {2};", type, prop.Name, val);
+				}
             }
             return true;
         }
 
-        public string Aggregate (Expression expr)
+		public Expression RemoveAggregates (Expression expr)
+		{
+			return expr.ReplaceSubExpression<MethodCallExpression> (ExpressionType.Call, Aggregate);
+		}
+
+        public Expression Aggregate (MethodCallExpression expr)
         {
-            var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-            if (node == null || !node.Method.IsAggregate ())
-                return null;
-            var aggrFun = node.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
+            if (!expr.Method.IsAggregate ())
+                return expr;
+            var aggrFun = expr.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
             CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
-                ExprToGLSL (node.Arguments[1]));
-			var se = node.Arguments[0].GetSelect ();
+                ExprToGLSL (expr.Arguments[1]));
+			var se = expr.Arguments[0].GetSelect ();
 			if (se != null)
 			{
 				ParseFor (se);
@@ -437,16 +435,16 @@
 			}
 			else
 			{
-				var mce = node.Arguments [0].CastExpr<MethodCallExpression> (ExpressionType.Call);
+				var mce = expr.Arguments [0].CastExpr<MethodCallExpression> (ExpressionType.Call);
 				if (mce != null && mce.Method.IsRange ())
-					OutputForLoop (node);
+					OutputForLoop (expr);
 				else
-					IterateArray (node);
+					IterateArray (expr);
 			}
             CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
-            return accum.Name;
+            return accum;
         }
 
 		public void ParseFor (MethodCallExpression mce)
@@ -615,8 +613,8 @@
 		public void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-			CodeOut ("return {0};", ExprToGLSL (node != null && node.Method.IsEvaluate () ?
-				ParseShader (node.Arguments [0]) : expr));
+			CodeOut ("return {0};", ExprToGLSL (RemoveAggregates (
+				node != null && node.Method.IsEvaluate () ?	ParseShader (node.Arguments [0]) : expr)));
 		}
 	}
 }

@@ -71,11 +71,10 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let pcfShadow = (from point in con.kernel
-									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-									 select shadowMap.Texture (sampleCoords).X)
-									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
-					select pcfShadow / 9f
+					select (from point in con.kernel
+							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
+							select shadowMap.Texture (sampleCoords).X)
+							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 9f
 				)
 				.Evaluate ()
 			);
@@ -161,11 +160,10 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let pcfShadow = (from point in con.kernel
-									 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-									 select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
-									.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f))
-					select pcfShadow / 9f
+					select (from point in con.kernel
+							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
+							select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
+							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 9f
 				)
 				.Evaluate ()
 			);
@@ -178,6 +176,11 @@
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
+					//let color = 
+					//	mapIndex == 0f ? new Vec3 (1f, 0f, 0f) :
+					//	mapIndex == 1f ? new Vec3 (0f, 1f, 0f) :
+					//	mapIndex == 2f ? new Vec3 (0f, 0f, 1f) :
+					//	new Vec3 (1f)
 					select Between (texCoords, 0f, 1f) ?
 						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
 				)
@@ -191,11 +194,10 @@
 				(Vec4 posInViewSpace) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					let csm = Enumerable.Range (0, (!u.viewLightMatrices).Length)
+					select Enumerable.Range (0, (!u.viewLightMatrices).Length)
 						.Aggregate (-1, (int best, int i) => best < 0 &&
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)
-					select csm
 				)
 				.Evaluate ()
 			);

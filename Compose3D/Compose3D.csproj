@@ -52,7 +52,6 @@
     <Compile Include="Geometry\Compacted.cs" />
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
-    <Compile Include="GLTypes\FixedArray.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>

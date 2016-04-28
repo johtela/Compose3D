@@ -34,26 +34,6 @@
         }
     }
 
-	[AttributeUsage (AttributeTargets.Class)]
-	public class FixedArrayAttribute : Attribute
-	{
-		public Type ElementType;
-		public int Length;
-		
-		public FixedArrayAttribute (Type elementType, int length)
-		{
-			ElementType = elementType;
-			Length = length;
-		}
-
-		public string GLType ()
-		{
-			var attr = ElementType.GetGLAttribute ();
-			return string.Format ("{0}[{1}]",
-				attr != null ? attr.Syntax : TypeMapping.Type (ElementType), Length);
-		}
-	}
-
 	[AttributeUsage (AttributeTargets.Field)]
 	public class GLFieldAttribute : Attribute
 	{
@@ -64,7 +44,6 @@
 			Name = name;
 		}
 	}
-
 
     public class GLAttribute : Attribute
     {

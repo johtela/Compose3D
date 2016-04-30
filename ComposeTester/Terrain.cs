@@ -93,7 +93,8 @@
 				return vertices != null ? vertices[vertIndex].position.Y : 10f;
 			}
 		}
-		
+
+		[GLInterface]
 		public class TerrainFragment : Fragment, IFragmentTexture<Vec2>, IFragmentShadow
 		{
 			public Vec3 vertexNormal { get; set; }
@@ -146,7 +147,7 @@
 			var rockTexture = LoadTexture ("Rock");
 			var grassTexture = LoadTexture ("Grass");
 
-			return React.By<Camera> (cam => _terrain.Render (cam, shadowSource))
+			return React.By ((Camera cam) => _terrain.Render (cam, shadowSource))
 				.BindSamplers (new Dictionary<Sampler, Texture> ()
 				{
 					{ !_terrain.shadows.csmShadowMap, sceneGraph.GlobalLighting.ShadowMap },

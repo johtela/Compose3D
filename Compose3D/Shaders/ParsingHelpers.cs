@@ -104,8 +104,8 @@
 
         public static IEnumerable<MethodCallExpression> Traverse (this Expression expr)
         {
-			var mcexpr = expr.GetSelect ();
-            if (mcexpr != null)
+			var mcexpr = expr as MethodCallExpression;
+            if (mcexpr != null && (mcexpr.Method.IsSelect () || mcexpr.Method.IsWhere ()))
             {
                 foreach (var sexpr in mcexpr.Arguments[0].Traverse ())
                     yield return sexpr;
@@ -151,6 +151,11 @@
 		public static bool IsSelectMany (this MethodInfo mi)
 		{
 			return mi.DeclaringType == typeof (Shader) && mi.Name == "SelectMany";
+		}
+
+		public static bool IsWhere (this MethodInfo mi)
+		{
+			return mi.DeclaringType == typeof (Shader) && mi.Name == "Where";
 		}
 
 		public static bool IsAggregate (this MethodInfo mi)
@@ -226,6 +231,11 @@
         {
             return parser.ExactlyOne ().Then (parser.ZeroOrMore ());
         }
+
+		public static Parser Either (Parser parser, Parser other)
+		{
+			return source => parser (source) || other (source);
+		}
 
         public static Parser IfFail (this Parser parser, Exception ex)
         {

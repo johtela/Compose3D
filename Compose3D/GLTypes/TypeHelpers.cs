@@ -53,7 +53,12 @@
             return type.GetGLAttribute () != null;
         }
 
-        public static string GetQualifiers (this MemberInfo mi)
+		public static bool IsGLInterface (this Type type)
+		{
+			return type.IsDefined (typeof (GLInterfaceAttribute));
+		}
+
+		public static string GetQualifiers (this MemberInfo mi)
         {
             return mi.GetCustomAttributes (typeof (GLQualifierAttribute), true)
                 .Cast<GLQualifierAttribute> ().Select (q => q.Qualifier).SeparateWith (" ");

@@ -35,14 +35,14 @@
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
 			var builder = new GLSLGenerator ();
-			builder.DeclareVariables (typeof (T), "out");
+			builder.DeclareVariables (typeof (T), "out", "");
 			builder.OutputShader (shader);
 			return BuildShaderCode (builder, version);
 		}
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
 		{
-			return CreateShader<T> (GetGLSLVersion (), shader);
+			return CreateShader<T> (GetGLSLVersion ().ToString (), shader);
 		}
 
 		public static string CreateGeometryShader<T> (string version, int vertexCount, 
@@ -53,7 +53,7 @@
 			builder.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
 			builder.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
-			builder.DeclareVariables (typeof (T), "out");
+			builder.DeclareVariables (typeof (T), "out", "");
 			builder.OutputGeometryShader (shader);
 			return BuildShaderCode (builder, version);
 		}
@@ -63,9 +63,9 @@
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var currVersion = GetGLSLVersion ();
-			var minVersion = "150";
-			var version = string.Compare (currVersion, minVersion) > 0 ? currVersion : minVersion;
-			return CreateGeometryShader<T> (version, vertexCount, inputPrimitive, outputPrimitive, shader);
+			var minVersion = 150;
+			var version = currVersion > minVersion ? currVersion : minVersion;
+			return CreateGeometryShader<T> (version.ToString (), vertexCount, inputPrimitive, outputPrimitive, shader);
 		}
 
 		private static string BuildShaderCode (GLSLGenerator builder, string version)
@@ -76,13 +76,13 @@
 				builder._code.ToString ();
 		}
 
-		private static string GetGLSLVersion ()
+		private static int GetGLSLVersion ()
 		{
 			var glslVersion = GL.GetString (StringName.ShadingLanguageVersion);
 			var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
 			if (!match.Success || match.Groups.Count != 3)
 				throw new ParseException ("Invalid GLSL version string: " + glslVersion);
-			return match.Groups[1].Value + match.Groups[2].Value;
+			return int.Parse (match.Groups[1].Value + match.Groups[2].Value);
 		}
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
@@ -181,15 +181,23 @@
             }
         }
 
-        private void DeclareVariables (Type type, string prefix)
+        private void DeclareVariables (Type type, string prefix, string instanceName)
         {
 			if (!DefineType (type))
 				return;
+			if (type.IsGLInterface ())
+			{
+				DeclOut ("{0} {1}", prefix, type.Name);
+				DeclOut ("{");
+				prefix = "";
+			}
             if (!type.Name.StartsWith ("<>"))
 				foreach (var field in type.GetGLFields ())
 					DeclareVariable (field, field.FieldType, prefix);
 			foreach (var prop in type.GetGLProperties ())
 				DeclareVariable (prop, prop.PropertyType, prefix);
+			if (type.IsGLInterface ())
+				DeclOut ("}} {0};", instanceName);
 		}
 
 		private void DeclareConstants (Expression expr)
@@ -239,7 +247,7 @@
 		{
 			var type = node.Method.GetGenericArguments () [0];
 			if (node.Method.Name == "Inputs")
-				DeclareVariables (type, "in");
+				DeclareVariables (type, "in", par.Name);
 			else if (node.Method.Name == "Uniforms")
 				DeclareUniforms (type);
 			else if (node.Method.Name == "Constants")
@@ -336,7 +344,7 @@
                     var attr = me.Member.GetGLAttribute ();
                     return attr != null ?
                         string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Expression.Type.IsGLType () ?
+                        me.Expression.Type.IsGLType () || me.Expression.Type.IsGLInterface () ?
                             string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
                             me.Member.Name;
                 }) ??
@@ -519,6 +527,15 @@
 			return true;
 		}
 
+		public bool Where (Source source)
+		{
+			if (!source.Current.Method.IsWhere ())
+				return false;
+			var predicate = source.Current.Arguments[1].ExpectLambda ().Body;
+			CodeOut ("if (!{0}) return;", ExprToGLSL (predicate));
+			return true;
+		}
+
         public void Return (Expression expr)
         {
             var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
@@ -599,7 +616,7 @@
 			if (me != null)
 				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), me);
 			else
-				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (LetBinding))
+				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (Parse.Either (LetBinding, Where)))
 					.Execute (new Source (mce.Arguments [0].Traverse ()));
 			me = CastFromBinding (mce.Arguments [1].ExpectLambda ().Body);
 			if (me != null)

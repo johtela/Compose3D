@@ -87,5 +87,14 @@
 		{
 			return shader.Bind (a => project (a).Bind (b => select (a, b).ToShader ()));
 		}
+
+		public static Shader<T> Where<T> (this Shader<T> shader, Func<T, bool> predicate)
+		{
+			return state =>
+			{
+				var res = shader (state);
+				return predicate (res) ? res : default (T);
+			};
+		}
 	}
 }

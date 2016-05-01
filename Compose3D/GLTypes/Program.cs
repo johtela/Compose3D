@@ -80,6 +80,18 @@
 			GL.BindVertexArray (0);
 		}
 
+		public void DrawElementsInstanced<V> (PrimitiveType primitive, VBO<V> vertices, 
+			VBO<int> indices, int instanceCount) where V : struct
+		{
+			BindVertices (vertices);
+			GL.BindBuffer (BufferTarget.ElementArrayBuffer, indices._glvbo);
+			GL.DrawElementsInstanced (primitive, indices._count, DrawElementsType.UnsignedInt,
+				IntPtr.Zero, instanceCount);
+			GL.BindBuffer (BufferTarget.ElementArrayBuffer, 0);
+			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+			GL.BindVertexArray (0);
+		}
+
 		public void DrawNormals<V> (VBO<V> vertices) where V : struct
 		{
 			BindVertices (vertices);

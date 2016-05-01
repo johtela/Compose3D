@@ -121,7 +121,7 @@
 			transforms = new TransformUniforms (program);
 			lighting = new LightingUniforms (program, scene);
 			shadows = new CascadedShadowUniforms (program,
-				new Sampler2DArray (0).LinearFiltering ().ClampToBorder (new Vec4 (1f), Axes.All));
+				new Sampler2DArray (0).LinearFiltering ().ClampToEdges (Axes.All));
 
 			using (program.Scope ())
 			{

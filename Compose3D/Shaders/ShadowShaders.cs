@@ -53,9 +53,7 @@
 	public static class ShadowShaders
 	{
 		public static readonly Func<Sampler2D, Vec3, float, float> PercentageCloserFiltering =
-			GLShader.Function
-			(
-				() => PercentageCloserFiltering,
+			GLShader.Function (() => PercentageCloserFiltering,
 				(Sampler2D shadowMap, Vec3 texCoords, float bias) =>
 				(
 					from con in Shader.Constants (new
@@ -76,13 +74,10 @@
 							select shadowMap.Texture (sampleCoords).X)
 							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 9f
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<Vec3, float, float, bool> Between =
-			GLShader.Function
-			(
-				() => Between,
+			GLShader.Function (() => Between,
 				(Vec3 texCoords, float low, float high) =>
 				texCoords.X >= low && texCoords.Y >= low && texCoords.Z >= low &&
 				texCoords.X <= high && texCoords.Y <= high && texCoords.Z <= high
@@ -90,9 +85,7 @@
 
 
 		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
-			GLShader.Function
-			(
-				() => PcfShadowMapFactor,
+			GLShader.Function (() => PcfShadowMapFactor,
 				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
@@ -100,21 +93,16 @@
 					select Between (texCoords, 0f, 1f) ?
 						PercentageCloserFiltering (shadowMap, texCoords, bias) : 1f
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<float, float, float, float> LinearStep =
-			GLShader.Function
-			(
-				() => LinearStep,
+			GLShader.Function (() => LinearStep,
 				(float value, float low, float high) =>
 					((value - low) / (high - low)).Clamp (0f, 1f)
 			);
 
 		public static readonly Func<Sampler2D, Vec3, float> SummedAreaVariance =
-			GLShader.Function
-			(
-				() => SummedAreaVariance,
+			GLShader.Function (() => SummedAreaVariance,
 				(Sampler2D shadowMap, Vec3 texCoords) =>
 				(
 					from currentDepth in texCoords.Z.ToShader ()
@@ -125,26 +113,20 @@
 					let pmax = LinearStep (variance / (variance + d * d), 0f, 1f)
 					select Math.Min (Math.Max (p, pmax), 1f)
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<Sampler2D, Vec4, float> VarianceShadowMapFactor =
-			GLShader.Function
-			(
-				() => VarianceShadowMapFactor,
+			GLShader.Function (() => VarianceShadowMapFactor,
 				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
 					select Between (texCoords, 0f, 0.9f) ? SummedAreaVariance (shadowMap, texCoords) : 1f
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<Sampler2DArray, Vec3, float, float, float> csmPCFiltering =
-			GLShader.Function
-			(
-				() => csmPCFiltering,
+			GLShader.Function (() => csmPCFiltering,
 				(Sampler2DArray shadowMap, Vec3 texCoords, float mapIndex, float bias) =>
 				(
 					from con in Shader.Constants (new
@@ -165,18 +147,15 @@
 							select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
 							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 9f
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<Sampler2DArray, Vec4, float, float, float> CascadedShadowMapFactor =
-			GLShader.Function
-			(
-				() => CascadedShadowMapFactor,
+			GLShader.Function (() => CascadedShadowMapFactor,
 				(Sampler2DArray shadowMap, Vec4 posInLightSpace, float mapIndex, float bias) =>
 				(
 					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					//let color = 
+					//let color =
 					//	mapIndex == 0f ? new Vec3 (1f, 0f, 0f) :
 					//	mapIndex == 1f ? new Vec3 (0f, 1f, 0f) :
 					//	mapIndex == 2f ? new Vec3 (0f, 0f, 1f) :
@@ -184,13 +163,10 @@
 					select Between (texCoords, 0f, 1f) ?
 						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		public static readonly Func<Vec4, int> SelectCascadedShadowMap =
-			GLShader.Function
-			(
-				() => SelectCascadedShadowMap,
+			GLShader.Function (() => SelectCascadedShadowMap,
 				(Vec4 posInViewSpace) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
@@ -199,8 +175,7 @@
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)
 				)
-				.Evaluate ()
-			);
+				.Evaluate ());
 
 		/// <summary>
 		/// Use this module. This function needs to be called once for static field initialization of

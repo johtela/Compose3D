@@ -66,11 +66,16 @@
 			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
 			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count);
 			var result = new Mat4[count];
-			for (int i = 0; i < count; i++)
+			ViewingFrustum prev = null;
+			for (int i = count - 1; i >= 0; i--)
 			{
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
-				var shadowFrustum = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				result[i] = shadowFrustum.CameraToScreen * camToLight;
+				var curr = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
+				var frustum = prev == null ? curr :
+					new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
+						curr.Bottom, curr.Top, curr.Near, prev.Far);
+				result[i] = frustum.CameraToScreen * camToLight;
+				prev = curr;
 			}
 			return result;
 		}

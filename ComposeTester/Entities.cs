@@ -258,7 +258,7 @@
 				let vertexPos = new Vec4 (f.fragPosition, 1f)
 				let csm = ShadowShaders.SelectCascadedShadowMap (vertexPos)
 				let posInLightSpace = (!c.viewLightMatrices)[csm] * vertexPos
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0015f)
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0005f)
 				select new
 				{
 					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 

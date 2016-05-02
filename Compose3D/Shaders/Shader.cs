@@ -14,24 +14,7 @@
 
 	public class ShaderState
 	{
-		private object _inputs;
-		private object _uniforms;
-
-		public ShaderState (object inputs, object uniforms)
-		{
-			_inputs = inputs;
-			_uniforms = uniforms;
-		}
-
-		public T Inputs<T> ()
-		{
-			return (T)_inputs;
-		}
-
-		public T Uniforms<T> ()
-		{
-			return (T)_uniforms;
-		}
+		public readonly int gl_InstanceID;
 	}
 
 	public delegate T Shader<T> (ShaderState state); 
@@ -56,25 +39,31 @@
 
 		public static T Evaluate<T> (this Shader<T> shader)
 		{
-			return shader (new ShaderState (null, null));
+			return shader (new ShaderState ());
 		}
 
 		[LiftMethod]
 		public static Shader<T> Inputs<T> ()
 		{
-			return state => state.Inputs<T> ();
+			return state => default (T);
 		}
 
 		[LiftMethod]
 		public static Shader<U> Uniforms<U> () where U : Uniforms
 		{
-			return state => state.Uniforms<U> ();
+			return state => default (U);
 		}
 		
 		[LiftMethod]
 		public static Shader<T> Constants<T> (T constants)
 		{
 			return state => constants;			
+		}
+
+		[LiftMethod]
+		public static Shader<ShaderState> State ()
+		{
+			return state => state;
 		}
 
 		public static Shader<U> Select<T, U> (this Shader<T> shader, Func<T, U> select)

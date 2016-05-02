@@ -45,11 +45,13 @@
 			return CreateShader<T> (GetGLSLVersion ().ToString (), shader);
 		}
 
-		public static string CreateGeometryShader<T> (string version, int vertexCount, 
-			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, 
+		public static string CreateGeometryShader<T> (string version, int vertexCount,
+			int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var builder = new GLSLGenerator ();
+			if (invocations > 0)
+				builder.DeclOut ("layout(invocations = {0}) in;", invocations);
 			builder.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
 			builder.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
@@ -58,14 +60,15 @@
 			return BuildShaderCode (builder, version);
 		}
 
-		public static string CreateGeometryShader<T> (int vertexCount,
+		public static string CreateGeometryShader<T> (int vertexCount, int invocations,
 			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var currVersion = GetGLSLVersion ();
-			var minVersion = 150;
+			var minVersion = invocations == 0 ? 150 : 400;
 			var version = currVersion > minVersion ? currVersion : minVersion;
-			return CreateGeometryShader<T> (version.ToString (), vertexCount, inputPrimitive, outputPrimitive, shader);
+			return CreateGeometryShader<T> (version.ToString (), vertexCount, invocations, 
+				inputPrimitive, outputPrimitive, shader);
 		}
 
 		private static string BuildShaderCode (GLSLGenerator builder, string version)
@@ -245,6 +248,8 @@
 
 		private void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
 		{
+			if (node.Method.Name == "State")
+				return;
 			var type = node.Method.GetGenericArguments () [0];
 			if (node.Method.Name == "Inputs")
 				DeclareVariables (type, "in", par.Name);

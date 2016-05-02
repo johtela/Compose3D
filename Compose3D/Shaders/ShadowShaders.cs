@@ -30,9 +30,9 @@
 
 	public class CascadedShadowUniforms : Uniforms
 	{
-		public const int CascadedShadowMapCount = 4;
+		public const int MapCount = 4;
 
-		[GLArray (CascadedShadowMapCount)]
+		[GLArray (MapCount)]
 		public Uniform<Mat4[]> viewLightMatrices;
 		public Uniform<Sampler2DArray> csmShadowMap;
 
@@ -46,7 +46,7 @@
 
 		public void UpdateLightSpaceMatrices (Camera camera, DirectionalLight light)
 		{
-			viewLightMatrices &= light.CascadedShadowFrustums (camera, CascadedShadowMapCount);
+			viewLightMatrices &= light.CascadedShadowFrustums (camera, MapCount);
 		}
 	}
 

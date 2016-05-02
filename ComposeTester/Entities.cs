@@ -93,7 +93,7 @@
 	}
 	
 	public class EntityFragment : Fragment, IFragmentPosition, IFragmentDiffuse, IFragmentSpecular, 
-		IFragmentTexture<Vec2>, IFragmentReflectivity, IFragmentShadow
+		IFragmentTexture<Vec2>, IFragmentReflectivity
 	{
 		public Vec3 fragPosition { get; set; }
 		public Vec3 fragNormal { get; set; }
@@ -102,9 +102,6 @@
 		public float fragShininess { get; set; }
 		public float fragReflectivity { get; set; }
 		public Vec2 fragTexturePos { get; set; }
-		public Vec4 fragPositionLightSpace { get; set; }
-		[GLQualifier ("flat")]
-		public int fragShadowMap { get; set; }
 	}
 
 	public class Entities : Uniforms
@@ -218,9 +215,7 @@
 					fragSpecular = v.specular,
 					fragShininess = v.shininess,
 					fragTexturePos = v.texturePos,
-					fragReflectivity = v.reflectivity,
-					fragShadowMap = csm,
-					fragPositionLightSpace = (!c.viewLightMatrices)[csm] * viewPos
+					fragReflectivity = v.reflectivity
 				});
 		}
 
@@ -260,8 +255,10 @@
 					fragDiffuse
 				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
 				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, f.fragPositionLightSpace, 
-					f.fragShadowMap, 0.0015f)
+				let vertexPos = new Vec4 (f.fragPosition, 1f)
+				let csm = ShadowShaders.SelectCascadedShadowMap (vertexPos)
+				let posInLightSpace = (!c.viewLightMatrices)[csm] * vertexPos
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0015f)
 				select new
 				{
 					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 

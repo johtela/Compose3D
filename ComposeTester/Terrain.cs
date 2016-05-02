@@ -95,16 +95,14 @@
 		}
 
 		[GLInterface]
-		public class TerrainFragment : Fragment, IFragmentTexture<Vec2>, IFragmentShadow
+		public class TerrainFragment : Fragment, IFragmentTexture<Vec2>
 		{
 			public Vec3 vertexNormal { get; set; }
+			public Vec4 vertexPos { get; set; }
 			public float visibility { get; set; }
 			public float height { get; set; }
 			public float slope { get; set; }
 			public Vec2 fragTexturePos { get; set; }
-			public Vec4 fragPositionLightSpace { get; set; }
-			[GLQualifier ("flat")]
-			public int fragShadowMap { get; set; }
 		}
 
 		public TransformUniforms transforms;
@@ -202,17 +200,15 @@
 				from t in Shader.Uniforms<TransformUniforms> ()
 				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = ShadowShaders.SelectCascadedShadowMap (viewPos)
 				select new TerrainFragment ()
 				{
 					gl_Position = !t.perspectiveMatrix * viewPos,
 					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
+					vertexPos = viewPos,
 					visibility = LightingShaders.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
-					fragTexturePos = v.texturePos / 15f,
-					fragShadowMap = csm,
-					fragPositionLightSpace = (!c.viewLightMatrices)[csm] * viewPos
+					fragTexturePos = v.texturePos / 15f
 				});
 		}
 
@@ -239,8 +235,9 @@
 				let ambient = (!l.globalLighting).ambientLightIntensity
 				//let shadow = Lighting.PcfShadowMapFactor (!lu.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
 				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, f.fragPositionLightSpace, 
-					f.fragShadowMap, 0f)
+				let csm = ShadowShaders.SelectCascadedShadowMap (f.vertexPos)
+				let posInLightSpace = (!c.viewLightMatrices)[csm] * f.vertexPos
+				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0015f)
 				let litColor = LightingShaders.GlobalLightIntensity (!l.globalLighting,
 						ambient, diffuseLight * shadow,
 						new Vec3 (0f), terrainColor, new Vec3 (0f))

@@ -41,14 +41,22 @@
 		/// Shader creation for geometry and tesselation shaders. They return multiple results 
 		/// instead of one.
 		/// </summary>
-		public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive,
-			PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
+		public static GLShader CreateGeometryShader<V> (int vertexCount, int invocations, 
+			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
 			where V : PerVertexOut, new ()
 		{
-			var source = GLSLGenerator.CreateGeometryShader (vertexCount, inputPrimitive, outputPrimitive, func);
+			var source = GLSLGenerator.CreateGeometryShader (vertexCount, invocations, inputPrimitive, 
+				outputPrimitive, func);
 			Console.WriteLine (source);
 			return new GLShader (ShaderType.GeometryShader, source);
 		}
+
+		//public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive, 
+		//	PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
+		//	where V : PerVertexOut, new()
+		//{
+		//	return CreateGeometryShader<V> (vertexCount, 0, inputPrimitive, outputPrimitive, func);
+		//}
 
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
 		{

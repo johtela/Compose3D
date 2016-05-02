@@ -58,7 +58,7 @@
 			{
 				depthTexture = cascaded ?
 					new Texture (TextureTarget.Texture2DArray, PixelInternalFormat.DepthComponent16,
-						mapSize, mapSize, CascadedShadowUniforms.CascadedShadowMapCount, PixelFormat.DepthComponent, 
+						mapSize, mapSize, CascadedShadowUniforms.MapCount, PixelFormat.DepthComponent, 
 						PixelType.Float, IntPtr.Zero) :
 					new Texture (TextureTarget.Texture2D, PixelInternalFormat.DepthComponent16,
 						mapSize, mapSize, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
@@ -130,31 +130,29 @@
 		public static GLShader GeometryShaderCascaded ()
 		{
 			ShadowShaders.Use ();
-			return GLShader.CreateGeometryShader<PerVertexOut> (3,
-				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
+			return GLShader.CreateGeometryShader<PerVertexOut> (3, 
+				CascadedShadowUniforms.MapCount, PrimitiveType.Triangles, 
+				PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				from c in Shader.Uniforms<CascadedShadowUniforms> ()
-				let avg = (p.gl_in[0].gl_Position + p.gl_in[1].gl_Position 
-					+ p.gl_in[2].gl_Position) / 3f
-				let layer = ShadowShaders.SelectCascadedShadowMap (avg)
-				let viewLight = (!c.viewLightMatrices)[layer]
+				let viewLight = (!c.viewLightMatrices)[p.gl_InvocationID]
 				select new PerVertexOut[3]
 				{
 					new PerVertexOut ()
 					{
 						gl_Position = viewLight * p.gl_in[0].gl_Position,
-						gl_Layer = layer
+						gl_Layer = p.gl_InvocationID
 					},
 					new PerVertexOut ()
 					{
 						gl_Position = viewLight * p.gl_in[1].gl_Position,
-						gl_Layer = layer
+						gl_Layer = p.gl_InvocationID
 					},
 					new PerVertexOut ()
 					{
 						gl_Position = viewLight * p.gl_in[2].gl_Position,
-						gl_Layer = layer
+						gl_Layer = p.gl_InvocationID
 					}
 				}
 			);

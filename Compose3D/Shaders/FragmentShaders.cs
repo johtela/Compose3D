@@ -51,11 +51,6 @@
 		float fragReflectivity { get; set; }
 	}
 
-	public interface IFragmentShadow
-	{
-		Vec4 fragPositionLightSpace { get; set; }
-	}
-
 	public class TextureUniforms : Uniforms
 	{
 		public Uniform<Sampler2D> textureMap;

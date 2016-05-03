@@ -4,10 +4,8 @@
 	using System.Linq;
 	using Maths;
 	using GLTypes;
-	using Geometry;
 	using SceneGraph;
 	using Textures;
-	using OpenTK.Graphics.OpenGL;
 
 	public class ShadowUniforms : Uniforms
 	{
@@ -84,14 +82,16 @@
 			);
 
 
-		public static readonly Func<Sampler2D, Vec4, float, float> PcfShadowMapFactor =
+		public static readonly Func<Vec4, float, float> PcfShadowMapFactor =
 			GLShader.Function (() => PcfShadowMapFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace, float bias) =>
+				(Vec4 posInViewSpace, float bias) =>
 				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					from u in Shader.Uniforms<ShadowUniforms> ()
+					let posInLightSpace = !u.lightSpaceMatrix * posInViewSpace
+					let projCoords = posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
 					select Between (texCoords, 0f, 1f) ?
-						PercentageCloserFiltering (shadowMap, texCoords, bias) : 1f
+						PercentageCloserFiltering (!u.shadowMap, texCoords, bias) : 1f
 				)
 				.Evaluate ());
 
@@ -115,13 +115,15 @@
 				)
 				.Evaluate ());
 
-		public static readonly Func<Sampler2D, Vec4, float> VarianceShadowMapFactor =
+		public static readonly Func<Vec4, float> VarianceShadowMapFactor =
 			GLShader.Function (() => VarianceShadowMapFactor,
-				(Sampler2D shadowMap, Vec4 posInLightSpace) =>
+				(Vec4 posInViewSpace) =>
 				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					from u in Shader.Uniforms<ShadowUniforms> ()
+					let posInLightSpace = !u.lightSpaceMatrix * posInViewSpace
+					let projCoords = posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
-					select Between (texCoords, 0f, 0.9f) ? SummedAreaVariance (shadowMap, texCoords) : 1f
+					select Between (texCoords, 0f, 0.9f) ? SummedAreaVariance (!u.shadowMap, texCoords) : 1f
 				)
 				.Evaluate ());
 
@@ -149,11 +151,17 @@
 				)
 				.Evaluate ());
 
-		public static readonly Func<Sampler2DArray, Vec4, float, float, float> CascadedShadowMapFactor =
+		public static readonly Func<Vec4, float, float> CascadedShadowMapFactor =
 			GLShader.Function (() => CascadedShadowMapFactor,
-				(Sampler2DArray shadowMap, Vec4 posInLightSpace, float mapIndex, float bias) =>
+				(Vec4 posInViewSpace, float bias) =>
 				(
-					from projCoords in (posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W).ToShader ()
+					from u in Shader.Uniforms<CascadedShadowUniforms> ()
+					let mapIndex = Enumerable.Range (0, (!u.viewLightMatrices).Length)
+						.Aggregate (-1, (int best, int i) => best < 0 &&
+							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+							i : best)
+					let posInLightSpace = (!u.viewLightMatrices)[mapIndex] * posInViewSpace
+					let projCoords = posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)
 					//let color =
 					//	mapIndex == 0f ? new Vec3 (1f, 0f, 0f) :
@@ -161,25 +169,12 @@
 					//	mapIndex == 2f ? new Vec3 (0f, 0f, 1f) :
 					//	new Vec3 (1f)
 					select Between (texCoords, 0f, 1f) ?
-						csmPCFiltering (shadowMap, texCoords, mapIndex, bias) : 1f
-				)
-				.Evaluate ());
-
-		public static readonly Func<Vec4, int> SelectCascadedShadowMap =
-			GLShader.Function (() => SelectCascadedShadowMap,
-				(Vec4 posInViewSpace) =>
-				(
-					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					select Enumerable.Range (0, (!u.viewLightMatrices).Length)
-						.Aggregate (-1, (int best, int i) => best < 0 &&
-							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-							i : best)
+						csmPCFiltering (!u.csmShadowMap, texCoords, mapIndex, bias) : 1f
 				)
 				.Evaluate ());
 
 		/// <summary>
-		/// Use this module. This function needs to be called once for static field initialization of
-		/// this class.
+		/// This function needs to be called once for static field initialization of this class.
 		/// </summary>
 		public static void Use () { }
 	}

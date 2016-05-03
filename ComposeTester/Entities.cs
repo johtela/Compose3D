@@ -56,7 +56,7 @@
 			get { return normal; }
 			set
 			{
-				if (value.IsNan ())
+				if (value.IsNaN ())
 					throw new ArgumentException ("Normal component NaN");
 				normal = value;
 			}
@@ -203,9 +203,7 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<EntityVertex> ()
 				from t in Shader.Uniforms<TransformUniforms> ()
-				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
-				let csm = ShadowShaders.SelectCascadedShadowMap (viewPos)
 				select new EntityFragment ()
 				{
 					gl_Position = !t.perspectiveMatrix * viewPos,
@@ -249,16 +247,12 @@
 							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
 				let ambient = envLight * (!l.globalLighting).ambientLightIntensity
-				let reflectDiffuse = f.fragReflectivity > 0f ? 
+				let reflectDiffuse = f.fragReflectivity == 0f ? fragDiffuse :
 					fragDiffuse.Mix (LightingShaders.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
-						f.fragReflectivity) :
-					fragDiffuse
-				//let shadow = Lighting.PcfShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
-				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let vertexPos = new Vec4 (f.fragPosition, 1f)
-				let csm = ShadowShaders.SelectCascadedShadowMap (vertexPos)
-				let posInLightSpace = (!c.viewLightMatrices)[csm] * vertexPos
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0005f)
+						f.fragReflectivity)
+				//let shadow = ShadowShaders.PcfShadowMapFactor (f.fragPositionLightSpace, 0.0015f)
+				//let shadow = ShadowShaders.VarianceShadowMapFactor (f.fragPositionLightSpace)
+				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.fragPosition, 1f), 0.0005f)
 				select new
 				{
 					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 

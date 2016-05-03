@@ -26,7 +26,7 @@
 			get { return normal; }
 			set
 			{
-				if (value.IsNan ())
+				if (value.IsNaN ())
 					throw new ArgumentException ("Normal component NaN.");
 				normal = value;
 			}
@@ -63,7 +63,7 @@
 			get { return normal; }
 			set
 			{
-				if (value.IsNan ())
+				if (value.IsNaN ())
 					throw new ArgumentException ("Normal component NaN.");
 				normal = value;
 			}

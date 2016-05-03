@@ -31,7 +31,7 @@
 			get { return normal; }
 			set
 			{
-				if (value.IsNan ())
+				if (value.IsNaN ())
 					throw new ArgumentException ("Normal component NaN");
 				normal = value;
 			}
@@ -98,7 +98,7 @@
 		public class TerrainFragment : Fragment, IFragmentTexture<Vec2>
 		{
 			public Vec3 vertexNormal { get; set; }
-			public Vec4 vertexPos { get; set; }
+			public Vec3 vertexPos { get; set; }
 			public float visibility { get; set; }
 			public float height { get; set; }
 			public float slope { get; set; }
@@ -198,13 +198,12 @@
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<Terrain> ()
 				from t in Shader.Uniforms<TransformUniforms> ()
-				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let viewPos = !u.transforms.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new TerrainFragment ()
 				{
 					gl_Position = !t.perspectiveMatrix * viewPos,
 					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
-					vertexPos = viewPos,
+					vertexPos = viewPos[Coord.x, Coord.y, Coord.z],
 					visibility = LightingShaders.FogVisibility (viewPos.Z, 0.003f, 3f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
@@ -233,14 +232,11 @@
 					(!l.directionalLight).intensity, 
 					f.vertexNormal)
 				let ambient = (!l.globalLighting).ambientLightIntensity
-				//let shadow = Lighting.PcfShadowMapFactor (!lu.lighting.shadowMap, f.fragPositionLightSpace, 0.0015f)
-				//let shadow = Lighting.VarianceShadowMapFactor (!u.lighting.shadowMap, f.fragPositionLightSpace)
-				let csm = ShadowShaders.SelectCascadedShadowMap (f.vertexPos)
-				let posInLightSpace = (!c.viewLightMatrices)[csm] * f.vertexPos
-				let shadow = ShadowShaders.CascadedShadowMapFactor (!c.csmShadowMap, posInLightSpace, csm, 0.0015f)
-				let litColor = LightingShaders.GlobalLightIntensity (!l.globalLighting,
-						ambient, diffuseLight * shadow,
-						new Vec3 (0f), terrainColor, new Vec3 (0f))
+				//let shadow = ShadowShaders.PcfShadowMapFactor (f.fragPositionLightSpace, 0.0015f)
+				//let shadow = ShadowShaders.VarianceShadowMapFactor (f.fragPositionLightSpace)
+				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.vertexPos, 1f), 0.0015f)
+				let litColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 
+					diffuseLight * shadow, new Vec3 (0f), terrainColor, new Vec3 (0f))
 				select new
 				{
 					outputColor = litColor.Mix (!u.skyColor, f.visibility)

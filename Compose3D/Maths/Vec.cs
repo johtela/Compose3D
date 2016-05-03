@@ -681,7 +681,7 @@
 		/// <summary>
 		/// Check whether any of the components of the vector are NaN. 
 		/// </summary>
-		public static bool IsNan<V> (this V vec)
+		public static bool IsNaN<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
 			return vec.Any<V, float> (float.IsNaN);

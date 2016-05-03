@@ -20,9 +20,9 @@
 				shadowMap &= sampler;
 		}
 
-		public void UpdateLightSpaceMatrix (Mat4 lightSpace)
+		public void UpdateLightSpaceMatrix (Camera camera, DirectionalLight light)
 		{
-			lightSpaceMatrix &= lightSpace;
+			lightSpaceMatrix &= light.CameraToShadowProjection (camera);
 		}
 	}
 

@@ -93,7 +93,7 @@
 			if (_cascaded)
 				csmUniforms.UpdateLightSpaceMatrices (camera, light);
 			else
-				shadowUniforms.UpdateLightSpaceMatrix (light.CameraToShadowProjection (camera));
+				shadowUniforms.UpdateLightSpaceMatrix (camera, light);
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{

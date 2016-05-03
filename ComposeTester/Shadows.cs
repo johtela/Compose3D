@@ -107,9 +107,10 @@
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<EntityVertex> ()
 				from u in Shader.Uniforms<Shadows> ()
+				from s in Shader.Uniforms<ShadowUniforms> ()
 				select new Fragment ()
 				{
-					gl_Position = !u.shadowUniforms.lightSpaceMatrix * !u.modelViewMatrix * 
+					gl_Position = !s.lightSpaceMatrix * !u.modelViewMatrix * 
 						new Vec4 (v.position, 1f)
 				}
 			);

@@ -215,6 +215,7 @@
 		{
 			LightingShaders.Use ();
 			FragmentShaders.Use ();
+			ShadowShaders.Use ();
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<Terrain> ()

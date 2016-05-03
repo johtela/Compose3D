@@ -342,7 +342,7 @@
 						return string.Format ("{0} ({1})", member.Name,
 							ie.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
 					}
-					return null;
+					throw new ParseException ("Undefined function: " + member.Name);
 				}) ??
                 expr.Match<MemberExpression, string> (me =>
                 {
@@ -370,7 +370,7 @@
                     pe.Name
                 ) ?? null;
             if (result == null)
-                throw new ArgumentException (string.Format ("Unsupported expression type {0}", expr));
+                throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
             return result;
         }
 

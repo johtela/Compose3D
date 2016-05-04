@@ -1,10 +1,11 @@
 ﻿namespace Compose3D.Shaders
 {
 	using System;
-	using System.Linq.Expressions;
+	using System.Collections.Generic;
 	using Geometry;
 	using GLTypes;
 	using Maths;
+	using Reactive;
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
 
@@ -15,26 +16,19 @@
 			public Vec2 fragTexturePos { get; set; }
 		}
 
-		private Texture _input;
-		private Texture _output;
 		private Program _program;
 		private TextureUniforms _uniforms;
 		private Framebuffer _framebuffer;
 		private VBO<TexturedVertex> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		private TextureFilter (Texture input, GLShader _filter)
+		private TextureFilter (Program program)
 		{
-			_input = input;
-			_program = new Program (VertexShaders.PassthroughTexture<TexturedVertex, TexturedFragment> (),
-				_filter);
+			_program = program;
 			_uniforms = new TextureUniforms (_program, new Sampler2D (0).LinearFiltering ()
 				.ClampToEdges (Axes.X | Axes.Y));
 			
-			var size = _input.Size;
 			_framebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
-			_output = new Texture (_input.Target, _input.PixelInternalFormat, size.X, size.Y, 
-				_input.PixelFormat, _input.PixelType, IntPtr.Zero);
 			_framebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, _output);
 			
 			var rectangle = Quadrilateral<TexturedVertex>.Rectangle (2f, 2f);
@@ -43,12 +37,19 @@
 			_indexBuffer = new VBO<int> (rectangle.Indices, BufferTarget.ElementArrayBuffer);
 		}
 
-		public Texture Output
+		public static Reaction<Tuple<Texture, Texture>> Renderer (Program program)
 		{
-			get { return _output; }
+			var filter = new TextureFilter (program);
+
+			var render = React.By<Tuple<Texture, Texture>> (filter.Run);
+
+			return render.Select (t => new Dictionary<Sampler, Texture> ()
+				{
+					{ (!filter._uniforms.textureMap), t.Item1 }
+				});
 		}
-		
-		public void Apply ()
+
+		public void Run ()
 		{
 			using (_framebuffer.Scope ())
 			using (_output.Scope ())
@@ -67,11 +68,6 @@
 				_program.DrawElements (PrimitiveType.Triangles, _vertexBuffer, _indexBuffer);
 				(!_uniforms.textureMap).Unbind (_input);
 			}
-		}
-		
-		public static TextureFilter Create<T> (Texture input, Expression<Func<Shader<T>>> _filter)
-		{
-			return new TextureFilter (input, GLShader.Create (ShaderType.FragmentShader, _filter));
 		}
 	}
 }

@@ -21,6 +21,8 @@
 		private Framebuffer _framebuffer;
 		private VBO<TexturedVertex> _vertexBuffer;
 		private VBO<int> _indexBuffer;
+		private Texture _input;
+		private Texture _output;
 
 		private TextureFilter (Program program)
 		{
@@ -43,10 +45,11 @@
 
 			var render = React.By<Tuple<Texture, Texture>> (filter.Run);
 
-			return render.Select (t => new Dictionary<Sampler, Texture> ()
-				{
-					{ (!filter._uniforms.textureMap), t.Item1 }
-				});
+			//return render.Select (t => new Dictionary<Sampler, Texture> ()
+			//	{
+			//		{ (!filter._uniforms.textureMap), t.Item1 }
+			//	});
+			return null;
 		}
 
 		public void Run ()

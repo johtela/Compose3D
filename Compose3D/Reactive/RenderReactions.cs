@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Reactive
 {
+	using System;
 	using System.Collections.Generic;
 	using GLTypes;
 	using Maths;
@@ -16,8 +17,8 @@
 			return value;
 		}
 
-		public static Reaction<T> Culling<T> (this Reaction<T> render, CullFaceMode mode = CullFaceMode.Back,
-			FrontFaceDirection frontFace = FrontFaceDirection.Cw)
+		public static Reaction<T> Culling<T> (this Reaction<T> render, 
+			Func<T, Tuple<CullFaceMode, FrontFaceDirection>> getParams)
 		{
 			return input =>
 			{
@@ -26,8 +27,9 @@
 				var oldFrontFace = GetState (GetPName.FrontFace);
 
 				GL.Enable (EnableCap.CullFace);
-				GL.CullFace (mode);
-				GL.FrontFace (frontFace);
+				var pars = getParams (input);
+				GL.CullFace (pars.Item1);
+				GL.FrontFace (pars.Item2);
 				var result = render (input);
 				GL.FrontFace ((FrontFaceDirection)oldFrontFace);
 				GL.CullFace ((CullFaceMode)oldMode);
@@ -37,8 +39,13 @@
 			};
 		}
 
-		public static Reaction<T> DepthTest<T> (this Reaction<T> render, 
-			DepthFunction depthFunction = DepthFunction.Less)
+		public static Reaction<T> Culling<T> (this Reaction<T> render, CullFaceMode mode = CullFaceMode.Back, 
+			FrontFaceDirection frontFace = FrontFaceDirection.Cw)
+		{
+			return render.Culling (i => Tuple.Create (mode, frontFace));
+		}
+
+		public static Reaction<T> DepthTest<T> (this Reaction<T> render, Func<T, DepthFunction> getDepthFunc)
 		{
 			return input =>
 			{
@@ -48,7 +55,7 @@
 
 				GL.Enable (EnableCap.DepthTest);
 				GL.DepthMask (true);
-				GL.DepthFunc (depthFunction);
+				GL.DepthFunc (getDepthFunc (input));
 				var result = render (input);
 				GL.DepthMask (oldMask != 0);
 				GL.DepthFunc ((DepthFunction)oldFunction);
@@ -57,10 +64,15 @@
 				return result;
 			};
 		}
-		
+
+		public static Reaction<T> DepthTest<T> (this Reaction<T> render,
+			DepthFunction depthFunction = DepthFunction.Less)
+		{
+			return render.DepthTest (i => depthFunction);
+		}
+
 		public static Reaction<T> Blending<T> (this Reaction<T> render, 
-			BlendingFactorSrc source = BlendingFactorSrc.SrcAlpha,
-			BlendingFactorDest destination = BlendingFactorDest.OneMinusSrcAlpha)
+			Func<T, Tuple<BlendingFactorSrc, BlendingFactorDest>> getParams)
 		{
 			return input =>
 			{
@@ -69,7 +81,8 @@
 				var oldDest = GetState (GetPName.BlendDst);
 
 				GL.Enable (EnableCap.Blend);
-				GL.BlendFunc (source, destination);
+				var pars = getParams (input);
+				GL.BlendFunc (pars.Item1, pars.Item2);
 				var result = render (input);
 				GL.BlendFunc ((BlendingFactorSrc)oldSource, (BlendingFactorDest)oldDest);
 				if (!oldCap)
@@ -78,34 +91,56 @@
 			};
 		}
 
-		public static Reaction<T> DrawBuffer<T> (this Reaction<T> render, DrawBufferMode mode)
+		public static Reaction<T> Blending<T> (this Reaction<T> render,
+			BlendingFactorSrc source = BlendingFactorSrc.SrcAlpha,
+			BlendingFactorDest destination = BlendingFactorDest.OneMinusSrcAlpha)
+		{
+			return render.Blending (i => Tuple.Create (source, destination));
+		}
+
+		public static Reaction<T> DrawBuffer<T> (this Reaction<T> render, Func<T, DrawBufferMode> getMode)
 		{
 			return input =>
 			{
 				var oldMode = GetState (GetPName.DrawBuffer);
-				GL.DrawBuffer (mode);
+				GL.DrawBuffer (getMode (input));
 				var result = render (input);
 				GL.DrawBuffer ((DrawBufferMode)oldMode);
 				return result;
 			};
 		}
 
-		public static Reaction<T> Program<T> (this Reaction<T> render, Program program)
+		public static Reaction<T> DrawBuffer<T> (this Reaction<T> render, DrawBufferMode mode)
+		{
+			return render.DrawBuffer (i => mode);
+		}
+
+		public static Reaction<T> Program<T> (this Reaction<T> render, Func<T, Program> getProgram)
 		{
 			return input =>
 			{
-				using (program.Scope ())
+				using (getProgram (input).Scope ())
+					return render (input);
+			};
+		}
+
+		public static Reaction<T> Program<T> (this Reaction<T> render, Program program)
+		{
+			return render.Program (i => program);
+		}
+
+		public static Reaction<T> Texture<T> (this Reaction<T> render, Func<T, Texture> getTexture)
+		{
+			return input =>
+			{
+				using (getTexture (input).Scope ())
 					return render (input);
 			};
 		}
 
 		public static Reaction<T> Texture<T> (this Reaction<T> render, Texture texture)
 		{
-			return input =>
-			{
-				using (texture.Scope ())
-					return render (input);
-			};
+			return render.Texture (i => texture);
 		}
 
 		public static Reaction<T> Framebuffer<T> (this Reaction<T> render, Framebuffer framebuffer)
@@ -117,10 +152,12 @@
 			};
 		}
 
-		public static Reaction<T> BindSamplers<T> (this Reaction<T> render, IDictionary<Sampler, Texture> bindings)
+		public static Reaction<T> BindSamplers<T> (this Reaction<T> render, 
+			Func<T, IDictionary<Sampler, Texture>> getBindings)
 		{
 			return input =>
 			{
+				var bindings = getBindings (input);
 				Sampler.Bind (bindings);
 				var result = render (input);
 				Sampler.Unbind (bindings);
@@ -128,40 +165,48 @@
 			};
 		}
 
-		public static Reaction<T> Viewport<T> (this Reaction<T> render, Vec2i size)
+		public static Reaction<T> BindSamplers<T> (this Reaction<T> render, IDictionary<Sampler, Texture> bindings)
+		{
+			return render.BindSamplers (i => bindings);
+		}
+
+		public static Reaction<T> Viewport<T> (this Reaction<T> render, Func<T, Vec2i> getSize)
 		{
 			return input =>
 			{
 				var oldSize = new int[4];
 				GL.GetInteger (GetPName.Viewport, oldSize);
+				var size = getSize (input);
 				GL.Viewport (0, 0, size.X, size.Y);
 				var result = render (input);
 				GL.Viewport (oldSize[0], oldSize[1], oldSize[2], oldSize[3]);
 				return result;
 			};
 		}
-		
+
+		public static Reaction<T> Viewport<T> (this Reaction<T> render, Vec2i size)
+		{
+			return render.Viewport (i => size);
+		}
+
 		public static Reaction<T> Viewport<T> (this Reaction<T> render, GameWindow window)
+		{
+			return render.Viewport (i => new Vec2i (window.ClientSize.Width, window.ClientSize.Height));
+		}
+
+		public static Reaction<T> SwapBuffers<T> (this Reaction<T> render, Func<T, GameWindow> getWindow)
 		{
 			return input =>
 			{
-				var oldSize = new int[4];
-				GL.GetInteger (GetPName.Viewport, oldSize);
-				GL.Viewport (0, 0, window.ClientSize.Width, window.ClientSize.Height);
 				var result = render (input);
-				GL.Viewport (oldSize[0], oldSize[1], oldSize[2], oldSize[3]);
+				getWindow (input).SwapBuffers ();
 				return result;
 			};
 		}
-
+		
 		public static Reaction<T> SwapBuffers<T> (this Reaction<T> render, GameWindow window)
 		{
-			return input =>
-			{
-				var result = render (input);
-				window.SwapBuffers ();
-				return result;
-			};
+			return render.SwapBuffers (i => window);
 		}
 	}
 }

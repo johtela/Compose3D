@@ -7,6 +7,7 @@
 	public class Framebuffer : GLObject
 	{
 		private FramebufferTarget _target;
+		private int _prevFrameBuffer;
 		internal int _glFramebuffer;
 
 		public Framebuffer (FramebufferTarget target)
@@ -17,12 +18,13 @@
 
 		public override void Use ()
 		{
+			_prevFrameBuffer = GL.GetInteger (GetPName.DrawFramebufferBinding);
 			GL.BindFramebuffer (_target, _glFramebuffer);
 		}
 
 		public override void Release ()
 		{
-			GL.BindFramebuffer (_target, 0);
+			GL.BindFramebuffer (_target, _prevFrameBuffer);
 		}
 
 		private void CheckStatus ()
@@ -60,7 +62,8 @@
 						GL.FramebufferTexture (_target, attachment, glTexture, 0);
 						break;
 				}
-				CheckStatus ();
+				if (glTexture != 0)
+					CheckStatus ();
 			}
 		}
 

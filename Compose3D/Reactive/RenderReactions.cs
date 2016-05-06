@@ -147,24 +147,25 @@
 		{
 			return input =>
 			{
-				using (framebuffer.Scope ())
-					return render (input);
+				framebuffer.Use ();
+				var result = render (input);
+				framebuffer.Release ();
+				return result;
 			};
 		}
 
-		public static Reaction<T> FramebufferTexture<T> (this Reaction<T> render, 
+		public static Reaction<T> FramebufferTexture<T> (this Reaction<T> render,
 			Func<T, Tuple<Framebuffer, FramebufferAttachment, Texture>> getFbTexture)
 		{
 			return input =>
 			{
 				bool result;
 				var fbTex = getFbTexture (input);
-				using (fbTex.Item1.Scope ())
-				{
-					fbTex.Item1.AddTexture (fbTex.Item2, fbTex.Item3);
-					result = render (input);
-					fbTex.Item1.RemoveTexture (fbTex.Item2, fbTex.Item3);
-				}
+				fbTex.Item1.Use ();
+				fbTex.Item1.AddTexture (fbTex.Item2, fbTex.Item3);
+				result = render (input);
+				fbTex.Item1.RemoveTexture (fbTex.Item2, fbTex.Item3);
+				fbTex.Item1.Release ();
 				return result;
 			};
 		}

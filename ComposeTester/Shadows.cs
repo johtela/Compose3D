@@ -11,6 +11,7 @@
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
+	using Filter = Compose3D.Reactive.Reaction<System.Tuple<Compose3D.Textures.Texture, Compose3D.Textures.Texture>>;
 
 	public enum ShadowMapType { Depth, Variance }
 	
@@ -24,7 +25,6 @@
 		private static Program _shadowShader;
 		private static Shadows _instance;
 		private bool _cascaded;
-		private Reaction<Tuple<Texture, Texture>> _gaussianFilter;
 
 		public static Shadows Instance
 		{
@@ -37,7 +37,9 @@
 			if (_cascaded)
 				csmUniforms = new CascadedShadowUniforms (program);
 			else
+			{
 				shadowUniforms = new ShadowUniforms (program);
+			}
 		}
 
 		public static Reaction<Camera> Renderer (SceneGraph scene,
@@ -54,9 +56,9 @@
 					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 
 			_instance = new Shadows (_shadowShader, cascaded);
-			_instance._gaussianFilter = GaussianFilter.HorizontalGaussianFilter ();
 
 			Texture depthTexture;
+			var render =React.By<Camera> (_instance.Render);
 			if (type == ShadowMapType.Depth || cascaded)
 			{
 				depthTexture = cascaded ?
@@ -74,10 +76,14 @@
 				depthFramebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, depthTexture);
 				depthFramebuffer.AddRenderbuffer (FramebufferAttachment.DepthAttachment,
 					RenderbufferStorage.DepthComponent16, mapSize, mapSize);
+				var gaussTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.Rg32f,
+					mapSize / 2, mapSize / 2, PixelFormat.Rg, PixelType.Float, IntPtr.Zero);
+				render = render.And (GaussianFilter.Both ().Select ((Camera cam) =>
+					Tuple.Create (depthTexture, gaussTexture)));
 			}
 			scene.GlobalLighting.ShadowMap = depthTexture;
 
-			return React.By<Camera> (_instance.Render)
+			return render
 				.DrawBuffer (type == ShadowMapType.Depth ? DrawBufferMode.None : DrawBufferMode.Front)
 				.DepthTest ()
 				.Culling ()

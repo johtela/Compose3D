@@ -9,14 +9,10 @@
 	using Shaders;
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
+	using Filter = Reactive.Reaction<System.Tuple<Textures.Texture, Textures.Texture>>;
 
 	public class TextureFilter
 	{
-		public class TexturedFragment : Fragment, IFragmentTexture<Vec2>
-		{
-			public Vec2 fragTexturePos { get; set; }
-		}
-
 		private Program _program;
 		private TextureUniforms _uniforms;
 		private Framebuffer _framebuffer;
@@ -37,12 +33,13 @@
 			_indexBuffer = new VBO<int> (rectangle.Indices, BufferTarget.ElementArrayBuffer);
 		}
 
-		public static Reaction<Tuple<Texture, Texture>> Renderer (Program program)
+		public static Filter Renderer (Program program)
 		{
 			var filter = new TextureFilter (program);
 
-			return React.By<Tuple<Texture, Texture>> (t => filter._program.DrawElements (
-					PrimitiveType.Triangles, filter._vertexBuffer, filter._indexBuffer))
+			return React.By<Tuple<Texture, Texture>> (t => 
+				filter._program.DrawElements (PrimitiveType.Triangles, filter._vertexBuffer, 
+					filter._indexBuffer))
 				.BindSamplers (t => new Dictionary<Sampler, Texture> ()
 				{
 					{ (!filter._uniforms.textureMap), t.Item1 }

@@ -244,7 +244,7 @@
 				var elemType = constType.GetElementType ();
 				var elemGLType = GLType (elemType);
 				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				CodeOut ("const {0} {1}[{2}] = {0}[] ( {3} );",
+				CodeOut ("const {0} {1}[{2}] = {0}[] (\n\t{3});",
 					elemGLType, name, nai.Expressions.Count,
 					nai.Expressions.Select (ExprToGLSL).SeparateWith (",\n\t"));
 			}
@@ -366,9 +366,13 @@
                         string.Format (attr.Syntax, ne.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
                 expr.Match<ConstantExpression, string> (ce => ce.Type == typeof(float) ? 
-						string.Format (CultureInfo.InvariantCulture, "{0:0.0############}f", ce.Value) :
-						string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
+					string.Format (CultureInfo.InvariantCulture, "{0:0.0############}f", ce.Value) :
+					string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
                 ) ?? 
+				expr.Match<NewArrayExpression, string> (na => string.Format ("{0}[{1}] (\n\t{2})",
+					GLType (na.Type.GetElementType ()), na.Expressions.Count,
+					na.Expressions.Select (ExprToGLSL).SeparateWith (",\n\t"))
+				) ??
                 expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
                     ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))
                 ) ?? 
@@ -549,6 +553,7 @@
 
         public void Return (Expression expr)
         {
+			expr = RemoveAggregates (expr);
             var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
             if (ne == null)
             {

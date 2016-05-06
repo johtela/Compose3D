@@ -151,5 +151,10 @@
 			third (tuple.Item3);
 			fourth (tuple.Item4);
 		}
+
+		public static Tuple<U, T> Swap<T, U> (this Tuple<T, U> tuple)
+		{
+			return Tuple.Create (tuple.Item2, tuple.Item1);
+		}
 	}
 }

@@ -15,6 +15,7 @@
 	{
 		internal TextureTarget _target;
 		internal int _glTexture;
+		private int _prevTexture;
 		private PixelInternalFormat _pixelInternalFormat;
 		private PixelFormat _pixelFormat;
 		private PixelType _pixelType;
@@ -87,12 +88,13 @@
 
 		public override void Use ()
 		{
+			_prevTexture = GL.GetInteger (MapTargetBindingPName (_target));
 			GL.BindTexture (_target, _glTexture);
 		}
 
 		public override void Release ()
 		{
-			GL.BindTexture (_target, 0);
+			GL.BindTexture (_target, _prevTexture);
 		}
 
 		public Texture Parameters (TextureParams parameters)
@@ -306,6 +308,24 @@
 					return GenerateMipmapTarget.TextureCubeMap;
 				case TextureTarget.TextureCubeMapArray:
 					return GenerateMipmapTarget.TextureCubeMapArray;
+				default:
+					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
+			}
+		}
+
+		private static GetPName MapTargetBindingPName (TextureTarget target)
+		{
+			switch (target)
+			{
+				case TextureTarget.Texture2D:
+					return GetPName.TextureBinding2D;
+				case TextureTarget.Texture2DArray:
+					return GetPName.TextureBinding2DArray;
+				case TextureTarget.Texture2DMultisample:
+					return GetPName.TextureBinding2DMultisample;
+				case TextureTarget.TextureCubeMap:
+				case TextureTarget.TextureCubeMapArray:
+					return GetPName.TextureBindingCubeMap;
 				default:
 					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
 			}

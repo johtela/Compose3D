@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Extensions;
 	using Geometry;
 	using GLTypes;
 	using Maths;
@@ -10,18 +11,29 @@
 	using Shaders;
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
+	using Filter = Reactive.Reaction<System.Tuple<Textures.Texture, Textures.Texture>>;
 
 	public static class GaussianFilter
 	{
 		public class GaussianFragment : Fragment
 		{
-			[GLArray (5)]
+			[GLArray (7)]
 			public Vec2[] fragTexturePos;
 		}
 
-		public static Reaction<Tuple<Texture, Texture>> HorizontalGaussianFilter ()
+		public static Filter Horizontal ()
 		{
 			return TextureFilter.Renderer (new Program (HorizontalVertexShader (), FragmentShader ()));
+		}
+
+		public static Filter Vertical ()
+		{
+			return TextureFilter.Renderer (new Program (VerticelVertexShader (), FragmentShader ()));
+		}
+
+		public static Filter Both ()
+		{
+			return Horizontal ().And (Vertical ().Select (TupleExt.Swap));
 		}
 
 		private static GLShader HorizontalVertexShader ()
@@ -34,13 +46,15 @@
 				select new GaussianFragment ()
 				{
 					gl_Position = new Vec4 (v.position, 1f),
-					fragTexturePos = new Vec2 [5]
+					fragTexturePos = new Vec2 [7]
 					{
+						v.texturePos + new Vec2 (pixelSize * -3f, 0f),
 						v.texturePos + new Vec2 (pixelSize * -2f, 0f),
 						v.texturePos + new Vec2 (pixelSize * -1f, 0f),
 						v.texturePos,
 						v.texturePos + new Vec2 (pixelSize * 1f, 0f),
-						v.texturePos + new Vec2 (pixelSize * 2f, 0f)
+						v.texturePos + new Vec2 (pixelSize * 2f, 0f),
+						v.texturePos + new Vec2 (pixelSize * 3f, 0f)
 					}
 				}
 			);
@@ -56,13 +70,15 @@
 				select new GaussianFragment ()
 				{
 					gl_Position = new Vec4 (v.position, 1f),
-					fragTexturePos = new Vec2[5]
+					fragTexturePos = new Vec2[7]
 					{
+						v.texturePos + new Vec2 (0f, pixelSize * -3f),
 						v.texturePos + new Vec2 (0f, pixelSize * -2f),
 						v.texturePos + new Vec2 (0f, pixelSize * -1f),
 						v.texturePos,
 						v.texturePos + new Vec2 (0f, pixelSize * 1f),
-						v.texturePos + new Vec2 (0f, pixelSize * 2f)
+						v.texturePos + new Vec2 (0f, pixelSize * 2f),
+						v.texturePos + new Vec2 (0f, pixelSize * 3f)
 					}
 				}
 			);
@@ -75,13 +91,12 @@
 				from u in Shader.Uniforms<TextureUniforms> ()
 				from c in Shader.Constants (new
 				{
-					weights = new float[] { 0.06136f, 0.24477f, 0.38774f, 0.24477f, 0.06136f }
+					weights = new float[] { 0.00598f, 0.060626f, 0.241843f,	0.383103f, 0.241843f, 0.060626f, 0.00598f }
 				})
-				let res = Enumerable.Range (0, 5).Aggregate (new Vec4 (0f), (r, i) => 
-					r + (!u.textureMap).Texture (f.fragTexturePos [i]) * c.weights[i])
 				select new
 				{
-					outColor = res
+					outColor = Enumerable.Range (0, 7).Aggregate (new Vec4 (0f), (r, i) => 
+						r + (!u.textureMap).Texture (f.fragTexturePos [i]) * c.weights[i])
 				}
 			);
 		}

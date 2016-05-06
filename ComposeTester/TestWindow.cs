@@ -75,7 +75,7 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 3000, ShadowMapType.Variance, false)
+			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance, false)
 				.Select ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);

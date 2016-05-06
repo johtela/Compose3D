@@ -7,6 +7,8 @@
 
 	public class Program : GLObject
 	{
+		private int _prevProgram;
+
 		internal int _glProgram;
 		private Dictionary<object, int> _vertexArrays = new Dictionary<object, int> ();
 
@@ -61,12 +63,13 @@
 
 		public override void Use ()
 		{
+			_prevProgram = GL.GetInteger (GetPName.CurrentProgram);
 			GL.UseProgram (_glProgram);
 		}
 
 		public override void Release ()
 		{
-			GL.UseProgram (0);
+			GL.UseProgram (_prevProgram);
 		}
 
 		public void DrawElements<V> (PrimitiveType primitive, VBO<V> vertices, VBO<int> indices) 

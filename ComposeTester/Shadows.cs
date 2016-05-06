@@ -4,6 +4,7 @@
 	using System.Linq;
 	using Extensions;
 	using Compose3D.GLTypes;
+	using Compose3D.Filters;
 	using Compose3D.Maths;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
@@ -23,6 +24,7 @@
 		private static Program _shadowShader;
 		private static Shadows _instance;
 		private bool _cascaded;
+		private Reaction<Tuple<Texture, Texture>> _gaussianFilter;
 
 		public static Shadows Instance
 		{
@@ -52,6 +54,7 @@
 					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 
 			_instance = new Shadows (_shadowShader, cascaded);
+			_instance._gaussianFilter = GaussianFilter.HorizontalGaussianFilter ();
 
 			Texture depthTexture;
 			if (type == ShadowMapType.Depth || cascaded)

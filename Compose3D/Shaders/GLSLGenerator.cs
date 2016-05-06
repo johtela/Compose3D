@@ -151,36 +151,42 @@
 			DeclOut ("};");
 		}
 
-        private void DeclareUniforms (Type type)
+		private static string GetArrayDecl (MemberInfo member, ref Type memberType)
+		{
+			var arrayDecl = "";
+			if (memberType.IsArray)
+			{
+				var arrAttr = member.ExpectGLArrayAttribute ();
+				arrayDecl = string.Format ("[{0}]", arrAttr.Length);
+				memberType = memberType.GetElementType ();
+			}
+			return arrayDecl;
+		}
+
+		private void DeclareUniforms (Type type)
         {
 			if (!DefineType (type)) return;
 			foreach (var field in type.GetUniforms ())
-            {
-                var uniType = field.FieldType.GetGenericArguments ().Single ();
-                var arrayLen = 0;
-                if (uniType.IsArray)
-                {
-                    var arrAttr = field.ExpectGLArrayAttribute ();
-                    arrayLen = arrAttr.Length;
-                    uniType = uniType.GetElementType ();
-                }
-                if (uniType.GetGLAttribute () is GLStruct)
-                    OutputStruct (uniType);
-				DeclOut ("uniform {0} {1}{2};", GLType (uniType), field.Name, 
-                    arrayLen > 0 ? "[" + arrayLen + "]" : "");
-            }
-        }
+			{
+				var uniType = field.FieldType.GetGenericArguments ().Single ();
+				string arrayDecl = GetArrayDecl (field, ref uniType);
+				if (uniType.GetGLAttribute () is GLStruct)
+					OutputStruct (uniType);
+				DeclOut ("uniform {0} {1}{2};", GLType (uniType), field.Name, arrayDecl);
+			}
+		}
 
-        private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
+		private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
         {
             if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
 				member.Name.StartsWith ("<>")))
             {
+				string arrayDecl = GetArrayDecl (member, ref memberType);
 				var syntax = GLType (memberType);
 				var qualifiers = member.GetQualifiers ();
 				DeclOut (string.IsNullOrEmpty (qualifiers) ?
-                    string.Format ("{0} {1} {2};", prefix, syntax, member.Name) :
-                    string.Format ("{0} {1} {2} {3};", qualifiers, prefix, syntax, member.Name));
+                    string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
+                    string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
             }
         }
 

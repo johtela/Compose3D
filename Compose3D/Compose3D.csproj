@@ -48,6 +48,7 @@
     <Compile Include="DataStructures\IBoundingTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
+    <Compile Include="Filters\GaussianFilter.cs" />
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Compacted.cs" />
     <Compile Include="Geometry\Path.cs" />
@@ -101,7 +102,7 @@
     <Compile Include="Shaders\GeometryShaders.cs" />
     <Compile Include="Shaders\Lighting.cs" />
     <Compile Include="Shaders\ShadowShaders.cs" />
-    <Compile Include="Shaders\TextureFilter.cs" />
+    <Compile Include="Filters\TextureFilter.cs" />
     <Compile Include="Shaders\VertexShaders.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Samper1DArray.cs">

@@ -35,18 +35,29 @@
 		public void AddTexture (FramebufferAttachment attachment, Texture texture)
 		{
 			using (texture.Scope ())
+				ChangeTextureAttachment (attachment, texture._target, texture._glTexture);
+		}
+
+		public void RemoveTexture (FramebufferAttachment attachment, Texture texture)
+		{
+			ChangeTextureAttachment (attachment, texture._target, 0);
+		}
+
+		private void ChangeTextureAttachment (FramebufferAttachment attachment, TextureTarget textureTarget, 
+			int glTexture)
+		{
 			using (Scope ())
 			{
-				switch (texture._target)
+				switch (textureTarget)
 				{
 					case TextureTarget.Texture1D:
-						GL.FramebufferTexture1D (_target, attachment, texture._target, texture._glTexture, 0);
+						GL.FramebufferTexture1D (_target, attachment, textureTarget, glTexture, 0);
 						break;
 					case TextureTarget.Texture2D:
-						GL.FramebufferTexture2D (_target, attachment, texture._target, texture._glTexture, 0);
+						GL.FramebufferTexture2D (_target, attachment, textureTarget, glTexture, 0);
 						break;
 					default:
-						GL.FramebufferTexture (_target, attachment, texture._glTexture, 0);
+						GL.FramebufferTexture (_target, attachment, glTexture, 0);
 						break;
 				}
 				CheckStatus ();

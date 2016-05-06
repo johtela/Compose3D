@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Shaders
+﻿namespace Compose3D.Filters
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,6 +6,7 @@
 	using GLTypes;
 	using Maths;
 	using Reactive;
+	using Shaders;
 	using Textures;
 	using OpenTK.Graphics.OpenGL;
 
@@ -21,8 +22,6 @@
 		private Framebuffer _framebuffer;
 		private VBO<TexturedVertex> _vertexBuffer;
 		private VBO<int> _indexBuffer;
-		private Texture _input;
-		private Texture _output;
 
 		private TextureFilter (Program program)
 		{
@@ -31,7 +30,6 @@
 				.ClampToEdges (Axes.X | Axes.Y));
 			
 			_framebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
-			_framebuffer.AddTexture (FramebufferAttachment.ColorAttachment0, _output);
 			
 			var rectangle = Quadrilateral<TexturedVertex>.Rectangle (2f, 2f);
 			rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
@@ -43,34 +41,18 @@
 		{
 			var filter = new TextureFilter (program);
 
-			var render = React.By<Tuple<Texture, Texture>> (filter.Run);
-
-			//return render.Select (t => new Dictionary<Sampler, Texture> ()
-			//	{
-			//		{ (!filter._uniforms.textureMap), t.Item1 }
-			//	});
-			return null;
-		}
-
-		public void Run ()
-		{
-			using (_framebuffer.Scope ())
-			using (_output.Scope ())
-			using (_program.Scope ())
-			{
-				GL.Enable (EnableCap.CullFace);
-				GL.CullFace (CullFaceMode.Back);
-				GL.FrontFace (FrontFaceDirection.Cw);
-				GL.Disable (EnableCap.DepthTest);
-				GL.Disable (EnableCap.Blend);
-				
-				var size = _output.Size;
-				GL.Viewport (new System.Drawing.Size (size.X, size.Y));
-			
-				(!_uniforms.textureMap).Bind (_input);
-				_program.DrawElements (PrimitiveType.Triangles, _vertexBuffer, _indexBuffer);
-				(!_uniforms.textureMap).Unbind (_input);
-			}
+			return React.By<Tuple<Texture, Texture>> (t => filter._program.DrawElements (
+					PrimitiveType.Triangles, filter._vertexBuffer, filter._indexBuffer))
+				.BindSamplers (t => new Dictionary<Sampler, Texture> ()
+				{
+					{ (!filter._uniforms.textureMap), t.Item1 }
+				})
+				.Viewport (t => t.Item2.Size)
+				.Culling ()
+				.Program (program)
+				.Texture (t => t.Item1)
+				.FramebufferTexture (t => Tuple.Create (filter._framebuffer, 
+					FramebufferAttachment.ColorAttachment0, t.Item2));
 		}
 	}
 }

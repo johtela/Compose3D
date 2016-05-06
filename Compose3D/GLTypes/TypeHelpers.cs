@@ -40,9 +40,9 @@
             return GetAttribute<GLAttribute> (mi);
         }
 
-        public static GLArrayAttribute ExpectGLArrayAttribute (this FieldInfo fi)
+        public static GLArrayAttribute ExpectGLArrayAttribute (this MemberInfo mi)
         {
-            var res = GetAttribute<GLArrayAttribute> (fi);
+            var res = GetAttribute<GLArrayAttribute> (mi);
             if (res == null)
                 throw new ArgumentException ("Missing GLArray attribute for array.");
             return res;

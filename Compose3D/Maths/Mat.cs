@@ -2,33 +2,118 @@
 {
     using System;
 	using Extensions;
-	
+
+	/// <summary>
+	/// Interface for non-square matrices. 
+	/// </summary>
+	/// Compose3D defines matrices in a column-major manner same as GLSL. This means that
+	/// a n x m matrix consist of n columns and m rows. If n != m then the matrix is non-
+	/// square.
+	/// *Note!* OpenTK defines matrices in a row-major way. So, if you use the OpenTK's
+	/// math module with Compose3D take that into account when converting matrices back and 
+	/// forth. Compose3D does not contain any conversion methods to OpenTK matrix types, and
+	/// discourages their use in general.
+	/// 
+	/// Non-square matrices do not support all the operations that square matrices do. 
+	/// Specifically they implement only addition subtraction, vector multiplication and 
+	/// scalar multiplication and division. 
+	/// 
+	/// The purpose of this interface is mostly to enable testing the matrix implementations
+	/// generically. It is not used elsewhere currently.
+	/// <typeparam name="M">The type of the matrix struct implementing this interface.</typeparam>
+	/// <typeparam name="T">The type of the matrix elements.</typeparam>
 	public interface IMat<M, T> : IEquatable<M>
 		where M : struct, IMat<M, T>
 		where T : struct, IEquatable<T>
 	{
+		/// <summary>
+		/// Add two matrices together elementwise.
+		/// </summary>
 		M Add (M mat);
+
+		/// <summary>
+		/// Subtract a matrix from this one elementwise.
+		/// </summary>
 		M Subtract (M mat);
+
+		/// <summary>
+		/// Multiply the matrix elements by a scalar.
+		/// </summary>
 		M Multiply (T scalar);
+
+		/// <summary>
+		/// Multiply a vector by this matrix. The number of elements in the
+		/// vector must be the same as the number of columns in the matrix.
+		/// If this is not the case the implementation should throw an
+		/// ArgumentException.
+		/// </summary>
 		V Multiply<V> (V vec) where V : struct, IVec<V, T>, IEquatable<V>;
+
+		/// <summary>
+		/// Divide the elements of the matrix by a scalar.
+		/// </summary>
 		M Divide (T scalar);
 
+		/// <summary>
+		/// Return the number of columns in the matrix.
+		/// </summary>
 		int Columns { get; }
+
+		/// <summary>
+		/// Return the number of rows in the matrix.
+		/// </summary>
 		int Rows { get; }
+
+		/// <summary>
+		/// Return the element of the matrix give its row and column.
+		/// </summary>
 		T this[int column, int row] { get; set; }
 	}
 
+	/// <summary>
+	/// Interface for square matrices.
+	/// </summary>
+	/// Square matrices have the same number of rows and columns. They are the most
+	/// prevalent matrices in OpenGL applications, since most of the math involving
+	/// matrices uses the square matrices.
+	/// 
+	/// The interface generalizes the matrix structs, and makes it possible for defining 
+	/// general operations that work on all square matrices.
+	/// <typeparam name="M">The type of the matrix struct implementing this interface.</typeparam>
+	/// <typeparam name="T">The type of the matrix elements.</typeparam>
 	public interface ISquareMat<M, T> : IMat<M, T>
 		where M : struct, ISquareMat<M, T>, IEquatable<M>
 		where T : struct, IEquatable<T>
 	{
+		/// <summary>
+		/// Multiply two matrices together. Matrix multiplication combines the affine
+		/// transformations that the matrices represent. It is the most common operation
+		/// performed on matrices. <see cref="https://en.wikipedia.org/wiki/Matrix_multiplication"/>
+		/// </summary>
 		M Multiply (M mat);
+
+		/// <summary>
+		/// Return the transposed matrix with rows and columns swapped.
+		/// </summary>
 		M Transposed { get; }
+
+		/// <summary>
+		/// Return the determinant of the matrix.
+		/// </summary>
 		T Determinant { get; }
+
+		/// <summary>
+		/// Return the matrix inverse. This operation is much slower than the other matrix
+		/// operations, so it should be used sparingly on performance critical code.
+		/// </summary>
 		M Inverse { get; }
 	}
 
-    public static class Mat
+	/// <summary>
+	/// A static class that defines generic matrix operations. Most of them are defined
+	/// as extension methods to make them more discoverable.
+	/// </summary>
+	public static class Mat
     {
         public static bool ApproxEquals<M> (M mat, M other, float epsilon)
             where M : struct, IMat<M, float>

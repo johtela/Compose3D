@@ -88,7 +88,7 @@
 		/// <summary>
 		/// Multiply two matrices together. Matrix multiplication combines the affine
 		/// transformations that the matrices represent. It is the most common operation
-		/// performed on matrices. <see cref="https://en.wikipedia.org/wiki/Matrix_multiplication"/>
+		/// performed on matrices. <see href="https://en.wikipedia.org/wiki/Matrix_multiplication"/>
 		/// </summary>
 		M Multiply (M mat);
 

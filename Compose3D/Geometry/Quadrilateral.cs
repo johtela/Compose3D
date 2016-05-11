@@ -1,8 +1,8 @@
 ﻿namespace Compose3D.Geometry
 {
-    using Compose3D.Maths;
 	using System;
     using System.Collections.Generic;
+	using Maths;
 
 	public class Quadrilateral<V> : Primitive<V> where V : struct, IVertex
 	{
@@ -12,7 +12,7 @@
         public static Quadrilateral<V> FromVertices (params V[] vertices)
 		{
 			if (vertices.Length != 4)
-				throw new GeometryError ("Quadrilaterals must have four vertices");
+				throw new ArgumentException ("Quadrilaterals must have four vertices", nameof (vertices));
 			return new Quadrilateral<V> (vertices);
 		}
 

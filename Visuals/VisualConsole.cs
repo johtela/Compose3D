@@ -9,7 +9,8 @@
 	public class VisualConsole : Form
 	{
 		private List<Visual> _visuals = new List<Visual> ();
-		private VisualControl _control;
+
+		public readonly VisualControl Control;
 	  
 		public VisualConsole ()
 		{
@@ -18,10 +19,10 @@
 			Size = new Size (700, 500);
 			AutoScroll = true;
 			BackColor = Color.White;
-			_control = new VisualControl ();
-			_control.Location = new Point (0, 0);
-			_control.Parent = this;
-			_control.Focus ();
+			Control = new VisualControl ();
+			Control.Location = new Point (0, 0);
+			Control.Parent = this;
+			Control.Focus ();
 		}
 
 		public void ShowVisual (Visual visual)
@@ -29,7 +30,7 @@
 			lock (_visuals)
 			{
 				_visuals.Add (visual);
-				_control.Visual = Visual.VStack (HAlign.Left,
+				Control.Visual = Visual.VStack (HAlign.Left,
 					_visuals.SelectMany (v => new Visual[] { v, Visual.HRuler () }));
 				Invalidate ();
 			}

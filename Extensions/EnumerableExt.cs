@@ -87,6 +87,13 @@
 			return lines.Any () ? lines.Select (l => l.ToString ()).Aggregate ((s1, s2) => s1 + separator + s2) : "";
 		}
 
+		public static IEnumerable<T> SeparateWith<T> (this IEnumerable<T> e, T separator)
+		{
+			return e.Any () ?
+				e.Skip (1).Aggregate (e.Take (1), (res, item) => res.Append (separator).Append (item)) :
+				Enumerable.Empty<T> ();
+		}
+
 		public static IEnumerable<T> MinimumItems<T> (this IEnumerable<T> items, Func<T, float> selector)
 		{
 			var res = new List<T> ();

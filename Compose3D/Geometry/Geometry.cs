@@ -1,10 +1,10 @@
 ﻿namespace Compose3D.Geometry
 {
-    using Compose3D.Maths;
     using System;
     using System.Collections.Generic;
 	using System.Linq;
 	using DataStructures;
+	using Maths;
 
 	/// <summary>
 	/// Enumerations representing the axes in 3D cartesian coordinate system.
@@ -24,11 +24,6 @@
 	{ 
 		Negative = -1, 
 		Positive = 1
-	}
-
-	public class GeometryError : Exception
-	{
-		public GeometryError (string msg) : base (msg) { }
 	}
 
 	/// <summary>

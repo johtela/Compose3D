@@ -1,7 +1,6 @@
 ﻿namespace Compose3D.Geometry
 {
-	using Compose3D.Maths;
-    using Textures;
+	using Maths;
 	using OpenTK;
 	using System;
 	using System.Collections.Generic;
@@ -14,7 +13,7 @@
         public static Triangle<V> FromVertices (params V[] vertices)
 		{
 			if (vertices.Length != 3)
-				throw new GeometryError ("Triangles must have three vertices");
+				throw new ArgumentException ("Triangles must have three vertices", nameof (vertices));
 			return new Triangle<V> (vertices);
 		}
 			

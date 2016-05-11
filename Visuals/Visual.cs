@@ -504,6 +504,22 @@
 			}
 		}
 
+		private sealed class _Clickable : _Wrapped
+		{
+			public readonly Action<RectangleF> SetClickRegion;
+
+			public _Clickable (Visual visual, Action<RectangleF> setClickRegion) : base (visual)
+			{
+				SetClickRegion = setClickRegion;
+			}
+
+			protected override void Draw (GraphicsContext context, VBox availableSize)
+			{
+				base.Draw (context, availableSize);
+				SetClickRegion (GetSize (context).AsRectF (context.Graphics.Transform));
+			}
+		}
+
 		/// <summary>
 		/// Create an empty visual.
 		/// </summary>
@@ -634,6 +650,11 @@
 		public static Visual Styled (Visual visual, VisualStyle style)
 		{
 			return new _Styled (visual, style);
+		}
+
+		public static Visual Clickable (Visual visual, Action<RectangleF> setClickRegion)
+		{
+			return new _Clickable (visual, setClickRegion);
 		}
 
 		/// <summary>

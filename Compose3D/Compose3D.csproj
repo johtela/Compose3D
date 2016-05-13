@@ -220,6 +220,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Introduction.md" />
+    <None Include="Docs\Maths.md" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Textures\SamplerCube.tt">

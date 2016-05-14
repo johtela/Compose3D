@@ -94,7 +94,6 @@
 			}
 		}
 
-		[GLInterface]
 		public class TerrainFragment : Fragment, IFragmentTexture<Vec2>
 		{
 			public Vec3 vertexNormal { get; set; }

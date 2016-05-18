@@ -219,6 +219,7 @@
     <Compile Include="Reactive\KeyboardReactions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Docs\Background.md" />
     <None Include="Docs\Introduction.md" />
     <None Include="Docs\Maths.md" />
     <None Include="OpenTK.dll.config" />

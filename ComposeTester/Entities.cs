@@ -114,7 +114,7 @@
 
 		public LightingUniforms lighting;
 		public TransformUniforms transforms;
-		public ShadowUniforms shadows;
+		public CascadedShadowUniforms shadows;
 
 		public Entities (Program program, SceneGraph scene)
 			: base (program)
@@ -144,8 +144,8 @@
 
 				lighting = new LightingUniforms (program, scene);
 				transforms = new TransformUniforms (program);
-				shadows = new ShadowUniforms (program,
-					new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All));
+				shadows = new CascadedShadowUniforms (program,
+					new Sampler2DArray (0).LinearFiltering ().ClampToEdges (Axes.All));
 			}
 		}
 
@@ -159,7 +159,7 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 		}
 
-		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, ShadowUniforms shadowSource)
+		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, CascadedShadowUniforms shadowSource)
 		{
 			_entityShader = new Program (
 				VertexShader (), 
@@ -169,7 +169,7 @@
 			return React.By<Camera> (cam => _entities.Render (cam, shadowSource))
 				.BindSamplers (new Dictionary<Sampler, Texture> ()
 				{
-					{ !_entities.shadows.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
+					{ !_entities.shadows.csmShadowMap, sceneGraph.GlobalLighting.ShadowMap },
 					{ !_entities.diffuseMap, sceneGraph.GlobalLighting.DiffuseMap }
 				})
 				.DepthTest ()
@@ -177,12 +177,12 @@
 				.Program (_entityShader);
 		}
 
-		private void Render (Camera camera, ShadowUniforms shadowSource)
+		private void Render (Camera camera, CascadedShadowUniforms shadowSource)
 		{
 			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			lighting.UpdateDirectionalLight (camera);
-			//shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
-			shadows.lightSpaceMatrix &= !shadowSource.lightSpaceMatrix;
+			shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
+			//shadows.lightSpaceMatrix &= !shadowSource.lightSpaceMatrix;
 
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
@@ -230,7 +230,7 @@
 				from f in Shader.Inputs<EntityFragment> ()
 				from u in Shader.Uniforms<Entities> ()
 				from l in Shader.Uniforms<LightingUniforms> ()
-				from c in Shader.Uniforms<ShadowUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let samplerNo = (f.fragTexturePos.X / 10f).Truncate ()
 				let fragDiffuse =
 					samplerNo == 0 ? FragmentShaders.TextureColor ((!u.samplers)[0], f.fragTexturePos) :
@@ -252,8 +252,8 @@
 					fragDiffuse.Mix (LightingShaders.ReflectedColor (!u.diffuseMap, f.fragPosition, f.fragNormal), 
 						f.fragReflectivity)
 				//let shadow = ShadowShaders.PcfShadowMapFactor (f.fragPositionLightSpace, 0.0015f)
-				let shadow = ShadowShaders.VarianceShadowMapFactor (new Vec4 (f.fragPosition, 1f))
-				//let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.fragPosition, 1f), 0.001f)
+				//let shadow = ShadowShaders.VarianceShadowMapFactor (new Vec4 (f.fragPosition, 1f))
+				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.fragPosition, 1f), 0.001f)
 				select new
 				{
 					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 

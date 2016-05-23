@@ -106,7 +106,7 @@
 
 		public TransformUniforms transforms;
 		public LightingUniforms lighting;
-		public ShadowUniforms shadows;
+		public CascadedShadowUniforms shadows;
 		public Uniform<Vec3> skyColor;
 		public Uniform<Sampler2D> sandSampler;
 		public Uniform<Sampler2D> rockSampler;
@@ -117,8 +117,8 @@
 		{
 			transforms = new TransformUniforms (program);
 			lighting = new LightingUniforms (program, scene);
-			shadows = new ShadowUniforms (program,
-				new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All));
+			shadows = new CascadedShadowUniforms (program,
+				new Sampler2DArray (0).LinearFiltering ().ClampToEdges (Axes.All));
 
 			using (program.Scope ())
 			{
@@ -136,7 +136,7 @@
 		private const int _patchStep = 58;
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, Vec3 skyCol, 
-			ShadowUniforms shadowSource)
+			CascadedShadowUniforms shadowSource)
 		{
 			_terrainShader = new Program (VertexShader (), FragmentShader ());
 			_terrain = new Terrain (_terrainShader, sceneGraph, skyCol);
@@ -147,7 +147,7 @@
 			return React.By ((Camera cam) => _terrain.Render (cam, shadowSource))
 				.BindSamplers (new Dictionary<Sampler, Texture> ()
 				{
-					{ !_terrain.shadows.shadowMap, sceneGraph.GlobalLighting.ShadowMap },
+					{ !_terrain.shadows.csmShadowMap, sceneGraph.GlobalLighting.ShadowMap },
 					{ !_terrain.sandSampler, sandTexture },
 					{ !_terrain.rockSampler, rockTexture },
 					{ !_terrain.grassSampler, grassTexture }
@@ -162,13 +162,13 @@
 			return Texture.FromFile (string.Format ("Textures/{0}.jpg", name)).Mipmapped ();
 		}
 
-		private void Render (Camera camera, ShadowUniforms shadowSource)
+		private void Render (Camera camera, CascadedShadowUniforms shadowSource)
 		{
 			var worldToCamera = camera.WorldToCamera;
 			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			lighting.UpdateDirectionalLight (camera);
-			//shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
-			shadows.lightSpaceMatrix &= !shadowSource.lightSpaceMatrix;
+			shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
+			//shadows.lightSpaceMatrix &= !shadowSource.lightSpaceMatrix;
 
 			foreach (var mesh in camera.NodesInView<TerrainMesh<TerrainVertex>> ())
 			{
@@ -220,7 +220,7 @@
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<Terrain> ()
 				from l in Shader.Uniforms<LightingUniforms> ()
-				from c in Shader.Uniforms<ShadowUniforms> ()
+				from c in Shader.Uniforms<CascadedShadowUniforms> ()
 				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.fragTexturePos)
 				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.fragTexturePos)
 				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.fragTexturePos)
@@ -234,8 +234,8 @@
 					f.vertexNormal)
 				let ambient = (!l.globalLighting).ambientLightIntensity
 				//let shadow = ShadowShaders.PcfShadowMapFactor (f.fragPositionLightSpace, 0.0015f)
-				let shadow = ShadowShaders.VarianceShadowMapFactor (new Vec4 (f.vertexPos, 1f))
-				//let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.vertexPos, 1f), 0.0015f)
+				//let shadow = ShadowShaders.VarianceShadowMapFactor (new Vec4 (f.vertexPos, 1f))
+				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.vertexPos, 1f), 0.0015f)
 				let litColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 
 					diffuseLight * shadow, new Vec3 (0f), terrainColor, new Vec3 (0f))
 				select new

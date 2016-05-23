@@ -75,12 +75,12 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 2000, ShadowMapType.Variance, false)
+			var shadowRender= Shadows.Renderer (_sceneGraph, 2000, ShadowMapType.Depth, true)
 				.Map ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
-			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.shadowUniforms);
-			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.shadowUniforms);
+			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
+			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
 			var windowRender = Windows.Renderer (_sceneGraph)
 				.Map ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 

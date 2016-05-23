@@ -5,46 +5,10 @@
     using System.Collections.Generic;
     using System.Linq;
 	using Extensions;
+	using OpenTK.Graphics.OpenGL;
 
     public static class Extrusion
 	{
-		#region Edges
-
-		private class Edge : IEquatable<Edge>
-		{
-			public readonly int Index1;
-			public readonly	int Index2;
-
-			public Edge (int index1, int index2)
-			{
-				Index1 = index1;
-				Index2 = index2;
-			}
-
-			public override bool Equals (object obj)
-			{
-				return obj is Edge && Equals ((Edge)obj);
-			}
-
-			public override int GetHashCode ()
-			{
-				return Index1.GetHashCode () ^ Index2.GetHashCode ();
-			}
-
-			public override string ToString ()
-			{
-				return string.Format ("({0}, {1})", Index1, Index2);
-			}
-
-			public bool Equals (Edge other)
-			{
-				return (Index1 == other.Index1 && Index2 == other.Index2) ||
-					(Index1 == other.Index2 && Index2 == other.Index1);
-			}
-		}
-
-		#endregion
-
 		#region Private helper functions
 
 		private static int BoolToInt (bool b)
@@ -56,24 +20,6 @@
 			where V : struct, IVertex
 		{
 			return VertexHelpers.New<V> (vertex.position, normal);
-		}
-
-		private static IEnumerable<Edge> GetEdges<V> (Geometry<V> geometry)
-			where V : struct, IVertex
-		{
-			var indices = geometry.Indices;
-			for (int i = 0; i < indices.Length; i += 3)
-			{
-				yield return new Edge (indices [i], indices [i + 1]);
-				yield return new Edge (indices [i + 1], indices [i + 2]);
-				yield return new Edge (indices [i + 2], indices [i]);
-			}
-		}
-		
-		private static IEnumerable<Edge> GetEdges<P> (Path<P, Vec3> path)
-			where P : struct, IPositional<Vec3>
-		{
-			return Enumerable.Range (1, path.Nodes.Length - 1).Select (i => new Edge (i - 1, i));
 		}
 
 		private static IEnumerable<Edge> DetermineOuterEdges (Edge[] edges)
@@ -138,7 +84,7 @@
 			if (!vertices.All (v => Vec.ApproxEquals (v.normal, firstNormal)))
 				throw new ArgumentException ("All the normals need to point towards the same direction.", "frontFace");
 
-			var edges = GetEdges (frontFace).ToArray ();
+			var edges = frontFace.GetEdges (PrimitiveType.Triangles).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * transforms.Count ())
 			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
@@ -196,7 +142,7 @@
 				throw new ArgumentException ("The nodes of the paths must be coplanar.", "paths");
 			
 			var vertices = GetVertices<V, P> (frontFace, false);
-			var outerEdges = GetEdges (frontFace).ToArray ();
+			var outerEdges = frontFace.GetEdges ().ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * (paths.Count () - 1)) + 
 				BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];
 			var i = 0;

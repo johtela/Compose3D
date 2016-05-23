@@ -42,7 +42,8 @@
 
 		public static T Next<T> (this IEnumerator<T> enumerator)
 		{
-			enumerator.MoveNext ();
+			if (!enumerator.MoveNext ())
+				throw new ArgumentException ("Enumerator exhausted");
 			return enumerator.Current;
 		}
 

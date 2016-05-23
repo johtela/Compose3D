@@ -1,11 +1,11 @@
 ﻿namespace Compose3D.Textures
 {
-	using Compose3D.Maths;
+	using Maths;
 	using Geometry;
 	using OpenTK;
-	using System.Collections.Generic;
 	using System.Linq;
 	using DataStructures;
+	using OpenTK.Graphics.OpenGL;
 
 	/// <summary>
 	/// Interface for textured vertices.
@@ -17,6 +17,18 @@
         /// </summary>
         Vec2 texturePos { get; set; }
     }
+
+	/// <summary>
+	/// Interface for vertices that have a normal map. The tangent vector is 
+	/// needed for calculating the tangent space transformation matrix.
+	/// </summary>
+	public interface INormalMapped : ITextured
+	{
+		/// <summary>
+		/// The tangent vector of the vertex.
+		/// </summary>
+		Vec3 tangent { get; set; }
+	}
 
     public static class TexturePos
     {
@@ -123,6 +135,43 @@
 			 where V : struct, IVertex, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
+		}
+
+		public static void UpdateTangents<V> (this Geometry<V> geometry, PrimitiveType primitive)
+			 where V : struct, IVertex, INormalMapped
+		{
+			for (int i = 0; i < geometry.Vertices.Length; i++)
+				geometry.Vertices[i].tangent = new Vec3 (0f);
+
+			var edges = geometry.GetEdges (primitive).ToArray ();
+			for (int i = 0; i < edges.Length; i+= 3)
+			{
+				var i1 = edges[i].Index1;
+				var i2 = edges[i + 1].Index1;
+				var i3 = edges[i + 2].Index1;
+				var v1 = geometry.Vertices[i1];
+				var v2 = geometry.Vertices[i2];
+				var v3 = geometry.Vertices[i3];
+
+				geometry.Vertices[i1].tangent = (v1.tangent +
+					CalculateTangent (v2.position - v1.position, v3.position - v1.position,
+						v2.texturePos - v1.texturePos, v3.texturePos - v1.texturePos)).Normalized;
+				geometry.Vertices[i2].tangent = (v2.tangent +
+					CalculateTangent (v1.position - v2.position, v3.position - v2.position,
+						v1.texturePos - v2.texturePos, v3.texturePos - v2.texturePos)).Normalized;
+				geometry.Vertices[i3].tangent = (v3.tangent +
+					CalculateTangent (v1.position - v3.position, v2.position - v3.position,
+						v1.texturePos - v3.texturePos, v2.texturePos - v3.texturePos)).Normalized;
+			}
+		}
+
+		private static Vec3 CalculateTangent (Vec3 edge1, Vec3 edge2, Vec2 deltaUV1, Vec2 deltaUV2)
+		{
+			var f = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV2.X * deltaUV1.Y);
+			return new Vec3 (
+				f * (deltaUV2.Y * edge1.X - deltaUV1.Y * edge2.X),
+				f * (deltaUV2.Y * edge1.Y - deltaUV1.Y * edge2.Y),
+				f * (deltaUV2.Y * edge1.Z - deltaUV1.Y * edge2.Z)).Normalized;
 		}
 	}
 }

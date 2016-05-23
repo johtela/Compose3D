@@ -75,14 +75,14 @@
 
 		private void SetupRendering ()
 		{
-			var shadowRender= Shadows.Renderer (_sceneGraph, 4000, ShadowMapType.Variance, false)
-				.Select ((double _) => _camera);
+			var shadowRender= Shadows.Renderer (_sceneGraph, 2000, ShadowMapType.Variance, false)
+				.Map ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.shadowUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.shadowUniforms);
 			var windowRender = Windows.Renderer (_sceneGraph)
-				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
+				.Map ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
 				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
@@ -92,7 +92,7 @@
 				.And (skyboxRender
 					.And (terrainRender)
 					.And (entityRender)
-					.Select ((double _) => _camera)
+					.Map ((double _) => _camera)
 				.And (windowRender)
 				.Viewport (this)))
 			.And (moveFighter)
@@ -102,7 +102,7 @@
 			Entities.UpdatePerspectiveMatrix()
 			.And (Skybox.UpdatePerspectiveMatrix ())
 			.And (Terrain.UpdatePerspectiveMatrix ())
-			.Select ((Vec2 size) =>
+			.Map ((Vec2 size) =>
 				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
 				.CameraToScreen)
 			.WhenResized (this).Evoke ();
@@ -111,14 +111,14 @@
 		private void SetupCameraMovement ()
 		{
 			React.By<Vec2> (RotateCamera)
-				.Select ((MouseMoveEventArgs e) =>
+				.Map ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
 				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
 			React.By<float> (ZoomCamera)
-				.Select (delta => delta * -0.5f)
+				.Map (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
 				.Evoke ();
 		}

@@ -1,15 +1,11 @@
 ﻿namespace Compose3D.Filters
 {
-	using System;
-	using System.Collections.Generic;
 	using System.Linq;
 	using Extensions;
-	using Geometry;
 	using GLTypes;
 	using Maths;
 	using Reactive;
 	using Shaders;
-	using Textures;
 	using OpenTK.Graphics.OpenGL;
 	using Filter = Reactive.Reaction<System.Tuple<Textures.Texture, Textures.Texture>>;
 
@@ -28,12 +24,12 @@
 
 		public static Filter Vertical ()
 		{
-			return TextureFilter.Renderer (new Program (VerticelVertexShader (), FragmentShader ()));
+			return TextureFilter.Renderer (new Program (VerticalVertexShader (), FragmentShader ()));
 		}
 
 		public static Filter Both ()
 		{
-			return Horizontal ().And (Vertical ().Select (TupleExt.Swap));
+			return Horizontal ().And (Vertical ().Map (TupleExt.Swap));
 		}
 
 		private static GLShader HorizontalVertexShader ()
@@ -60,7 +56,7 @@
 			);
 		}
 
-		private static GLShader VerticelVertexShader ()
+		private static GLShader VerticalVertexShader ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TexturedVertex> ()

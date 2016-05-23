@@ -18,7 +18,7 @@
 		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyDown (this Reaction<Key> reaction, 
 			GameWindow window)
 		{
-			return WhenAnyKeyDown (reaction.Select<KeyboardKeyEventArgs, Key> (e => e.Key), window);
+			return WhenAnyKeyDown (reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key), window);
 		}
 
 		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenKeyDown (this Reaction<Key> reaction, 
@@ -38,7 +38,7 @@
 		public static Reaction<Reaction<KeyboardKeyEventArgs>> WhenAnyKeyUp (this Reaction<Key> reaction, 
 			GameWindow window)
 		{
-			return WhenAnyKeyUp (reaction.Select<KeyboardKeyEventArgs, Key> (e => e.Key), window);
+			return WhenAnyKeyUp (reaction.Map<KeyboardKeyEventArgs, Key> (e => e.Key), window);
 		}
 	}
 }

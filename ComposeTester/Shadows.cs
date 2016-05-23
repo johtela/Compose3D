@@ -11,7 +11,6 @@
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
 	using OpenTK.Graphics.OpenGL;
-	using Filter = Compose3D.Reactive.Reaction<System.Tuple<Compose3D.Textures.Texture, Compose3D.Textures.Texture>>;
 
 	public enum ShadowMapType { Depth, Variance }
 	
@@ -78,7 +77,7 @@
 					RenderbufferStorage.DepthComponent16, mapSize, mapSize);
 				var gaussTexture = new Texture (TextureTarget.Texture2D, PixelInternalFormat.Rg32f,
 					mapSize / 2, mapSize / 2, PixelFormat.Rg, PixelType.Float, IntPtr.Zero);
-				render = render.And (GaussianFilter.Both ().Select ((Camera cam) =>
+				render = render.And (GaussianFilter.Both ().Map ((Camera cam) =>
 					Tuple.Create (depthTexture, gaussTexture)));
 			}
 			scene.GlobalLighting.ShadowMap = depthTexture;

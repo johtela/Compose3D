@@ -253,7 +253,7 @@
 						f.fragReflectivity)
 				//let shadow = ShadowShaders.PcfShadowMapFactor (f.fragPositionLightSpace, 0.0015f)
 				//let shadow = ShadowShaders.VarianceShadowMapFactor (new Vec4 (f.fragPosition, 1f))
-				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.fragPosition, 1f), 0.001f)
+				let shadow = ShadowShaders.CascadedShadowMapFactor (new Vec4 (f.fragPosition, 1f), 0.0015f)
 				select new
 				{
 					outputColor = LightingShaders.GlobalLightIntensity (!l.globalLighting, ambient, 

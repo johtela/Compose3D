@@ -127,6 +127,16 @@
 				)
 				.Evaluate ());
 
+		public static readonly Func<Vec3, float, float> Random =
+			GLShader.Function (() => Random,
+				(Vec3 seed, float freq) =>
+				(GLMath.Sin ((seed * freq).Floor ().Dot (new Vec3 (53.1215f, 21.1352f, 9.1322f))) 
+				* 2105.2354f).Fraction ());
+
+		public static readonly Func<Vec3, float, float> RandomAngle =
+			GLShader.Function (() => RandomAngle,
+				(Vec3 seed, float freq) => Random (seed, freq) * 6.283285f);
+
 		public static readonly Func<Sampler2DArray, Vec3, float, float, float> csmPCFiltering =
 			GLShader.Function (() => csmPCFiltering,
 				(Sampler2DArray shadowMap, Vec3 texCoords, float mapIndex, float bias) =>
@@ -135,24 +145,28 @@
 					{
 						kernel = new Vec2[]
 						{
-							new Vec2 (0.3734659f, -0.8273796f),
-							new Vec2 (0.1914345f, -0.3285008f),
-							new Vec2 (-0.2934556f, -0.4006544f),
-							new Vec2 (0.6397942f, -0.2687152f),
-							new Vec2 (-0.02465286f, -0.7721488f),
-							new Vec2 (-0.5982372f, -0.7205318f),
-							new Vec2 (0.508617f, 0.2272395f),
-							new Vec2 (0.1029184f, 0.3121677f),
-							new Vec2 (-0.2912557f, 0.7276647f),
-							new Vec2 (-0.3520437f, 0.2009868f),
-							new Vec2 (0.5757321f, 0.636853f),
-							new Vec2 (0.1266643f, 0.743752f),
-							new Vec2 (-0.7601562f, 0.2416886f),
-							new Vec2 (0.9183863f, 0.1334105f),
-							new Vec2 (-0.7794592f, -0.2526905f),
+							//new Vec2 (0.3734659f, -0.8273796f),
+							//new Vec2 (0.1914345f, -0.3285008f),
+							//new Vec2 (-0.2934556f, -0.4006544f),
+							//new Vec2 (0.6397942f, -0.2687152f),
+							//new Vec2 (-0.02465286f, -0.7721488f),
+							//new Vec2 (-0.5982372f, -0.7205318f),
+							//new Vec2 (0.508617f, 0.2272395f),
+							//new Vec2 (0.1029184f, 0.3121677f),
+							//new Vec2 (-0.2912557f, 0.7276647f),
+							//new Vec2 (-0.3520437f, 0.2009868f),
+							//new Vec2 (0.5757321f, 0.636853f),
+							//new Vec2 (0.1266643f, 0.743752f),
+							//new Vec2 (-0.7601562f, 0.2416886f),
+							//new Vec2 (0.9183863f, 0.1334105f),
+							//new Vec2 (-0.7794592f, -0.2526905f)
+
+						   new Vec2 (0.95581f, -0.18159f), new Vec2 (0.50147f, -0.35807f), new Vec2 (0.69607f, 0.35559f),
+						   new Vec2 (-0.0036825f, -0.59150f),  new Vec2 (0.15930f, 0.089750f), new Vec2 (-0.65031f, 0.058189f),
+						   new Vec2 (0.11915f, 0.78449f),  new Vec2 (-0.34296f, 0.51575f), new Vec2 (-0.60380f, -0.41527f)
 
 							//new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
-	 					//	new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
+							//new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
 							//new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f),
 						}
 					})
@@ -160,10 +174,15 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
+					// Random rotation for poisson circle
+					let angle = RandomAngle (texCoords, 35f)
+					let s = angle.Sin () * 1.5f
+					let c = angle.Cos () * 1.5f
 					select (from point in con.kernel
-							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * 2f * texelSize)
+							let rotated = new Vec2 (point.X * c + point.Y * s, point.X * -s + point.Y * c)
+							let sampleCoords = texCoords[Coord.x, Coord.y] + (rotated * texelSize)
 							select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
-							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 15f
+							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / con.kernel.Length
 				)
 				.Evaluate ());
 

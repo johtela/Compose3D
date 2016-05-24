@@ -23,9 +23,9 @@
 
 		public ViewingFrustum (FrustumKind kind, float left, float right, float bottom, float top, float near, float far)
 		{
-			if (left >= right || bottom >= top || far >= near)
+			if (left >= right || bottom >= top /*|| far >= near */)
 				throw new ArgumentException ("Invalid frustum dimensions; " +
-					"left >= rigth or bottom >= top or far >= near.");
+					"left >= right or bottom >= top or far >= near.");
 			Kind = kind;
 			Left = left;
 			Right = right;

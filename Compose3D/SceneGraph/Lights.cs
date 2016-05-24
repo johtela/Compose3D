@@ -5,7 +5,7 @@
 	using Extensions;
 	using Shaders;
 	using Textures;
-
+	using System;
 	/// <summary>
 	/// Global lighting parameters affecting the whole scene.
 	/// </summary>
@@ -64,20 +64,18 @@
 		public Mat4[] CascadedShadowFrustums (Camera camera, int count)
 		{
 			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
-			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count);
-			var result = new Mat4[count];
-			ViewingFrustum prev = null;
-			for (int i = count - 1; i >= 0; i--)
+			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count, 0.75f);
+			var frustums = new ViewingFrustum[count];
+			var last = count - 1;
+			for (int i = last; i >= 0; i--)
 			{
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
 				var curr = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				var frustum = prev == null ? curr :
-					new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
-						curr.Bottom, curr.Top, curr.Near, prev.Far);
-				result[i] = frustum.CameraToScreen * camToLight;
-				prev = curr;
+				var prev = i == last ? curr : frustums[Math.Min (i + 2, last)];
+				frustums[i] = new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
+					curr.Bottom, curr.Top, curr.Near, prev.Far);
 			}
-			return result;
+			return frustums.Map (f => f.CameraToScreen * camToLight);
 		}
 	}
 

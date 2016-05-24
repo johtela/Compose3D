@@ -127,16 +127,6 @@
 				)
 				.Evaluate ());
 
-		public static readonly Func<Vec3, float, float> Random =
-			GLShader.Function (() => Random,
-				(Vec3 seed, float freq) =>
-				(GLMath.Sin ((seed * freq).Floor ().Dot (new Vec3 (53.1215f, 21.1352f, 9.1322f))) 
-				* 2105.2354f).Fraction ());
-
-		public static readonly Func<Vec3, float, float> RandomAngle =
-			GLShader.Function (() => RandomAngle,
-				(Vec3 seed, float freq) => Random (seed, freq) * 6.283285f);
-
 		public static readonly Func<Sampler2DArray, Vec3, float, float, float> csmPCFiltering =
 			GLShader.Function (() => csmPCFiltering,
 				(Sampler2DArray shadowMap, Vec3 texCoords, float mapIndex, float bias) =>
@@ -174,13 +164,8 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					// Random rotation for poisson circle
-					let angle = RandomAngle (texCoords, 35f)
-					let s = angle.Sin () * 1.5f
-					let c = angle.Cos () * 1.5f
 					select (from point in con.kernel
-							let rotated = new Vec2 (point.X * c + point.Y * s, point.X * -s + point.Y * c)
-							let sampleCoords = texCoords[Coord.x, Coord.y] + (rotated * texelSize)
+							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * 2f * texelSize)
 							select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
 							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / con.kernel.Length
 				)

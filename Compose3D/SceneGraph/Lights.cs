@@ -61,7 +61,7 @@
 			return shadowFrustum.CameraToScreen * camToLight;
 		}
 
-		public Mat4[] CascadedShadowFrustums (Camera camera, int count)
+		public Mat4[] CameraToCsmProjections (Camera camera, int count)
 		{
 			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
 			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count, 0.75f);
@@ -71,7 +71,7 @@
 			{
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
 				var curr = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				var prev = i == last ? curr : frustums[Math.Min (i + 2, last)];
+				var prev = i == last ? curr : frustums[Math.Min (i + 1, last)];
 				frustums[i] = new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
 					curr.Bottom, curr.Top, curr.Near, prev.Far);
 			}

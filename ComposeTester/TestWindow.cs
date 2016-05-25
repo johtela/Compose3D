@@ -61,7 +61,7 @@
 			{
 				AmbientLightIntensity = new Vec3 (0.5f),
 				MaxIntensity = 4.5f,
-				GammaCorrection = 1.4f,
+				GammaCorrection = 1.35f,
 			};
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);

@@ -44,7 +44,7 @@
 
 		public void UpdateLightSpaceMatrices (Camera camera, DirectionalLight light)
 		{
-			viewLightMatrices &= light.CascadedShadowFrustums (camera, MapCount);
+			viewLightMatrices &= light.CameraToCsmProjections (camera, MapCount);
 		}
 	}
 

@@ -169,8 +169,10 @@
 					from gamma in new Vec3 (globalLighting.inverseGamma).ToShader ()
 					let maxInten = globalLighting.maxintensity
 					let ambient = diffuseColor * ambientLight
-					select ((ambient + (diffuseLight * diffuseColor) + (specularLight * specularColor))
-						.Pow (gamma) / maxInten).Clamp (0f, 1f)
+					let global = ambient + (diffuseLight * diffuseColor) + (specularLight * specularColor)
+					//let ldr = new Vec3 (1f) - (-global * (1f / maxInten)).Exp ()
+					//let ldr = global / (global + new Vec3 (1f))
+					select global.Pow (gamma).Clamp (0f, 1f)
 				)
 				.Evaluate ()
 			);

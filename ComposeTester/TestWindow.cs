@@ -46,7 +46,7 @@
 		{
 			var sceneGraph = new SceneGraph ();
 			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (10f), 
+				intensity: new Vec3 (1f), 
 				direction: new Vec3 (0.7f, 1f, -0.7f),
 				maxShadowDepth: 200f);
 
@@ -59,9 +59,9 @@
 
 			sceneGraph.GlobalLighting = new GlobalLighting ()
 			{
-				AmbientLightIntensity = new Vec3 (0.5f),
-				MaxIntensity = 4.5f,
-				GammaCorrection = 1.35f,
+				AmbientLightIntensity = new Vec3 (0.1f),
+				MaxIntensity = 1f,
+				GammaCorrection = 1.5f,
 			};
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);

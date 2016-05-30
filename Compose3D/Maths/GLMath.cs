@@ -1,4 +1,4 @@
-﻿	namespace Compose3D.Maths
+﻿namespace Compose3D.Maths
 {
 	using GLTypes;
 	using OpenTK;

@@ -13,8 +13,10 @@
 			PixelFormat pixelFormat)
 		{
 			var result = new Bitmap (size.Width, size.Height, pixelFormat);
-			var ctx = new GraphicsContext (Graphics.FromImage (result), 
-				VisualStyle.Default);
+			var gfx = Graphics.FromImage (result);
+			var ctx = new GraphicsContext (gfx, VisualStyle.Default);
+			gfx.SmoothingMode = SmoothingMode.AntiAlias;
+			gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
 			visual.Render (ctx, new VBox (size.Width, size.Height));
 			return result;
 		}

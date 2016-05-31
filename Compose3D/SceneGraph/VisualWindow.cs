@@ -20,7 +20,7 @@
 			_visual = visual;
 			Texture = Texture.FromBitmap (
 				visual.ToBitmap (new Size (size.X, size.Y), 
-				System.Drawing.Imaging.PixelFormat.Canonical));
+				System.Drawing.Imaging.PixelFormat.Format32bppArgb));
 		}
 
 		public Visual Visual
@@ -31,7 +31,7 @@
 				_visual = value;
 				Texture.UpdateBitmap (_visual.ToBitmap (
 					new Size (Texture.Size.X, Texture.Size.Y),
-					System.Drawing.Imaging.PixelFormat.Canonical),
+					System.Drawing.Imaging.PixelFormat.Format32bppArgb),
 					TextureTarget.Texture2D, 0);
 			}
 		}

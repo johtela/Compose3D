@@ -13,7 +13,7 @@
 	using OpenTK.Graphics;
 	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
-
+	using Visuals;
 	public class TestWindow : GameWindow
 	{
 		// Scene graph
@@ -24,7 +24,7 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private TransformNode _fighter;
-		private Window<TexturedVertex> _infoWindow;
+		private VisualWindow<TexturedVertex> _infoWindow;
 		private Window<TexturedVertex> _shadowWindow;
 		private int _fpsCount;
 		private double _fpsTime;
@@ -67,7 +67,8 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 
-			_infoWindow = new Window<TexturedVertex> (sceneGraph, true, Texture.FromBitmap (InfoWindow (0)));
+			_infoWindow = new VisualWindow<TexturedVertex> (sceneGraph, InfoWindow (0), 
+				new Vec2i (128, 64));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
@@ -129,10 +130,9 @@
 			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
 		}
 
-		private Bitmap InfoWindow (int fps)
+		private Visual InfoWindow (int fps)
 		{
-			return string.Format ("FPS: {0}", fps).TextToBitmapAligned (128, 64, 16f,
-				StringAlignment.Near, StringAlignment.Near);
+			return Visual.Label (string.Format ("FPS: {0}", fps));
 		}
 
 		private void UpdateFPS (double time)
@@ -140,8 +140,7 @@
 			_fpsTime += time;
 			if (++_fpsCount == 10)
 			{
-				_infoWindow.Texture.UpdateBitmap (InfoWindow ((int)Math.Round (10.0 / _fpsTime)), 
-					TextureTarget.Texture2D, 0);
+				_infoWindow.Visual = InfoWindow ((int)Math.Round (10.0 / _fpsTime));
 				_fpsCount = 0;
 				_fpsTime = 0.0;
 			}

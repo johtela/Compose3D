@@ -360,7 +360,27 @@
 			}
 		}
 
-			/// <summary>
+		private sealed class _Delayed : Visual
+		{
+			public readonly Func<Visual> GetChild;
+
+			public _Delayed (Func<Visual> getChild)
+			{
+				GetChild = getChild;
+			}
+
+			protected override VBox CalculateSize (GraphicsContext context)
+			{
+				return GetChild ().CalculateSize (context);
+			}
+
+			protected override void Draw (GraphicsContext context, VBox availableSize)
+			{
+				GetChild ().Draw (context, availableSize);
+			}
+		}
+
+		/// <summary>
 		/// Frame a visual.
 		/// </summary>
 		private sealed class _Frame : _Wrapped
@@ -655,6 +675,11 @@
 		public static Visual Clickable (Visual visual, Action<RectangleF> setClickRegion)
 		{
 			return new _Clickable (visual, setClickRegion);
+		}
+
+		public static Visual Delayed (Func<Visual> getChild)
+		{
+			return new _Delayed (getChild);
 		}
 
 		/// <summary>

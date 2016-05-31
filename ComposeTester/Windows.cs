@@ -47,14 +47,11 @@
 
 		private void Render (Vec2 viewportSize)
 		{
+			transform.perspectiveMatrix &= new Mat4 (1f);
 			foreach (var window in _scene.Root.Traverse ().OfType<Window<TexturedVertex>> ())
 			{
-				var texSize = window.Texture.Size * 2;
-				var scalingMat = Mat.Scaling<Mat4> (texSize.X / viewportSize.X, texSize.Y / viewportSize.Y);
-
 				(!texture.textureMap).Bind (window.Texture);
-				transform.perspectiveMatrix &= new Mat4 (1f);
-				transform.modelViewMatrix &= window.Transform * scalingMat;
+				transform.modelViewMatrix &= window.GetModelViewMatrix (viewportSize);
 				_windowShader.DrawElements (PrimitiveType.Triangles, window.VertexBuffer, window.IndexBuffer);
 				(!texture.textureMap).Unbind (window.Texture);
 			}

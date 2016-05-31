@@ -80,6 +80,7 @@
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GLTypes\GLShader.cs" />
+    <Compile Include="SceneGraph\VisualWindow.cs" />
     <Compile Include="Shaders\Constant.cs" />
     <Compile Include="Shaders\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />

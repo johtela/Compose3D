@@ -39,6 +39,7 @@
     <Compile Include="VBox.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="VisualControl.cs" />
+    <Compile Include="VisualHelpers.cs" />
     <Compile Include="VisualStyle.cs" />
     <Compile Include="VisualConsole.cs" />
   </ItemGroup>

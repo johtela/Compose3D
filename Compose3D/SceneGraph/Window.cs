@@ -1,13 +1,11 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
 	using OpenTK.Graphics.OpenGL;
 	using GLTypes;
 	using Geometry;
 	using Maths;
 	using Textures;
+	using DataStructures;
 
 	public class Window<V> : SceneNode 
 		where V : struct, IVertex, ITextured
@@ -32,6 +30,23 @@
 			: this (graph, flipVertically)
 		{
 			Texture = texture;
+		}
+
+		public Mat4 GetModelViewMatrix (Vec2 viewportSize)
+		{
+			var texSize = Texture.Size * 2;
+			var scalingMat = Mat.Scaling<Mat4> (texSize.X / viewportSize.X, texSize.Y / viewportSize.Y);
+			return Transform * scalingMat;
+		}
+
+		public Aabb<Vec2> GetBoundsOnScreen (Vec2 viewportSize)
+		{
+			var halfSize = viewportSize / 2f;
+			var toScreen = Mat.Scaling<Mat4> (halfSize.X, halfSize.Y) * 
+				Mat.Translation<Mat4> (0f, 1f) *
+				GetModelViewMatrix (viewportSize);
+			var bbox = toScreen * _rectangle.BoundingBox;
+			return new Aabb<Vec2> (new Vec2 (bbox.Min), new Vec2 (bbox.Max));
 		}
 
 		public VBO<V> VertexBuffer

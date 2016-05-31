@@ -17,7 +17,7 @@
 		public static Reaction<Reaction<FrameEventArgs>> WhenRendered (this Reaction<double> reaction, 
 			GameWindow window)
 		{
-			return WhenRendered (reaction.Map<FrameEventArgs, double> (e => e.Time), window);
+			return WhenRendered (reaction.Select<FrameEventArgs, double> (e => e.Time), window);
 		}
 
 		public static Reaction<Reaction<EventArgs>> WhenResized (this Reaction<EventArgs> reaction, 
@@ -31,7 +31,7 @@
 		public static Reaction<Reaction<EventArgs>> WhenResized (this Reaction<Vec2> reaction, 
 			GameWindow window)
 		{
-			return WhenResized (reaction.Map<EventArgs, Vec2> (e => 
+			return WhenResized (reaction.Select<EventArgs, Vec2> (e => 
 				new Vec2 (window.ClientSize.Width, window.ClientSize.Height)), window);
 		}
 	}

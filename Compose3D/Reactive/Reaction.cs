@@ -56,12 +56,12 @@
 			};
 		}
 
-		public static Reaction<T> Map<T, U> (this Reaction<U> reaction, Func<T, U> func)
+		public static Reaction<T> Select<T, U> (this Reaction<U> reaction, Func<T, U> func)
 		{
 			return input => reaction (func (input));
 		}
 
-		public static Reaction<T> Map<T> (this Reaction<T> reaction, Func<T, T> func)
+		public static Reaction<T> Select<T> (this Reaction<T> reaction, Func<T, T> func)
 		{
 			return input => reaction (func (input));
 		}

@@ -1,13 +1,18 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System;
+	using System.Drawing;
+	using OpenTK;
 	using OpenTK.Graphics.OpenGL;
 	using GLTypes;
 	using Geometry;
 	using Maths;
+	using Reactive;
 	using Textures;
 	using DataStructures;
+	using Extensions;
 
-	public class Window<V> : SceneNode 
+	public class Panel<V> : SceneNode 
 		where V : struct, IVertex, ITextured
 	{
 		public Texture Texture { get; set; }
@@ -16,7 +21,7 @@
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		public Window (SceneGraph graph, bool flipVertically)
+		public Panel (SceneGraph graph, bool flipVertically)
 			: base (graph)
 		{
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
@@ -26,7 +31,7 @@
 				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 		}
 
-		public Window (SceneGraph graph, bool flipVertically, Texture texture)
+		public Panel (SceneGraph graph, bool flipVertically, Texture texture)
 			: this (graph, flipVertically)
 		{
 			Texture = texture;
@@ -67,6 +72,21 @@
 					_indexBuffer = new VBO<int> (_rectangle.Indices, BufferTarget.ElementArrayBuffer);
 				return _indexBuffer;
 			}
+		}
+	}
+	
+	public static class PanelReactions
+	{
+		public static Reaction<Vec2> WhenMouseOn<V> (this Reaction<Vec2> reaction, 
+			Panel<V> panel, GameWindow window) where V : struct, IVertex, ITextured
+		{
+			return reaction.Where (mpos =>
+			{
+				var vportSize = new Vec2 (window.ClientSize.Width, window.ClientSize.Height);
+				var bbox = panel.GetBoundsOnScreen (vportSize);
+				var pos = new Vec2 (mpos.X, vportSize.Y - mpos.Y);
+				return bbox & pos;
+			});
 		}
 	}
 }

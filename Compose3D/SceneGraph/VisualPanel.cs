@@ -1,20 +1,20 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using OpenTK.Graphics.OpenGL;
+	using DataStructures;
 	using GLTypes;
 	using Geometry;
 	using Maths;
 	using Textures;
-	using DataStructures;
 	using Visuals;
 	using System.Drawing;
 
-	public class VisualWindow<V> : Window<V>
+	public class VisualPanel<V> : Panel<V>
 		where V : struct, IVertex, ITextured
 	{
 		private Visual _visual;
 
-		public VisualWindow (SceneGraph graph, Visual visual, Vec2i size)
+		public VisualPanel (SceneGraph graph, Visual visual, Vec2i size)
 			: base (graph, true)
 		{
 			_visual = visual;
@@ -35,6 +35,5 @@
 					TextureTarget.Texture2D, 0);
 			}
 		}
-
 	}
 }

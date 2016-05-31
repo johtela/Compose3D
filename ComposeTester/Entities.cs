@@ -179,7 +179,6 @@
 
 		private void Render (Camera camera, CascadedShadowUniforms shadowSource)
 		{
-			var dirLight = camera.Graph.Root.Traverse ().OfType<DirectionalLight> ().First ();
 			lighting.UpdateDirectionalLight (camera);
 			shadows.viewLightMatrices &= !shadowSource.viewLightMatrices;
 			//shadows.lightSpaceMatrix &= !shadowSource.lightSpaceMatrix;

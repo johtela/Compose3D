@@ -158,6 +158,14 @@
 			return true;
 		}
 
+		public static bool operator & (Aabb<V> bbox, V pos)
+		{
+			for (int i = 0; i < bbox.Min.Dimensions; i++)
+				if (bbox.Max[i] < pos[i] || bbox.Min[i] > pos[i])
+					return false;
+			return true;
+		}
+		
 		public static Aabb<V> operator * (Mat4 matrix, Aabb<V> bbox)
 		{
 			if (bbox == null)

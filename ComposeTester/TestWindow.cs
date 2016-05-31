@@ -24,8 +24,8 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private TransformNode _fighter;
-		private VisualWindow<TexturedVertex> _infoWindow;
-		private Window<TexturedVertex> _shadowWindow;
+		private VisualPanel<TexturedVertex> _infoWindow;
+		private Panel<TexturedVertex> _shadowWindow;
 		private int _fpsCount;
 		private double _fpsTime;
 		
@@ -67,7 +67,7 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 
-			_infoWindow = new VisualWindow<TexturedVertex> (sceneGraph, InfoWindow (0), 
+			_infoWindow = new VisualPanel<TexturedVertex> (sceneGraph, InfoWindow (0), 
 				new Vec2i (128, 64));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
@@ -77,13 +77,13 @@
 		private void SetupRendering ()
 		{
 			var shadowRender= Shadows.Renderer (_sceneGraph, 2500, ShadowMapType.Depth, true)
-				.Map ((double _) => _camera);
+				.Select ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
-			var windowRender = Windows.Renderer (_sceneGraph)
-				.Map ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
+			var windowRender = Panels.Renderer (_sceneGraph)
+				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
 				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
@@ -93,7 +93,7 @@
 				.And (skyboxRender
 					.And (terrainRender)
 					.And (entityRender)
-					.Map ((double _) => _camera)
+					.Select ((double _) => _camera)
 				.And (windowRender)
 				.Viewport (this)))
 			.And (moveFighter)
@@ -103,7 +103,7 @@
 			Entities.UpdatePerspectiveMatrix()
 			.And (Skybox.UpdatePerspectiveMatrix ())
 			.And (Terrain.UpdatePerspectiveMatrix ())
-			.Map ((Vec2 size) =>
+			.Select ((Vec2 size) =>
 				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
 				.CameraToScreen)
 			.WhenResized (this).Evoke ();
@@ -112,21 +112,21 @@
 		private void SetupCameraMovement ()
 		{
 			React.By<Vec2> (RotateCamera)
-				.Map ((MouseMoveEventArgs e) =>
+				.Select ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
 				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
 			React.By<float> (ZoomCamera)
-				.Map (delta => delta * -0.5f)
+				.Select (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
 				.Evoke ();
 		}
 
 		private void AddShadowWindow ()
 		{
-			_shadowWindow = new Window<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
+			_shadowWindow = new Panel<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
 			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
 		}
 

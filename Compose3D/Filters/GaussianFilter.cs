@@ -29,7 +29,7 @@
 
 		public static Filter Both ()
 		{
-			return Horizontal ().And (Vertical ().Map (TupleExt.Swap));
+			return Horizontal ().And (Vertical ().Select (TupleExt.Swap));
 		}
 
 		private static GLShader HorizontalVertexShader ()

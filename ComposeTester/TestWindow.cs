@@ -83,7 +83,7 @@
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
 			var windowRender = Panels.Renderer (_sceneGraph)
-				.Select ((double _) => new Vec2 (ClientSize.Width, ClientSize.Height));
+				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
 				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
@@ -132,7 +132,8 @@
 
 		private Visual InfoWindow (int fps)
 		{
-			return Visual.Label (string.Format ("FPS: {0}", fps));
+			return Visual.Frame (Visual.Label (string.Format ("FPS: {0}", fps)),
+				FrameKind.RoundRectangle);
 		}
 
 		private void UpdateFPS (double time)

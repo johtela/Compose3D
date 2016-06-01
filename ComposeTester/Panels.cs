@@ -31,7 +31,7 @@
 			transform = new TransformUniforms (_panelShader);
 		}
 
-		public static Reaction<Vec2> Renderer (SceneGraph scene)
+		public static Reaction<Vec2i> Renderer (SceneGraph scene)
 		{
 			_panelShader = new Program (
 				VertexShaders.TransformedTexture<TexturedVertex, PanelFragment, TransformUniforms> (),
@@ -39,13 +39,13 @@
 			_panels = new Panels ();
 			_scene = scene;
 
-			return React.By<Vec2> (_panels.Render)
+			return React.By<Vec2i> (_panels.Render)
 				.Blending ()
 				.Culling ()
 				.Program (_panelShader);
 		}
 
-		private void Render (Vec2 viewportSize)
+		private void Render (Vec2i viewportSize)
 		{
 			transform.perspectiveMatrix &= new Mat4 (1f);
 			foreach (var window in _scene.Root.Traverse ().OfType<Panel<TexturedVertex>> ())

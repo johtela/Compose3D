@@ -59,7 +59,6 @@
 			Z = value; 
 			W = value; 
 		}
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -176,7 +175,6 @@
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
 
-
 		/// <summary>
 		/// Number of dimensions/components in the vector.
 		/// </summary>
@@ -213,7 +211,6 @@
 				}
 			} 
 		}
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.

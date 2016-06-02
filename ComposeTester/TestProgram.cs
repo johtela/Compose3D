@@ -3,6 +3,7 @@
 	using System;
 	using System.Threading.Tasks;
 	using LinqCheck;
+	using Compose3D.Reactive;
 	using Visuals;
 	using System.Windows.Forms;
 

@@ -16,8 +16,6 @@
 		{
 			return default (Vec2i);
 		}
-
-
 		[GLFunction ("texture ({0})")]
 		public float Texture (Vec3 pos)
 		{
@@ -29,6 +27,5 @@
 		{
 			return default (float);
 		}
-
 	}
 }

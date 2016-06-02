@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -62,9 +62,9 @@
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Maths\Noise.cs" />
-    <Compile Include="Reactive\MouseFSM.cs" />
+    <Compile Include="Reactive\MouseStates.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
-    <Compile Include="Reactive\FSM.cs" />
+    <Compile Include="Reactive\State.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="DataStructures\Octree.cs" />
@@ -155,12 +155,18 @@
     <Compile Include="Maths\Coord.cs" />
     <Compile Include="Maths\Mat2.cs">
       <DependentUpon>Mat2.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Mat3.cs">
       <DependentUpon>Mat3.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Mat4.cs">
       <DependentUpon>Mat4.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Mat.cs" />
     <Compile Include="Maths\GLMath.cs" />

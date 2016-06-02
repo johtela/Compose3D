@@ -2,18 +2,16 @@
 {
 	using System;
 	using System.Linq;
-	using System.Drawing;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
-	using Compose3D.Textures;
 	using OpenTK;
 	using OpenTK.Graphics;
-	using OpenTK.Graphics.OpenGL;
 	using OpenTK.Input;
 	using Visuals;
+	using Compose3D.UI;
 	public class TestWindow : GameWindow
 	{
 		// Scene graph
@@ -24,9 +22,10 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private TransformNode _fighter;
-		private VisualPanel<TexturedVertex> _infoWindow;
+		private ControlPanel<TexturedVertex> _infoWindow;
 		private Panel<TexturedVertex> _shadowWindow;
 		private int _fpsCount;
+		private int _fps;
 		private double _fpsTime;
 		
 		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
@@ -67,8 +66,12 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 
-			_infoWindow = new VisualPanel<TexturedVertex> (sceneGraph, InfoWindow (0), 
-				new Vec2i (128, 64));
+			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph, 
+				new ListView (
+					new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
+					new Visualizable (() => Visual.Label (
+						string.Format ("Mouse: {0}", new Vec2i (Mouse.X, Mouse.Y))))),
+				new Vec2i (150, 64));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
@@ -82,7 +85,8 @@
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
-			var windowRender = Panels.Renderer (_sceneGraph)
+			var panelRender = Panels.Renderer (_sceneGraph)
+				.And (React.By<Vec2i> (UpdateControls))
 				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
@@ -94,7 +98,7 @@
 					.And (terrainRender)
 					.And (entityRender)
 					.Select ((double _) => _camera)
-				.And (windowRender)
+				.And (panelRender)
 				.Viewport (this)))
 			.And (moveFighter)
 			.SwapBuffers (this)
@@ -130,21 +134,22 @@
 			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
 		}
 
-		private Visual InfoWindow (int fps)
-		{
-			return Visual.Frame (Visual.Label (string.Format ("FPS: {0}", fps)),
-				FrameKind.RoundRectangle);
-		}
-
 		private void UpdateFPS (double time)
 		{
 			_fpsTime += time;
 			if (++_fpsCount == 10)
 			{
-				_infoWindow.Visual = InfoWindow ((int)Math.Round (10.0 / _fpsTime));
+				_fps = (int)Math.Round (10.0 / _fpsTime);
 				_fpsCount = 0;
 				_fpsTime = 0.0;
 			}
+		}
+
+		private void UpdateControls (Vec2i viewportSize)
+		{
+			var panels = _sceneGraph.Root.Traverse ().OfType<ControlPanel<TexturedVertex>> ();
+			foreach (var panel in panels)
+				panel.UpdateControl (viewportSize, Mouse, Keyboard);
 		}
 
 		private Vec3 LookVec ()

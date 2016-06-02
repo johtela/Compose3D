@@ -48,12 +48,12 @@
 		private void Render (Vec2i viewportSize)
 		{
 			transform.perspectiveMatrix &= new Mat4 (1f);
-			foreach (var window in _scene.Root.Traverse ().OfType<Panel<TexturedVertex>> ())
+			foreach (var panel in _scene.Root.Traverse ().OfType<Panel<TexturedVertex>> ())
 			{
-				(!texture.textureMap).Bind (window.Texture);
-				transform.modelViewMatrix &= window.GetModelViewMatrix (viewportSize);
-				_panelShader.DrawElements (PrimitiveType.Triangles, window.VertexBuffer, window.IndexBuffer);
-				(!texture.textureMap).Unbind (window.Texture);
+				(!texture.textureMap).Bind (panel.Texture);
+				transform.modelViewMatrix &= panel.GetModelViewMatrix (viewportSize);
+				_panelShader.DrawElements (PrimitiveType.Triangles, panel.VertexBuffer, panel.IndexBuffer);
+				(!texture.textureMap).Unbind (panel.Texture);
 			}
 		}
 	}

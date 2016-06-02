@@ -219,6 +219,8 @@
     <Compile Include="Reactive\KeyboardReactions.cs" />
     <Compile Include="SceneGraph\Panel.cs" />
     <Compile Include="SceneGraph\VisualPanel.cs" />
+    <Compile Include="UI\Control.cs" />
+    <Compile Include="UI\ListView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

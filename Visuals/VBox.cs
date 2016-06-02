@@ -34,7 +34,19 @@ namespace Visuals
 			Width = width;
 			Height = height;
 		}
-		
+
+		public VBox (Size size)
+		{
+			Width = size.Width;
+			Height = size.Height;
+		}
+
+		public VBox (SizeF size)
+		{
+			Width = size.Width;
+			Height = size.Height;
+		}
+
 		/// <summary>
 		/// Add another box to horizontally to this one.
 		/// </summary>
@@ -42,7 +54,7 @@ namespace Visuals
 		{
 			return new VBox (Width + other.Width, Height);
 		}
-		
+
 		/// <summary>
 		/// Subtract another box from this one horizontally.
 		/// </summary>

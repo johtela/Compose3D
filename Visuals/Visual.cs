@@ -7,15 +7,6 @@
 	using System.Drawing.Drawing2D;
 	
 	/// <summary>
-	/// Interface that can be implemented by any object that
-	/// can be visualized with the elements of the Visual library.
-	/// </summary>
-	public interface IVisualizable
-	{
-		Visual ToVisual ();
-	}
-
-	/// <summary>
 	/// Enumeration for defining the stack direction.
 	/// </summary>
 	public enum VisualDirection { Horizontal, Vertical }
@@ -288,6 +279,7 @@
 			protected override void Draw (GraphicsContext context, VBox availableSize)
 			{
 				var stack = GetSize (context);
+				var gs1 = context.Graphics.Save ();
 
 				foreach (var visual in Items)
 				{
@@ -298,11 +290,11 @@
 					var outer = Direction == VisualDirection.Horizontal ?
 						new VBox (inner.Width, stack.Height) :
 						new VBox (stack.Width, inner.Height);
-					var st = context.Graphics.Save ();
+					var gs2 = context.Graphics.Save ();
 					context.Graphics.TranslateTransform (DeltaX (outer.Width, inner.Width),
 						DeltaY (outer.Height, inner.Height));
 					visual.Render (context, outer);
-					context.Graphics.Restore (st);
+					context.Graphics.Restore (gs2);
 
 					if (Direction == VisualDirection.Horizontal)
 					{
@@ -315,6 +307,7 @@
 						availableSize = availableSize.VSub (outer);
 					}
 				}
+				context.Graphics.Restore (gs1);
 			}
 		}
 

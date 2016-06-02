@@ -14,11 +14,21 @@
 		{
 			var result = new Bitmap (size.Width, size.Height, pixelFormat);
 			var gfx = Graphics.FromImage (result);
-			var ctx = new GraphicsContext (gfx, VisualStyle.Default);
 			gfx.SmoothingMode = SmoothingMode.AntiAlias;
 			gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
+			var ctx = new GraphicsContext (gfx, VisualStyle.Default);
 			visual.Render (ctx, new VBox (size.Width, size.Height));
 			return result;
+		}
+
+		public static void UpdateBitmap (this Visual visual, Bitmap bitmap)
+		{
+			var gfx = Graphics.FromImage (bitmap);
+			gfx.Clear (Color.Transparent);
+			gfx.SmoothingMode = SmoothingMode.AntiAlias;
+			gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
+			var ctx = new GraphicsContext (gfx, VisualStyle.Default);
+			visual.Render (ctx, new VBox (bitmap.Size));
 		}
 	}
 }

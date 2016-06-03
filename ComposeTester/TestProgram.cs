@@ -6,6 +6,7 @@
 	using Compose3D.Reactive;
 	using Visuals;
 	using System.Windows.Forms;
+	using OpenTK.Input;
 
 	public class TestProgram
 	{
@@ -14,8 +15,16 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			var wnd = new TestWindow ();
-			wnd.Run ();
+			var clickFSM = new MouseFSM.Click (MouseButton.Left,
+				React.By<MouseDevice> (() => Console.WriteLine ("Left down")),
+				React.By<MouseDevice> (() => Console.WriteLine ("Left click")));
+
+			var input = new MouseDevice ();
+			clickFSM.Run (input);
+			clickFSM.Run (input);
+
+			//var wnd = new TestWindow ();
+			//wnd.Run ();
 			//Task.Factory.StartNew (() =>
 			//	Tester.RunTestsTimed (
 			//		new VecTests (),

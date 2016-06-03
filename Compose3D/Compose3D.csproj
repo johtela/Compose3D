@@ -62,7 +62,7 @@
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Maths\Noise.cs" />
-    <Compile Include="Reactive\MouseStates.cs" />
+    <Compile Include="Reactive\MouseFSM.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="Reactive\State.cs" />
     <Compile Include="SceneGraph\Lights.cs" />

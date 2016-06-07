@@ -379,35 +379,50 @@
 		private sealed class _Frame : _Wrapped
 		{
 			public readonly FrameKind Kind;
+			public readonly bool Filled;
 
-			public _Frame (Visual visual, FrameKind kind) : base (visual) 
+			public _Frame (Visual visual, FrameKind kind, bool filled) : 
+				base (visual) 
 			{
 				Kind = kind;
+				Filled = filled;
 			}
 
 			protected override void Draw (GraphicsContext context, VBox availableSize)
 			{
 				var box = Visual.GetSize (context);
-				base.Draw (context, availableSize);
 
 				switch (Kind)
 				{
 					case FrameKind.Rectangle:
-						context.Graphics.DrawRectangle (context.Style.Pen, 
-							0, 0, box.Width - 1, box.Height - 1);
+						if (Filled)
+							context.Graphics.FillRectangle (context.Style.Brush,
+								0, 0, box.Width - 1, box.Height - 1);
+						else
+							context.Graphics.DrawRectangle (context.Style.Pen, 
+								0, 0, box.Width - 1, box.Height - 1);
 						break;
 					case FrameKind.Ellipse:
-						context.Graphics.DrawEllipse (context.Style.Pen, 
-							0, 0, box.Width - 1, box.Height - 1);
+						if (Filled)
+							context.Graphics.FillEllipse (context.Style.Brush,
+								0, 0, box.Width - 1, box.Height - 1);
+						else
+							context.Graphics.DrawEllipse (context.Style.Pen, 
+								0, 0, box.Width - 1, box.Height - 1);
 						break;
 					case FrameKind.RoundRectangle:
-						DrawRoundedRectangle(context.Graphics, context.Style.Pen,
+						if (Filled)
+							DrawRoundedRectangle (context.Graphics, null, context.Style.Brush, 
+								new RectangleF (0, 0, box.Width - 1, box.Height - 1), 10);
+						else
+							DrawRoundedRectangle (context.Graphics, context.Style.Pen, null,
 							new RectangleF(0, 0, box.Width - 1, box.Height - 1), 10);
 						break;
 				}
+				base.Draw (context, availableSize);
 			}
-		
-			private static void DrawRoundedRectangle (Graphics graphics, Pen pen,
+
+			private static void DrawRoundedRectangle (Graphics graphics, Pen pen, Brush brush,
 				RectangleF rect, float radius)
 			{
 				var gp = new GraphicsPath ();
@@ -418,7 +433,10 @@
 				gp.AddArc (rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
 				gp.AddLine (rect.X, rect.Y + rect.Height - radius, rect.X, rect.Y + radius / 2);
 
-				graphics.DrawPath (pen, gp);
+				if (brush != null)
+					graphics.FillPath (brush, gp);
+				else
+					graphics.DrawPath (pen, gp);
 			}
 		}
 
@@ -627,9 +645,9 @@
 		/// <summary>
 		/// Frame a visual with a rectangle.
 		/// </summary>
-		public static Visual Frame (Visual visual, FrameKind kind)
+		public static Visual Frame (Visual visual, FrameKind kind, bool filled = false)
 		{
-			return new _Frame (visual, kind);
+			return new _Frame (visual, kind, filled);
 		}
 
 		/// <summary>

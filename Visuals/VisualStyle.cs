@@ -13,19 +13,22 @@
 		private readonly Font _font;
 		private readonly Brush _textBrush;
 		private readonly Pen _pen;
+		private readonly Brush _brush;
 
 		public static VisualStyle Default = new VisualStyle (
 			font: new Font ("Arial", 10),
-			brush: Brushes.Black,
-			pen: new Pen (Color.Black, 1) { DashStyle = DashStyle.Dash });
+			textBrush: Brushes.Black,
+			pen: new Pen (Color.Black, 1) { DashStyle = DashStyle.Dash },
+			brush: Brushes.Gray);
 
 		public VisualStyle (VisualStyle parent = null, Font font = null, 
-			Brush brush = null, Pen pen = null)
+			Brush textBrush = null, Pen pen = null, Brush brush = null)
 		{
 			_parent = parent ?? Default;
 			_font = font;
-			_textBrush = brush;
+			_textBrush = textBrush;
 			_pen = pen;
+			_brush = brush;
 		}
 
 		public VisualStyle Parent
@@ -63,6 +66,17 @@
 				while (vs._pen == null)
 					vs = vs._parent;
 				return vs._pen;
+			}
+		}
+
+		public Brush Brush
+		{
+			get
+			{
+				var vs = this;
+				while (vs._brush == null)
+					vs = vs._parent;
+				return vs._brush;
 			}
 		}
 	}

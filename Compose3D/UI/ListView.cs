@@ -39,9 +39,11 @@
 			return Visual.VStack (HAlign.Left, Items.Select (i =>
 			{
 				var visual = Visual.Clickable (i.ToVisual (), _mouseRegions.Add (i));
-				return i == _highlighted ?
-					Visual.Frame (visual, FrameKind.RoundRectangle) :
-					visual;
+				return i != _highlighted ? visual :
+					Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true),
+						new VisualStyle (VisualStyle.Default,
+							textBrush: Brushes.White,
+							brush: Brushes.DarkGray));
 			}));
 	}
 

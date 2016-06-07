@@ -10,7 +10,7 @@
 		public static Reaction<Reaction<MouseMoveEventArgs>> WhenMouseMovesOn (
 			this Reaction<MouseMoveEventArgs> reaction, GameWindow window)
 		{
-			return reaction.ToEvent<MouseMoveEventArgs> (
+			return reaction.ToEvent (
 				handler => window.MouseMove += handler,
 				handler => window.MouseMove -= handler);
 		}
@@ -25,7 +25,7 @@
 		public static Reaction<Reaction<MouseWheelEventArgs>> WhenMouseWheelRollsOn (
 			this Reaction<MouseWheelEventArgs> reaction, GameWindow window)
 		{
-			return reaction.ToEvent<MouseWheelEventArgs> (
+			return reaction.ToEvent (
 				handler => window.MouseWheel += handler,
 				handler => window.MouseWheel -= handler);
 		}

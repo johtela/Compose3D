@@ -15,16 +15,8 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			var clickFSM = new MouseFSM.Click (MouseButton.Left,
-				React.By<MouseDevice> (() => Console.WriteLine ("Left down")),
-				React.By<MouseDevice> (() => Console.WriteLine ("Left click")));
-
-			var input = new MouseDevice ();
-			clickFSM.Run (input);
-			clickFSM.Run (input);
-
-			//var wnd = new TestWindow ();
-			//wnd.Run ();
+			var wnd = new TestWindow ();
+			wnd.Run ();
 			//Task.Factory.StartNew (() =>
 			//	Tester.RunTestsTimed (
 			//		new VecTests (),

@@ -11,6 +11,11 @@
 	/// </summary>
 	public static class React
 	{
+		public static Reaction<T> Ignore<T> ()
+		{
+			return input => true;
+		}
+
 		public static Reaction<T> By<T> (Action action)
 		{
 			return input =>

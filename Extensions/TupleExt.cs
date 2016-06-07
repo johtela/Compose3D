@@ -1,6 +1,7 @@
 ﻿namespace Extensions
 {
 	using System;
+	using System.Collections.Generic;
 
 	public static class TupleExt
 	{
@@ -155,6 +156,18 @@
 		public static Tuple<U, T> Swap<T, U> (this Tuple<T, U> tuple)
 		{
 			return Tuple.Create (tuple.Item2, tuple.Item1);
+		}
+
+		public static void Add<T, U> (this IList<Tuple<T, U>> list,
+			T item1, U item2)
+		{
+			list.Add (Tuple.Create (item1, item2));
+		}
+
+		public static void Add<T, U, V> (this IList<Tuple<T, U, V>> list,
+				T item1, U item2, V item3)
+		{
+			list.Add (Tuple.Create (item1, item2, item3));
 		}
 	}
 }

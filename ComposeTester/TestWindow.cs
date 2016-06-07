@@ -12,6 +12,7 @@
 	using OpenTK.Input;
 	using Visuals;
 	using Compose3D.UI;
+
 	public class TestWindow : GameWindow
 	{
 		// Scene graph
@@ -67,7 +68,7 @@
 			_fighter = Entities.CreateScene (sceneGraph);
 
 			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph, 
-				new ListView (
+				new ListView (React.Ignore <IVisualizable> (),
 					new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
 					new Visualizable (() => Visual.Label (
 						string.Format ("Mouse: {0}", new Vec2i (Mouse.X, Mouse.Y))))),

@@ -5,33 +5,28 @@
 	using System.Drawing;
 	using System.Windows.Forms;
 
-	public enum MouseEventType { Move, Down, Up, Click, Wheel }
-
-	public class MouseRegions
+	public class MouseRegions<T> where T : class
 	{
-		private List<Tuple<RectangleF, Action<MouseEventType, MouseEventArgs>>> _regions = 
-			new List<Tuple<RectangleF, Action<MouseEventType, MouseEventArgs>>> ();
+		private List<Tuple<RectangleF, T>> _regions = new List<Tuple<RectangleF, T>> ();
 
 		public void Clear ()
 		{
 			_regions.Clear ();
 		}
 
-		public Action<RectangleF> Add (Action<MouseEventType, MouseEventArgs> action)
+		public Action<RectangleF> Add (T item)
 		{
-			return rect => _regions.Add (Tuple.Create (rect, action));
+			return rect => _regions.Add (Tuple.Create (rect, item));
 		}
 
-		public void TriggerEvent (MouseEventType type, MouseEventArgs args)
+		public T ItemUnderMouse (PointF mouseCoords)
 		{
 			foreach (var region in _regions)
 			{
-				if (region.Item1.Contains (args.X, args.Y))
-				{
-					region.Item2 (type, args);
-					return;
-				}
+				if (region.Item1.Contains (mouseCoords.X, mouseCoords.Y))
+					return region.Item2;
 			}
+			return null;
 		}
 	}
 }

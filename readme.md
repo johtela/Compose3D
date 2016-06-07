@@ -1,4 +1,4 @@
-﻿#Compose3D - A Library for Writing OpenGL Applications in C#
+﻿# Compose3D - A Library for Writing OpenGL Applications in C# #
 
 Compose3D is a C# library that helps writing OpenGL applications in C#. Its main new offering is the ability 
 to write GLSL shaders in C#. The library includes other functionality that simplifies the OpenGL API and 

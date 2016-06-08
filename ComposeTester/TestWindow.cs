@@ -12,7 +12,7 @@
 	using OpenTK.Input;
 	using Visuals;
 	using Compose3D.UI;
-
+	using System.Drawing;
 	public class TestWindow : GameWindow
 	{
 		// Scene graph
@@ -67,11 +67,13 @@
 			_terrainScene = new Terrain.Scene (sceneGraph);
 			_fighter = Entities.CreateScene (sceneGraph);
 
-			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph, 
-				new ListView (React.Ignore <IVisualizable> (),
-					new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
-					new Visualizable (() => Visual.Label (
-						string.Format ("Mouse: {0}", new Vec2i (Mouse.X, Mouse.Y))))),
+			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph,
+				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top,
+					Static.Label ("Options", FontStyle.Bold),
+					new ListView (React.Ignore <IVisualizable> (),
+						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
+						new Visualizable (() => Visual.Label (
+							string.Format ("Mouse: {0}", new Vec2i (Mouse.X , Mouse.Y)))))),
 				new Vec2i (180, 64));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));

@@ -223,7 +223,9 @@
     <Compile Include="Reactive\KeyboardReactions.cs" />
     <Compile Include="SceneGraph\Panel.cs" />
     <Compile Include="SceneGraph\VisualPanel.cs" />
+    <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
+    <Compile Include="UI\Label.cs" />
     <Compile Include="UI\ListView.cs" />
   </ItemGroup>
   <ItemGroup>

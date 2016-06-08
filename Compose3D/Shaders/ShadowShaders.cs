@@ -188,8 +188,8 @@
 					//	mapIndex == 1f ? new Vec3 (0f, 1f, 0f) :
 					//	mapIndex == 2f ? new Vec3 (0f, 0f, 1f) :
 					//	new Vec3 (1f)
-					select Between (texCoords, 0f, 1f) ?
-						csmPCFiltering (!u.csmShadowMap, texCoords, mapIndex, bias) : 1f
+					select //Between (texCoords, 0f, 1f) ?
+						csmPCFiltering (!u.csmShadowMap, texCoords, mapIndex, bias) //: 1f
 				)
 				.Evaluate ());
 

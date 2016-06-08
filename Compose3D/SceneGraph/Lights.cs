@@ -71,9 +71,9 @@
 			{
 				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
 				var curr = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				var prev = i == last ? curr : frustums[Math.Min (i + 1, last)];
+				//var prev = i == last ? curr : frustums[Math.Min (i + 1, last)];
 				frustums[i] = new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
-					curr.Bottom, curr.Top, curr.Near, prev.Far);
+					curr.Bottom, curr.Top, curr.Near, curr.Far);
 			}
 			return frustums.Map (f => f.CameraToScreen * camToLight);
 		}

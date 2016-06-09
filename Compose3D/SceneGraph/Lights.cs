@@ -5,7 +5,8 @@
 	using Extensions;
 	using Shaders;
 	using Textures;
-	using System;
+	using System.Linq;
+
 	/// <summary>
 	/// Global lighting parameters affecting the whole scene.
 	/// </summary>
@@ -64,18 +65,11 @@
 		public Mat4[] CameraToCsmProjections (Camera camera, int count)
 		{
 			var camToLight = Mat.LookAt (-DirectionInCameraSpace (camera), new Vec3 (0f, 1f, 0f));
-			var splitFrustums = camera.SplitFrustumsForCascadedShadowMaps (count, 0.75f);
-			var frustums = new ViewingFrustum[count];
-			var last = count - 1;
-			for (int i = last; i >= 0; i--)
-			{
-				var corners = splitFrustums[i].Corners.Map (p => camToLight.Transform (p));
-				var curr = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners));
-				//var prev = i == last ? curr : frustums[Math.Min (i + 1, last)];
-				frustums[i] = new ViewingFrustum (curr.Kind, curr.Left, curr.Right,
-					curr.Bottom, curr.Top, curr.Near, curr.Far);
-			}
-			return frustums.Map (f => f.CameraToScreen * camToLight);
+			return (from frustum in camera.SplitFrustumsForCascadedShadowMaps (count, 0.75f)
+					let corners = frustum.Corners.Map (p => camToLight.Transform (p))
+					let orthoBox = ViewingFrustum.FromBBox (Aabb<Vec3>.FromPositions (corners))
+					select orthoBox.CameraToScreen * camToLight)
+				   .ToArray ();
 		}
 	}
 

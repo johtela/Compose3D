@@ -81,6 +81,10 @@
 				texCoords.X <= high && texCoords.Y <= high && texCoords.Z <= high
 			);
 
+		public static readonly Func<Vec4, Vec4> ClampToNearPlane =
+			GLShader.Function (() => ClampToNearPlane,
+				(Vec4 ndcPos) => new Vec4 (ndcPos.X, ndcPos.Y, Math.Max (-1f, ndcPos.Z), ndcPos.W)
+			);
 
 		public static readonly Func<Vec4, float, float> PcfShadowMapFactor =
 			GLShader.Function (() => PcfShadowMapFactor,

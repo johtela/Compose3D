@@ -150,17 +150,17 @@
 				{
 					new PerVertexOut ()
 					{
-						gl_Position = viewLight * p.gl_in[0].gl_Position,
+						gl_Position = ShadowShaders.ClampToNearPlane (viewLight * p.gl_in[0].gl_Position),
 						gl_Layer = p.gl_InvocationID
 					},
 					new PerVertexOut ()
 					{
-						gl_Position = viewLight * p.gl_in[1].gl_Position,
+						gl_Position = ShadowShaders.ClampToNearPlane (viewLight * p.gl_in[1].gl_Position),
 						gl_Layer = p.gl_InvocationID
 					},
 					new PerVertexOut ()
 					{
-						gl_Position = viewLight * p.gl_in[2].gl_Position,
+						gl_Position = ShadowShaders.ClampToNearPlane (viewLight * p.gl_in[2].gl_Position),
 						gl_Layer = p.gl_InvocationID
 					}
 				}

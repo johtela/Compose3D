@@ -15,29 +15,66 @@ namespace Compose3D.Maths
     using System.Text;
 	using GLTypes;
 
+	/// <summary>
+	/// Matrix with <#= cols #> columns and <#= square ? "" : rows.ToString() + " " #>rows.
+	/// </summary>
+	/// Matrices are defined in column-major way as in GLSL. 
 	[GLType ("<#= glType #>")]
     public struct <#= matType #> : I<#= square ? "Square" : "" #>Mat<<#= matType #>, <#= type #>>
     { 
 <#+		ColumnFields (cols, vecType); #>
+		/// <summary>
+		/// Initialize a matrix given its columns.
+		/// </summary>
 		[GLConstructor ("<#= glType #> ({0})")]
 <#+		BasicConstructor (cols, matType, vecType);
 		for (int rc = 2; rc <= 4; rc++) { #>
+		/// <summary>
+		/// Initialize a matrix using the elements of another matrix.
+		/// If source matrix is smaller than the created one, unspecified
+		/// elements are initialized to zero.
+		/// </summary>
 		[GLConstructor ("<#= glType #> ({0})")]
 <#+			CopyConstructor (cols, rows, type, suffix, rc, rc);
-        }
-		SingleValueConstructor (cols, rows, type, matType, vecType); #>
+        }#>
+		/// <summary>
+		/// Initialize the diagonal of the matrix with a given value.
+		/// The rest of the elements will be zero.
+		/// </summary>
+		[GLConstructor ("<#= glType #> ({0})")]
+<#+		SingleValueConstructor (cols, rows, type, matType, vecType); #>
+		/// <summary>
+		/// Initialize all of the elements of the matrix individually.
+		/// </summary>
 		[GLConstructor ("<#= glType #> ({0})")]
 <#+		AllValuesConstructor (cols, rows, type, matType, vecType);
 		Indexers (cols, rows, type, vecType); #>
+		/// <summary>
+		/// Add two matrices together componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
 <#+		Binary (cols, matType, "Add", "+", ", "); #>
+		/// <summary>
+		/// Componentwise subtraction of two matrices.
+		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
 <#+		Binary (cols, matType, "Subtract", "-", ", "); #>
+		/// <summary>
+		/// Multiply the matrix by a scalar componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
 <#+		Scalar (cols, matType, type, "Multiply", "*", ", "); #>
+		/// <summary>
+		/// Divide the matrix by a scalar componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
 <#+		Scalar (cols, matType, type, "Divide", "/", ", ");
 #>
+		/// <summary>
+		/// Multiply the matrix by a vector which has as many elements as the 
+		/// matrix has columns. The result is a vector with same dimensions as the
+		/// vector given as argument.
+		/// </summary>
         public V Multiply<V> (V vec) where V : struct, IVec<V, float>, IEquatable<V>
         {
             if (vec.Dimensions != Columns)
@@ -52,26 +89,41 @@ namespace Compose3D.Maths
 #>			return res;
         }
 
+		/// <summary>
+		/// Implementation of the <see cref="System.IEquatable{<#= matType #>}"/> interface.
+		/// </summary>
 <#+		BinaryScalar (cols, matType, "bool", "Equals", "==", " && "); 
 		if (square) { #>
+		/// <summary>
+		/// The multiplication of two matrices.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
         public <#= matType #> Multiply (<#= matType #> mat)
         {
             return this * mat;
         }
 
+		/// <summary>
+		/// Return the matrix transposed, i.e. rows and columns exchanged.
+		/// </summary>
 		[GLFunction ("transpose ({0})")]
         public <#= matType #> Transposed
         {
             get { return Mat.Transpose<<#= matType #>, <#= type #>> (this); }
         }
 
+		/// <summary>
+		/// Return the determinant of the matrix.
+		/// </summary>
 		[GLFunction ("determinant ({0})")]
         public <#= type #> Determinant
         {
             get { return Mat.Determinant (this); }
         }
 
+		/// <summary>
+		/// Return the inverse matrix.
+		/// </summary>
 		[GLFunction ("inverse ({0})")]
         public <#= matType #> Inverse
         {
@@ -79,16 +131,25 @@ namespace Compose3D.Maths
         }
 <#+		} #>
 
+		/// <summary>
+		/// Override the Equals method to work with matrices.
+		/// </summary>
 		public override bool Equals (object obj)
 		{
             return obj is <#= matType #> && Equals ((<#= matType #>)obj);
 		}
 
+		/// <summary>
+		/// Override the hash code.
+		/// </summary>
         public override int GetHashCode ()
         {
 			return <#= ColumnList(cols, " ^ ", col => col + ".GetHashCode ()") #>;
         }
 
+		/// <summary>
+		/// Return the matrix as formatted string.
+		/// </summary>
         public override string ToString ()
         {
             var sb = new StringBuilder ();
@@ -103,24 +164,36 @@ namespace Compose3D.Maths
             return sb.ToString ();
         }
 
+		/// <summary>
+		/// Componentwise subtraction of two matrices.
+		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
-       public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
+		public static <#= matType #> operator - (<#= matType #> left, <#= matType #> right)
         {
             return left.Subtract (right);
         }
 
+		/// <summary>
+		/// Multiply a matrix with a scalar componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= type #> scalar, <#= matType #> mat)
         {
             return mat.Multiply (scalar);
         }
 
+		/// <summary>
+		/// Multiply a matrix with a scalar componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= matType #> mat, <#= type #> scalar)
         {
             return mat.Multiply (scalar);
         }
 
+		/// <summary>
+		/// Multiply two matrices together using the matrix product operation.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
         public static <#= matType #> operator * (<#= matType #> left, <#= matType #> right)
         {
@@ -129,6 +202,9 @@ namespace Compose3D.Maths
 				(c, r, k) => string.Format("left.{0} * right.{1}", Component(k, r), Component(c, k))), ",\r\n				") #>);
         }
 
+		/// <summary>
+		/// Multiply a matrix by a <#= vecType #> producing a vector with the same type.
+		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= matType #> mat, <#= vecType #> vec)
         {
@@ -137,23 +213,35 @@ namespace Compose3D.Maths
 				(c, r) => string.Format("mat.{0} * vec.{1}", Component(c, r), Row(c))), ",\r\n				") #>);
         }
 
+		/// <summary>
+		/// Divide a matrix by a scalar componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
         public static <#= matType #> operator / (<#= matType #> mat, <#= type #> scalar)
         {
             return mat.Divide (scalar);
         }
 
+		/// <summary>
+		/// Add two matrices together componentwise.
+		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
         public static <#= matType #> operator + (<#= matType #> left, <#= matType #> right)
         {
             return left.Add (right);
         }
 
+		/// <summary>
+		/// Overloaded equality operator that works with matrices.
+		/// </summary>
         public static bool operator == (<#= matType #> left, <#= matType #> right)
         {
             return left.Equals (right);
         }
 
+		/// <summary>
+		/// Overloaded inequality operator that works with matrices.
+		/// </summary>
         public static bool operator != (<#= matType #> left, <#= matType #> right)
         {
             return !left.Equals (right);
@@ -227,8 +315,12 @@ void ColumnStatements(int cols, Func<string, string> map) {
 }
 
 void ColumnFields(int cols, string vecType) { 
+	var i = 0;
 	foreach (var col in Columns(cols)) {  
-#>		public <#= vecType #> <#= col #>; 
+#>		/// <summary>
+		/// Column <#= i++ #> of the matrix.
+		/// </summary>
+		public <#= vecType #> <#= col #>; 
 <#+ }
 	WriteLine("");
 }
@@ -288,16 +380,25 @@ void CopyConstructor(int cols, int rows, string type, string suffix, int otherCo
 <#+ }
  
 void Indexers(int cols, int rows, string type, string vecType) { #>
+		/// <summary>
+		/// Number of columns in the matrix.
+		/// </summary>
 		public int Columns
 		{
 			get { return <#= cols #>; }
 		}
 
+		/// <summary>
+		/// Number of rows in the matrix.
+		/// </summary>
 		public int Rows
 		{
 			get { return <#= rows #>; }
 		}
 
+		/// <summary>
+		/// Get/set a column by its index.
+		/// </summary>
 		public <#= vecType #> this[int column]
 		{
 			get
@@ -320,6 +421,9 @@ void Indexers(int cols, int rows, string type, string vecType) { #>
 			} 
 		}
 
+		/// <summary>
+		/// Get/set a single element in the given position.
+		/// </summary>
 		public <#= type #> this[int column, int row]
 		{
 			get { return this[column][row]; }

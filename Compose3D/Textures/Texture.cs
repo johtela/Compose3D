@@ -88,7 +88,7 @@
 
 		public override void Use ()
 		{
-			_prevTexture = GL.GetInteger (MapTargetBindingPName (_target));
+			GL.GetInteger (MapTargetBindingPName (_target), out _prevTexture);
 			GL.BindTexture (_target, _glTexture);
 		}
 
@@ -266,7 +266,6 @@
 			{
 				case System.Drawing.Imaging.PixelFormat.Alpha: return PixelInternalFormat.Alpha;
 				case System.Drawing.Imaging.PixelFormat.Canonical: return PixelInternalFormat.Rgba;
-				case System.Drawing.Imaging.PixelFormat.Format16bppRgb565: return PixelInternalFormat.R5G6B5IccSgix;
 				case System.Drawing.Imaging.PixelFormat.Format24bppRgb: return PixelInternalFormat.Rgb;
 				case System.Drawing.Imaging.PixelFormat.Format32bppPArgb:
 				case System.Drawing.Imaging.PixelFormat.Format32bppArgb: return PixelInternalFormat.Rgba;
@@ -283,7 +282,6 @@
 			{
 				case System.Drawing.Imaging.PixelFormat.Alpha: return PixelFormat.Alpha;
 				case System.Drawing.Imaging.PixelFormat.Canonical: return PixelFormat.Bgra;
-				case System.Drawing.Imaging.PixelFormat.Format16bppRgb565: return PixelFormat.R5G6B5IccSgix;
 				case System.Drawing.Imaging.PixelFormat.Format24bppRgb: return PixelFormat.Bgr;
 				case System.Drawing.Imaging.PixelFormat.Format32bppPArgb:
 				case System.Drawing.Imaging.PixelFormat.Format32bppArgb: return PixelFormat.Bgra;
@@ -306,8 +304,6 @@
 					return GenerateMipmapTarget.Texture2DMultisample;
 				case TextureTarget.TextureCubeMap:
 					return GenerateMipmapTarget.TextureCubeMap;
-				case TextureTarget.TextureCubeMapArray:
-					return GenerateMipmapTarget.TextureCubeMapArray;
 				default:
 					throw new ArgumentException ("Unsupported texture target: " + target.ToString (), "target");
 			}

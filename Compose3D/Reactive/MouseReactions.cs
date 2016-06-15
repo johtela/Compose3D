@@ -11,8 +11,8 @@
 			this Reaction<MouseMoveEventArgs> reaction, GameWindow window)
 		{
 			return reaction.ToEvent (
-				handler => window.MouseMove += handler,
-				handler => window.MouseMove -= handler);
+				handler => window.Mouse.Move += handler,
+				handler => window.Mouse.Move -= handler);
 		}
 
 		public static Reaction<Reaction<MouseMoveEventArgs>> WhenMouseXYChangesOn (this Reaction<Vec2> reaction, 
@@ -26,8 +26,8 @@
 			this Reaction<MouseWheelEventArgs> reaction, GameWindow window)
 		{
 			return reaction.ToEvent (
-				handler => window.MouseWheel += handler,
-				handler => window.MouseWheel -= handler);
+				handler => window.Mouse.WheelChanged += handler,
+				handler => window.Mouse.WheelChanged -= handler);
 		}
 
 		public static Reaction<Reaction<MouseWheelEventArgs>> WhenMouseWheelDeltaChangesOn (

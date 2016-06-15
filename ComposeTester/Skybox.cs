@@ -69,7 +69,7 @@
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
 			worldMatrix &= camera.WorldToCamera.RemoveTranslation ();
-			_skyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);
+			_skyboxShader.DrawElements (BeginMode.Triangles, _vertices, _indices);
 		}
 
 		public static Reaction<Mat4> UpdatePerspectiveMatrix ()

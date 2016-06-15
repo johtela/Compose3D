@@ -58,14 +58,14 @@
 
 	public static class EdgeHelpers
 	{
-		public static IEnumerable<Edge> GetEdges<V> (this Geometry<V> geometry, PrimitiveType primitive)
+		public static IEnumerable<Edge> GetEdges<V> (this Geometry<V> geometry, BeginMode primitive)
 			where V : struct, IVertex
 		{
 			switch (primitive)
 			{
-				case PrimitiveType.Triangles:
+				case BeginMode.Triangles:
 					return GetTrianglesEdges (geometry.Indices, 3);
-				case PrimitiveType.TriangleStrip:
+				case BeginMode.TriangleStrip:
 					return GetTrianglesEdges (geometry.Indices, 1);
 				default:
 					throw new ArgumentException ("Unsupported primitive type: " + primitive,

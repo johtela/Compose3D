@@ -7,7 +7,7 @@
 	using System.Collections.Generic;
 	using Extensions;
 
-	public class SamplerParams : Params<SamplerParameterName, object> { }
+	public class SamplerParams : Params<SamplerParameter, object> { }
 
 	public abstract class Sampler
 	{
@@ -88,14 +88,14 @@
 		public static S MinNearestColor<S> (this S sampler)
 			where S : Sampler
 		{
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			return sampler;
 		}
 
 		public static S MagNearestColor<S> (this S sampler)
 			where S : Sampler
 		{
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureMagFilter, (int)TextureMagFilter.Nearest);
 			return sampler;
 		}
 
@@ -108,14 +108,14 @@
 		public static S MinLinearFiltering<S> (this S sampler)
 			where S : Sampler
 		{
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureMinFilter, (int)TextureMinFilter.Linear);
 			return sampler;
 		}
 
 		public static S MagLinearFiltering<S> (this S sampler)
 			where S : Sampler
 		{
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureMagFilter, (int)TextureMagFilter.Linear);
 			return sampler;
 		}
 
@@ -129,27 +129,27 @@
 			where S : Sampler
 		{
 			if ((edgeAxes & Axes.X) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
 			if ((edgeAxes & Axes.Y) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
 			if ((edgeAxes & Axes.Z) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
 			return sampler;
 		}
 
 		public static S ClampToBorder<S> (this S sampler, Vec4 color, Axes edgeAxes)
 			where S : Sampler
 		{
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureBorderColor, 
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureBorderColor, 
 				color.ToArray<Vec4, float>());
 			if ((edgeAxes & Axes.X) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapS, 
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapS, 
 					(int)TextureWrapMode.ClampToBorder);
 			if ((edgeAxes & Axes.Y) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapT, 
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapT, 
 					(int)TextureWrapMode.ClampToBorder);
 			if ((edgeAxes & Axes.Z) != 0)
-				GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureWrapR, 
+				GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureWrapR, 
 					(int)TextureWrapMode.ClampToBorder);
 			return sampler;
 		}
@@ -165,7 +165,7 @@
 				linearFilteringBetweenMipLevels ?
 					TextureMinFilter.NearestMipmapLinear :
 					TextureMinFilter.NearestMipmapNearest;
-			GL.SamplerParameter (sampler._glSampler, SamplerParameterName.TextureMinFilter, (int)filtering);
+			GL.SamplerParameter (sampler._glSampler, SamplerParameter.TextureMinFilter, (int)filtering);
 			return sampler;
 		}
 	}

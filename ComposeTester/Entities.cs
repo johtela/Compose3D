@@ -187,7 +187,7 @@
 			{
 				Sampler.Bind (!samplers, mesh.Textures);
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
-				_entityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_entityShader.DrawElements (BeginMode.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 				Sampler.Unbind (!samplers, mesh.Textures);
 			}
 		}

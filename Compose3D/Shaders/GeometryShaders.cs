@@ -38,7 +38,7 @@
 			where V : PerVertexOut, new ()
 		{
 			return GLShader.CreateGeometryShader<V> (3, 0,
-				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
+				BeginMode.Triangles, BeginMode.TriangleStrip, () =>
 				from p in Shader.Inputs<P> ()
 				select new V[3]
 				{

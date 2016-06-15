@@ -29,7 +29,7 @@
 					return new GLError ("GL_STACK_OVERFLOW: This command would cause a stack overflow");
 				case ErrorCode.StackUnderflow:
 					return new GLError ("GL_STACK_UNDERFLOW: This command would cause a stack underflow");
-				case ErrorCode.TableTooLarge:
+				case ErrorCode.TableTooLargeExt:
 					return new GLError ("GL_TABLE_TOO_LARGE: Specified color lookup table is too large for the implementation");
 				case ErrorCode.TextureTooLargeExt:
 					return new GLError ("GL_TEXTURE_TOO_LARGE: Specified texture is too large for the implementation");

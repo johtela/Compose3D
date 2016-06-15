@@ -121,7 +121,7 @@
 			React.By<Vec2> (RotateCamera)
 				.Select ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
-				.Where (e => e.Mouse.IsButtonDown (MouseButton.Left))
+				.Where (_ => Mouse[MouseButton.Left])
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 

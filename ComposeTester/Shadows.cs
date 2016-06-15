@@ -106,7 +106,7 @@
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				modelViewMatrix &= worlToCamera * mesh.Transform;
-				_shadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_shadowShader.DrawElements (BeginMode.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 			}
 		}
 
@@ -140,8 +140,8 @@
 		{
 			ShadowShaders.Use ();
 			return GLShader.CreateGeometryShader<PerVertexOut> (3, 
-				CascadedShadowUniforms.MapCount, PrimitiveType.Triangles, 
-				PrimitiveType.TriangleStrip, () =>
+				CascadedShadowUniforms.MapCount, BeginMode.Triangles, 
+				BeginMode.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				from c in Shader.Uniforms<CascadedShadowUniforms> ()

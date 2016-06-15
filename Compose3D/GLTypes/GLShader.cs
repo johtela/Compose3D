@@ -42,7 +42,7 @@
 		/// instead of one.
 		/// </summary>
 		public static GLShader CreateGeometryShader<V> (int vertexCount, int invocations, 
-			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
+			BeginMode inputPrimitive, BeginMode outputPrimitive, Expression<Func<Shader<V[]>>> func)
 			where V : PerVertexOut, new ()
 		{
 			var source = GLSLGenerator.CreateGeometryShader (vertexCount, invocations, inputPrimitive, 

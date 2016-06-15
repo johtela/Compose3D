@@ -18,7 +18,7 @@
 
 		public override void Use ()
 		{
-			_prevFrameBuffer = GL.GetInteger (GetPName.DrawFramebufferBinding);
+			GL.GetInteger (GetPName.DrawFramebufferBinding, out _prevFrameBuffer);
 			GL.BindFramebuffer (_target, _glFramebuffer);
 		}
 

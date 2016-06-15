@@ -1,7 +1,5 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System;
-	using System.Linq;
 	using DataStructures;
 	using Maths;
 

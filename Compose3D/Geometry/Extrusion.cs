@@ -84,7 +84,7 @@
 			if (!vertices.All (v => Vec.ApproxEquals (v.normal, firstNormal)))
 				throw new ArgumentException ("All the normals need to point towards the same direction.", "frontFace");
 
-			var edges = frontFace.GetEdges (PrimitiveType.Triangles).ToArray ();
+			var edges = frontFace.GetEdges (BeginMode.Triangles).ToArray ();
 			var outerEdges = DetermineOuterEdges (edges).ToArray ();
 			var geometries = new Geometry<V> [(outerEdges.Length * transforms.Count ())
 			                 + BoolToInt (includeFrontFace) + BoolToInt (includeBackFace)];

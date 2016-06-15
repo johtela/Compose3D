@@ -178,7 +178,7 @@
 					var lod = distance < 100 ? 0 :
 							  distance < 200 ? 1 :
 							  2;
-					_terrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer,
+					_terrainShader.DrawElements (BeginMode.TriangleStrip, mesh.VertexBuffer,
 						mesh.IndexBuffers[lod]);
 				}
 			}

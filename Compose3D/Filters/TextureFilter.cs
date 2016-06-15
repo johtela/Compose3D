@@ -38,7 +38,7 @@
 			var filter = new TextureFilter (program);
 
 			return React.By<Tuple<Texture, Texture>> (t => 
-				filter._program.DrawElements (PrimitiveType.Triangles, filter._vertexBuffer, 
+				filter._program.DrawElements (BeginMode.Triangles, filter._vertexBuffer, 
 					filter._indexBuffer))
 				.BindSamplers (t => new Dictionary<Sampler, Texture> ()
 				{

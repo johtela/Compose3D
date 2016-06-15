@@ -137,7 +137,7 @@
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
 		}
 
-		public static void UpdateTangents<V> (this Geometry<V> geometry, PrimitiveType primitive)
+		public static void UpdateTangents<V> (this Geometry<V> geometry, BeginMode primitive)
 			 where V : struct, IVertex, INormalMapped
 		{
 			for (int i = 0; i < geometry.Vertices.Length; i++)

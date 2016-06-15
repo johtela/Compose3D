@@ -46,7 +46,7 @@
 		}
 
 		public static string CreateGeometryShader<T> (string version, int vertexCount,
-			int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
+			int invocations, BeginMode inputPrimitive, BeginMode outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var builder = new GLSLGenerator ();
@@ -61,7 +61,7 @@
 		}
 
 		public static string CreateGeometryShader<T> (int vertexCount, int invocations,
-			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
+			BeginMode inputPrimitive, BeginMode outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var currVersion = GetGLSLVersion ();

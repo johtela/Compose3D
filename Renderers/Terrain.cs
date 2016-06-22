@@ -1,4 +1,4 @@
-﻿namespace ComposeTester
+﻿namespace Compose3D.Renderers
 {
 	using Compose3D.Maths;
 	using Compose3D.Geometry;

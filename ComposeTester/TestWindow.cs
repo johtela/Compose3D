@@ -7,12 +7,14 @@
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
+	using Compose3D.Renderers;
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using Visuals;
 	using Compose3D.UI;
 	using System.Drawing;
+
 	public class TestWindow : GameWindow
 	{
 		// Scene graph
@@ -65,7 +67,9 @@
 			};
 			
 			_terrainScene = new Terrain.Scene (sceneGraph);
-			_fighter = Entities.CreateScene (sceneGraph);
+			var fighterGeometry = new FighterGeometry<EntityVertex, PathNode> ();
+			_fighter = new Mesh<EntityVertex> (sceneGraph, fighterGeometry.Fighter.RotateY (0f).Compact ())
+				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 
 			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph,
 				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top,

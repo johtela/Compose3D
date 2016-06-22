@@ -1,4 +1,4 @@
-﻿namespace ComposeTester
+﻿namespace Compose3D.Renderers
 {
 	using System;
 	using System.Collections.Generic;

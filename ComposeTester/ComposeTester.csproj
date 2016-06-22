@@ -32,14 +32,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities.cs" />
     <Compile Include="FighterGeometry.cs" />
-    <Compile Include="Shadows.cs" />
-    <Compile Include="Skybox.cs" />
-    <Compile Include="Terrain.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />
@@ -51,7 +46,6 @@
     <Compile Include="Tests\QuatTests.cs" />
     <Compile Include="TestWindow.cs" />
     <Compile Include="TestProgram.cs" />
-    <Compile Include="Panels.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -73,6 +67,10 @@
     <ProjectReference Include="..\LinqCheck\LinqCheck.csproj">
       <Project>{09491672-675E-4226-95EF-4F5A5FEE36D4}</Project>
       <Name>LinqCheck</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Renderers\Compose3D.Renderers.csproj">
+      <Project>{f9a50d09-7635-4952-9366-4f4544da31a3}</Project>
+      <Name>Compose3D.Renderers</Name>
     </ProjectReference>
     <ProjectReference Include="..\Visuals\Visuals.csproj">
       <Project>{DF55A445-8526-489C-AC6B-5C969E8DE42B}</Project>

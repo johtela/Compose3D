@@ -1,4 +1,4 @@
-﻿namespace ComposeTester
+﻿namespace Compose3D.Renderers
 {
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
@@ -151,13 +151,6 @@
 
 		private static Program _entityShader;
 		private static Entities _entities;
-
-		public static TransformNode CreateScene (SceneGraph sceneGraph)
-		{
-			var fighter = new FighterGeometry<EntityVertex, PathNode> ();
-			return new Mesh<EntityVertex> (sceneGraph, fighter.Fighter.RotateY (0f).Compact ())
-				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
-		}
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, CascadedShadowUniforms shadowSource)
 		{

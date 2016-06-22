@@ -4,6 +4,7 @@
 	using Compose3D.DataStructures;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
+	using Compose3D.Renderers;
 	using OpenTK;
 	using System.Collections.Generic;
 	using System.Linq;

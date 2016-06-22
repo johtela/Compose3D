@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compose3D.Renderers", "Renderers\Compose3D.Renderers.csproj", "{F9A50D09-7635-4952-9366-4F4544DA31A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compose3D.Viewer", "Compose3D.Viewer\Compose3D.Viewer.csproj", "{510F28B2-A7BE-4567-9ABF-D8F609772C96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,18 @@ Global
 		{F9A50D09-7635-4952-9366-4F4544DA31A3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F9A50D09-7635-4952-9366-4F4544DA31A3}.Release|x86.ActiveCfg = Release|Any CPU
 		{F9A50D09-7635-4952-9366-4F4544DA31A3}.Release|x86.Build.0 = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Debug|x86.Build.0 = Debug|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|x86.ActiveCfg = Release|Any CPU
+		{510F28B2-A7BE-4567-9ABF-D8F609772C96}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

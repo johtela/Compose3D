@@ -1,4 +1,4 @@
-﻿namespace ComposeTester
+﻿namespace Compose3D.Renderers
 {
 	using System.Linq;
 	using Compose3D.GLTypes;

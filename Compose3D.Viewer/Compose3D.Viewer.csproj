@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="Viewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

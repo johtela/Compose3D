@@ -228,6 +228,7 @@
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\ListView.cs" />
+    <Compile Include="ViewFinder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

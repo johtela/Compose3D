@@ -162,7 +162,7 @@
 		/// </summary>
 		public static readonly Func<GlobalLight, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3> GlobalLightIntensity =
 			GLShader.Function
-			(
+				(
 				() => GlobalLightIntensity,
 				(GlobalLight globalLighting, Vec3 ambientLight, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
 				(
@@ -181,8 +181,8 @@
 			GLShader.Function
 			(
 				() => FogVisibility,
-				(float distance, float density, float gradient) =>
-					1f - GLMath.Exp (-(distance * density).Pow (gradient))
+				(float distance, float maxDistance, float gradient) =>
+				GLMath.Abs (distance / maxDistance).Pow (gradient).Clamp (0f, 1f)
 			);
 		
 		public static readonly Func<SamplerCube, Vec3, Vec3, Vec3> ReflectedColor =

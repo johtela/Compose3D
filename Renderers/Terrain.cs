@@ -203,7 +203,7 @@
 					gl_Position = !t.perspectiveMatrix * viewPos,
 					vertexNormal = (!t.normalMatrix * v.normal).Normalized,
 					vertexPos = viewPos[Coord.x, Coord.y, Coord.z],
-					visibility = LightingShaders.FogVisibility (viewPos.Z, 0.003f, 3f),
+					visibility = LightingShaders.FogVisibility (viewPos.Z, 400f, 2f),
 					height = v.position.Y,
 					slope = v.normal.Dot (new Vec3 (0f, 1f, 0f)),
 					fragTexturePos = v.texturePos / 15f

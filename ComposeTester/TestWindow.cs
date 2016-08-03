@@ -34,7 +34,8 @@
 		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
 
 		public TestWindow ()
-			: base (800, 600, GraphicsMode.Default, "Compose3D")
+			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
+				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
 			_zoom = 20f;

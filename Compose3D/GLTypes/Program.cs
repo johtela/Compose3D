@@ -3,7 +3,7 @@
     using System;
 	using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
 
 	public class Program : GLObject
 	{
@@ -72,7 +72,7 @@
 			GL.UseProgram (_prevProgram);
 		}
 
-		public void DrawElements<V> (BeginMode primitive, VBO<V> vertices, VBO<int> indices) 
+		public void DrawElements<V> (PrimitiveType primitive, VBO<V> vertices, VBO<int> indices) 
 			where V : struct
 		{
 			BindVertices (vertices);
@@ -83,7 +83,7 @@
 			GL.BindVertexArray (0);
 		}
 
-		public void DrawElementsInstanced<V> (BeginMode primitive, VBO<V> vertices, 
+		public void DrawElementsInstanced<V> (PrimitiveType primitive, VBO<V> vertices, 
 			VBO<int> indices, int instanceCount) where V : struct
 		{
 			BindVertices (vertices);
@@ -98,7 +98,7 @@
 		public void DrawNormals<V> (VBO<V> vertices) where V : struct
 		{
 			BindVertices (vertices);
-			GL.DrawArrays (BeginMode.Lines, 0, vertices._count);
+			GL.DrawArrays (PrimitiveType.Lines, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 			GL.BindVertexArray (0);
 		}
@@ -106,7 +106,7 @@
 		public void DrawLinePath<V> (VBO<V> vertices) where V : struct
 		{
 			BindVertices (vertices);
-			GL.DrawArrays (BeginMode.LineStrip, 0, vertices._count);
+			GL.DrawArrays (PrimitiveType.LineStrip, 0, vertices._count);
 			GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 			GL.BindVertexArray (0);
 		}

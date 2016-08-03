@@ -5,7 +5,7 @@
     using Geometry;
     using GLTypes;
 	using Textures;
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
 	using DataStructures;
 
 	public class TerrainMesh<V> : SceneNode

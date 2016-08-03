@@ -2,7 +2,7 @@
 {
 	using GLTypes;
 	using System;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	public class Framebuffer : GLObject
 	{

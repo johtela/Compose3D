@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.GLTypes
 {
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using System;
 	using System.IO;
 	using System.Linq.Expressions;
@@ -42,7 +42,7 @@
 		/// instead of one.
 		/// </summary>
 		public static GLShader CreateGeometryShader<V> (int vertexCount, int invocations, 
-			BeginMode inputPrimitive, BeginMode outputPrimitive, Expression<Func<Shader<V[]>>> func)
+			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
 			where V : PerVertexOut, new ()
 		{
 			var source = GLSLGenerator.CreateGeometryShader (vertexCount, invocations, inputPrimitive, 

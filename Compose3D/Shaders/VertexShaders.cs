@@ -6,7 +6,7 @@
 	using GLTypes;
 	using Geometry;
 	using Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct PositionalVertex : IVertex

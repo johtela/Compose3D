@@ -2,7 +2,7 @@
 {
 	using GLTypes;
 	using Maths;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	[GLType ("gl_PerVertex")]
 	public class PerVertexIn
@@ -38,7 +38,7 @@
 			where V : PerVertexOut, new ()
 		{
 			return GLShader.CreateGeometryShader<V> (3, 0,
-				BeginMode.Triangles, BeginMode.TriangleStrip, () =>
+				PrimitiveType.Triangles, PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<P> ()
 				select new V[3]
 				{

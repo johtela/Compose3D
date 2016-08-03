@@ -8,7 +8,7 @@
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	
 	public class Panels
 	{
@@ -52,7 +52,7 @@
 			{
 				(!texture.textureMap).Bind (panel.Texture);
 				transform.modelViewMatrix &= panel.GetModelViewMatrix (viewportSize);
-				_panelShader.DrawElements (BeginMode.Triangles, panel.VertexBuffer, panel.IndexBuffer);
+				_panelShader.DrawElements (PrimitiveType.Triangles, panel.VertexBuffer, panel.IndexBuffer);
 				(!texture.textureMap).Unbind (panel.Texture);
 			}
 		}

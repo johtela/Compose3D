@@ -7,7 +7,7 @@
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -180,7 +180,7 @@
 			{
 				Sampler.Bind (!samplers, mesh.Textures);
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
-				_entityShader.DrawElements (BeginMode.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_entityShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 				Sampler.Unbind (!samplers, mesh.Textures);
 			}
 		}

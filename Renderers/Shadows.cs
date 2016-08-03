@@ -10,7 +10,7 @@
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	public enum ShadowMapType { Depth, Variance }
 	
@@ -106,7 +106,7 @@
 			foreach (var mesh in camera.NodesInView<Mesh<EntityVertex>> ())
 			{
 				modelViewMatrix &= worlToCamera * mesh.Transform;
-				_shadowShader.DrawElements (BeginMode.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_shadowShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
 			}
 		}
 
@@ -140,8 +140,8 @@
 		{
 			ShadowShaders.Use ();
 			return GLShader.CreateGeometryShader<PerVertexOut> (3, 
-				CascadedShadowUniforms.MapCount, BeginMode.Triangles, 
-				BeginMode.TriangleStrip, () =>
+				CascadedShadowUniforms.MapCount, PrimitiveType.Triangles, 
+				PrimitiveType.TriangleStrip, () =>
 				from p in Shader.Inputs<Primitive> ()
 				from u in Shader.Uniforms<Shadows> ()
 				from c in Shader.Uniforms<CascadedShadowUniforms> ()

@@ -4,7 +4,7 @@
 	using Maths;
 	using GLTypes;
 	using Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	public class Fragment
 	{

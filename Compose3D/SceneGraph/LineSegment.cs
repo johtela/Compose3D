@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System.Linq;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using Maths;
 	using Geometry;
 	using GLTypes;

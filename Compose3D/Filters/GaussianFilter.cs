@@ -6,7 +6,7 @@
 	using Maths;
 	using Reactive;
 	using Shaders;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using Filter = Reactive.Reaction<System.Tuple<Textures.Texture, Textures.Texture>>;
 
 	public static class GaussianFilter

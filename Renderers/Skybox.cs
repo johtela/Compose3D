@@ -12,7 +12,7 @@
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	public class Skybox : Uniforms
 	{
@@ -69,7 +69,7 @@
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
 			worldMatrix &= camera.WorldToCamera.RemoveTranslation ();
-			_skyboxShader.DrawElements (BeginMode.Triangles, _vertices, _indices);
+			_skyboxShader.DrawElements (PrimitiveType.Triangles, _vertices, _indices);
 		}
 
 		public static Reaction<Mat4> UpdatePerspectiveMatrix ()

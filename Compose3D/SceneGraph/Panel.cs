@@ -4,7 +4,7 @@
 	using Geometry;
 	using GLTypes;
 	using Maths;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using Textures;
 
 	public class Panel<V> : SceneNode 

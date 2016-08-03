@@ -1,7 +1,7 @@
 ﻿namespace Compose3D.Shaders
 {
 	using GLTypes;
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -46,7 +46,7 @@
 		}
 
 		public static string CreateGeometryShader<T> (string version, int vertexCount,
-			int invocations, BeginMode inputPrimitive, BeginMode outputPrimitive,
+			int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var builder = new GLSLGenerator ();
@@ -61,7 +61,7 @@
 		}
 
 		public static string CreateGeometryShader<T> (int vertexCount, int invocations,
-			BeginMode inputPrimitive, BeginMode outputPrimitive,
+			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var currVersion = GetGLSLVersion ();
@@ -73,7 +73,7 @@
 
 		private static string BuildShaderCode (GLSLGenerator builder, string version)
 		{
-			return string.Format ("#version {0}\nprecision highp float;\n", version) +
+			return string.Format ("#version 400 core\nprecision highp float;\n", version) +
 				builder._decl.ToString () +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();

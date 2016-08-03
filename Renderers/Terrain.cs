@@ -7,7 +7,7 @@
 	using Compose3D.SceneGraph;
 	using Compose3D.Shaders;
 	using Compose3D.Textures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -178,7 +178,7 @@
 					var lod = distance < 100 ? 0 :
 							  distance < 200 ? 1 :
 							  2;
-					_terrainShader.DrawElements (BeginMode.TriangleStrip, mesh.VertexBuffer,
+					_terrainShader.DrawElements (PrimitiveType.TriangleStrip, mesh.VertexBuffer,
 						mesh.IndexBuffers[lod]);
 				}
 			}

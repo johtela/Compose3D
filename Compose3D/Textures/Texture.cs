@@ -3,7 +3,7 @@
 	using Maths;
 	using GLTypes;
 	using Geometry;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using System;
 	using System.IO;
 	using System.Drawing;

@@ -4,7 +4,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
     using System.Collections.Generic;
 	using Extensions;
 
@@ -174,33 +174,33 @@
             return result;
         }
 
-		public static string MapInputGSPrimitive (this BeginMode type)
+		public static string MapInputGSPrimitive (this PrimitiveType type)
 		{
 			switch (type)
 			{
-				case BeginMode.Points: return "points";
-				case BeginMode.Lines:
-				case BeginMode.LineLoop:
-				case BeginMode.LineStrip: return "lines";
-				case BeginMode.LinesAdjacency:
-				case BeginMode.LineStripAdjacency: return "lines_adjacency";
-				case BeginMode.Triangles:
-				case BeginMode.TriangleStrip:
-				case BeginMode.TriangleFan: return "triangles";
-				case BeginMode.TrianglesAdjacency:
-				case BeginMode.TriangleStripAdjacency: return "triangles_adjacency";
+				case PrimitiveType.Points: return "points";
+				case PrimitiveType.Lines:
+				case PrimitiveType.LineLoop:
+				case PrimitiveType.LineStrip: return "lines";
+				case PrimitiveType.LinesAdjacency:
+				case PrimitiveType.LineStripAdjacency: return "lines_adjacency";
+				case PrimitiveType.Triangles:
+				case PrimitiveType.TriangleStrip:
+				case PrimitiveType.TriangleFan: return "triangles";
+				case PrimitiveType.TrianglesAdjacency:
+				case PrimitiveType.TriangleStripAdjacency: return "triangles_adjacency";
 				default: throw new ArgumentException (
 					"Unsupported geometry shader input primitive type: " + type);
 			}
 		}
 
-		public static string MapOutputGSPrimitive (this BeginMode type)
+		public static string MapOutputGSPrimitive (this PrimitiveType type)
 		{
 			switch (type)
 			{
-				case BeginMode.Points: return "points";
-				case BeginMode.LineStrip: return "line_strip";
-				case BeginMode.TriangleStrip: return "triangle_strip";
+				case PrimitiveType.Points: return "points";
+				case PrimitiveType.LineStrip: return "line_strip";
+				case PrimitiveType.TriangleStrip: return "triangle_strip";
 				default: throw new ArgumentException (
 					"Unsupported geometry shader output primitive type: " + type);
 			}

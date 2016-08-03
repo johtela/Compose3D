@@ -5,7 +5,7 @@
 	using OpenTK;
 	using System.Linq;
 	using DataStructures;
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 
 	/// <summary>
 	/// Interface for textured vertices.

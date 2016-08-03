@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using OpenTK.Graphics.OpenGL;
+	using OpenTK.Graphics.OpenGL4;
 	using Geometry;
 	using Maths;
 	using Textures;

@@ -4,7 +4,7 @@
     using Compose3D.Maths;
     using Geometry;
     using GLTypes;
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
 	using DataStructures;
     using Textures;
 

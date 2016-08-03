@@ -1,6 +1,6 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Graphics.OpenGL4;
     using System;
 
 	public class GLError : Exception
@@ -25,10 +25,6 @@
 					return null;
 				case ErrorCode.OutOfMemory:
 					return new GLError ("GL_OUT_OF_MEMORY: There is not enough memory left to execute the command");
-				case ErrorCode.StackOverflow:
-					return new GLError ("GL_STACK_OVERFLOW: This command would cause a stack overflow");
-				case ErrorCode.StackUnderflow:
-					return new GLError ("GL_STACK_UNDERFLOW: This command would cause a stack underflow");
 				case ErrorCode.TableTooLargeExt:
 					return new GLError ("GL_TABLE_TOO_LARGE: Specified color lookup table is too large for the implementation");
 				case ErrorCode.TextureTooLargeExt:

@@ -57,7 +57,8 @@
 
 		public TextureUniforms (Program program, Sampler2D sampler) : base (program)
 		{
-			textureMap &= sampler;
+			using (program.Scope ())
+				textureMap &= sampler;
 		}
 	}
 

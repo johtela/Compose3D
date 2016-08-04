@@ -55,7 +55,6 @@
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
-    <Compile Include="IView3D.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -147,9 +146,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Textures\Sampler.cs" />
-    <Compile Include="Textures\Texture.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
+    <Compile Include="Textures\Texture.cs" />
     <Compile Include="Textures\BitmapHelper.cs" />
     <Compile Include="Geometry\Polygon.cs" />
     <Compile Include="Maths\Coord.cs" />
@@ -229,7 +226,6 @@
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\ListView.cs" />
-    <Compile Include="ViewFinder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

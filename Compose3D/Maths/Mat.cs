@@ -7,8 +7,8 @@
 	/// Interface for non-square matrices. 
 	/// </summary>
 	/// Compose3D defines matrices in a column-major manner same as GLSL. This means that
-	/// a n x m matrix consist of n columns and m rows. If n != m then the matrix is non-
-	/// square.
+	/// a \f$ n \times m\f$ matrix consist of n columns and m rows. If \f$ n \neq m \f$ then the 
+	/// matrix is non-square.
 	/// *Note!* OpenTK defines matrices in a row-major way. So, if you use the OpenTK's
 	/// math module with Compose3D take that into account when converting matrices back and 
 	/// forth. Compose3D does not contain any conversion methods to OpenTK matrix types, and

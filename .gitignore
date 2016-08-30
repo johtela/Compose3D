@@ -8,3 +8,4 @@ obj
 *.suo
 *.user
 /Build/Debug
+/Compose3D/Docs/html

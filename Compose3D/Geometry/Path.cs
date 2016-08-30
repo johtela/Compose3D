@@ -132,6 +132,28 @@
 			}
 		}
 
+		private IEnumerable<P> SubdividedNodes (int numDivisions)
+		{
+			for (int i = 0; i < Nodes.Length - 1; i++)
+			{
+				var current = Nodes[i];
+				yield return current;
+
+				var step = 1f / (numDivisions + 1f);
+				for (int j = 1; j <= numDivisions; j++)
+				{
+					var pos = current.position.Mix (Nodes[i + 1].position, j * step);
+					yield return WithPosition (current, pos);
+				}
+			}
+			yield return Nodes[Nodes.Length - 1];
+		}
+
+		public Path<P, V> Subdivide (int numDivisions)
+		{
+			return new Path<P, V> (SubdividedNodes (numDivisions));
+		}
+
 		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)
 		{
 			return new Path<P, V> (path1.Nodes.Concat (path2.Nodes));

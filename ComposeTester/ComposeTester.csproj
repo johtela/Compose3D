@@ -34,6 +34,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FighterGeometry.cs" />
+    <Compile Include="MaterialRenderer.cs" />
+    <Compile Include="MaterialWindow.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />
@@ -43,7 +45,7 @@
     <Compile Include="Shaders.cs" />
     <Compile Include="Geometries.cs" />
     <Compile Include="Tests\QuatTests.cs" />
-    <Compile Include="TestWindow.cs" />
+    <Compile Include="FighterWindow.cs" />
     <Compile Include="TestProgram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

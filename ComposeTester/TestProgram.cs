@@ -15,7 +15,7 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			var wnd = new FighterWindow ();
+			var wnd = new MaterialWindow ();
 			wnd.Run ();
 			//Task.Factory.StartNew (() =>
 			//	Tester.RunTestsTimed (

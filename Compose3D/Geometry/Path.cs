@@ -82,7 +82,18 @@
 			}
 			return new Path<P, V> (nodes);
 		}
-			
+
+		public static Path<P, V> FromRectangle (float width, float height)
+		{
+			var halfX = width / 2f;
+			var halfY = height / 2f;
+			return FromVecs (
+				Vec.FromArray<V, float> (-halfX, -halfY),
+				Vec.FromArray<V, float> (-halfX, halfY),
+				Vec.FromArray<V, float> (halfX, halfY),
+				Vec.FromArray<V, float> (halfX, -halfY)).Close ();
+		}
+
 		public Path<P, V> Transform (Mat4 matrix)
 		{
 			return new Path<P, V> (Nodes.Select (n => WithPosition (n, matrix.Transform (n.position))));

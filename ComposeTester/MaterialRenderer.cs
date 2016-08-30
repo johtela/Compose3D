@@ -70,7 +70,7 @@
 		{
 			lighting.UpdateDirectionalLight (camera);
 
-			foreach (var ls in camera.NodesInView<LineSegment<PositionalVertex, Vec3>> ())
+			foreach (var ls in camera.Graph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
 			{
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * ls.Transform);
 				_shader.DrawLinePath (ls.VertexBuffer);

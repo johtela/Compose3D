@@ -55,7 +55,11 @@
 				GammaCorrection = 1.8f,
 			};
 
-			sceneGraph.Root.Add (_dirLight, _camera);
+			var rect = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f);
+			rect.Nodes.Color (VertexColor<Vec3>.White.diffuse);
+			var ls = new LineSegment<PathNode, Vec3> (sceneGraph, rect);
+
+			sceneGraph.Root.Add (_dirLight, _camera, ls);
 			return sceneGraph;
 		}
 
@@ -65,9 +69,7 @@
 			.SwapBuffers (this).Select ((double _) => _camera)
 			.WhenRendered (this).Evoke ();
 
-			Entities.UpdatePerspectiveMatrix()
-			.And (Skybox.UpdatePerspectiveMatrix ())
-			.And (Terrain.UpdatePerspectiveMatrix ())
+			MaterialRenderer.UpdatePerspectiveMatrix()
 			.Select ((Vec2 size) =>
 				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
 				.CameraToScreen)

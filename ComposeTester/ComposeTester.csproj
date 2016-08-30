@@ -34,7 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FighterGeometry.cs" />
-    <Compile Include="MaterialRenderer.cs" />
     <Compile Include="MaterialWindow.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
@@ -42,7 +41,6 @@
     <Compile Include="Tests\PerformanceTests.cs" />
     <Compile Include="Tests\SceneTests.cs" />
     <Compile Include="Tests\VecTests.cs" />
-    <Compile Include="Shaders.cs" />
     <Compile Include="Geometries.cs" />
     <Compile Include="Tests\QuatTests.cs" />
     <Compile Include="FighterWindow.cs" />

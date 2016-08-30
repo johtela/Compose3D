@@ -1,5 +1,6 @@
 ﻿namespace ComposeTester
 {
+	using Extensions;
 	using System.Linq;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
@@ -20,8 +21,6 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		
-		private readonly Vec3 _skyColor = new Vec3 (0.84f, 0.79f, 0.69f);
-
 		public MaterialWindow ()
 			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
@@ -55,8 +54,8 @@
 				GammaCorrection = 1.8f,
 			};
 
-			var rect = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f);
-			rect.Nodes.Color (VertexColor<Vec3>.White.diffuse);
+			var rect = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
+			rect.Nodes.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
 			var ls = new LineSegment<PathNode, Vec3> (sceneGraph, rect);
 
 			sceneGraph.Root.Add (_dirLight, _camera, ls);
@@ -65,15 +64,10 @@
 
 		private void SetupRendering ()
 		{
-			MaterialRenderer.Renderer (_sceneGraph)
-			.SwapBuffers (this).Select ((double _) => _camera)
-			.WhenRendered (this).Evoke ();
-
-			MaterialRenderer.UpdatePerspectiveMatrix()
-			.Select ((Vec2 size) =>
-				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
-				.CameraToScreen)
-			.WhenResized (this).Evoke ();
+			LineSegments.Renderer (_sceneGraph)
+				.Viewport (this)
+				.SwapBuffers (this).Select ((double _) => _camera)
+				.WhenRendered (this).Evoke ();
 		}
 
 		private void SetupCameraMovement ()
@@ -114,4 +108,4 @@
 			_zoom += delta;
 		}
 	}
-} 
+}

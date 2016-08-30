@@ -174,5 +174,11 @@
 		{
 			return pairs.Select (kv => kv.Value);
 		}
+
+		public static IEnumerable<T> Generate<T> (Func<T> generator)
+		{
+			while (true)
+				yield return generator ();
+		}
 	}
 }

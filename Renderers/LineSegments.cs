@@ -1,4 +1,4 @@
-﻿namespace ComposeTester
+﻿namespace Compose3D.Renderers
 {
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
@@ -39,48 +39,25 @@
 		public Vec3 fragDiffuse { get; set; }
 	}
 
-	public class MaterialRenderer : Uniforms
+	public static class LineSegments
 	{
-		public LightingUniforms lighting;
-		public TransformUniforms transforms;
-
-		public MaterialRenderer (Program program, SceneGraph scene)
-			: base (program)
-		{
-			using (program.Scope ())
-			{
-				lighting = new LightingUniforms (program, scene);
-				transforms = new TransformUniforms (program);
-			}
-		}
-
 		private static Program _shader;
-		private static MaterialRenderer _renderer;
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph)
 		{
 			_shader = PassThrough;
-			_renderer = new MaterialRenderer (_shader, sceneGraph);
 
-			return React.By<Camera> (_renderer.Render)
+			return React.By<Camera> (Render)
 				.Program (_shader);
 		}
 
-		private void Render (Camera camera)
+		private static void Render (Camera camera)
 		{
-			lighting.UpdateDirectionalLight (camera);
+			GL.ClearColor (0f, 0f, 0f, 1f);
+			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			foreach (var ls in camera.Graph.Root.Traverse ().OfType<LineSegment<PathNode, Vec3>> ())
-			{
-				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * ls.Transform);
 				_shader.DrawLinePath (ls.VertexBuffer);
-			}
-		}
-
-		public static Reaction<Mat4> UpdatePerspectiveMatrix ()
-		{
-			return React.By<Mat4> (matrix => _renderer.transforms.perspectiveMatrix &= matrix)
-				.Program (_shader);
 		}
 
 		public static Program PassThrough = new Program (

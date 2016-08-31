@@ -55,6 +55,7 @@
 			};
 
 			var rect = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
+
 			rect.Nodes.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
 			var ls = new LineSegment<PathNode, Vec3> (sceneGraph, rect);
 

@@ -686,5 +686,17 @@
 		{
 			return vec.Any<V, float> (float.IsNaN);
 		}
+
+		private static Random _random = new Random ();
+
+		public static V Random<V> (float maxValue)
+			where V : struct, IVec<V, float>
+		{
+			return FromArray<V, float> (
+				(float)_random.NextDouble () * maxValue,
+				(float)_random.NextDouble () * maxValue,
+				(float)_random.NextDouble () * maxValue,
+				(float)_random.NextDouble () * maxValue);
+		}
 	}
 }

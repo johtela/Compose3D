@@ -81,5 +81,24 @@
 		{
 			return Transform<V> (Mat.RotationZ<Mat4> (angle));
 		}
+
+		public static Manipulator<V> JigglePosition<V> (float maxDiff)
+			where V : struct, IVertex
+		{
+			return v => v.With (v.position + Vec.Random<Vec3> (maxDiff), v.normal); 
+		}
+
+		public static Manipulator<V> JiggleNormal<V> (float maxDiff)
+			where V : struct, IVertex
+		{
+			return v => v.With (v.position, 
+				(v.normal + Vec.Random<Vec3> (maxDiff)).Normalized);
+		}
+
+		public static Manipulator<V> Jiggle<V> (float maxDiff)
+			where V : struct, IVertex
+		{
+			return JigglePosition<V> (maxDiff).Compose (JiggleNormal<V> (maxDiff));
+		}
 	}
 }

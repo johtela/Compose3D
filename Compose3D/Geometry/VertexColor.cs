@@ -1,9 +1,8 @@
 namespace Compose3D.Geometry
 {
-    using Compose3D.Maths;
+    using Maths;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
 	public interface IDiffuseColor<V> where V : struct, IVec<V, float>
 	{

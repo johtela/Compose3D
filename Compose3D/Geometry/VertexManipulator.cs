@@ -27,10 +27,32 @@
 
 	public static class Manipulators
 	{
-		public static Geometry<V> ManipulateVertices<V> (this Geometry<V> geometry, Manipulator<V> manipulator) 
+		public static Geometry<V> ManipulateVertices<V> (this Geometry<V> geometry, Manipulator<V> manipulator, 
+			bool recalculateNormals) where V : struct, IVertex
+		{
+			var result = new VertexManipulator<V> (geometry, manipulator);
+			if (recalculateNormals)
+				result.RecalculateNormals ();
+			return result;
+		}
+
+		public static void RecalculateNormals<V> (this Geometry<V> geometry)
 			where V : struct, IVertex
 		{
-			return new VertexManipulator<V> (geometry, manipulator);
+			var verts = geometry.Vertices;
+			for (int i = 0; i < geometry.Indices.Length; i += 3)
+			{
+				var i1 = geometry.Indices [i];
+				var i2 = geometry.Indices [i + 1];
+				var i3 = geometry.Indices [i + 2];
+				var normal = verts [i2].position.CalculateNormal (verts [i1].position, verts [i3].position);
+				if (!normal.IsNaN ())
+				{
+					verts [i1].normal = normal;
+					verts [i2].normal = normal;
+					verts [i3].normal = normal;
+				}
+			}
 		}
 
 		public static Manipulator<V> Where<V> (this Manipulator<V> manipulator, Func<V, bool> predicate)

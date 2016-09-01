@@ -98,7 +98,7 @@
 
 			foreach (var transform in transforms)
             {
-				backFace = frontFace.ManipulateVertices (v => v.With (transform.Transform (v.position), -v.normal));
+				backFace = frontFace.ManipulateVertices (v => v.With (transform.Transform (v.position), -v.normal), false);
 				var backVertices = backFace.Vertices;
 				i = ExtrudeOut (geometries, i, vertices, backVertices, outerEdges); 
                 vertices = backVertices;
@@ -180,7 +180,7 @@
 					"same Z-coordinate.", "path");
 
 			return Extrude<V, P> (new Path<P, Vec3>[] { path, path.Scale (scaleX, scaleY) }, false, false)
-				.ManipulateVertices (v => v.With (v.position, new Vec3 (0f, 0f, 1f)))
+				.ManipulateVertices (v => v.With (v.position, new Vec3 (0f, 0f, 1f)), false)
 				.Simplify ();
 		}
 
@@ -191,10 +191,10 @@
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
-					"Depth of bulge needs to be greater than zero.", "depth");
+					"Depth needs to be greater than zero.", "depth");
 			if (steepness <= 0)
 				throw new ArgumentException (
-					"Slope parameter needs to be greater than zero.", "slope");
+					"Steepness parameter needs to be greater than zero.", "steepness");
 
 			var normal = plane.Vertices[0].normal;
 			var step = depth / numSteps;

@@ -35,7 +35,8 @@
 						turnAxis: Axis.X, 
 						offset: new Vec3 (0f), 
 						stepAngle: MathHelper.TwoPi / numPoints)
-					.ManipulateVertices (Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.position.Y < 0f))
+					.ManipulateVertices (
+						Manipulators.Scale<V> (1f, 1f - bottomFlatness, 1f).Where (v => v.position.Y < 0f), true)
 					.RotateY (90f.Radians ())
 					.Color (_color);
 
@@ -63,9 +64,9 @@
 					where v.position.Y >= -0.2f
 					select v.position).Close ();
 				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().position;
-				Fuselage = Fuselage.ManipulateVertices (Manipulators.Transform<V> (
-					Mat.RotationX<Mat4> (bend.Radians ()).RelativeTo (pivotPoint))
-					.Where (v => v.position.Z > pivotPoint.Z))
+				Fuselage = Fuselage.ManipulateVertices (
+					Manipulators.Transform<V> (Mat.RotationX<Mat4> (bend.Radians ()).RelativeTo (pivotPoint))
+					.Where (v => v.position.Z > pivotPoint.Z), true)
 					.Color (_color);
 
 				XSectionStart = XSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();

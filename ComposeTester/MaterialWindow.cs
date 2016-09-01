@@ -16,9 +16,8 @@
 	public class MaterialWindow : GameWindow
 	{
 		// Scene graph
-		private SceneGraph _sceneGraph;
 		private Camera _camera;
-		private TransformNode _mesh;
+		private Mesh<MaterialVertex> _mesh;
 		private Vec2 _rotation;
 		private float _zoom;
 		
@@ -27,13 +26,13 @@
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
-			_zoom = 20f;
-			_sceneGraph = CreateSceneGraph ();
+			_zoom = 2f;
+			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
 		}
 
-		private SceneGraph CreateSceneGraph ()
+		private void CreateSceneGraph ()
 		{
 			var sceneGraph = new SceneGraph ();
 
@@ -49,65 +48,51 @@
 			var brick = Extrusion.Extrude<MaterialVertex, PathNode> (true, false, rectF, rectB);
 
 			brick.Vertices.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
-			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick)
-				.OffsetOrientAndScale (new Vec3 (0f, 0, 0f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
+			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick);
 
 			sceneGraph.Root.Add (_camera, _mesh);
-			return sceneGraph;
 		}
 
 		private void SetupRendering ()
 		{
 			Render.Clear<Camera> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
+				.And (React.By<Camera> (UpdateCamera))
 				.And (Materials.Renderer ())
-				.Viewport (this).Select ((double _) => _camera)
+				.Select ((double _) => _camera)
+				.Viewport (this)
 				.SwapBuffers (this)
 				.WhenRendered (this).Evoke ();
 
 			Materials.UpdatePerspectiveMatrix ()
-			.Select ((Vec2 size) =>
-				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -100f))
-				.CameraToScreen)
-			.WhenResized (this).Evoke ();
+				.Select ((Vec2 size) =>
+					(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -100f))
+					.CameraToScreen)
+				.WhenResized (this).Evoke ();
 		}
 
 		private void SetupCameraMovement ()
 		{
-			React.By<Vec2> (RotateCamera)
+			React.By<Vec2> (rot => _rotation += rot)
 				.Select ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
 				.Where (_ => Mouse[MouseButton.Left])
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
-			React.By<float> (ZoomCamera)
+			React.By<float> (delta => _zoom += delta)
 				.Select (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
 				.Evoke ();
 		}
 
-		private void UpdateControls (Vec2i viewportSize)
+		private void UpdateCamera ()
 		{
-			var panels = _sceneGraph.Root.Traverse ().OfType<ControlPanel<TexturedVertex>> ();
-			foreach (var panel in panels)
-				panel.UpdateControl (viewportSize, Mouse, Keyboard);
-		}
-
-		private Vec3 LookVec ()
-		{
-			return (Quat.FromAxisAngle (Dir3D.Up, _rotation.X) * Quat.FromAxisAngle (Dir3D.Right, _rotation.Y))
+			var lookDir = (Quat.FromAxisAngle (Dir3D.Up, _rotation.X) * Quat.FromAxisAngle (Dir3D.Right, _rotation.Y))
 				.RotateVec3 (Dir3D.Front) * _zoom;
-		}
-
-		private void RotateCamera (Vec2 rot)
-		{
-			_rotation += rot;
-		}
-
-		private void ZoomCamera (float delta)
-		{
-			_zoom += delta;
+			var meshPos = _mesh.BoundingBox.Center;
+			_camera.Position = meshPos + lookDir;
+			_camera.Target = meshPos;
 		}
 	}
 }

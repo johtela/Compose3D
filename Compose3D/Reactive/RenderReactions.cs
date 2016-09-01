@@ -17,7 +17,7 @@
 			return value;
 		}
 
-		public static Reaction<T> Culling<T> (this Reaction<T> render, 
+		public static Reaction<T> Culling<T> (this Reaction<T> render,
 			Func<T, Tuple<CullFaceMode, FrontFaceDirection>> getParams)
 		{
 			return input =>
@@ -39,7 +39,7 @@
 			};
 		}
 
-		public static Reaction<T> Culling<T> (this Reaction<T> render, CullFaceMode mode = CullFaceMode.Back, 
+		public static Reaction<T> Culling<T> (this Reaction<T> render, CullFaceMode mode = CullFaceMode.Back,
 			FrontFaceDirection frontFace = FrontFaceDirection.Cw)
 		{
 			return render.Culling (i => Tuple.Create (mode, frontFace));
@@ -71,7 +71,7 @@
 			return render.DepthTest (i => depthFunction);
 		}
 
-		public static Reaction<T> Blending<T> (this Reaction<T> render, 
+		public static Reaction<T> Blending<T> (this Reaction<T> render,
 			Func<T, Tuple<BlendingFactorSrc, BlendingFactorDest>> getParams)
 		{
 			return input =>
@@ -170,7 +170,7 @@
 			};
 		}
 
-		public static Reaction<T> BindSamplers<T> (this Reaction<T> render, 
+		public static Reaction<T> BindSamplers<T> (this Reaction<T> render,
 			Func<T, IDictionary<Sampler, Texture>> getBindings)
 		{
 			return input =>
@@ -221,10 +221,19 @@
 				return result;
 			};
 		}
-		
+
 		public static Reaction<T> SwapBuffers<T> (this Reaction<T> render, GameWindow window)
 		{
 			return render.SwapBuffers (i => window);
+		}
+
+		public static Reaction<T> Clear<T> (Vec4 clearColor, ClearBufferMask mask)
+		{
+			return React.By<T> (input =>
+			{
+				GL.ClearColor (clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
+				GL.Clear (mask);
+			});
 		}
 	}
 }

@@ -288,10 +288,21 @@
 		/// `adjacentPos2` parameters.
 		public static Vec3 CalculateNormal (this Vec3 position, Vec3 adjacentPos1, Vec3 adjacentPos2)
 		{
-			if (position == adjacentPos1 || position == adjacentPos2 || adjacentPos1 == adjacentPos2)
+			var vec1 = adjacentPos1 - position;
+			var vec2 = adjacentPos2 - position;
+			if (vec1.LengthSquared == 0f || vec2.LengthSquared == 0f)
 				throw new ArgumentException (
-					"The positions need to be unique in oreder to calculate the normal correctly.");
-			return (adjacentPos1 - position).Cross (adjacentPos2 - position).Normalized;
+					"The positions need to be unique to calculate the normal correctly.");
+			if (AreCollinear (position, adjacentPos1, adjacentPos2))
+				throw new ArgumentException ("The positions cannot be collinear.");
+			return vec1.Cross (vec2).Normalized;
+		}
+
+		public static bool AreCollinear (this Vec3 pos1, Vec3 pos2, Vec3 pos3)
+		{
+			var vec1 = (pos2 - pos1).Normalized;
+			var vec2 = (pos3 - pos1).Normalized;
+			return vec1.Dot (vec2).Abs () == 1f;
 		}
 
 		/// <summary>

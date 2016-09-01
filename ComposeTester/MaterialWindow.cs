@@ -11,13 +11,14 @@
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Input;
+	using OpenTK.Graphics.OpenGL4;
 
 	public class MaterialWindow : GameWindow
 	{
 		// Scene graph
 		private SceneGraph _sceneGraph;
 		private Camera _camera;
-		private DirectionalLight _dirLight;
+		private TransformNode _mesh;
 		private Vec2 _rotation;
 		private float _zoom;
 		
@@ -35,40 +36,40 @@
 		private SceneGraph CreateSceneGraph ()
 		{
 			var sceneGraph = new SceneGraph ();
-			_dirLight = new DirectionalLight (sceneGraph,
-				intensity: new Vec3 (1f), 
-				direction: new Vec3 (0.7f, 1f, -0.7f),
-				maxShadowDepth: 200f);
 
 			_camera = new Camera (sceneGraph,
-				position: new Vec3 (0f, 10f, 10f), 
-				target: new Vec3 (0f, 10f, -1f), 
+				position: new Vec3 (0f, 0f, 1f),
+				target: new Vec3 (0f, 0f, 0f),
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -400f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -100f),
 				aspectRatio: 1f);
 
-			sceneGraph.GlobalLighting = new GlobalLighting ()
-			{
-				AmbientLightIntensity = new Vec3 (0.1f),
-				MaxIntensity = 1f,
-				GammaCorrection = 1.8f,
-			};
+			var rectF = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
+			var rectB = rectF.Translate (0f, 0f, -0.5f);
+			var brick = Extrusion.Extrude<MaterialVertex, PathNode> (true, false, rectF, rectB);
 
-			var rect = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
+			brick.Vertices.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
+			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick)
+				.OffsetOrientAndScale (new Vec3 (0f, 0, 0f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 
-			rect.Nodes.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
-			var ls = new LineSegment<PathNode, Vec3> (sceneGraph, rect);
-
-			sceneGraph.Root.Add (_dirLight, _camera, ls);
+			sceneGraph.Root.Add (_camera, _mesh);
 			return sceneGraph;
 		}
 
 		private void SetupRendering ()
 		{
-			LineSegments.Renderer (_sceneGraph)
-				.Viewport (this)
-				.SwapBuffers (this).Select ((double _) => _camera)
+			Render.Clear<Camera> (new Vec4 (0f, 0f, 0f, 1f), 
+					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
+				.And (Materials.Renderer ())
+				.Viewport (this).Select ((double _) => _camera)
+				.SwapBuffers (this)
 				.WhenRendered (this).Evoke ();
+
+			Materials.UpdatePerspectiveMatrix ()
+			.Select ((Vec2 size) =>
+				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -100f))
+				.CameraToScreen)
+			.WhenResized (this).Evoke ();
 		}
 
 		private void SetupCameraMovement ()

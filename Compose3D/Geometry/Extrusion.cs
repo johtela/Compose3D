@@ -48,7 +48,10 @@
 			where P : struct, IPositional<Vec3>
 		{
 			var nodes = path.Nodes;
-			var normal = nodes [1].position.CalculateNormal (nodes [0].position, nodes [2].position);
+			var pos1 = nodes[1].position;
+			var pos2 = nodes[0].position;
+			var pos3 = nodes.Skip (2).First (n => !pos1.AreCollinear (pos2, n.position)).position;
+			var normal = pos1.CalculateNormal (pos2, pos3);
 			if (flipNormal)
 				normal = -normal;
 			return nodes.Select (n => VertexHelpers.New<V> (n.position, normal)).ToArray ();
@@ -134,10 +137,9 @@
 			where P : struct, IPositional<Vec3>
 		{
 			var frontFace = paths.First ();
-			if (!paths.All (p => p.Nodes.Length >= 3))
-				throw new ArgumentException ("All the paths must contain at least 3 vertices.", "paths");
-			if (!paths.All (p => p.Nodes.Length == frontFace.Nodes.Length))
-				throw new ArgumentException ("All the paths must contain the same number of vertices.", "paths");
+			if (!paths.All (p => p.Nodes.Length >= 3 && p.Nodes.Length == frontFace.Nodes.Length))
+				throw new ArgumentException (
+					"All the paths must contain the same number of vertices (at least 3).", "paths");
 			if (!paths.All (p => p.Nodes.AreCoplanar ()))
 				throw new ArgumentException ("The nodes of the paths must be coplanar.", "paths");
 			

@@ -55,36 +55,61 @@
 		public Vec3 fragDiffuse { get; set; }
 	}
 
-	public class Materials
+	public class Materials : Uniforms
 	{
+		public TransformUniforms transforms;
+
+		public Materials (Program program)
+			: base (program)
+		{
+			using (program.Scope ())
+			{
+				transforms = new TransformUniforms (program);
+			}
+		}
+
+		private static Materials _materials;
 		private static Program _materialShader;
 
-		public static Reaction<Mesh<MaterialVertex>> Renderer ()
+		public static Reaction<Camera> Renderer ()
 		{
 			_materialShader = new Program (
 				VertexShader (), 
 				FragmentShader ());
+			_materials = new Materials (_materialShader);
 
-			return React.By<Mesh<MaterialVertex>> (Render)
+			return React.By<Camera> (_materials.Render)
 				.DepthTest ()
 				.Culling ()
 				.Program (_materialShader);
 		}
 
-		private static void Render (Mesh<MaterialVertex> mesh)
+		private void Render (Camera camera)
 		{
-			_materialShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+			foreach (var mesh in camera.NodesInView<Mesh<MaterialVertex>> ())
+			{
+				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
+				_materialShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+			}
+		}
+
+		public static Reaction<Mat4> UpdatePerspectiveMatrix ()
+		{
+			return React.By<Mat4> (matrix => _materials.transforms.perspectiveMatrix &= matrix)
+				.Program (_materialShader);
 		}
 
 		public static GLShader VertexShader ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<MaterialVertex> ()
+				from t in Shader.Uniforms<TransformUniforms> ()
+				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
 				select new MaterialFragment ()
 				{
-					gl_Position = new Vec4 (v.position, 1f),
-					fragPosition = v.position,
-					fragNormal = v.normal,
+					gl_Position = !t.perspectiveMatrix * viewPos,
+					fragPosition = viewPos[Coord.x, Coord.y, Coord.z],
+					fragNormal = (!t.normalMatrix * v.normal).Normalized,
 					fragDiffuse = v.diffuse,
 				});
 		}

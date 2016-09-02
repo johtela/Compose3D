@@ -45,7 +45,8 @@
 
 			var rectF = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
 			var rectB = rectF.Translate (0f, 0f, -0.5f);
-			var brick = Extrusion.Extrude<MaterialVertex, PathNode> (true, false, rectF, rectB);
+			var brick = Extrusion.Extrude<MaterialVertex, PathNode> (true, false, rectF, rectB)
+				.ManipulateVertices (Manipulators.Jiggle<MaterialVertex> (0.05f), true);
 
 			brick.Vertices.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
 			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick);

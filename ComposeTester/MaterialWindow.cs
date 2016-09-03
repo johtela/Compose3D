@@ -26,7 +26,7 @@
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
-			_zoom = 2f;
+			_zoom = 20f;
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
@@ -43,12 +43,23 @@
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -100f),
 				aspectRatio: 1f);
 
-			var rectF = Path<PathNode, Vec3>.FromRectangle (0.5f, 0.5f).Subdivide (1);
-			var rectB = rectF.Translate (0f, 0f, -0.5f);
-			var brick = Extrusion.Extrude<MaterialVertex, PathNode> (true, false, rectF, rectB)
-				.ManipulateVertices (Manipulators.Jiggle<MaterialVertex> (0.05f), true);
+			var frontFace = Polygon<MaterialVertex>.FromPath (
+				Path<PathNode, Vec3>.FromRectangle (28f, 8f).Subdivide (4));
+			var brick = frontFace.ExtrudeToScale (
+				depth: 1f,
+				targetScale: 1.1f,
+				steepness: 2f,
+				numSteps: 5,
+				includeFrontFace: true,
+				includeBackFace: false);
 
-			brick.Vertices.Color (EnumerableExt.Generate (() => VertexColor<Vec3>.Random.diffuse));
+			brick.Vertices.Color (new Vec3 (0.7f, 0.1f, 0f));
+			brick = brick.ManipulateVertices (
+				Manipulators.JigglePosition<MaterialVertex> (0.3f).Compose (
+					Manipulators.JiggleColor<MaterialVertex> (0.1f))
+				.Where (v => v.position.Z >= 0f), true)
+				.Smoothen (0.8f);
+
 			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick);
 
 			sceneGraph.Root.Add (_camera, _mesh);

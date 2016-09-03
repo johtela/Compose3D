@@ -35,6 +35,12 @@
 			return FromVertices (vectors.Select (vec => VertexHelpers.New<V> (new Vec3 (vec, 0f), new Vec3 (0f, 0f, 1f))));
 		}
 
+		public static Polygon<V> FromPath<P> (Path<P, Vec3> Path)
+			where P : struct, IPositional<Vec3>
+		{
+			return FromVertices (Path.Nodes.Select (n => VertexHelpers.New<V> (n.position, new Vec3 (0f, 0f, 1f))));
+		}	
+
 		protected override IEnumerable<int> GenerateIndices ()
 		{
 			return _indices;

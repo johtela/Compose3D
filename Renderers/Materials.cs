@@ -90,6 +90,7 @@
 			{
 				transforms.UpdateModelViewAndNormalMatrices (camera.WorldToCamera * mesh.Transform);
 				_materialShader.DrawElements (PrimitiveType.Triangles, mesh.VertexBuffer, mesh.IndexBuffer);
+				_materialShader.DrawNormals (mesh.NormalBuffer);
 			}
 		}
 
@@ -123,7 +124,7 @@
 				from f in Shader.Inputs<MaterialFragment> ()
 				select new
 				{
-					outputColor = f.fragDiffuse
+					outputColor = f.fragNormal.Dot (new Vec3 (0f, 0f, 1f)) * f.fragDiffuse
 				}
 			);
 		}

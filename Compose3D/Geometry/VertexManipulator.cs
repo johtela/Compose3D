@@ -46,7 +46,7 @@
 				var i2 = geometry.Indices [i + 1];
 				var i3 = geometry.Indices [i + 2];
 				var normal = verts [i2].position.CalculateNormal (verts [i1].position, verts [i3].position);
-				if (!normal.IsNaN ())
+				if (!normal.IsNaN () && verts [i1].normal.Dot (normal) > 0f)
 				{
 					verts [i1].normal = normal;
 					verts [i2].normal = normal;
@@ -104,10 +104,22 @@
 			return Transform<V> (Mat.RotationZ<Mat4> (angle));
 		}
 
-		public static Manipulator<V> Jiggle<V> (float maxDiff)
+		public static Manipulator<V> JigglePosition<V> (float range)
 			where V : struct, IVertex
 		{
-			return v => v.With (v.position + Vec.Random<Vec3> (maxDiff), v.normal); 
+			return v => v.With (
+				v.position + Vec.Random<Vec3> (new Random (v.position.GetHashCode ()), range), 
+				v.normal);
+		}
+
+		public static Manipulator<V> JiggleColor<V> (float range)
+			where V : struct, IVertex, IDiffuseColor<Vec3>
+		{
+			return v =>
+			{ 
+				v.diffuse += Vec.Random<Vec3> (new Random (v.position.GetHashCode ()), range);
+				return v;
+			};
 		}
 	}
 }

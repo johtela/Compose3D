@@ -693,14 +693,21 @@
 
 		private static Random _random = new Random ();
 
-		public static V Random<V> (float maxValue)
+		public static V Random<V> (float range)
 			where V : struct, IVec<V, float>
 		{
+			return Random<V> (_random, range);
+		}
+
+		public static V Random<V> (Random rnd, float range)
+			where V : struct, IVec<V, float>
+		{
+			var offs = range / 2f;
 			return FromArray<V, float> (
-				(float)_random.NextDouble () * maxValue,
-				(float)_random.NextDouble () * maxValue,
-				(float)_random.NextDouble () * maxValue,
-				(float)_random.NextDouble () * maxValue);
+				(float)rnd.NextDouble () * range - offs,
+				(float)rnd.NextDouble () * range - offs,
+				(float)rnd.NextDouble () * range - offs,
+				(float)rnd.NextDouble () * range - offs);
 		}
 	}
 }

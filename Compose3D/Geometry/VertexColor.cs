@@ -105,6 +105,14 @@ namespace Compose3D.Geometry
 				vertices[i].diffuse = color;
 		}
 
+		public static Geometry<TVert> ColorInPlace<TVert, V> (this Geometry<TVert> geometry, V color)
+			where TVert : struct, IVertex, IDiffuseColor<V>
+			where V : struct, IVec<V, float>
+		{
+			geometry.Vertices.Color (color);
+			return geometry;
+		}
+
 		public static void Color<TVert, V> (this TVert[] vertices, IEnumerable<V> colors)
 			where TVert : struct, IDiffuseColor<V> 
 			where V : struct, IVec<V, float>

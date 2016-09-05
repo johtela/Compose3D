@@ -26,10 +26,50 @@
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
-			_zoom = 20f;
+			_zoom = 100f;
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
+		}
+
+		public static Geometry<V> Brick<V> (float width, float height, Vec3 color, 
+			float edgeSharpness, float maxDimensionError, float maxColorError)
+			where V : struct, IVertex, IDiffuseColor<Vec3>
+		{
+			return Polygon<V>.FromPath (
+					Path<PathNode, Vec3>.FromRectangle (width, height).Subdivide (4))
+				.ExtrudeToScale (
+					depth: 1f,
+					targetScale: 1.1f,
+					steepness: edgeSharpness,
+					numSteps: 5,
+					includeFrontFace: true,
+					includeBackFace: false)
+				.ColorInPlace (color)
+				.ManipulateVertices (
+					Manipulators.JigglePosition<V> (maxDimensionError).Compose (
+						Manipulators.JiggleColor<V> (maxColorError))
+					.Where (v => v.position.Z >= 0f), true)
+				.Smoothen (0.8f);
+		}
+
+		public static Geometry<V> BrickWall<V> (Geometry<V> brick, float seamWidth, int rows, int cols,
+			float offset, Vec3 mortarColor)
+			where V : struct, IVertex, IDiffuseColor<Vec3>
+		{
+			var size = brick.BoundingBox.Size + new Vec3 (seamWidth, seamWidth, 0f);
+			var bricks = Composite.Create (
+				from r in Enumerable.Range (0, rows)
+				from c in Enumerable.Range (0, cols)
+				let offs = (r & 1) == 1 ? offset : 0f
+				select brick.Translate (c * size.X - offs, r * size.Y))
+				.Center ();
+			var bbox = bricks.BoundingBox;
+			var mortar = Quadrilateral<V>.Rectangle (bbox.Size.X, bbox.Size.Y)
+				.Translate (0f, 0f, bbox.Back)
+				.ColorInPlace (mortarColor)
+				.ManipulateVertices<V> (Manipulators.JiggleColor<V> (0.1f), false);
+			return Composite.Create (bricks, mortar);
 		}
 
 		private void CreateSceneGraph ()
@@ -40,28 +80,20 @@
 				position: new Vec3 (0f, 0f, 1f),
 				target: new Vec3 (0f, 0f, 0f),
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -100f),
+				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -1000f),
 				aspectRatio: 1f);
 
-			var frontFace = Polygon<MaterialVertex>.FromPath (
-				Path<PathNode, Vec3>.FromRectangle (28f, 8f).Subdivide (4));
-			var brick = frontFace.ExtrudeToScale (
-				depth: 1f,
-				targetScale: 1.1f,
-				steepness: 2f,
-				numSteps: 5,
-				includeFrontFace: true,
-				includeBackFace: false);
+			var brick = Brick<MaterialVertex> (
+				width: 28f,
+				height: 8f,
+				color: new Vec3 (0.54f, 0.41f, 0.34f),
+				edgeSharpness: 1.5f,
+				maxDimensionError: 0.3f,
+				maxColorError: 0.1f);
+			var brickWall = BrickWall<MaterialVertex> (brick, 2f, 10, 5, 10f,
+				new Vec3 (0.52f, 0.5f, 0.45f));
 
-			brick.Vertices.Color (new Vec3 (0.7f, 0.1f, 0f));
-			brick = brick.ManipulateVertices (
-				Manipulators.JigglePosition<MaterialVertex> (0.3f).Compose (
-					Manipulators.JiggleColor<MaterialVertex> (0.1f))
-				.Where (v => v.position.Z >= 0f), true)
-				.Smoothen (0.8f);
-
-			_mesh = new Mesh<MaterialVertex> (sceneGraph, brick);
-
+			_mesh = new Mesh<MaterialVertex> (sceneGraph, brickWall);
 			sceneGraph.Root.Add (_camera, _mesh);
 		}
 
@@ -78,7 +110,7 @@
 
 			Materials.UpdatePerspectiveMatrix ()
 				.Select ((Vec2 size) =>
-					(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -100f))
+					(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -1000f))
 					.CameraToScreen)
 				.WhenResized (this).Evoke ();
 		}

@@ -33,43 +33,43 @@
 		}
 
 		public static Geometry<V> Brick<V> (float width, float height, Vec3 color, 
-			float edgeSharpness, float maxDimensionError, float maxColorError)
+			float edgeSharpness)
 			where V : struct, IVertex, IDiffuseColor<Vec3>
 		{
 			return Polygon<V>.FromPath (
-					Path<PathNode, Vec3>.FromRectangle (width, height).Subdivide (4))
+				Path<PathNode, Vec3>.FromRectangle (width, height).Subdivide (4))
 				.ExtrudeToScale (
-					depth: 1f,
-					targetScale: 1.1f,
-					steepness: edgeSharpness,
-					numSteps: 5,
-					includeFrontFace: true,
-					includeBackFace: false)
-				.ColorInPlace (color)
-				.ManipulateVertices (
-					Manipulators.JigglePosition<V> (maxDimensionError).Compose (
-						Manipulators.JiggleColor<V> (maxColorError))
-					.Where (v => v.position.Z >= 0f), true)
-				.Smoothen (0.8f);
+				depth: 1f,
+				targetScale: 1.1f,
+				steepness: edgeSharpness,
+				numSteps: 5,
+				includeFrontFace: true,
+				includeBackFace: false)
+				.ColorInPlace (color);
 		}
 
 		public static Geometry<V> BrickWall<V> (Geometry<V> brick, float seamWidth, int rows, int cols,
-			float offset, Vec3 mortarColor)
+			float offset, Vec3 mortarColor, float maxDimensionError, float maxColorError)
 			where V : struct, IVertex, IDiffuseColor<Vec3>
 		{
 			var size = brick.BoundingBox.Size + new Vec3 (seamWidth, seamWidth, 0f);
 			var bricks = Composite.Create (
-				from r in Enumerable.Range (0, rows)
+				             from r in Enumerable.Range (0, rows)
 				from c in Enumerable.Range (0, cols)
 				let offs = (r & 1) == 1 ? offset : 0f
 				select brick.Translate (c * size.X - offs, r * size.Y))
-				.Center ();
+				.Center ()
+				.ManipulateVertices (
+				             Manipulators.JigglePosition<V> (maxDimensionError).Compose (
+					             Manipulators.JiggleColor<V> (maxColorError))
+					.Where (v => v.position.Z >= 0f), true);
 			var bbox = bricks.BoundingBox;
 			var mortar = Quadrilateral<V>.Rectangle (bbox.Size.X, bbox.Size.Y)
 				.Translate (0f, 0f, bbox.Back)
 				.ColorInPlace (mortarColor)
-				.ManipulateVertices<V> (Manipulators.JiggleColor<V> (0.1f), false);
-			return Composite.Create (bricks, mortar);
+				.ManipulateVertices<V> (Manipulators.JiggleColor<V> (maxColorError), false);
+			return Composite.Create (bricks, mortar)
+				.Smoothen (0.8f);
 		}
 
 		private void CreateSceneGraph ()
@@ -84,15 +84,20 @@
 				aspectRatio: 1f);
 
 			var brick = Brick<MaterialVertex> (
-				width: 28f,
-				height: 8f,
-				color: new Vec3 (0.54f, 0.41f, 0.34f),
-				edgeSharpness: 1.5f,
+	            width: 28f,
+	            height: 8f,
+	            color: new Vec3 (0.54f, 0.41f, 0.34f),
+	            edgeSharpness: 1.5f);
+			var brickWall = BrickWall<MaterialVertex> (
+				brick: brick, 
+				seamWidth: 2f, 
+				rows: 10, 
+				cols: 5, 
+				offset: 10f,
+				mortarColor: new Vec3 (0.52f, 0.5f, 0.45f),
 				maxDimensionError: 0.3f,
-				maxColorError: 0.1f);
-			var brickWall = BrickWall<MaterialVertex> (brick, 2f, 10, 5, 10f,
-				new Vec3 (0.52f, 0.5f, 0.45f));
-
+				maxColorError: 0.05f);
+			
 			_mesh = new Mesh<MaterialVertex> (sceneGraph, brickWall);
 			sceneGraph.Root.Add (_camera, _mesh);
 		}

@@ -32,19 +32,20 @@
 			SetupCameraMovement ();
 		}
 
-		public static Geometry<V> Brick<V> (float width, float height, Vec3 color, 
-			float edgeSharpness)
+		public static Geometry<V> Brick<V> (float width, float height, float depth, 
+			Vec3 color, float edgeSharpness)
 			where V : struct, IVertex, IDiffuseColor<Vec3>
 		{
 			return Polygon<V>.FromPath (
 				Path<PathNode, Vec3>.FromRectangle (width, height).Subdivide (4))
+				.Scale (edgeSharpness, edgeSharpness)
 				.ExtrudeToScale (
-				depth: 1f,
-				targetScale: 1.1f,
-				steepness: edgeSharpness,
-				numSteps: 5,
-				includeFrontFace: true,
-				includeBackFace: false)
+					depth: depth,
+					targetScale: 1f / edgeSharpness,
+					steepness: 2f,
+					numSteps: 5,
+					includeFrontFace: true,
+					includeBackFace: false)
 				.ColorInPlace (color);
 		}
 
@@ -54,22 +55,22 @@
 		{
 			var size = brick.BoundingBox.Size + new Vec3 (seamWidth, seamWidth, 0f);
 			var bricks = Composite.Create (
-				             from r in Enumerable.Range (0, rows)
+				from r in Enumerable.Range (0, rows)
 				from c in Enumerable.Range (0, cols)
 				let offs = (r & 1) == 1 ? offset : 0f
 				select brick.Translate (c * size.X - offs, r * size.Y))
 				.Center ()
 				.ManipulateVertices (
-				             Manipulators.JigglePosition<V> (maxDimensionError).Compose (
-					             Manipulators.JiggleColor<V> (maxColorError))
-					.Where (v => v.position.Z >= 0f), true);
+					Manipulators.JigglePosition<V> (maxDimensionError).Compose (
+						Manipulators.JiggleColor<V> (maxColorError))
+					/*.Where (v => v.position.Z >= 0f)*/, true);
 			var bbox = bricks.BoundingBox;
 			var mortar = Quadrilateral<V>.Rectangle (bbox.Size.X, bbox.Size.Y)
 				.Translate (0f, 0f, bbox.Back)
 				.ColorInPlace (mortarColor)
 				.ManipulateVertices<V> (Manipulators.JiggleColor<V> (maxColorError), false);
 			return Composite.Create (bricks, mortar)
-				.Smoothen (0.8f);
+				.Smoothen (0.5f);
 		}
 
 		private void CreateSceneGraph ()
@@ -84,18 +85,19 @@
 				aspectRatio: 1f);
 
 			var brick = Brick<MaterialVertex> (
-	            width: 28f,
-	            height: 8f,
+	            width: 28.5f,
+	            height: 8.5f,
+				depth: 1f,
 	            color: new Vec3 (0.54f, 0.41f, 0.34f),
-	            edgeSharpness: 1.5f);
+	            edgeSharpness: 0.9f);
 			var brickWall = BrickWall<MaterialVertex> (
 				brick: brick, 
-				seamWidth: 2f, 
+				seamWidth: 1.5f, 
 				rows: 10, 
 				cols: 5, 
 				offset: 10f,
 				mortarColor: new Vec3 (0.52f, 0.5f, 0.45f),
-				maxDimensionError: 0.3f,
+				maxDimensionError: 0.1f,
 				maxColorError: 0.05f);
 			
 			_mesh = new Mesh<MaterialVertex> (sceneGraph, brickWall);

@@ -124,8 +124,8 @@
 				from f in Shader.Inputs<MaterialFragment> ()
 				select new
 				{
-					//outputColor = (f.fragNormal.Dot (new Vec3 (0f, 0f, 1f)) * f.fragDiffuse).Clamp (0.2f, 1f)
-					outputColor = f.fragDiffuse
+					outputColor = f.fragNormal.Dot (new Vec3 (0f, 0f, 1f)) * f.fragDiffuse
+					//outputColor = f.fragDiffuse
 				}
 			);
 		}

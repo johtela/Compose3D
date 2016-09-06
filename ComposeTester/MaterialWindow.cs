@@ -81,7 +81,7 @@
 				position: new Vec3 (0f, 0f, 1f),
 				target: new Vec3 (0f, 0f, 0f),
 				upDirection: new Vec3 (0f, 1f, 0f),
-				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -1000f),
+				frustum: new ViewingFrustum (FrustumKind.Orthographic, 1f, 1f, -1f, -1000f),
 				aspectRatio: 1f);
 
 			var brick = Brick<MaterialVertex> (
@@ -89,19 +89,19 @@
 	            height: 8.5f,
 				depth: 1f,
 	            color: new Vec3 (0.54f, 0.41f, 0.34f),
-	            edgeSharpness: 0.9f);
+	            edgeSharpness: 0.95f);
 			var brickWall = BrickWall<MaterialVertex> (
-				brick: brick, 
-				seamWidth: 1.5f, 
-				rows: 10, 
-				cols: 5, 
-				offset: 10f,
-				mortarColor: new Vec3 (0.52f, 0.5f, 0.45f),
-				maxDimensionError: 0.1f,
-				maxColorError: 0.05f);
+                brick: brick, 
+                seamWidth: 1.5f, 
+                rows: 10, 
+                cols: 5, 
+                offset: 10f,
+                mortarColor: new Vec3 (0.52f, 0.5f, 0.45f),
+                maxDimensionError: 0.1f,
+                maxColorError: 0.05f);
 			
 			_mesh = new Mesh<MaterialVertex> (sceneGraph, brickWall);
-			sceneGraph.Root.Add (_camera, _mesh);
+			sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)));
 		}
 
 		private void SetupRendering ()
@@ -117,7 +117,7 @@
 
 			Materials.UpdatePerspectiveMatrix ()
 				.Select ((Vec2 size) =>
-					(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -1000f))
+					(_camera.Frustum = new ViewingFrustum (FrustumKind.Orthographic, size.X, size.Y, -1f, -1000f))
 					.CameraToScreen)
 				.WhenResized (this).Evoke ();
 		}

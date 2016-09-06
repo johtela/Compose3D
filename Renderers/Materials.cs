@@ -125,7 +125,7 @@
 				select new
 				{
 					outputColor = f.fragNormal.Dot (new Vec3 (0f, 0f, 1f)) * f.fragDiffuse
-					//outputColor = f.fragDiffuse
+//					outputColor = f.fragDiffuse
 				}
 			);
 		}

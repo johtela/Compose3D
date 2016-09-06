@@ -31,7 +31,7 @@
 
 		public static TransformNode Scale (this SceneNode node, Vec3 factor)
 		{
-			return OffsetOrientAndScale (node, new Vec3 (0f), factor, new Vec3 (1f));
+			return OffsetOrientAndScale (node, new Vec3 (0f), new Vec3 (0f), factor);
 		}
 	}
 }

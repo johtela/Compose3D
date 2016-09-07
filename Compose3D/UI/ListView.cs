@@ -16,17 +16,12 @@
 		private IVisualizable _pressed;
 		private IVisualizable _highlighted;
 
-		public ListView (Reaction<IVisualizable> itemClicked)
-		{
-			Items = new List<IVisualizable> ();
-			ItemClicked = itemClicked;
-			_mouseRegions = new MouseRegions<IVisualizable> ();
-		}
-
 		public ListView (Reaction<IVisualizable> itemClicked, 
-			IEnumerable<IVisualizable> items) : this (itemClicked)
+			IEnumerable<IVisualizable> items)
 		{
 			Items = items;
+			ItemClicked = itemClicked;
+			_mouseRegions = new MouseRegions<IVisualizable> ();
 		}
 
 		public ListView (Reaction<IVisualizable> itemClicked, params IVisualizable[] items) 
@@ -36,16 +31,19 @@
 		public override Visual ToVisual ()
 		{
 			_mouseRegions.Clear ();
-			return Visual.VStack (HAlign.Left, Items.Select (i =>
-			{
-				var visual = Visual.Clickable (i.ToVisual (), _mouseRegions.Add (i));
-				return i != _highlighted ? visual :
-					Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true),
-						new VisualStyle (VisualStyle.Default,
-							textBrush: Brushes.White,
-							brush: Brushes.DarkGray));
-			}));
-	}
+			var selectedStyle = new VisualStyle (VisualStyle.Default,
+				textBrush: Brushes.White,
+				brush: Brushes.DarkGray);
+			return Visual.VStack (HAlign.Left,
+				Items.Select (i =>
+				{
+					var visual = Visual.Clickable (i.ToVisual (), _mouseRegions.Add (i));
+					return i != _highlighted ?
+						visual :
+						Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true), selectedStyle);
+				}
+			));
+		}
 
 		public override void HandleInput (MouseDevice mouse, KeyboardDevice keyboard, 
 			PointF relativeMousePos)

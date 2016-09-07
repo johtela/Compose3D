@@ -1,13 +1,15 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using OpenTK.Graphics.OpenGL4;
 	using Geometry;
 	using Maths;
 	using Textures;
 	using Visuals;
 	using UI;
 	using System.Drawing;
+	using System.Linq;
+	using OpenTK;
 	using OpenTK.Input;
+	using OpenTK.Graphics.OpenGL4;
 
 	public class ControlPanel<V> : Panel<V>
 		where V : struct, IVertex, ITextured
@@ -40,6 +42,13 @@
 				_visual.UpdateBitmap (_bitmap);
 				Texture.UpdateBitmap (_bitmap, TextureTarget.Texture2D, 0);
 			}
+		}
+
+		public static void UpdateAll (SceneGraph sceneGraph, GameWindow window, Vec2i viewportSize)
+		{
+			var panels = sceneGraph.Root.Traverse ().OfType<ControlPanel<V>> ();
+			foreach (var panel in panels)
+				panel.UpdateControl (viewportSize, window.Mouse, window.Keyboard);
 		}
 	}
 }

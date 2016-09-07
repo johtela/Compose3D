@@ -94,7 +94,7 @@
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
 			var panelRender = Panels.Renderer (_sceneGraph)
-				.And (React.By<Vec2i> (UpdateControls))
+				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
 				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
@@ -151,13 +151,6 @@
 				_fpsCount = 0;
 				_fpsTime = 0.0;
 			}
-		}
-
-		private void UpdateControls (Vec2i viewportSize)
-		{
-			var panels = _sceneGraph.Root.Traverse ().OfType<ControlPanel<TexturedVertex>> ();
-			foreach (var panel in panels)
-				panel.UpdateControl (viewportSize, Mouse, Keyboard);
 		}
 
 		private Vec3 LookVec ()

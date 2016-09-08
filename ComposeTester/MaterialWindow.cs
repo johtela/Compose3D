@@ -61,14 +61,14 @@
 				select brick.Translate (c * size.X - offs, r * size.Y))
 				.Center ()
 				.ManipulateVertices (
-					Manipulators.JigglePosition<V> (maxDimensionError).Compose (
-						Manipulators.JiggleColor<V> (maxColorError))
+					Manipulators.JitterPosition<V> (maxDimensionError).Compose (
+						Manipulators.JitterColor<V> (maxColorError))
 					/*.Where (v => v.position.Z >= 0f)*/, true);
 			var bbox = bricks.BoundingBox;
 			var mortar = Quadrilateral<V>.Rectangle (bbox.Size.X, bbox.Size.Y)
 				.Translate (0f, 0f, bbox.Back)
 				.ColorInPlace (mortarColor)
-				.ManipulateVertices<V> (Manipulators.JiggleColor<V> (maxColorError), false);
+				.ManipulateVertices<V> (Manipulators.JitterColor<V> (maxColorError), false);
 			return Composite.Create (bricks, mortar)
 				.Smoothen (0.5f);
 		}

@@ -104,7 +104,7 @@
 			return Transform<V> (Mat.RotationZ<Mat4> (angle));
 		}
 
-		public static Manipulator<V> JigglePosition<V> (float range)
+		public static Manipulator<V> JitterPosition<V> (float range)
 			where V : struct, IVertex
 		{
 			return v => v.With (
@@ -112,7 +112,7 @@
 				v.normal);
 		}
 
-		public static Manipulator<V> JiggleColor<V> (float range)
+		public static Manipulator<V> JitterColor<V> (float range)
 			where V : struct, IVertex, IDiffuseColor<Vec3>
 		{
 			return v =>

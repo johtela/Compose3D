@@ -46,6 +46,7 @@
     <Compile Include="DataStructures\Aabb.cs" />
     <Compile Include="DataStructures\BoundingBoxTree.cs" />
     <Compile Include="DataStructures\IBoundingTree.cs" />
+    <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
     <Compile Include="Filters\GaussianFilter.cs" />

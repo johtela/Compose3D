@@ -29,7 +29,7 @@
 		private int _count;
 		private KdNode _root;
 
-		private KdNode ConstructTree (IEnumerable<KeyValuePair<V, T>> values, int depth)
+		private static KdNode ConstructTree (IEnumerable<KeyValuePair<V, T>> values, int depth)
 		{
 			KdNode tree = null;
 			foreach (var pair in values)
@@ -37,7 +37,7 @@
 			return tree;
 		}
 
-		private IEnumerable<KdNode> EnumerateTree (KdNode node)
+		private static IEnumerable<KdNode> EnumerateTree (KdNode node)
 		{
 			if (node == null)
 				yield break;
@@ -54,7 +54,7 @@
 			}
 		}
 
-		private KdNode FindNode (KdNode tree, V pos, int depth)
+		private static KdNode FindNode (KdNode tree, V pos, int depth)
 		{
 			if (tree == null)
 				return null;
@@ -64,7 +64,7 @@
 				pos, depth + 1);
 		}
 
-		private KdNode AddNode (KdNode tree, KdNode node, int depth)
+		private static KdNode AddNode (KdNode tree, KdNode node, int depth)
 		{
 			if (tree != null)
 				return node;
@@ -76,7 +76,7 @@
 			return tree;
 		}
 
-		private KdNode RemoveNode (KdNode tree, V pos, int depth, out KdNode removed)
+		private static KdNode RemoveNode (KdNode tree, V pos, int depth, out KdNode removed)
 		{
 			if (tree == null)
 			{
@@ -99,9 +99,46 @@
 			return tree;
 		}
 
-		private void KeyNotFound ()
+		private static IEnumerable<KdNode> OverlappingNodes (KdNode tree, Aabb<V> bbox, int depth)
 		{
+			if (tree == null)
+				yield break;
+			var k = depth % tree.Position.Dimensions;
+			if (bbox.Min[k] < tree.Position[k])
+				foreach (var node in OverlappingNodes (tree.Left, bbox, depth + 1))
+					yield return node;
+			if (bbox.Max[k] >= tree.Position[k])
+				foreach (var node in OverlappingNodes (tree.Right, bbox, depth + 1))
+					yield return node;
+		}
 
+		private static KdNode NearestNeighbour (KdNode tree, V pos, Aabb<V> bounds, int depth, KdNode best,
+			Func<V, V, float> distance)
+		{
+			if (tree != null)
+			{
+				var k = depth % tree.Position.Dimensions;
+				var split = tree.Position[k];
+				var leftBounds = new Aabb<V> (bounds.Min, bounds.Max.With (k, split));
+				var rightBounds = new Aabb<V> (bounds.Min.With (k, split), bounds.Max);
+				if (pos[k] < split)
+				{
+					best = NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance);
+					if (best == null || distance (tree.Position, pos) < distance (best.Position, tree.Position))
+						best = tree;
+					if (rightBounds.Corners.Any (c => distance (c, pos) < distance (best.Position, tree.Position)))
+						best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+				}
+				else
+				{
+					best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+					if (best == null || distance (tree.Position, pos) < distance (best.Position, tree.Position))
+						best = tree;
+					if (rightBounds.Corners.Any (c => distance (c, pos) < distance (best.Position, tree.Position)))
+						best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+				}
+			}
+			return best;
 		}
 
 		public void Add (V pos, T data)
@@ -136,9 +173,19 @@
 				throw new KeyNotFoundException ("Given position is not in the tree.");
 		}
 
-		IEnumerable<KeyValuePair<V, T>> Overlap (V rect)
+		IEnumerable<KeyValuePair<V, T>> Overlap (Aabb<V> bbox)
 		{
-			throw new NotImplementedException ();
+			return OverlappingNodes (_root, bbox, 0)
+				.Select (node => new KeyValuePair<V, T> (node.Position, node.Data));
+		}
+
+		KeyValuePair<V, T> NearestNeighbour (V pos, Func<V, V, float> distance)
+		{
+			var bounds = new Aabb<V> (
+				Vec.New<V, float> (float.NegativeInfinity),
+				Vec.New<V, float> (float.PositiveInfinity));
+			var best = NearestNeighbour (_root, pos, bounds, 0, null, distance);
+			return new KeyValuePair<V, T> (best.Position, best.Data);
 		}
 
 		int Count

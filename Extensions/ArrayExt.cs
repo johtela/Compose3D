@@ -149,5 +149,14 @@
 			}
 			return res;
 		}
+
+		public static void Insert<T> (this T[] array, T item, int index)
+		{
+			if (index < 0 || index >= array.Length)
+				throw new ArgumentOutOfRangeException ("index");
+			for (int i = index + 1; i < array.Length; i++)
+				array[i] = array[i - 1];
+			array[index] = item;
+		}
 	}
 }

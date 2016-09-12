@@ -134,6 +134,16 @@
             return res;
         }
 
+		public static V New<V, T> (T value)
+			where V : struct, IVec<V, T>
+			where T : struct, IEquatable<T>
+		{
+			var res = default (V);
+			for (int i = 0; i < res.Dimensions; i++)
+				res[i] = value;
+			return res;
+		}
+
 		/// <summary>
 		/// Convert a vector type to another vector type that has the same component type.
 		/// </summary>
@@ -212,6 +222,18 @@
 			var f = 0f;
 			for (int i = 0; i < steps; i++, f += step)
 				yield return from.Mix (to, f);
+		}
+
+		public static float DistanceTo<V> (this V from, V to)
+			where V : struct, IVec<V, float>
+		{
+			return to.Subtract (from).Length;
+		}
+
+		public static float SquaredDistanceTo<V> (this V from, V to)
+			where V : struct, IVec<V, float>
+		{
+			return to.Subtract (from).LengthSquared;
 		}
 
 		/// <summary>

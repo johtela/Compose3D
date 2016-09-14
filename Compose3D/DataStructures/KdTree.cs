@@ -29,12 +29,27 @@
 		private int _count;
 		private KdNode _root;
 
-		private static KdNode ConstructTree (IEnumerable<KeyValuePair<V, T>> values, int depth)
+		public KdTree () { }
+
+		public KdTree (IEnumerable<KeyValuePair<V, T>> values)
+		{
+			var t = ConstructTree (values, 0);
+			_root = t.Item1;
+			_count = t.Item2;
+		}
+
+		private static Tuple<KdNode, int> ConstructTree (IEnumerable<KeyValuePair<V, T>> values, int depth)
 		{
 			KdNode tree = null;
+			var count = 0;
 			foreach (var pair in values)
-				tree = AddNode (tree, new KdNode (pair.Key, pair.Value), depth);
-			return tree;
+			{
+				bool added = false;
+				tree = AddNode (tree, new KdNode (pair.Key, pair.Value), depth, ref added);
+				if (added)
+					count++;
+			}
+			return Tuple.Create (tree, count);
 		}
 
 		private static IEnumerable<KdNode> EnumerateTree (KdNode node)
@@ -58,21 +73,29 @@
 		{
 			if (tree == null)
 				return null;
+			if (tree.Position.Equals (pos))
+				return tree;
 			var k = depth % pos.Dimensions;
 			return FindNode (
 				pos[k] < tree.Position[k] ? tree.Left : tree.Right, 
 				pos, depth + 1);
 		}
 
-		private static KdNode AddNode (KdNode tree, KdNode node, int depth)
+		private static KdNode AddNode (KdNode tree, KdNode node, int depth, ref bool added)
 		{
-			if (tree != null)
+			if (tree == null)
+			{
+				added = true;
 				return node;
-			var k = depth % node.Position.Dimensions;
-			if (node.Position[k] < tree.Position[k])
-				tree.Left = AddNode (tree.Left, node, depth + 1);
-			else
-				tree.Right = AddNode (tree.Right, node, depth + 1);
+			}
+			if (!tree.Position.Equals (node.Position))
+			{
+				var k = depth % node.Position.Dimensions;
+				if (node.Position[k] < tree.Position[k])
+					tree.Left = AddNode (tree.Left, node, depth + 1, ref added);
+				else
+					tree.Right = AddNode (tree.Right, node, depth + 1, ref added);
+			}
 			return tree;
 		}
 
@@ -89,7 +112,7 @@
 				return ConstructTree (
 					EnumerateTree (tree).Skip (1).Select (
 						node => new KeyValuePair<V, T> (node.Position, node.Data)),
-					depth);
+					depth).Item1;
 			}
 			var k = depth % pos.Dimensions;
 			if (pos[k] < tree.Position[k])
@@ -103,6 +126,8 @@
 		{
 			if (tree == null)
 				yield break;
+			if (bbox & tree.Position)
+				yield return tree;
 			var k = depth % tree.Position.Dimensions;
 			if (bbox.Min[k] < tree.Position[k])
 				foreach (var node in OverlappingNodes (tree.Left, bbox, depth + 1))
@@ -141,10 +166,19 @@
 			return best;
 		}
 
+		public bool TryAdd (V pos, T data)
+		{
+			bool added = false;
+			_root = AddNode (_root, new KdNode (pos, data), 0, ref added);
+			if (added)
+				_count++;
+			return added;
+		}
+
 		public void Add (V pos, T data)
 		{
-			_root = AddNode (_root, new KdNode (pos, data), 0);
-			_count++;
+			if (!TryAdd (pos, data))
+				throw new InvalidOperationException ("Attempt to add duplicate position to the tree.");
 		}
 
 		public bool TryRemove (V pos, out T value)
@@ -173,7 +207,27 @@
 				throw new KeyNotFoundException ("Given position is not in the tree.");
 		}
 
-		IEnumerable<KeyValuePair<V, T>> Overlap (Aabb<V> bbox)
+		public bool TryFind (V position, out T value)
+		{
+			var node = FindNode (_root, position, 0);
+			if (node != null)
+			{
+				value = node.Data;
+				return true;
+			}
+			else
+			{
+				value = default (T);
+				return false;
+			}
+		}
+
+		public bool Contains (V position)
+		{
+			return FindNode (_root, position, 0) != null;
+		}
+
+		public IEnumerable<KeyValuePair<V, T>> Overlap (Aabb<V> bbox)
 		{
 			return OverlappingNodes (_root, bbox, 0)
 				.Select (node => new KeyValuePair<V, T> (node.Position, node.Data));
@@ -188,7 +242,7 @@
 			return new KeyValuePair<V, T> (best.Position, best.Data);
 		}
 
-		int Count
+		public int Count
 		{
 			get { return _count; }
 		}
@@ -203,6 +257,12 @@
 				else
 					throw new KeyNotFoundException ("Given position is not in the tree.");
 			}
+		}
+
+		public override string ToString ()
+		{
+			return _root == null ? "[ ]" :
+				"[ " + this.Select (pair => pair.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
 		}
 
 		#region IEnumerable implementation

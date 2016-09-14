@@ -35,12 +35,12 @@
 		{
 			var prop =
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
-				select new { it };
+				select it;
 
-			prop.Label ("Check tree invariants").Check (p => p.it.CheckInvariants ());
-			prop.Label ("Count is correct").Check (p => p.it.Count == p.it.Count ());
+			prop.Label ("Check tree invariants").Check (it => it.CheckInvariants ());
+			prop.Label ("Count is correct").Check (it => it.Count == it.Count ());
 			prop.Label ("At least one overlap").Check (
-				p => (p.it.Count > 0).Implies (!p.it.Overlap (0f, 100f).IsEmpty ()));
+				it => (it.Count > 0).Implies (!it.Overlap (0f, 100f).IsEmpty ()));
 		}
 
 		[Test]

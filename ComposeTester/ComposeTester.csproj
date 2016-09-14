@@ -37,6 +37,7 @@
     <Compile Include="MaterialWindow.cs" />
     <Compile Include="Tests\BoundingTreeTests.cs" />
     <Compile Include="Tests\IntervalTreeTests.cs" />
+    <Compile Include="Tests\KdTreeTests.cs" />
     <Compile Include="Tests\MatTests.cs" />
     <Compile Include="Tests\PerformanceTests.cs" />
     <Compile Include="Tests\SceneTests.cs" />

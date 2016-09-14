@@ -12,30 +12,10 @@
 
 	class KdTreeTests
 	{
-		static KdTreeTests ()
-		{
-			Arbitrary.Register (ArbitraryKeyValuePair<Vec2, int> ());
-			Arbitrary.Register (ArbitraryKeyValuePair<Vec3, float> ());
-			Arbitrary.Register (ArbitraryKeyValuePair<Vec4, double> ());
-		}
-
-		public static Arbitrary<KeyValuePair<K, V>> ArbitraryKeyValuePair<K, V> ()
-		{
-			var arbKey = Arbitrary.Get<K> ();
-			var arbValue = Arbitrary.Get<V> ();
-			return new Arbitrary<KeyValuePair<K, V>> (
-				from key in arbKey.Generate
-				from value in arbValue.Generate
-				select new KeyValuePair<K, V> (key, value),
-				pair =>
-					from key in arbKey.Shrink (pair.Key)
-					select new KeyValuePair<K, V> (key, pair.Value));
-		}
-
 		public static Arbitrary<KdTree<V, T>> ArbitraryKdTree<V, T> ()
 			where V : struct, IVec<V, float>
 		{
-			var arb = ArbitraryKeyValuePair<V, T> ();
+			var arb = Arbitrary.Get <KeyValuePair<V, T>> ();
 			return new Arbitrary<KdTree<V, T>> (
 				from pairs in arb.Generate.EnumerableOf ()
 				select new KdTree<V, T> (pairs),
@@ -136,6 +116,20 @@
 				p.overlapping.Count () >= 2);
 		}
 
+		public void CheckNearestNeighbour<V, T> (Func<V, V, float> distance)
+			where V : struct, IVec<V, float>
+		{
+			var prop =
+				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
+				from pos in Prop.ForAll (Arbitrary.Get<V> ())
+				let nearest = tree.NearestNeighbour (pos, distance)
+				let dist = distance (nearest.Key, pos)
+				select new { tree, pos, nearest, dist };
+
+			prop.Label ("Nearest is the nearest").Check (p => 
+				p.tree.Count == 0 || p.tree.All (pair => p.dist <= distance (pair.Key, p.pos)));
+		}
+
 		[Test]
 		public void TestConstructionAndCount ()
 		{
@@ -177,6 +171,14 @@
 			CheckOverlap<Vec2, int> ();
 			CheckOverlap<Vec3, float> ();
 			CheckOverlap<Vec4, double> ();
+		}
+
+		[Test]
+		public void TestNearestNeigbour ()
+		{
+			CheckNearestNeighbour<Vec2, int> (Vec.SquaredDistanceTo<Vec2>);
+			CheckNearestNeighbour<Vec3, float> (Vec.SquaredDistanceTo<Vec3>);
+			CheckNearestNeighbour<Vec4, double> (Vec.SquaredDistanceTo<Vec4>);
 		}
 	}
 }

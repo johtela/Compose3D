@@ -143,25 +143,25 @@
 			if (tree != null)
 			{
 				var k = depth % tree.Position.Dimensions;
-				var split = tree.Position[k];
+				var split = tree.Position [k];
 				var leftBounds = new Aabb<V> (bounds.Min, bounds.Max.With (k, split));
 				var rightBounds = new Aabb<V> (bounds.Min.With (k, split), bounds.Max);
-				if (pos[k] < split)
+				best = pos [k] < split ?
+					NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance) :
+					NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+				var bestDist = best == null ? 
+					float.PositiveInfinity :
+					distance (best.Position, pos);
+				var currDist = distance (tree.Position, pos);
+				if (currDist < bestDist)
 				{
-					best = NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance);
-					if (best == null || distance (tree.Position, pos) < distance (best.Position, tree.Position))
-						best = tree;
-					if (rightBounds.Corners.Any (c => distance (c, pos) < distance (best.Position, tree.Position)))
-						best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+					best = tree;
+					bestDist = currDist;
 				}
-				else
-				{
+				if (pos [k] < split /*&& rightBounds.Corners.Any (c => distance (c, pos) < bestDist)*/)
 					best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
-					if (best == null || distance (tree.Position, pos) < distance (best.Position, tree.Position))
-						best = tree;
-					if (rightBounds.Corners.Any (c => distance (c, pos) < distance (best.Position, tree.Position)))
-						best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
-				}
+				if (pos [k] >= split /*&& leftBounds.Corners.Any (c => distance (c, pos) < bestDist)*/)
+					best = NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance);
 			}
 			return best;
 		}
@@ -233,13 +233,15 @@
 				.Select (node => new KeyValuePair<V, T> (node.Position, node.Data));
 		}
 
-		KeyValuePair<V, T> NearestNeighbour (V pos, Func<V, V, float> distance)
+		public KeyValuePair<V, T> NearestNeighbour (V pos, Func<V, V, float> distance)
 		{
 			var bounds = new Aabb<V> (
 				Vec.New<V, float> (float.NegativeInfinity),
 				Vec.New<V, float> (float.PositiveInfinity));
 			var best = NearestNeighbour (_root, pos, bounds, 0, null, distance);
-			return new KeyValuePair<V, T> (best.Position, best.Data);
+			return best != null ? 
+				new KeyValuePair<V, T> (best.Position, best.Data) :
+				new KeyValuePair<V,T> ();
 		}
 
 		public int Count

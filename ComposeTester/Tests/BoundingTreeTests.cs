@@ -14,35 +14,48 @@
 		static BoundingTreeTests ()
 		{
 			VecTests.Use ();
-			Arbitrary.Register (new Arbitrary<Aabb<Vec2>> (GenAabb<Vec2> ()));
-			Arbitrary.Register (new Arbitrary<Aabb<Vec3>> (GenAabb<Vec3> ()));
-			Arbitrary.Register (new Arbitrary<KeyValuePair<Aabb<Vec2>, int>> (GenPair<Vec2, int> ()));
-			Arbitrary.Register (new Arbitrary<KeyValuePair<Aabb<Vec3>, float>> (GenPair<Vec3, float> ()));
+			Arbitrary.Register (ArbitraryAabb<Vec2> ());
+			Arbitrary.Register (ArbitraryAabb<Vec3> ());
+			Arbitrary.Register (ArbitraryAabb<Vec4> ());
+			Arbitrary.Register (ArbitraryKeyValuePair<Vec2, int> ());
+			Arbitrary.Register (ArbitraryKeyValuePair<Vec3, float> ());
+			Arbitrary.Register (ArbitraryKeyValuePair<Vec4, double> ());
 		}
 
-		public static Gen<Aabb<V>> GenAabb<V> ()
+		public static Arbitrary<Aabb<V>> ArbitraryAabb<V> ()
 			where V : struct, IVec<V, float>
 		{
 			var arb = Arbitrary.Get<V> ();
-			return from low in arb.Generate
-				   let high = low.Multiply (2f)
-				   select new Aabb<V> (low, high);
+			return new Arbitrary<Aabb<V>> (
+				from pos1 in arb.Generate
+				from pos2 in arb.Generate
+				select new Aabb<V> (pos1, pos2),
+				bbox =>
+				from min in arb.Shrink (bbox.Min)
+				from max in arb.Shrink (bbox.Max)
+				select new Aabb<V> (min, max));
 		}
 
-		public static Gen<KeyValuePair<Aabb<V>, T>> GenPair<V, T> ()
-			where V : struct, IVec<V, float>
+		public static Arbitrary<KeyValuePair<K, V>> ArbitraryKeyValuePair<K, V> ()
 		{
-			return from box in GenAabb<V> ()
-				   from value in Arbitrary.Gen<T> ()
-				   select new KeyValuePair<Aabb<V>, T> (box, value);
+			var arbKey = Arbitrary.Get<K> ();
+			var arbValue = Arbitrary.Get<V> ();
+			return new Arbitrary<KeyValuePair<K, V>> (
+				from key in arbKey.Generate
+				from value in arbValue.Generate
+				select new KeyValuePair<K, V> (key, value),
+				pair =>
+				from key in arbKey.Shrink (pair.Key)
+				select new KeyValuePair<K, V> (key, pair.Value));
 		}
 
 		public static Arbitrary<B> ArbitraryBoundingTree<B, V, T> ()
 			where B : IBoundingTree<V, T>, new ()
 			where V : struct, IVec<V, float>
 		{
+			var arb = ArbitraryKeyValuePair<Aabb<V>, T> ();
 			return new Arbitrary<B> (
-				from pairs in GenPair<V, T> ().EnumerableOf ()
+				from pairs in arb.Generate.EnumerableOf ()
 				select BoundingTree.FromEnumerable<B, V, T> (pairs),
 				bt => from pairs in bt.ShrinkEnumerable ()
 					  select BoundingTree.FromEnumerable<B, V, T> (pairs));

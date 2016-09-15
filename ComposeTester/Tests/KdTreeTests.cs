@@ -122,12 +122,25 @@
 			var prop =
 				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
 				from pos in Prop.ForAll (Arbitrary.Get<V> ())
-				let nearest = tree.NearestNeighbour (pos, distance)
-				let dist = distance (nearest.Key, pos)
-				select new { tree, pos, nearest, dist };
+				from num in Prop.ForAll (Gen.Choose (1, 4))
+				let nearest = tree.NearestNeighbours (pos, num, distance).AsPrintable ()
+				let lastBest = nearest.IsEmpty () ?
+					float.PositiveInfinity :
+					distance (nearest.Last ().Key, pos)
+				select new { tree, pos, num, nearest, lastBest };
 
-			prop.Label ("Nearest is the nearest: {0}, {1}", typeof(V).Name, distDesc)
-				.Check (p => p.tree.Count == 0 || p.tree.All (pair => p.dist <= distance (pair.Key, p.pos)));
+			prop.Label ("Not neighbours have longer distance: {0}, {1}", typeof(V).Name, distDesc)
+				.Check (p => p.tree.Count == 0 || p.tree.All (pair => 
+				p.nearest.Contains (pair) || p.lastBest  <= distance (pair.Key, p.pos)));
+			prop.Label ("Neighbours in right order: {0}, {1}", typeof (V).Name, distDesc)
+				.Check (p => p.nearest.Zip (p.nearest.Skip (1),
+					(p1, p2) => distance (p1.Key, p.pos) <= distance (p2.Key, p.pos))
+					.All (Fun.Identity));
+			prop.Label ("Visualize").Check (p =>
+			{
+				TestProgram.VConsole.ShowVisual (p.tree.ToVisual ());
+				return true;
+			});
 		}
 
 		[Test]

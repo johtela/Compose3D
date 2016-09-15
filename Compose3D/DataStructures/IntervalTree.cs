@@ -335,7 +335,7 @@
 		private Visual TreeVisual (Interval<N, T> interval, Visual parent)
 		{
 			if (interval == null)
-				return Visual.Margin (NodeVisual ("-", Color.Black, parent), right: 4, bottom: 4);
+				return Visual.Margin (NodeVisual ("-", Color.DarkGray, parent), right: 4, bottom: 4);
 			var node = NodeVisual (interval.ToString (), interval._isRed ? Color.Red : Color.Black, parent);
 			return Visual.VStack (HAlign.Center, Visual.Margin (node, right: 4, bottom: 20),
 				Visual.HStack (VAlign.Top, TreeVisual (interval._left, node), TreeVisual (interval._right, node)));

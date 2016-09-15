@@ -150,13 +150,25 @@
 			return res;
 		}
 
-		public static void Insert<T> (this T[] array, T item, int index)
+		public static T[] Insert<T> (this T[] array, T item, int index)
 		{
 			if (index < 0 || index >= array.Length)
 				throw new ArgumentOutOfRangeException ("index");
-			for (int i = index + 1; i < array.Length; i++)
-				array[i] = array[i - 1];
-			array[index] = item;
+			var result = new T[array.Length];
+			for (int i = 0; i < array.Length; i++)
+				result[i] = 
+					i < index ? array[i] :
+					i == index ? item :	
+					array[i - 1];
+			return result;
+		}
+
+		public static int LastIndex<T> (this T[] array, Func<T, bool> predicate)
+		{
+			for (int i = array.Length - 1; i >= 0; i--)
+				if (predicate (array[i]))
+					return i;
+			return -1;
 		}
 	}
 }

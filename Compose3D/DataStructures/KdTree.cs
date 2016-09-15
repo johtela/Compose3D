@@ -9,7 +9,7 @@
 	using Extensions;
 	using Maths;
 
-	public class KdTree<V, T> : IEnumerable<KeyValuePair<V, T>>
+	public class KdTree<V, T> : IEnumerable<KeyValuePair<V, T>>, IVisualizable
 		where V : struct, IVec<V, float>
 	{
 		private class KdNode
@@ -23,6 +23,11 @@
 			{
 				Position = position;
 				Data = data;
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0} => {1}", Position, Data);
 			}
 		}
 
@@ -137,7 +142,7 @@
 					yield return node;
 		}
 
-		private static KdNode NearestNeighbour (KdNode tree, V pos, Aabb<V> bounds, int depth, KdNode best,
+		private static KdNode[] NearestNeighbours (KdNode tree, V pos, Aabb<V> bounds, int depth, KdNode[] bests,
 			Func<V, V, float> distance)
 		{
 			if (tree != null)
@@ -146,24 +151,31 @@
 				var split = tree.Position [k];
 				var leftBounds = new Aabb<V> (bounds.Min, bounds.Max.With (k, split));
 				var rightBounds = new Aabb<V> (bounds.Min.With (k, split), bounds.Max);
-				best = pos [k] < split ?
-					NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance) :
-					NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
-				var bestDist = best == null ? 
-					float.PositiveInfinity :
-					distance (best.Position, pos);
+				bests = pos [k] < split ?
+					NearestNeighbours (tree.Left, pos, leftBounds, depth + 1, bests, distance) :
+					NearestNeighbours (tree.Right, pos, rightBounds, depth + 1, bests, distance);
 				var currDist = distance (tree.Position, pos);
+				var bestDist = LastBestDistance (bests, pos, distance);
 				if (currDist < bestDist)
 				{
-					best = tree;
-					bestDist = currDist;
+					var i = bests.LastIndex (n => n != null && distance (n.Position, pos) < currDist) + 1;
+					bests = bests.Insert (tree, i);
+					bestDist = LastBestDistance (bests, pos, distance);
 				}
 				if (pos [k] < split && DistanceToBBox (pos, rightBounds, distance) < bestDist)
-					best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
+					bests = NearestNeighbours (tree.Right, pos, rightBounds, depth + 1, bests, distance);
 				if (pos [k] >= split && DistanceToBBox (pos, leftBounds, distance) < bestDist)
-					best = NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance);
+					bests = NearestNeighbours (tree.Left, pos, leftBounds, depth + 1, bests, distance);
 			}
-			return best;
+			return bests;
+		}
+
+		private static float LastBestDistance (KdNode[] bests, V pos, Func<V, V, float> distance)
+		{
+			var lastBest = bests[bests.Length - 1];
+			return lastBest == null ?
+				float.PositiveInfinity :
+				distance (lastBest.Position, pos);
 		}
 
 		private static float DistanceToBBox (V pos, Aabb<V> bbox, Func<V, V, float> distance)
@@ -238,15 +250,15 @@
 				.Select (node => new KeyValuePair<V, T> (node.Position, node.Data));
 		}
 
-		public KeyValuePair<V, T> NearestNeighbour (V pos, Func<V, V, float> distance)
+		public IEnumerable<KeyValuePair<V, T>> NearestNeighbours (V pos, int numNeighbours, 
+			Func<V, V, float> distance)
 		{
 			var bounds = new Aabb<V> (
 				Vec.New<V, float> (float.NegativeInfinity),
 				Vec.New<V, float> (float.PositiveInfinity));
-			var best = NearestNeighbour (_root, pos, bounds, 0, null, distance);
-			return best != null ? 
-				new KeyValuePair<V, T> (best.Position, best.Data) :
-				new KeyValuePair<V,T> ();
+			return NearestNeighbours (_root, pos, bounds, 0, new KdNode[numNeighbours], distance)
+				.TakeWhile (n => n != null)
+				.Select (n => new KeyValuePair<V, T> (n.Position, n.Data));
 		}
 
 		public int Count
@@ -284,6 +296,35 @@
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
+		}
+
+		#endregion
+
+		#region IVisualizable implementation
+
+		private Visual NodeVisual (string text, Color color, Visual parent)
+		{
+			var node = Visual.Frame (Visual.Margin (Visual.Label (text), 2, 2, 2, 2), FrameKind.RoundRectangle);
+			return Visual.Anchor (
+				parent == null ?
+					node :
+					Visual.Styled (Visual.Connector (node, parent, HAlign.Center, VAlign.Top),
+						new VisualStyle (pen: new Pen (color, 1))),
+				HAlign.Center, VAlign.Bottom);
+		}
+
+		private Visual TreeVisual (KdNode tree, Visual parent)
+		{
+			if (tree == null)
+				return Visual.Margin (NodeVisual ("-", Color.DarkGray, parent), right: 4, bottom: 4);
+			var node = NodeVisual (tree.ToString (), Color.Black, parent);
+			return Visual.VStack (HAlign.Center, Visual.Margin (node, right: 4, bottom: 20),
+				Visual.HStack (VAlign.Top, TreeVisual (tree.Left, node), TreeVisual (tree.Right, node)));
+		}
+
+		public Visual ToVisual ()
+		{
+			return TreeVisual (_root, null);
 		}
 
 		#endregion

@@ -116,7 +116,7 @@
 				p.overlapping.Count () >= 2);
 		}
 
-		public void CheckNearestNeighbour<V, T> (Func<V, V, float> distance)
+		public void CheckNearestNeighbour<V, T> (Func<V, V, float> distance, string distDesc)
 			where V : struct, IVec<V, float>
 		{
 			var prop =
@@ -126,8 +126,8 @@
 				let dist = distance (nearest.Key, pos)
 				select new { tree, pos, nearest, dist };
 
-			prop.Label ("Nearest is the nearest").Check (p => 
-				p.tree.Count == 0 || p.tree.All (pair => p.dist <= distance (pair.Key, p.pos)));
+			prop.Label ("Nearest is the nearest: {0}, {1}", typeof(V).Name, distDesc)
+				.Check (p => p.tree.Count == 0 || p.tree.All (pair => p.dist <= distance (pair.Key, p.pos)));
 		}
 
 		[Test]
@@ -176,9 +176,12 @@
 		[Test]
 		public void TestNearestNeigbour ()
 		{
-			CheckNearestNeighbour<Vec2, int> (Vec.SquaredDistanceTo<Vec2>);
-			CheckNearestNeighbour<Vec3, float> (Vec.SquaredDistanceTo<Vec3>);
-			CheckNearestNeighbour<Vec4, double> (Vec.SquaredDistanceTo<Vec4>);
+			CheckNearestNeighbour<Vec2, int> (Vec.SquaredDistanceTo<Vec2>, "euclidean");
+			CheckNearestNeighbour<Vec3, float> (Vec.SquaredDistanceTo<Vec3>, "euclidean");
+			CheckNearestNeighbour<Vec4, double> (Vec.SquaredDistanceTo<Vec4>, "euclidean");
+			CheckNearestNeighbour<Vec2, int> (Vec.ManhattanDistanceTo<Vec2>, "manhattan");
+			CheckNearestNeighbour<Vec3, float> (Vec.ManhattanDistanceTo<Vec3>, "manhattan");
+			CheckNearestNeighbour<Vec4, double> (Vec.ManhattanDistanceTo<Vec4>, "manhattan");
 		}
 	}
 }

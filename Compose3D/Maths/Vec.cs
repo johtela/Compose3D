@@ -236,6 +236,12 @@
 			return to.Subtract (from).LengthSquared;
 		}
 
+		public static float ManhattanDistanceTo<V> (this V from, V to)
+			where V : struct, IVec<V, float>
+		{
+			return to.Subtract (from).Abs ().Sum ();
+		}
+
 		/// <summary>
 		/// Map the components of the vector to another vector of the same type.
 		/// </summary>

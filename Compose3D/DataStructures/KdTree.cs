@@ -158,12 +158,17 @@
 					best = tree;
 					bestDist = currDist;
 				}
-				if (pos [k] < split /*&& rightBounds.Corners.Any (c => distance (c, pos) < bestDist)*/)
+				if (pos [k] < split && DistanceToBBox (pos, rightBounds, distance) < bestDist)
 					best = NearestNeighbour (tree.Right, pos, rightBounds, depth + 1, best, distance);
-				if (pos [k] >= split /*&& leftBounds.Corners.Any (c => distance (c, pos) < bestDist)*/)
+				if (pos [k] >= split && DistanceToBBox (pos, leftBounds, distance) < bestDist)
 					best = NearestNeighbour (tree.Left, pos, leftBounds, depth + 1, best, distance);
 			}
 			return best;
+		}
+
+		private static float DistanceToBBox (V pos, Aabb<V> bbox, Func<V, V, float> distance)
+		{
+			return distance (pos, pos.Clamp (bbox.Min, bbox.Max));
 		}
 
 		public bool TryAdd (V pos, T data)

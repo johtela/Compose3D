@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Filters
+﻿namespace Compose3D.Imaging
 {
 	using System.Linq;
 	using Extensions;

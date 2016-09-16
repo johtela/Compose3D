@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Filters
+﻿namespace Compose3D.Imaging
 {
 	using System;
 	using System.Collections.Generic;

@@ -257,6 +257,18 @@
 			return res;
 		}
 
+		public static U Map<V, U, T, S> (this V vec, Func<T, S> map)
+			where V : struct, IVec<V, T>
+			where U : struct, IVec<U, S>
+			where T : struct, IEquatable<T>
+			where S : struct, IEquatable<S>
+		{
+			var res = default (U);
+			for (int i = 0; i < vec.Dimensions; i++)
+				res[i] = map (vec[i]);
+			return res;
+		}
+
 		/// <summary>
 		/// Map the components of two vectors to another vector of the same type.
 		/// </summary>
@@ -394,6 +406,17 @@
 			where V : struct, IVec<V, float>
 		{
 			return vec.Map<V, float> (GLMath.Floor);
+		}
+
+		/// <summary>
+		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
+		/// </summary>
+		[GLFunction ("floor ({0})")]
+		public static U Floor<V, U> (this V vec)
+			where V : struct, IVec<V, float>
+			where U : struct, IVec<U, int>
+		{
+			return vec.Map<V, U, float, int> (x => (int)GLMath.Floor (x));
 		}
 
 		/// <summary>

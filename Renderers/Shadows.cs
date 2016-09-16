@@ -4,7 +4,7 @@
 	using System.Linq;
 	using Extensions;
 	using Compose3D.GLTypes;
-	using Compose3D.Filters;
+	using Compose3D.Imaging;
 	using Compose3D.Maths;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;

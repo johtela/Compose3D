@@ -49,7 +49,8 @@
     <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
-    <Compile Include="Filters\GaussianFilter.cs" />
+    <Compile Include="Imaging\GaussianFilter.cs" />
+    <Compile Include="Imaging\Signal.cs" />
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Compacted.cs" />
     <Compile Include="Geometry\Edge.cs" />
@@ -62,6 +63,7 @@
       <DependentUpon>MatTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Maths\Noise.cs" />
+    <Compile Include="Maths\PerlinNoise.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
@@ -103,7 +105,7 @@
     <Compile Include="Shaders\GeometryShaders.cs" />
     <Compile Include="Shaders\Lighting.cs" />
     <Compile Include="Shaders\ShadowShaders.cs" />
-    <Compile Include="Filters\TextureFilter.cs" />
+    <Compile Include="Imaging\TextureFilter.cs" />
     <Compile Include="Shaders\VertexShaders.cs" />
     <Compile Include="Textures\ITextured.cs" />
     <Compile Include="Textures\Samper1DArray.cs">

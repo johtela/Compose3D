@@ -39,6 +39,11 @@
 			return x => combine (signal (x), other (x));
 		}
 
+		public static Signal<T, V> To<T, U, V> (this Signal<T, U> signal, Signal<U, V> other)
+		{
+			return x => other (signal (x));
+		}
+
 		public static Signal<float, float> Sin ()
 		{
 			return GLMath.Sin;

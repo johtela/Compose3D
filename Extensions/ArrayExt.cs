@@ -162,13 +162,5 @@
 					array[i - 1];
 			return result;
 		}
-
-		public static int LastIndex<T> (this T[] array, Func<T, bool> predicate)
-		{
-			for (int i = array.Length - 1; i >= 0; i--)
-				if (predicate (array[i]))
-					return i;
-			return -1;
-		}
 	}
 }

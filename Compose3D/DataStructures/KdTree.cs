@@ -154,11 +154,11 @@
 				bests = pos [k] < split ?
 					NearestNeighbours (tree.Left, pos, leftBounds, depth + 1, bests, distance) :
 					NearestNeighbours (tree.Right, pos, rightBounds, depth + 1, bests, distance);
-				var currDist = distance (tree.Position, pos);
+				var currDist = distance (tree.Position, pos);	
 				var bestDist = LastBestDistance (bests, pos, distance);
 				if (currDist < bestDist)
 				{
-					var i = bests.LastIndex (n => n != null && distance (n.Position, pos) < currDist) + 1;
+					var i = Array.FindLastIndex (bests, n => n != null && distance (n.Position, pos) < currDist) + 1;
 					bests = bests.Insert (tree, i);
 					bestDist = LastBestDistance (bests, pos, distance);
 				}

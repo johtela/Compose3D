@@ -69,7 +69,7 @@
 					   let pairs = bt.ToArray ()
 					   select new { bt, pairs };
 
-			prop.Label ("{0}: All items are present", typeof (B)).Check (
+			prop.Label ("{0}: All items are present", typeof (B).Name).Check (
 				p => p.pairs.All (pair => p.bt.Overlap (pair.Key).Contains (pair)));
 		}
 
@@ -84,8 +84,8 @@
 					   let _ = Fun.ToExpression (() => bt.Add (box, value), 0)
 					   select new { bt, cnt, box, value };
 
-			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => p.bt.Count == p.cnt + 1 && p.bt.Count () == p.bt.Count);
-			prop.Label ("{0}: Item was added", typeof (B)).Check (p => p.bt.Overlap (p.box).Any (
+			prop.Label ("{0}: Count is correct", typeof (B).Name).Check (p => p.bt.Count == p.cnt + 1 && p.bt.Count () == p.bt.Count);
+			prop.Label ("{0}: Item was added", typeof (B).Name).Check (p => p.bt.Overlap (p.box).Any (
 				kv => kv.Key.Equals (p.box) && kv.Value.Equals (p.value)));
 		}
 
@@ -101,8 +101,8 @@
 					   let _ = Fun.ToExpression (() => bt.Remove (rem.Key, rem.Value), 0)
 					   select new { bt, cnt, rem };
 
-			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => p.bt.Count == p.cnt - 1 && p.bt.Count () == p.bt.Count);
-			prop.Label ("{0}: Item was removed", typeof (B)).Check (p => p.bt.Overlap (p.rem.Key).All (
+			prop.Label ("{0}: Count is correct", typeof (B).Name).Check (p => p.bt.Count == p.cnt - 1 && p.bt.Count () == p.bt.Count);
+			prop.Label ("{0}: Item was removed", typeof (B).Name).Check (p => p.bt.Overlap (p.rem.Key).All (
 				kv => !(kv.Key.Equals (p.rem.Key) && kv.Value.Equals (p.rem.Value))));
 		}
 
@@ -120,7 +120,7 @@
 					   }).ToArray ()
 					   select new { bt, cnt, cnts, pairs };
 
-			prop.Label ("{0}: Count is correct", typeof (B)).Check (p => 
+			prop.Label ("{0}: Count is correct", typeof (B).Name).Check (p => 
 				p.bt.Count == 0 && p.bt.Count () == 0 && 
 				(p.cnt == 0 || (p.cnts.First () == p.cnt - 1 && p.cnts.Last () == 0)));
 		}

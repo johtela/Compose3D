@@ -136,11 +136,11 @@
 				.Check (p => p.nearest.Zip (p.nearest.Skip (1),
 					(p1, p2) => distance (p1.Key, p.pos) <= distance (p2.Key, p.pos))
 					.All (Fun.Identity));
-			prop.Label ("Visualize").Check (p =>
-			{
-				TestProgram.VConsole.ShowVisual (p.tree.ToVisual ());
-				return true;
-			});
+//			prop.Label ("Visualize").Check (p =>
+//			{
+//				TestProgram.VConsole.ShowVisual (p.tree.ToVisual ());
+//				return true;
+//			});
 		}
 
 		[Test]

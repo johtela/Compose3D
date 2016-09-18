@@ -39,6 +39,11 @@
 			return x => combine (signal (x), other (x));
 		}
 
+		public static Signal<T, V> Convert<T, U, V> (this Signal<U, V> signal, Func<T, U> convert)
+		{
+			return x => signal (convert (x));
+		}
+
 		public static Signal<float, float> Sin ()
 		{
 			return GLMath.Sin;
@@ -127,6 +132,25 @@
 		{
 			return from v in signal
 				   select v.Multiply (scale);
+		}
+
+		public static Signal<T, uint> ToByteRgba<T> (this Signal<T, Vec4> signal)
+		{
+			return signal.Select (vec =>
+				(uint)(vec.X * 255) << 24 |
+				(uint)(vec.Y * 255) << 16 |
+				(uint)(vec.Z * 255) << 8 |
+				(uint)(vec.W * 255));
+		}
+
+		public static T[] SampleToBuffer<V, U, T> (Signal<V, T> signal, V start, V end)
+			where V : struct, IVec<V, int>
+		{
+			var length = end.Subtract (start).Producti ();
+			var result = new T[length];
+			var i = 0;
+			start.IterateOverAllDimensions (end, vec => result[i++] = signal (vec));
+			return result;
 		}
 
 		public static Signal<Vec3, float> PerlinNoise (int seed)

@@ -1,7 +1,8 @@
 ﻿namespace Compose3D.Maths
 {
-    using System;
+	using System;
 	using System.Collections.Generic;
+	using System.Threading.Tasks;
 	using Extensions;
 	using GLTypes;
 
@@ -208,6 +209,61 @@
 			for (int i = 1; i < vec.Dimensions; i++)
 				res += vec [i];
 			return res;
+		}
+
+		/// <summary>
+		/// Return the sum of all the components in the vector.
+		/// </summary>
+		public static int Sumi<V> (this V vec)
+			where V : struct, IVec<V, int>
+		{
+			var res = vec[0];
+			for (int i = 1; i < vec.Dimensions; i++)
+				res += vec[i];
+			return res;
+		}
+
+		/// <summary>
+		/// Return the product of all the components in the vector.
+		/// </summary>
+		public static float Product<V> (this V vec)
+			where V : struct, IVec<V, float>
+		{
+			var res = vec[0];
+			for (int i = 1; i < vec.Dimensions; i++)
+				res *= vec[i];
+			return res;
+		}
+
+		/// <summary>
+		/// Return the product of all the components in the vector.
+		/// </summary>
+		public static int Producti<V> (this V vec)
+			where V : struct, IVec<V, int>
+		{
+			var res = vec[0];
+			for (int i = 1; i < vec.Dimensions; i++)
+				res *= vec[i];
+			return res;
+		}
+
+		public static void IterateOverAllDimensions<V> (this V start, V end, Action<V> action)
+			where V : struct, IVec<V, int>
+		{
+			var curr = start;
+			Parallel.For (start[0], end[0] - 1, i =>
+			IterateDimension (1, curr.With (0, i), start, end, action));
+		}
+
+		private static void IterateDimension<V> (int dim, V curr, V start, V end, Action<V> action)
+			where V : struct, IVec<V, int>
+		{
+			if (dim == curr.Dimensions - 1)
+				for (int i = start[dim]; i < end[dim]; i++)
+					action (curr.With (dim, i));
+			else
+				for (int i = start[dim]; i < end[dim]; i++)
+					IterateDimension (dim + 1, curr.With (dim, i), start, end, action);
 		}
 
 		/// <summary>

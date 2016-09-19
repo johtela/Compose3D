@@ -169,25 +169,25 @@
 		}
 
 		public void LoadArray<T>(T[] array, TextureTarget target, int lodLevel, int width, int height, 
-			PixelFormat pixelFormat, PixelInternalFormat internalFormat)
+			PixelFormat pixelFormat, PixelInternalFormat internalFormat, PixelType pixelType)
 			where T : struct
 		{
 			using (Scope ())
 			{
-				_pixelInternalFormat = PixelInternalFormat;
+				_pixelInternalFormat = internalFormat;
 				_pixelFormat = pixelFormat;
-				_pixelType = MapPixelType (typeof(T));
+				_pixelType = pixelType;
 				GL.TexImage2D (target, lodLevel, _pixelInternalFormat, width, height,
 					0, _pixelFormat, _pixelType, array);
 			}
 		}
 
 		public static Texture FromArray<T> (T[] array, int width, int height, PixelFormat pixelFormat, 
-			PixelInternalFormat internalFormat)
+			PixelInternalFormat internalFormat, PixelType pixelType)
 			where T : struct
 		{
 			var result = new Texture (TextureTarget.Texture2D);
-			result.LoadArray (array, result._target, 0, width, height, pixelFormat, internalFormat);
+			result.LoadArray (array, result._target, 0, width, height, pixelFormat, internalFormat, pixelType);
 			return result;
 		}
 
@@ -280,20 +280,6 @@
 				GL.TexParameter (_target, TextureParameterName.TextureMinFilter, (int)filtering);
 			}
 			return this;
-		}
-
-		private static PixelType MapPixelType (Type type)
-		{
-			var result =
-				type == typeof(int) ? PixelType.Int :
-				type == typeof(uint) ? PixelType.UnsignedInt :
-				type == typeof(short) ? PixelType.Short :
-				type == typeof(ushort) ? PixelType.UnsignedShort :
-				type == typeof(byte) ? PixelType.UnsignedByte :
-				type == typeof(sbyte) ? PixelType.Byte : 0;
-			if (result == 0)
-				throw new ArgumentException ("Invalid pixel type: " + type.Name);
-			return result;
 		}
 
 		private static PixelInternalFormat MapPixelInternalFormat (System.Drawing.Imaging.PixelFormat pixelFormat)

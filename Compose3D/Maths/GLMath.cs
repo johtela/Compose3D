@@ -114,7 +114,7 @@
 		[GLFunction ("mix ({0})")]
 		public static float Mix (float start, float end, float interPos)
 		{
-			return start + (interPos * (start - end));
+			return start + (interPos * (end - start));
 		}
 
 		/// <summary>
@@ -124,7 +124,7 @@
 		[GLFunction ("mix ({0})")]
 		public static double Mix (double start, double end, double interPos)
 		{
-			return start + (interPos * (start - end));
+			return start + (interPos * (end - start));
 		}
 
 		/// <summary>

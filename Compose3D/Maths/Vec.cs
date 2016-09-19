@@ -247,25 +247,6 @@
 			return res;
 		}
 
-		public static void IterateOverAllDimensions<V> (this V start, V end, Action<V> action)
-			where V : struct, IVec<V, int>
-		{
-			var curr = start;
-			Parallel.For (start[0], end[0] - 1, i =>
-			IterateDimension (1, curr.With (0, i), start, end, action));
-		}
-
-		private static void IterateDimension<V> (int dim, V curr, V start, V end, Action<V> action)
-			where V : struct, IVec<V, int>
-		{
-			if (dim == curr.Dimensions - 1)
-				for (int i = start[dim]; i < end[dim]; i++)
-					action (curr.With (dim, i));
-			else
-				for (int i = start[dim]; i < end[dim]; i++)
-					IterateDimension (dim + 1, curr.With (dim, i), start, end, action);
-		}
-
 		/// <summary>
 		/// Interpolate between two vectors. 
 		/// </summary>

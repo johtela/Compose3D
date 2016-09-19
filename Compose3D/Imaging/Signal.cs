@@ -2,6 +2,8 @@
 {
 	using System;
 	using Maths;
+	using System.Diagnostics;
+	using System.Threading.Tasks;
 
 	public delegate U Signal<T, U> (T samplingPoint);
 
@@ -148,13 +150,23 @@
 				(uint)(vec.W * 255));
 		}
 
-		public static T[] SampleToBuffer<V, U, T> (Signal<V, T> signal, V start, V end)
-			where V : struct, IVec<V, int>
+		public static Signal<T, uint> ToByteRgba<T> (this Signal<T, float> signal)
 		{
-			var length = end.Subtract (start).Producti ();
+			return signal.Select (x =>
+				(uint)(x.Abs () * 255) << 24 |
+				(uint)(x.Abs () * 255) << 16 |
+				(uint)(x.Abs () * 255) << 8 | 255);
+		}
+
+		public static T[] SampleToBuffer<T> (this Signal<Vec2i, T> signal, Vec2i bufferSize)
+		{
+			var length = bufferSize.Producti ();
 			var result = new T[length];
-			var i = 0;
-			start.IterateOverAllDimensions (end, vec => result[i++] = signal (vec));
+			Parallel.For (0, bufferSize.Y, y =>
+			{
+				for (int x = 0; x < bufferSize.X; x++)
+					result[y * bufferSize.Y + x] = signal (new Vec2i (x, y));
+			});
 			return result;
 		}
 

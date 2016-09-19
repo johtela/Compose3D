@@ -46,84 +46,9 @@
 			return x => other (signal (x));
 		}
 
-		public static Signal<T, V> Convert<T, U, V> (this Signal<U, V> signal, Func<T, U> convert)
+		public static Signal<T, V> Func<T, U, V> (this Func<U, V> func, Func<T, U> mapDomain)
 		{
-			return x => signal (convert (x));
-		}
-
-		public static Signal<float, float> Sin ()
-		{
-			return GLMath.Sin;
-		}
-
-		public static Signal<float, float> Cos ()
-		{
-			return GLMath.Sin;
-		}
-
-		public static Signal<T, float> Add<T> (this Signal<T, float> signal,
-			Signal<T, float> other)
-		{
-			return Combine (signal, other, (x, y) => x + y);
-		}
-
-		public static Signal<T, V> Add<T, V> (this Signal<T, V> signal,
-			Signal<T, V> other)
-			where V : struct, IVec<V, float>
-		{
-			return Combine (signal, other, (v1, v2) => v1.Add (v2));
-		}
-
-		public static Signal<T, float> Multiply<T> (this Signal<T, float> signal,
-			Signal<T, float> other)
-		{
-			return Combine (signal, other, (x, y) => x * y);
-		}
-
-		public static Signal<T, V> Multiply<T, V> (this Signal<T, V> signal,
-			Signal<T, V> other)
-			where V : struct, IVec<V, float>
-		{
-			return Combine (signal, other, (v1, v2) => v1.Multiply (v2));
-		}
-
-		public static Signal<T, float> Min<T> (this Signal<T, float> signal,
-			Signal<T, float> other)
-		{
-			return Combine (signal, other, Math.Min);
-		}
-
-		public static Signal<T, V> Min<T, V> (this Signal<T, V> signal,
-			Signal<T, V> other)
-			where V : struct, IVec<V, float>
-		{
-			return Combine (signal, other, Vec.Min<V>);
-		}
-
-		public static Signal<T, float> Max<T> (this Signal<T, float> signal,
-			Signal<T, float> other)
-		{
-			return Combine (signal, other, Math.Max);
-		}
-
-		public static Signal<T, V> Max<T, V> (this Signal<T, V> signal,
-			Signal<T, V> other)
-			where V : struct, IVec<V, float>
-		{
-			return Combine (signal, other, Vec.Max<V>);
-		}
-
-		public static Signal<T, float> Pow<T> (this Signal<T, float> signal,
-			Signal<T, float> other)
-		{
-			return Combine (signal, other, GLMath.Pow);
-		}
-
-		public static Signal<T, V> Pow<T, V> (this Signal<T, V> signal,
-			Signal<T, V> other)
-			where V : struct, IVec<V, float>
-		{
-			return Combine (signal, other, Vec.Pow<V>);
+			return x => func (mapDomain (x));
 		}
 
 		public static Signal<T, V> Transform<T, V, M> (this Signal<T, V> signal, M matrix)
@@ -141,21 +66,23 @@
 				   select v.Multiply (scale);
 		}
 
-		public static Signal<T, uint> ToByteRgba<T> (this Signal<T, Vec4> signal)
+		public static Signal<T, uint> NormalRangeToGrayscale<T> (this Signal<T, Vec4> signal)
 		{
+			var h = 127.5f;
 			return signal.Select (vec =>
-				(uint)(vec.X * 255) << 24 |
-				(uint)(vec.Y * 255) << 16 |
-				(uint)(vec.Z * 255) << 8 |
-				(uint)(vec.W * 255));
+				(uint)(vec.X * h + h) << 24 |
+				(uint)(vec.Y * h + h) << 16 |
+				(uint)(vec.Z * h + h) << 8 |
+				(uint)(vec.W * h + h));
 		}
 
-		public static Signal<T, uint> ToByteRgba<T> (this Signal<T, float> signal)
+		public static Signal<T, uint> NormalRangeToGrayscale<T> (this Signal<T, float> signal)
 		{
 			return signal.Select (x =>
-				(uint)(x.Abs () * 255) << 24 |
-				(uint)(x.Abs () * 255) << 16 |
-				(uint)(x.Abs () * 255) << 8 | 255);
+			{
+				var c = (uint)(x * 127.5f + 127.5f);
+				return c << 24 | c << 16 | c << 8 | 255;
+			});
 		}
 
 		public static T[] SampleToBuffer<T> (this Signal<Vec2i, T> signal, Vec2i bufferSize)
@@ -170,14 +97,22 @@
 			return result;
 		}
 
-		public static Signal<Vec3, float> PerlinNoise (int seed)
+		public static Func<Vec2i, Vec3> BitmapToVec3 (Vec2i bitmapSize, float scale)
 		{
-			return new PerlinNoise (seed).Noise;
+			return vec => new Vec3 (
+				vec.X * scale / bitmapSize.X,
+				vec.Y * scale / bitmapSize.Y,
+				0f);
 		}
 
-		public static Signal<Vec3, float> PerlinNoise ()
+		public static Func<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)
 		{
-			return new PerlinNoise ().Noise;
+			return vec => vec.X * scale / bitmapSize.X;
+		}
+
+		public static Func<Vec2i, float> BitmapYToFloat (Vec2i bitmapSize, float scale)
+		{
+			return vec => vec.X * scale / bitmapSize.X;
 		}
 	}
 }

@@ -33,14 +33,14 @@
 		private int[] NewPermutation (int seed)
 		{
 			var result = new int[_permSize];
-			Array.Copy (_refPerm, _perm, _permSize);
+			Array.Copy (_refPerm, result, _permSize);
 			Random rnd = new Random (seed);
 			for (int i = 0; i < _permSize; i++)
 			{
 				int j = rnd.Next (_permSize);
-				int temp = _perm[i];
-				_perm[i] = _perm[j];
-				_perm[j] = temp;
+				int temp = result[i];
+				result[i] = result[j];
+				result[j] = temp;
 			}
 			return result;
 		}
@@ -54,7 +54,7 @@
 
 		private static float Fade (float t)
 		{
-			return t * t * t * (t * (t * 6 - 15) + 10);
+			return t * t * t * (t * (t * 6f - 15f) + 10f);
 		}
 
 		private static Vec3 Fade (Vec3 vec)
@@ -64,9 +64,9 @@
 
 		private static float Gradient (int hash, float x, float y, float z)
 		{
-			int h = hash & 15;
-			float u = h < 8 ? x : y,
-				   v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+			var h = hash & 15;
+			var u = h < 8 ? x : y;
+			var v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 			return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 		}
 
@@ -90,21 +90,21 @@
 				GLMath.Mix (
 					GLMath.Mix ( 
 						Gradient (Permutation (AA), pt.X, pt.Y, pt.Z), 
-						Gradient (Permutation (BA), pt.X - 1, pt.Y, pt.Z),
+						Gradient (Permutation (BA), pt.X - 1f, pt.Y, pt.Z),
 						faded.X),
 					GLMath.Mix ( 
-						Gradient (Permutation (AB), pt.X, pt.Y - 1, pt.Z), 
-						Gradient (Permutation (BB), pt.X - 1, pt.Y - 1, pt.Z),
+						Gradient (Permutation (AB), pt.X, pt.Y - 1f, pt.Z), 
+						Gradient (Permutation (BB), pt.X - 1f, pt.Y - 1f, pt.Z),
 						faded.X),
 					faded.Y),
 				GLMath.Mix (
 					GLMath.Mix ( 
-						Gradient (Permutation (AA + 1), pt.X, pt.Y, pt.Z - 1), 
-						Gradient (Permutation (BA + 1), pt.X - 1, pt.Y, pt.Z - 1),
+						Gradient (Permutation (AA + 1), pt.X, pt.Y, pt.Z - 1f), 
+						Gradient (Permutation (BA + 1), pt.X - 1f, pt.Y, pt.Z - 1f),
 						faded.X),
 					GLMath.Mix ( 
-						Gradient (Permutation (AB + 1), pt.X, pt.Y - 1, pt.Z - 1), 
-						Gradient (Permutation (BB + 1), pt.X - 1, pt.Y - 1, pt.Z - 1),
+						Gradient (Permutation (AB + 1), pt.X, pt.Y - 1f, pt.Z - 1f), 
+						Gradient (Permutation (BB + 1), pt.X - 1f, pt.Y - 1f, pt.Z - 1f),
 						faded.X),
 					faded.Y),
 				faded.Z);

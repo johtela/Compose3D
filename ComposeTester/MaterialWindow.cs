@@ -25,7 +25,7 @@
 		private SceneGraph _sceneGraph;
 		
 		public MaterialWindow ()
-			: base (256, 256, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
+			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
@@ -78,10 +78,12 @@
 
 		public static Texture SignalTexture ()
 		{
-			var signal = (from x in Signal.Sin ().Convert ((Vec2i v) => v.X / 256f * MathHelper.Pi)
-						  from y in Signal.Cos ().Convert ((Vec2i v) => v.Y / 256f * MathHelper.Pi)
-						  select x * y).ToByteRgba ();
-			var buffer = signal.SampleToBuffer (new Vec2i (256));
+			var size = new Vec2i (256);
+			var signal = (from x in Signal.Func (new PerlinNoise ().Noise, Signal.BitmapToVec3 (size, 10f))
+			              from y in Signal.Func (GLMath.Sin, Signal.BitmapYToFloat (size, MathHelper.Pi))
+			              select x)
+				.NormalRangeToGrayscale ();
+			var buffer = signal.SampleToBuffer (size);
 			return Texture.FromArray (buffer, 256, 256, PixelFormat.Rgba, PixelInternalFormat.Rgba, 
 				PixelType.UnsignedInt8888);
 		}

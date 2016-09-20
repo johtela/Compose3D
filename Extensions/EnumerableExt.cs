@@ -133,6 +133,17 @@
 			return res;
 		}
 
+		public static int FirstIndex<T> (this IEnumerable<T> items, Func<T, bool> predicate)
+		{
+			var result = 0;
+			foreach (var item in items)
+				if (predicate (item))
+					return result;
+				else
+					result++;
+			return -1;
+		}
+
 		public static IEnumerable<float> Range (float start, float end, float step)
 		{
 			for (float val = start; step > 0 ? val <= end : val >= end; val += step)

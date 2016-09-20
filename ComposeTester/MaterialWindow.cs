@@ -14,6 +14,8 @@
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
+	using System.Collections.Generic;
+	using System;
 
 	public class MaterialWindow : GameWindow
 	{
@@ -25,7 +27,7 @@
 		private SceneGraph _sceneGraph;
 		
 		public MaterialWindow ()
-			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
+			: base (512, 512, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
@@ -79,12 +81,16 @@
 		public static Texture SignalTexture ()
 		{
 			var size = new Vec2i (256);
-			var signal = (from x in Signal.Func (new PerlinNoise ().Noise, Signal.BitmapToVec3 (size, 10f))
+			var colorMap = new ColorMap<Vec3> (
+				Tuple.Create (-1f, VertexColor<Vec3>.Random.diffuse),
+				Tuple.Create (0f, VertexColor<Vec3>.Random.diffuse),
+				Tuple.Create (1f, VertexColor<Vec3>.Random.diffuse));
+			var signal = (from x in Signal.Func (new PerlinNoise ().Noise, Signal.BitmapToVec3 (size, 5f))
 			              from y in Signal.Func (GLMath.Sin, Signal.BitmapYToFloat (size, MathHelper.Pi))
 			              select x)
-				.NormalRangeToGrayscale ();
+				.Colorize (colorMap).Vec3ToUintColor ();
 			var buffer = signal.SampleToBuffer (size);
-			return Texture.FromArray (buffer, 256, 256, PixelFormat.Rgba, PixelInternalFormat.Rgba, 
+			return Texture.FromArray (buffer, 256, 256, PixelFormat.Rgba, PixelInternalFormat.Rgb, 
 				PixelType.UnsignedInt8888);
 		}
 

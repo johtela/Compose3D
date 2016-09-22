@@ -82,14 +82,15 @@
 		{
 			var size = new Vec2i (256);
 			var colorMap = new ColorMap<Vec3> (
-				Tuple.Create (-1f, VertexColor<Vec3>.Random.diffuse),
-				Tuple.Create (0f, VertexColor<Vec3>.Random.diffuse),
-				Tuple.Create (1f, VertexColor<Vec3>.Random.diffuse));
-			var signal = (from x in Signal.Func (new PerlinNoise ().Noise, Signal.BitmapToVec3 (size, 5f))
-			              from y in Signal.Func (GLMath.Sin, Signal.BitmapYToFloat (size, MathHelper.Pi))
-			              select x)
+				Tuple.Create (-1f, new Vec3 (1f, 0.5f, 0.1f)),
+				Tuple.Create (0f, new Vec3 (0f, 1f, 0f)),
+				Tuple.Create (1f, new Vec3 (0.3f, 0.5f, 0.7f)));
+			var signal = new Signal<Vec3, float> (new PerlinNoise ().Noise)
+				.SpectralControl (0, 3, 1f, 0.3f, 0.2f, 0.5f)
+				.NormalRangeToZeroOne ()
 				.Colorize (colorMap).Vec3ToUintColor ();
-			var buffer = signal.SampleToBuffer (size);
+				//.FloatToUintGrayscale ();
+			var buffer = signal.MapDomain (Signal.BitmapCoordToVec3 (size, 4f)).SampleToBuffer (size);
 			return Texture.FromArray (buffer, 256, 256, PixelFormat.Rgba, PixelInternalFormat.Rgb, 
 				PixelType.UnsignedInt8888);
 		}

@@ -49,6 +49,7 @@
     <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
+    <Compile Include="Imaging\ColorMap.cs" />
     <Compile Include="Imaging\GaussianFilter.cs" />
     <Compile Include="Imaging\Signal.cs" />
     <Compile Include="Geometry\Circular.cs" />

@@ -1,73 +1,32 @@
 ﻿namespace Compose3D.Imaging
 {
 	using System;
-	using System.Collections.Generic;
 	using System.Linq;
 	using System.Threading.Tasks;
 	using Extensions;
 	using Maths;
 
-	public class ColorMap<V>
-		where V : struct, IVec<V, float>
-	{
-		public readonly SortedList<float, V> SamplePoints;
-
-		public ColorMap ()
-		{
-			SamplePoints = new SortedList<float, V> ();
-		}
-
-		public ColorMap (IEnumerable<Tuple<float, V>> samplePoints)
-			: this ()
-		{
-			foreach (var sample in samplePoints)
-				SamplePoints.Add (sample.Item1, sample.Item2);
-		}
-
-		public ColorMap (params Tuple<float, V>[] samplePoints)
-			: this ((IEnumerable<Tuple<float, V>>)samplePoints)
-		{ }
-
-		public V this[float value]
-		{
-			get
-			{
-				if (SamplePoints.Count == 0)
-					throw new InvalidOperationException ("No values in the map");
-				var keys = SamplePoints.Keys;
-				var values = SamplePoints.Values;
-				if (value <= keys[0])
-					return values[0];
-				var last = SamplePoints.Count - 1;
-				if (last == 0 || value >= keys[last])
-					return values[last];
-				var i = keys.FirstIndex (k => k > value);
-				var low = keys[i - 1];
-				var high = keys[i];
-				return values[i - 1].Mix (values[i], (value - low) / (high - low));
-			}
-		}
-	}
+	public delegate U Signal<T, U> (T samplePoint);
 
 	public static class Signal
 	{
-		public static Func<T, U> Constant<T, U> (U value)
+		public static Signal<T, U> Constant<T, U> (U value)
 		{
 			return x => value;
 		}
 
-		public static Func<T, T> Constant<T> (T value)
+		public static Signal<T, T> Constant<T> (T value)
 		{
 			return Constant<T, T> (value);
 		}
 
-		public static Func<T, V> Select<T, U, V> (this Func<T, U> signal, Func<U, V> select)
+		public static Signal<T, V> Select<T, U, V> (this Signal<T, U> signal, Func<U, V> select)
 		{
-			return x => select (signal (x)); 
+			return x => select (signal (x));
 		}
 
-		public static Func<T, W> SelectMany<T, U, V, W> (this Func<T, U> signal,
-			Func<U, Func<T, V>> project, Func<U, V, W> select)
+		public static Signal<T, W> SelectMany<T, U, V, W> (this Signal<T, U> signal,
+			Func<U, Signal<T, V>> project, Func<U, V, W> select)
 		{
 			return t =>
 			{
@@ -77,23 +36,23 @@
 			};
 		}
 
-		public static Func<T, V> Combine<T, U, V> (this Func<T,U> signal, Func<T, U> other, 
+		public static Signal<T, V> Combine<T, U, V> (this Signal<T, U> signal, Signal<T, U> other,
 			Func<U, U, V> combine)
 		{
 			return x => combine (signal (x), other (x));
 		}
 
-		public static Func<T, V> To<T, U, V> (this Func<T, U> signal, Func<U, V> other)
+		public static Signal<T, V> To<T, U, V> (this Signal<T, U> signal, Signal<U, V> other)
 		{
 			return x => other (signal (x));
 		}
 
-		public static Func<T, V> Func<T, U, V> (this Func<U, V> func, Func<T, U> mapDomain)
+		public static Signal<V, U> MapDomain<T, U, V> (this Signal<T, U> signal, Func<V, T> map)
 		{
-			return x => func (mapDomain (x));
+			return x => signal (map (x));
 		}
 
-		public static Func<T, V> Transform<T, V, M> (this Func<T, V> signal, M matrix)
+		public static Signal<T, V> Transform<T, V, M> (this Signal<T, V> signal, M matrix)
 			where V : struct, IVec<V, float>
 			where M : struct, ISquareMat<M, float>
 		{
@@ -101,48 +60,57 @@
 				   select matrix.Multiply (v);
 		}
 
-		public static Func<T, V> Scale<T, V> (this Func<T, V> signal, V scale)
+		public static Signal<T, float> Scale<T> (this Signal<T, float> signal, float scale)
+		{
+			return signal.Select (x => x * scale);
+		}
+
+		public static Signal<T, V> Scale<T, V> (this Signal<T, V> signal, V scale)
 			where V : struct, IVec<V, float>
 		{
-			return from v in signal
-				   select v.Multiply (scale);
+			return signal.Select (v => v.Multiply (scale));
 		}
 
-		public static Func<T, uint> Vec4ToUintColor<T> (this Func<T, Vec4> signal)
+		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
 		{
-			var h = 127.5f;
-			return signal.Select (vec =>
-				(uint)(vec.X * h + h) << 24 |
-				(uint)(vec.Y * h + h) << 16 |
-				(uint)(vec.Z * h + h) << 8 |
-				(uint)(vec.W * h + h));
+			return signal.Select (x => x * 0.5f + 0.5f);
 		}
 
-		public static Func<T, uint> Vec3ToUintColor<T> (this Func<T, Vec3> signal)
+		public static Signal<T, uint> Vec4ToUintColor<T> (this Signal<T, Vec4> signal)
 		{
-			var h = 127.5f;
+			var h = 255f;
 			return signal.Select (vec =>
-				(uint)(vec.X * h + h) << 24 |
-				(uint)(vec.Y * h + h) << 16 |
-				(uint)(vec.Z * h + h) << 8 | 255);
+				(uint)(vec.X.Clamp (0f, 1f) * h) << 24 |
+				(uint)(vec.Y.Clamp (0f, 1f) * h) << 16 |
+				(uint)(vec.Z.Clamp (0f, 1f) * h) << 8 |
+				(uint)(vec.W.Clamp (0f, 1f) * h));
 		}
 
-		public static Func<T, uint> FloatToUintGrayscale<T> (this Func<T, float> signal)
+		public static Signal<T, uint> Vec3ToUintColor<T> (this Signal<T, Vec3> signal)
+		{
+			var h = 255f;
+			return signal.Select (vec =>
+				(uint)(vec.X.Clamp (0f, 1f) * h) << 24 |
+				(uint)(vec.Y.Clamp (0f, 1f) * h) << 16 |
+				(uint)(vec.Z.Clamp (0f, 1f) * h) << 8 | 255);
+		}
+
+		public static Signal<T, uint> FloatToUintGrayscale<T> (this Signal<T, float> signal)
 		{
 			return signal.Select (x =>
 			{
-				var c = (uint)(x * 127.5f + 127.5f);
+				var c = (uint)(x.Clamp (0f, 1f) * 255f);
 				return c << 24 | c << 16 | c << 8 | 255;
 			});
 		}
 
-		public static Func<T, V> Colorize<T, V> (this Func<T, float> signal, ColorMap<V> colorMap)
+		public static Signal<T, V> Colorize<T, V> (this Signal<T, float> signal, ColorMap<V> colorMap)
 			where V : struct, IVec<V, float>
 		{
 			return signal.Select (x => colorMap[x]);
 		}
 
-		public static T[] SampleToBuffer<T> (this Func<Vec2i, T> signal, Vec2i bufferSize)
+		public static T[] SampleToBuffer<T> (this Signal<Vec2i, T> signal, Vec2i bufferSize)
 		{
 			var length = bufferSize.Producti ();
 			var result = new T[length];
@@ -154,7 +122,7 @@
 			return result;
 		}
 
-		public static Func<Vec2i, Vec3> BitmapToVec3 (Vec2i bitmapSize, float scale)
+		public static Func<Vec2i, Vec3> BitmapCoordToVec3 (Vec2i bitmapSize, float scale)
 		{
 			return vec => new Vec3 (
 				vec.X * scale / bitmapSize.X,
@@ -167,9 +135,31 @@
 			return vec => vec.X * scale / bitmapSize.X;
 		}
 
-		public static Func<Vec2i, float> BitmapYToFloat (Vec2i bitmapSize, float scale)
+		public static Signal<Vec2i, float> BitmapYToFloat (Vec2i bitmapSize, float scale)
 		{
 			return vec => vec.X * scale / bitmapSize.X;
+		}
+
+		public static Signal<V, float> SpectralControl<V> (this Signal<V, float> signal, int startBand,
+			int endBand, params float[] bandWeights)
+			where V : struct, IVec<V, float>
+		{
+			if (startBand > endBand)
+				throw new ArgumentException ("endBand must be greater or equal to startBand");
+			if (bandWeights.Length != (endBand - startBand) + 1)
+				throw new ArgumentException ("Invalid number of bands");
+			var sumWeights = bandWeights.Aggregate (0f, (s, w) => s + w);
+			var normWeights = bandWeights.Map (w => w / sumWeights);
+			return vec =>
+			{
+				var result = 0f;
+				for (int i = startBand; i <= endBand; i++)
+				{
+					float factor = 1 << i;
+					result += signal (vec.Multiply (factor)) * normWeights[i - startBand];
+				}
+				return result;
+			};
 		}
 	}
 }

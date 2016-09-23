@@ -85,12 +85,16 @@
 				Tuple.Create (-1f, new Vec3 (1f, 0.5f, 0.1f)),
 				Tuple.Create (0f, new Vec3 (0f, 1f, 0f)),
 				Tuple.Create (1f, new Vec3 (0.3f, 0.5f, 0.7f)));
-			var signal = new Signal<Vec3, float> (new PerlinNoise ().Noise)
-				.SpectralControl (0, 3, 1f, 0.3f, 0.2f, 0.5f)
+
+			var perlin = new Signal<Vec3, float> (new PerlinNoise ().Noise)
+				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * 4f);
+			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
+				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f);
+			var signal = sine.Warp (perlin.Scale (0.05f), 1f / size.X)
 				.NormalRangeToZeroOne ()
 				.Colorize (colorMap).Vec3ToUintColor ();
 				//.FloatToUintGrayscale ();
-			var buffer = signal.MapDomain (Signal.BitmapCoordToVec3 (size, 4f)).SampleToBuffer (size);
+			var buffer = signal.MapInput (Signal.BitmapCoordToUnitRange (size, 1f)).SampleToBuffer (size);
 			return Texture.FromArray (buffer, 256, 256, PixelFormat.Rgba, PixelInternalFormat.Rgb, 
 				PixelType.UnsignedInt8888);
 		}

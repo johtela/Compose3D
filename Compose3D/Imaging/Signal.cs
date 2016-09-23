@@ -47,7 +47,7 @@
 			return x => other (signal (x));
 		}
 
-		public static Signal<V, U> MapDomain<T, U, V> (this Signal<T, U> signal, Func<V, T> map)
+		public static Signal<V, U> MapInput<T, U, V> (this Signal<T, U> signal, Func<V, T> map)
 		{
 			return x => signal (map (x));
 		}
@@ -74,6 +74,38 @@
 		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
 		{
 			return signal.Select (x => x * 0.5f + 0.5f);
+		}
+
+		public static Signal<float, float> Dfdx (this Signal<float, float> signal, float dx)
+		{
+			return x => (signal (x + dx) - signal (x)) / dx;
+		}
+
+		public static Signal<V, float> Dfdx<V> (this Signal<V, float> signal, int dimension, float dx)
+			where V : struct, IVec<V, float>
+		{
+			var delta = default (V).With (dimension, dx);
+			return v => (signal (v.Add (delta)) - signal (v)) / dx;
+		}
+
+		public static Signal<V, V> Dfdv<V> (this Signal<V, float> signal, float dv)
+			where V : struct, IVec<V, float>
+		{
+			return v =>
+			{
+				var result = default (V);
+				var value = signal (v);
+				for (int i = 0; i < result.Dimensions; i++)
+					result[i] = signal (v.Add (default (V).With (i, dv))) - value;
+				return result.Divide (dv);
+			};
+		}
+
+		public static Signal<V, float> Warp<V> (this Signal<V, float> signal, Signal<V, float> warp, float dv)
+			where V : struct, IVec<V, float>
+		{
+			var warpDv = warp.Dfdv (dv);
+			return v => signal (v.Add (warpDv (v)));
 		}
 
 		public static Signal<T, uint> Vec4ToUintColor<T> (this Signal<T, Vec4> signal)
@@ -122,12 +154,11 @@
 			return result;
 		}
 
-		public static Func<Vec2i, Vec3> BitmapCoordToVec3 (Vec2i bitmapSize, float scale)
+		public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
 		{
-			return vec => new Vec3 (
+			return vec => new Vec2 (
 				vec.X * scale / bitmapSize.X,
-				vec.Y * scale / bitmapSize.Y,
-				0f);
+				vec.Y * scale / bitmapSize.Y);
 		}
 
 		public static Func<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)

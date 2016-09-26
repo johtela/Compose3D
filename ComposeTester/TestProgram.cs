@@ -15,18 +15,18 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			//var wnd = new MaterialWindow ();
-			//wnd.Run ();
-			Task.Factory.StartNew (() =>
-				Tester.RunTestsTimed (
-					new VecTests (),
-					new MatTests (),
-					new QuatTests (),
-					new SceneTests (),
-					new IntervalTreeTests (),
-					new BoundingTreeTests (),
-					new KdTreeTests ()));
-			Application.Run (VConsole);
+			var wnd = new MaterialWindow ();
+			wnd.Run ();
+			//Task.Factory.StartNew (() =>
+			//	Tester.RunTestsTimed (
+			//		new VecTests (),
+			//		new MatTests (),
+			//		new QuatTests (),
+			//		new SceneTests (),
+			//		new IntervalTreeTests (),
+			//		new BoundingTreeTests (),
+			//		new KdTreeTests ()));
+			//Application.Run (VConsole);
 		}
 	}
 }

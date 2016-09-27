@@ -12,7 +12,10 @@
 		public readonly Reaction<IVisualizable> ItemClicked;
 		public readonly IEnumerable<IVisualizable> Items;
 
+		// Click regions
 		private MouseRegions<IVisualizable> _mouseRegions;
+
+		// Control state
 		private IVisualizable _pressed;
 		private IVisualizable _highlighted;
 

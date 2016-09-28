@@ -36,10 +36,16 @@
 			};
 		}
 
-		public static Signal<T, V> Combine<T, U, V> (this Signal<T, U> signal, Signal<T, U> other,
-			Func<U, U, V> combine)
+		public static Signal<T, W> Combine<T, U, V, W> (this Signal<T, U> signal, Signal<T, V> other,
+			Func<U, V, W> combine)
 		{
 			return x => combine (signal (x), other (x));
+		}
+
+		public static Signal<T, S> Combine<T, U, V, W, S> (this Signal<T, U> signal1, Signal<T, V> signal2,
+			Signal<T, W> signal3, Func<U, V, W, S> combine)
+		{
+			return x => combine (signal1 (x), signal2 (x), signal3 (x));
 		}
 
 		public static Signal<T, V> To<T, U, V> (this Signal<T, U> signal, Signal<U, V> other)
@@ -106,6 +112,36 @@
 		{
 			var warpDv = warp.Dfdv (dv);
 			return v => signal (v.Add (warpDv (v)));
+		}
+
+		public static Signal<T, float> Blend<T> (this Signal<T, float> signal, Signal<T, float> other, 
+			float blendFactor)
+		{
+			if (blendFactor < 0f || blendFactor > 1f)
+				throw new ArgumentException ("Blend factor must be in range [0, 1]");
+			return signal.Combine (other, (x, y) => GLMath.Mix (x, y, blendFactor));
+		}
+
+		public static Signal<T, V> Blend<T, V> (this Signal<T, V> signal, Signal<T, V> other,
+			float blendFactor)
+			where V : struct, IVec<V, float>
+		{
+			if (blendFactor < 0f || blendFactor > 1f)
+				throw new ArgumentException ("Blend factor must be in range [0, 1]");
+			return signal.Combine (other, (v1, v2) => v1.Mix (v2, blendFactor));
+		}
+
+		public static Signal<T, float> Mask<T> (this Signal<T, float> signal, Signal<T, float> other,
+			Signal<T, float> mask)
+		{
+			return signal.Combine (other, mask, (x, y, m) => GLMath.Mix (x, y, m));
+		}
+
+		public static Signal<T, V> Mask<T, V> (this Signal<T, V> signal, Signal<T, V> other,
+			Signal<T, float> mask)
+			where V : struct, IVec<V, float>
+		{
+			return signal.Combine (other, mask, (v1, v2, m) => v1.Mix (v2, m));
 		}
 
 		public static Signal<T, uint> Vec4ToUintColor<T> (this Signal<T, Vec4> signal)

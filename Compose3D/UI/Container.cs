@@ -35,11 +35,10 @@
 				Visual.VStack (HorizAlign, visuals);
 		}
 
-		public override void HandleInput (MouseDevice mouse, KeyboardDevice keyboard, 
-			PointF relativeMousePos)
+		public override void HandleInput (PointF relativeMousePos)
 		{
 			foreach (var control in Controls)
-				control.HandleInput (mouse, keyboard, relativeMousePos);
+				control.HandleInput (relativeMousePos);
 		}
 	}
 }

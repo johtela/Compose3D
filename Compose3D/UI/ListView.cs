@@ -12,7 +12,10 @@
 		public readonly Reaction<IVisualizable> ItemClicked;
 		public readonly IEnumerable<IVisualizable> Items;
 
+		// Click regions
 		private MouseRegions<IVisualizable> _mouseRegions;
+
+		// Control state
 		private IVisualizable _pressed;
 		private IVisualizable _highlighted;
 
@@ -45,11 +48,10 @@
 			));
 		}
 
-		public override void HandleInput (MouseDevice mouse, KeyboardDevice keyboard, 
-			PointF relativeMousePos)
+		public override void HandleInput (PointF relativeMousePos)
 		{
 			var item = _mouseRegions.ItemUnderMouse (relativeMousePos);
-			if (mouse[MouseButton.Left])
+			if (MouseButtonDown (MouseButton.Left))
 			{
 				if (_pressed == null)
 				{

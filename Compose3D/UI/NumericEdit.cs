@@ -34,7 +34,7 @@
 			Changed = changed;
 		}
 
-		public override void HandleInput (MouseDevice mouse, KeyboardDevice keyboard, PointF relativeMousePos)
+		public override void HandleInput (PointF relativeMousePos)
 		{
 		}
 

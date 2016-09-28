@@ -29,12 +29,11 @@
 			Texture = Texture.FromBitmap (_bitmap);
 		}
 
-		public void UpdateControl (Vec2i viewportSize, MouseDevice mouse, 
-			KeyboardDevice keyboard)
+		public void UpdateControl (Vec2i viewportSize, MouseDevice mouse)
 		{
 			var relPos = PanelCoordinatesAtMousePos (new Vec2i (mouse.X, mouse.Y), 
 				viewportSize);
-			Control.HandleInput (mouse, keyboard, new PointF (relPos.X, relPos.Y));
+			Control.HandleInput (new PointF (relPos.X, relPos.Y));
 			var visual = Control.ToVisual ();
 			if (_visual != visual)
 			{
@@ -46,9 +45,13 @@
 
 		public static void UpdateAll (SceneGraph sceneGraph, GameWindow window, Vec2i viewportSize)
 		{
+			Control._prevKeyboardState = Control._currKeyboardState;
+			Control._currKeyboardState = window.Keyboard.GetState ();
+			Control._prevMouseState = Control._currMouseState;
+			Control._currMouseState = window.Mouse.GetState ();
 			var panels = sceneGraph.Root.Traverse ().OfType<ControlPanel<V>> ();
 			foreach (var panel in panels)
-				panel.UpdateControl (viewportSize, window.Mouse, window.Keyboard);
+				panel.UpdateControl (viewportSize, window.Mouse);
 		}
 	}
 }

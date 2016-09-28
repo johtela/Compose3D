@@ -48,11 +48,10 @@
 			));
 		}
 
-		public override void HandleInput (MouseDevice mouse, KeyboardDevice keyboard, 
-			PointF relativeMousePos)
+		public override void HandleInput (PointF relativeMousePos)
 		{
 			var item = _mouseRegions.ItemUnderMouse (relativeMousePos);
-			if (mouse[MouseButton.Left])
+			if (MouseButtonDown (MouseButton.Left))
 			{
 				if (_pressed == null)
 				{

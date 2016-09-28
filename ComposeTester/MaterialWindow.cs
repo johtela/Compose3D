@@ -1,7 +1,11 @@
 ﻿namespace ComposeTester
 {
-	using Extensions;
+	using System.Collections.Generic;
 	using System.Linq;
+	using System.Drawing;
+	using System;
+	using Extensions;
+	using Visuals;
 	using Compose3D.Maths;
 	using Compose3D.Imaging;
 	using Compose3D.Geometry;
@@ -10,12 +14,11 @@
 	using Compose3D.Shaders;
 	using Compose3D.Renderers;
 	using Compose3D.Textures;
+	using Compose3D.UI;
 	using OpenTK;
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
-	using System.Collections.Generic;
-	using System;
 
 	public class MaterialWindow : GameWindow
 	{
@@ -25,7 +28,8 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private SceneGraph _sceneGraph;
-		
+		private ControlPanel<TexturedVertex> _infoWindow;
+
 		public MaterialWindow ()
 			: base (512, 512, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
@@ -126,17 +130,26 @@
                 maxDimensionError: 0.1f,
                 maxColorError: 0.05f);
 
+			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph,
+				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top,
+					Static.Label ("Options", FontStyle.Bold),
+					new NumericEdit (0f, 0.1f, React.Ignore <float> ())),
+				new Vec2i (180, 64));
+			
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
-			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)));
+			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
+				_infoWindow.Offset (new Vec3 (-0.25f, 0.25f, 0f)));
 
 			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, SignalTexture ());
-			_sceneGraph.Root.Add (textureWindow.Offset (new Vec3 (-0.75f, 0.75f, 0f)));
+			_sceneGraph.Root.Add (textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
 		}
 
 		private void SetupRendering ()
 		{
 			var renderMaterial = Materials.Renderer ().Select ((double _) => _camera);
-			var renderPanel = Panels.Renderer (_sceneGraph).Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
+			var renderPanel = Panels.Renderer (_sceneGraph)
+				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
+				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)

@@ -14,6 +14,16 @@
 		internal static MouseState _currMouseState;
 		internal static MouseState _prevMouseState;
 
+		public static VisualStyle SelectedStyle = 
+			new VisualStyle (
+				VisualStyle.Default,
+				textBrush: Brushes.White,
+				brush: Brushes.DarkGray);
+
+		public static int RepeatDelay = 30;
+
+		private static Dictionary<Key, int> _keyDownDuration = new Dictionary<Key, int> (); 
+
 		public abstract Visual ToVisual ();
 
 		public abstract void HandleInput (PointF relativeMousePos);
@@ -48,9 +58,18 @@
 			return _currKeyboardState.IsAnyKeyDown;
 		}
 
-		public static bool KeyPressed (Key key)
+		public static bool KeyPressed (Key key, bool repeat)
 		{
-			return _prevKeyboardState.IsKeyUp (key) && _currKeyboardState.IsKeyDown (key);
+			if (_prevKeyboardState.IsKeyUp (key) && _currKeyboardState.IsKeyDown (key))
+				return true;
+			var duration = 0;
+			if (repeat)
+			{
+				if (_currKeyboardState.IsKeyDown (key))
+					duration = _keyDownDuration [key] + 1;
+				_keyDownDuration [key] = duration;
+			}
+			return duration > RepeatDelay;
 		}
 
 		public static bool AnyKeyPressed ()
@@ -61,7 +80,7 @@
 		public static Key? AnyOfTheKeysPressed (params Key[] keys)
 		{
 			foreach (var key in keys)
-				if (KeyPressed (key))
+				if (KeyPressed (key, false))
 					return key;
 			return null;
 		}
@@ -70,7 +89,7 @@
 		{
 			Key.Number0, Key.Number1, Key.Number2, Key.Number3, Key.Number4, Key.Number5, Key.Number6, Key.Number7, Key.Number8, Key.Number9,
 			Key.Keypad0, Key.Keypad1, Key.Keypad2, Key.Keypad3, Key.Keypad4, Key.Keypad5, Key.Keypad6, Key.Keypad7, Key.Keypad8, Key.Keypad9,
-			Key.Comma, Key.Period, Key.KeypadDecimal
+			Key.Period, Key.KeypadDecimal, Key.Comma
 		};
 
 		public static char AnyNumberKeyPressed ()
@@ -78,8 +97,8 @@
 			var key = AnyOfTheKeysPressed (_numberKeys);
 			return (char)(
 				key == null ? '\0' :
-				key >= Key.Number0 && key <= Key.Number9 ? (int)key - (int)Key.Number0 :
-				key >= Key.Keypad0 && key <= Key.Keypad9 ? (int)key - (int)Key.Keypad0 :
+				key >= Key.Number0 && key <= Key.Number9 ? (int)key - (int)Key.Number0 + (int)'0':
+				key >= Key.Keypad0 && key <= Key.Keypad9 ? (int)key - (int)Key.Keypad0 + (int)'0' :
 				'.');
 		}
 	}

@@ -34,16 +34,13 @@
 		public override Visual ToVisual ()
 		{
 			_mouseRegions.Clear ();
-			var selectedStyle = new VisualStyle (VisualStyle.Default,
-				textBrush: Brushes.White,
-				brush: Brushes.DarkGray);
 			return Visual.VStack (HAlign.Left,
 				Items.Select (i =>
 				{
 					var visual = Visual.Clickable (i.ToVisual (), _mouseRegions.Add (i));
 					return i != _highlighted ?
 						visual :
-						Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true), selectedStyle);
+						Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true), SelectedStyle);
 				}
 			));
 		}

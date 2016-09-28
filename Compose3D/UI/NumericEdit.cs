@@ -9,7 +9,7 @@
 	using Reactive;
 	using Visuals;
 
-	class NumericEdit : Control
+	public class NumericEdit : Control
 	{
 		public readonly float Increment;
 		public readonly Reaction<float> Changed;
@@ -19,7 +19,6 @@
 
 		// Control state
 		private bool _active;
-		private bool _pressed;
 		private string _value;
 
 		public float Value
@@ -27,21 +26,42 @@
 			get { return float.Parse (_value, CultureInfo.InvariantCulture); }
 		}
 
-		public NumericEdit (float value, float increment, Reaction<float> changed)
+		public NumericEdit (float defaultValue, float increment, Reaction<float> changed)
 		{
-			_value = value.ToString (CultureInfo.InvariantCulture);
+			_value = defaultValue.ToString (CultureInfo.InvariantCulture);
 			Increment = increment;
 			Changed = changed;
 		}
 
 		public override void HandleInput (PointF relativeMousePos)
 		{
+			if (_active)
+			{
+				var num = AnyNumberKeyPressed ();
+				if (num != '\0' && (num != '.' || (_value.Length > 0 && !_value.Contains ('.'))))
+				{
+					_value += num;
+					Changed (Value);
+				}
+				else if (KeyPressed (Key.BackSpace, true) && _value.Length > 0)
+				{
+					_value = _value.Substring (0, _value.Length - 1);
+					if (_value.Length > 0)
+						Changed (Value);
+				}
+			}
+			if (MouseButtonPressed (MouseButton.Left))
+				_active = _clickRegion.Contains (relativeMousePos);
 		}
 
 		public override Visual ToVisual ()
 		{
-			return Visual.Clickable (Visual.Frame (Visual.Label (_value), FrameKind.Rectangle), 
+			var visual = Visual.Clickable (
+				Visual.Frame (
+					Visual.Margin (Visual.Label (_value + (_active ? "_" : "")), right: 8f),
+					FrameKind.Rectangle, true), 
 				rect => _clickRegion = rect);
+			return _active ? Visual.Styled (visual, SelectedStyle) : visual;
 		}
 	}
 }

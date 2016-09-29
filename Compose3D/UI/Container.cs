@@ -30,9 +30,13 @@
 		public override Visual ToVisual ()
 		{
 			var visuals = Controls.Select (c => c.ToVisual ());
-			return Direction == VisualDirection.Horizontal ?
-				Visual.HStack (VertAlign, visuals) :
-				Visual.VStack (HorizAlign, visuals);
+			return Visual.Frame (
+				Visual.Margin (
+					Direction == VisualDirection.Horizontal ?
+						Visual.HStack (VertAlign, visuals) :
+						Visual.VStack (HorizAlign, visuals), 
+					right: 8),
+				FrameKind.RoundRectangle, true);
 		}
 
 		public override void HandleInput (PointF relativeMousePos)

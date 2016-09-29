@@ -14,11 +14,16 @@
 		internal static MouseState _currMouseState;
 		internal static MouseState _prevMouseState;
 
-		public static VisualStyle SelectedStyle = 
+		public static VisualStyle Style =
 			new VisualStyle (
 				VisualStyle.Default,
+				brush: new SolidBrush (Color.FromArgb (180, 128, 128, 128)));
+
+		public static VisualStyle SelectedStyle = 
+			new VisualStyle (
+				Style,
 				textBrush: Brushes.White,
-				brush: Brushes.DarkGray);
+				brush: Brushes.Blue);
 
 		public static int RepeatDelay = 30;
 
@@ -41,6 +46,11 @@
 		public static bool MouseButtonPressed (MouseButton button)
 		{
 			return _prevMouseState.IsButtonUp (button) && _currMouseState.IsButtonDown (button);
+		}
+
+		public static float MouseWheelChange ()
+		{
+			return _currMouseState.WheelPrecise - _prevMouseState.WheelPrecise;
 		}
 
 		public static bool AnyMouseButtonPressed ()

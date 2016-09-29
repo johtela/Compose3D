@@ -25,7 +25,7 @@
 			Control = control;
 			_visual = control.ToVisual ();
 			_bitmap = _visual.ToBitmap (new Size (size.X, size.Y),
-				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				System.Drawing.Imaging.PixelFormat.Format32bppArgb, Control.Style);
 			Texture = Texture.FromBitmap (_bitmap);
 		}
 
@@ -38,7 +38,7 @@
 			if (_visual != visual)
 			{
 				_visual = visual;
-				_visual.UpdateBitmap (_bitmap);
+				_visual.UpdateBitmap (_bitmap, Control.Style);
 				Texture.UpdateBitmap (_bitmap, TextureTarget.Texture2D, 0);
 			}
 		}

@@ -24,11 +24,12 @@
 		public float Value
 		{
 			get { return float.Parse (_value, CultureInfo.InvariantCulture); }
+			set { _value = value.ToString (CultureInfo.InvariantCulture); }
 		}
 
-		public NumericEdit (float defaultValue, float increment, Reaction<float> changed)
+		public NumericEdit (float value, float increment, Reaction<float> changed)
 		{
-			_value = defaultValue.ToString (CultureInfo.InvariantCulture);
+			Value = value;
 			Increment = increment;
 			Changed = changed;
 		}
@@ -48,6 +49,21 @@
 					_value = _value.Substring (0, _value.Length - 1);
 					if (_value.Length > 0)
 						Changed (Value);
+				}
+				else if (KeyPressed (Key.Up, true))
+				{
+					Value = Value + Increment;
+					Changed (Value);
+				}
+				else if (KeyPressed (Key.Down, true))
+				{
+					Value = Value - Increment;
+					Changed (Value);
+				}
+				else if (MouseWheelChange () != 0f)
+				{
+					Value = Value + (MouseWheelChange () * Increment);
+					Changed (Value);
 				}
 			}
 			if (MouseButtonPressed (MouseButton.Left))

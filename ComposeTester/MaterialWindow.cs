@@ -91,7 +91,7 @@
 				Tuple.Create (1f, new Vec3 (0.3f, 0.5f, 0.7f)));
 
 			var perlin = new Signal<Vec3, float> (new PerlinNoise ().Noise)
-				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * 10f);
+				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * 100f);
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f);
 			var signal = sine.Warp (perlin.Scale (0.001f), 1f / size.X)

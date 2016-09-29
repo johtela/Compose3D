@@ -17,6 +17,7 @@
 		public static VisualStyle Style =
 			new VisualStyle (
 				VisualStyle.Default,
+				pen: new Pen (Color.Black, 1.5f), 
 				brush: new SolidBrush (Color.FromArgb (180, 128, 128, 128)));
 
 		public static VisualStyle SelectedStyle = 
@@ -48,9 +49,9 @@
 			return _prevMouseState.IsButtonUp (button) && _currMouseState.IsButtonDown (button);
 		}
 
-		public static float MouseWheelChange ()
+		public static int MouseWheelChange ()
 		{
-			return _currMouseState.WheelPrecise - _prevMouseState.WheelPrecise;
+			return _currMouseState.Wheel - _prevMouseState.Wheel;
 		}
 
 		public static bool AnyMouseButtonPressed ()
@@ -99,7 +100,7 @@
 		{
 			Key.Number0, Key.Number1, Key.Number2, Key.Number3, Key.Number4, Key.Number5, Key.Number6, Key.Number7, Key.Number8, Key.Number9,
 			Key.Keypad0, Key.Keypad1, Key.Keypad2, Key.Keypad3, Key.Keypad4, Key.Keypad5, Key.Keypad6, Key.Keypad7, Key.Keypad8, Key.Keypad9,
-			Key.Period, Key.KeypadDecimal, Key.Comma
+			Key.Period, Key.KeypadDecimal, Key.Comma, Key.Minus, Key.KeypadMinus
 		};
 
 		public static char AnyNumberKeyPressed ()
@@ -109,6 +110,7 @@
 				key == null ? '\0' :
 				key >= Key.Number0 && key <= Key.Number9 ? (int)key - (int)Key.Number0 + (int)'0':
 				key >= Key.Keypad0 && key <= Key.Keypad9 ? (int)key - (int)Key.Keypad0 + (int)'0' :
+				key.In (Key.Minus, Key.KeypadMinus) ? '-' : 
 				'.');
 		}
 	}

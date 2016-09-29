@@ -39,11 +39,15 @@
 			if (_active)
 			{
 				var num = AnyNumberKeyPressed ();
-				if (num != '\0' && (num != '.' || (_value.Length > 0 && !_value.Contains ('.'))))
+				if (num >= '0' && num <= '9')
 				{
 					_value += num;
 					Changed (Value);
 				}
+				else if (num == '-' && _value.Length == 0)
+					_value = "-";
+				else if (num == '.' && _value.Length > 0 && !_value.Contains ('.'))
+					_value += '.';
 				else if (KeyPressed (Key.BackSpace, true) && _value.Length > 0)
 				{
 					_value = _value.Substring (0, _value.Length - 1);
@@ -60,7 +64,7 @@
 					Value = Value - Increment;
 					Changed (Value);
 				}
-				else if (MouseWheelChange () != 0f)
+				else if (MouseWheelChange () != 0)
 				{
 					Value = Value + (MouseWheelChange () * Increment);
 					Changed (Value);
@@ -74,8 +78,8 @@
 		{
 			var visual = Visual.Clickable (
 				Visual.Frame (
-					Visual.Margin (Visual.Label (_value + (_active ? "_" : "")), right: 8f),
-					FrameKind.Rectangle, true), 
+					Visual.Margin (Visual.Label (_value + (_active ? "_" : "")), left: 2f, right: 8f),
+					FrameKind.Rectangle, _active), 
 				rect => _clickRegion = rect);
 			return _active ? Visual.Styled (visual, SelectedStyle) : visual;
 		}

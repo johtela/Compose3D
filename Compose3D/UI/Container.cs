@@ -44,5 +44,11 @@
 			foreach (var control in Controls)
 				control.HandleInput (relativeMousePos);
 		}
+
+		public static Container LabelAndControl (string label, Control control)
+		{
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Center,
+				Static.Label (label, FontStyle.Regular), control);
+		}
 	}
 }

@@ -1,7 +1,5 @@
 ﻿namespace Compose3D.UI
 {
-	using System;
-	using System.Collections.Generic;
 	using System.Drawing;
 	using System.Linq;
 	using System.Globalization;
@@ -34,6 +32,13 @@
 			Changed = changed;
 		}
 
+		private void NotifyChanged ()
+		{
+			float x;
+			if (float.TryParse (_value, NumberStyles.Any, CultureInfo.InvariantCulture, out x))
+				Changed (x);
+		}
+
 		public override void HandleInput (PointF relativeMousePos)
 		{
 			if (_active)
@@ -42,7 +47,7 @@
 				if (num >= '0' && num <= '9')
 				{
 					_value += num;
-					Changed (Value);
+					NotifyChanged ();
 				}
 				else if (num == '-' && _value.Length == 0)
 					_value = "-";
@@ -51,23 +56,22 @@
 				else if (KeyPressed (Key.BackSpace, true) && _value.Length > 0)
 				{
 					_value = _value.Substring (0, _value.Length - 1);
-					if (_value.Length > 0)
-						Changed (Value);
+					NotifyChanged ();
 				}
 				else if (KeyPressed (Key.Up, true))
 				{
 					Value = Value + Increment;
-					Changed (Value);
+					NotifyChanged ();
 				}
 				else if (KeyPressed (Key.Down, true))
 				{
 					Value = Value - Increment;
-					Changed (Value);
+					NotifyChanged ();
 				}
 				else if (MouseWheelChange () != 0)
 				{
 					Value = Value + (MouseWheelChange () * Increment);
-					Changed (Value);
+					NotifyChanged ();
 				}
 			}
 			if (MouseButtonPressed (MouseButton.Left))

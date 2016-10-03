@@ -23,7 +23,7 @@
 
 		public static Static Label (string caption, FontStyle style)
 		{
-			return new Static (Visual.Styled (Visual.Label (caption),
+			return new Static (Visual.Styled (Visual.Margin (Visual.Label (caption), left: 2f, right: 2f),
 				new VisualStyle (VisualStyle.Default, 
 					new Font (VisualStyle.Default.Font, style))));
 		}

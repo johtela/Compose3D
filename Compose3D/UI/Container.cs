@@ -33,9 +33,9 @@
 			return Visual.Frame (
 				Visual.Margin (
 					Direction == VisualDirection.Horizontal ?
-						Visual.HStack (VertAlign, visuals) :
-						Visual.VStack (HorizAlign, visuals), 
-					right: 8),
+						Visual.HStack (VertAlign, visuals.Select (v => Visual.Margin (v, left: 2f, right: 2f))) :
+						Visual.VStack (HorizAlign, visuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f))),
+				2f),
 				FrameKind.RoundRectangle, true);
 		}
 

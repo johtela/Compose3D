@@ -18,13 +18,13 @@
 			new VisualStyle (
 				VisualStyle.Default,
 				pen: new Pen (Color.Black, 1.5f), 
-				brush: new SolidBrush (Color.FromArgb (180, 128, 128, 128)));
+				brush: new SolidBrush (Color.FromArgb (128, 128, 128, 150)));
 
 		public static VisualStyle SelectedStyle = 
 			new VisualStyle (
 				Style,
 				textBrush: Brushes.White,
-				brush: Brushes.Blue);
+				brush: Brushes.CadetBlue);
 
 		public static int RepeatDelay = 30;
 

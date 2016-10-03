@@ -142,12 +142,12 @@
 			}
 		}
 
-		private sealed class _Static : Visual
+		private sealed class _Custom : Visual
 		{
 			public readonly SizeF Size;
-			public readonly Action<Graphics, SizeF> Paint;
+			public readonly Action<GraphicsContext, SizeF> Paint;
 
-			public _Static (SizeF size, Action<Graphics, SizeF> paint)
+			public _Custom (SizeF size, Action<GraphicsContext, SizeF> paint)
 			{
 				Size = size;
 				Paint = paint;
@@ -160,8 +160,7 @@
 
 			protected override void Draw (GraphicsContext context, VBox availableSize)
 			{
-				context.Graphics.SetClip (new RectangleF (new PointF (), Size));
-				Paint (context.Graphics, Size);
+				Paint (context, availableSize.AsSizeF);
 			}
 		}
 
@@ -593,9 +592,9 @@
 		/// <summary>
 		/// Create a new static graphical shape.
 		/// </summary>
-		public static Visual Static (SizeF size, Action<Graphics, SizeF> paint)
+		public static Visual Custom (SizeF size, Action<GraphicsContext, SizeF> paint)
 		{
-			return new _Static (size, paint);
+			return new _Custom (size, paint);
 		}
 		
 		/// <summary>
@@ -655,6 +654,11 @@
 			float top = 0, float bottom = 0)
 		{
 			return new _Margin (visual, left, right, top, bottom);
+		}
+
+		public static Visual Margin (Visual visual, float margin)
+		{
+			return new _Margin (visual, margin, margin, margin, margin);
 		}
 
 		/// <summary>

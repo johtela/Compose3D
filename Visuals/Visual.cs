@@ -142,6 +142,29 @@
 			}
 		}
 
+		private sealed class _Static : Visual
+		{
+			public readonly SizeF Size;
+			public readonly Action<Graphics, SizeF> Paint;
+
+			public _Static (SizeF size, Action<Graphics, SizeF> paint)
+			{
+				Size = size;
+				Paint = paint;
+			}
+
+			protected override VBox CalculateSize (GraphicsContext context)
+			{
+				return new VBox (Size);
+			}
+
+			protected override void Draw (GraphicsContext context, VBox availableSize)
+			{
+				context.Graphics.SetClip (new RectangleF (new PointF (), Size));
+				Paint (context.Graphics, Size);
+			}
+		}
+
 		/// <summary>
 		/// Add margins to a visual.
 		/// </summary>
@@ -565,6 +588,14 @@
 		public static Visual Label (string text)
 		{
 			return new _Label (text);
+		}
+
+		/// <summary>
+		/// Create a new static graphical shape.
+		/// </summary>
+		public static Visual Static (SizeF size, Action<Graphics, SizeF> paint)
+		{
+			return new _Static (size, paint);
 		}
 		
 		/// <summary>

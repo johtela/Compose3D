@@ -3,6 +3,7 @@
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
 	using OpenTK.Input;
+	using Maths;
 	using Reactive;
 	using Visuals;
 
@@ -27,7 +28,7 @@
 			KnobWidth = knobWidth;
 			MinVisualLength = minVisualLength;
 			MinValue = minValue;
-			Range = maxValue - minValue + 1;
+			Range = maxValue - minValue;
 			Value = value;
 			Changed = changed;
 		}
@@ -37,9 +38,10 @@
 			if (MouseButtonDown (MouseButton.Left) && _clickRegion.Contains (relativeMousePos))
 			{
 				var pos = relativeMousePos - new SizeF (_clickRegion.Location);
-				var relPos = Direction == VisualDirection.Horizontal ?
-					pos.X / _clickRegion.Width :
-					1f - (pos.Y / _clickRegion.Height);
+				var relPos = (Direction == VisualDirection.Horizontal ?
+					(pos.X - (KnobWidth / 2f)) / (_clickRegion.Width - KnobWidth) :
+					1f - ((pos.Y - (KnobWidth / 2f)) / (_clickRegion.Height - KnobWidth)))
+					.Clamp (0f, 1f);
 				var newVal = MinValue + (relPos * Range);
 				if (newVal != Value)
 				{
@@ -49,7 +51,7 @@
 			}
 		}
 
-		private void Paint (GraphicsContext context, SizeF size)
+		private SizeF Paint (GraphicsContext context, SizeF size)
 		{
 			PointF pos;
 			SizeF knobSize;
@@ -73,6 +75,9 @@
 			}
 			context.Graphics.FillRectangle (context.Style.Brush, pos.X, pos.Y, knobSize.Width, knobSize.Height);
 			context.Graphics.DrawRectangle (context.Style.Pen, pos.X, pos.Y, knobSize.Width, knobSize.Height);
+			return Direction == VisualDirection.Horizontal ?
+				new SizeF (size.Width, KnobWidth) : 
+				new SizeF (KnobWidth, size.Height);
 		}
 
 		public override Visual ToVisual ()

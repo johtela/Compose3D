@@ -53,7 +53,7 @@
 		/// <param name="context">The graphics context which used in drawing.</param>
 		/// <param name='availableSize'>The available size into which the visual should
 		/// fit.</param>
-		protected abstract void Draw (GraphicsContext context, VBox availableSize);
+		protected abstract VBox Draw (GraphicsContext context, VBox availableSize);
 		
 		public void Render (GraphicsContext context, VBox availableSize)
 		{
@@ -77,8 +77,9 @@
 				return VBox.Empty;
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
+				return VBox.Empty;
 			}
 		}
 
@@ -99,9 +100,9 @@
 				return Visual.CalculateSize (context);
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				Visual.Render (context, availableSize);
+				return Visual.Draw (context, availableSize);
 			}
 		}
 
@@ -135,19 +136,20 @@
 			/// <summary>
 			/// Draw the label into the specified context.
 			/// </summary>
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				context.Graphics.DrawString (Text, context.Style.Font, context.Style.TextBrush, 
 					new PointF (0, 0));
+				return CalculateSize (context);
 			}
 		}
 
 		private sealed class _Custom : Visual
 		{
 			public readonly SizeF Size;
-			public readonly Action<GraphicsContext, SizeF> Paint;
+			public readonly Func<GraphicsContext, SizeF, SizeF> Paint;
 
-			public _Custom (SizeF size, Action<GraphicsContext, SizeF> paint)
+			public _Custom (SizeF size, Func<GraphicsContext, SizeF, SizeF> paint)
 			{
 				Size = size;
 				Paint = paint;
@@ -158,9 +160,9 @@
 				return new VBox (Size);
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				Paint (context, availableSize.AsSizeF);
+				return new VBox (Paint (context, availableSize.AsSizeF));
 			}
 		}
 
@@ -189,12 +191,13 @@
 				return new VBox (box.Width + Left + Right, box.Height + Top + Bottom);
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				var st = context.Graphics.Save ();
 				context.Graphics.TranslateTransform (Left, Top);
-				base.Draw (context, availableSize);
+				var box = base.Draw (context, availableSize);
 				context.Graphics.Restore (st);
+				return new VBox (box.Width + Left + Right, box.Height + Top + Bottom);
 			}
 		}
 
@@ -298,15 +301,16 @@
 			/// <summary>
 			/// Draw the stack into the specified context.
 			/// </summary>
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				var stack = GetSize (context);
 				var gs1 = context.Graphics.Save ();
+				var remainingSize = availableSize;
 
 				foreach (var visual in Items)
 				{
-					if (availableSize.IsEmpty)
-						return;
+					if (remainingSize.IsEmpty)
+						return stack.HMin (availableSize).VMin (availableSize);
 
 					var inner = visual.GetSize (context);
 					var outer = Direction == VisualDirection.Horizontal ?
@@ -321,15 +325,16 @@
 					if (Direction == VisualDirection.Horizontal)
 					{
 						context.Graphics.TranslateTransform (outer.Width, 0);
-						availableSize = availableSize.HSub (outer);
+						remainingSize = remainingSize.HSub (outer);
 					}
 					else
 					{
 						context.Graphics.TranslateTransform (0, outer.Height);
-						availableSize = availableSize.VSub (outer);
+						remainingSize = remainingSize.VSub (outer);
 					}
 				}
 				context.Graphics.Restore (gs1);
+				return stack;
 			}
 		}
 
@@ -340,7 +345,10 @@
 		{
 			public _Hidden (Visual visual) : base (visual) { }
 
-			protected override void Draw (GraphicsContext context, VBox availableSize) { }
+			protected override VBox Draw (GraphicsContext context, VBox availableSize) 
+			{
+				return GetSize (context);
+			}
 		}
 
 		/// <summary>
@@ -357,20 +365,22 @@
 
 			protected override VBox CalculateSize (GraphicsContext context)
 			{
-				return new VBox (8, 8);
+				return new VBox (8f, 8f);
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				if (Direction == VisualDirection.Horizontal)
 				{
 					var y = availableSize.Height / 2;
 					context.Graphics.DrawLine (context.Style.Pen, 0, y, availableSize.Width, y);
+					return new VBox (availableSize.Width, 8f);
 				}
 				else
 				{
 					var x = availableSize.Width / 2;
 					context.Graphics.DrawLine (context.Style.Pen, x, 0, x, availableSize.Height);
+					return new VBox (8f, availableSize.Width);
 				}
 			}
 		}
@@ -389,9 +399,9 @@
 				return GetChild ().CalculateSize (context);
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				GetChild ().Draw (context, availableSize);
+				return GetChild ().Draw (context, availableSize);
 			}
 		}
 
@@ -410,7 +420,7 @@
 				Filled = filled;
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				var box = Visual.GetSize (context);
 
@@ -441,7 +451,7 @@
 							new RectangleF(0, 0, box.Width - 1, box.Height - 1), 10);
 						break;
 				}
-				base.Draw (context, availableSize);
+				return base.Draw (context, availableSize);
 			}
 
 			private static void DrawRoundedRectangle (Graphics graphics, Pen pen, Brush brush,
@@ -474,9 +484,9 @@
 				Style = style;
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				Visual.Render (new GraphicsContext(context, Style), availableSize);
+				return Visual.Draw (new GraphicsContext(context, Style), availableSize);
 			}
 		}
 
@@ -527,10 +537,10 @@
 				return anchor[0];
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				Position = GetAnchorPosition (context.Graphics.Transform, Visual.GetSize (context));
-				base.Draw (context, availableSize);
+				return base.Draw (context, availableSize);
 			}
 		}
 
@@ -547,13 +557,14 @@
 				Target = target;
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				base.Draw (context, availableSize);
+				var box = base.Draw (context, availableSize);
 				var state = context.Graphics.Save ();
 				context.Graphics.ResetTransform ();
 				context.Graphics.DrawLine (context.Style.Pen, Position, Target.Position);
 				context.Graphics.Restore (state);
+				return box;
 			}
 		}
 
@@ -566,10 +577,11 @@
 				SetClickRegion = setClickRegion;
 			}
 
-			protected override void Draw (GraphicsContext context, VBox availableSize)
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				base.Draw (context, availableSize);
-				SetClickRegion (GetSize (context).AsRectF (context.Graphics.Transform));
+				var box = base.Draw (context, availableSize);
+				SetClickRegion (box.AsRectF (context.Graphics.Transform));
+				return box;
 			}
 		}
 
@@ -592,7 +604,7 @@
 		/// <summary>
 		/// Create a new static graphical shape.
 		/// </summary>
-		public static Visual Custom (SizeF size, Action<GraphicsContext, SizeF> paint)
+		public static Visual Custom (SizeF size, Func<GraphicsContext, SizeF, SizeF> paint)
 		{
 			return new _Custom (size, paint);
 		}

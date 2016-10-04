@@ -39,7 +39,7 @@
 			var highlighted = _pressed && _onButton;
 			var visual = Visual.Clickable (
 				Visual.Frame (
-					Visual.Margin (Visual.Label (Caption), 2f), 
+					Visual.Margin (Visual.Label (Caption), 4f), 
 					FrameKind.RoundRectangle, highlighted),
 				rect => _clickRegion = rect);
 			return highlighted ?

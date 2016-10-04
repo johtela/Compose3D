@@ -48,7 +48,7 @@
 		public static Container LabelAndControl (string label, Control control)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Center,
-				Static.Label (label, FontStyle.Regular), control);
+				Label.Static (label, FontStyle.Regular), control);
 		}
 	}
 }

@@ -138,10 +138,12 @@
                 maxColorError: 0.05f);
 
 			var textureParams = new SignalTextureParams ();
+			var test = 0f;
+			var colorDialog = new System.Windows.Forms.ColorDialog ();
 			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph,
 				new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top,
 					new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center,
-						Static.Label ("Perlin Noise", FontStyle.Bold),
+						Label.Static ("Perlin Noise", FontStyle.Bold),
 						Container.LabelAndControl ("Seed: ",
 							new NumericEdit (0f, 1f, React.By ((float s) =>
 							{
@@ -156,10 +158,14 @@
 								UpdateSignalTexture (textureParams);
 							}
 							))),
-						new Slider (VisualDirection.Horizontal, 16f, 0f, 100f, 100f)),
-					new Slider (VisualDirection.Vertical, 16f, 0, 100f, 50f) 
+						Label.Dynamic (() => test.Round ().ToString (), FontStyle.Italic),
+						new Slider (VisualDirection.Horizontal, 16f, 100f, 0f, 100f, test,
+							React.By<float> (v => test = v)),
+						new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
+					),
+					new Slider (VisualDirection.Vertical, 16f, 100f, 0, 100f, 50f, React.Ignore<float> ()) 
 				),
-				new Vec2i (200, 128));
+				new Vec2i (200, 180));
 			
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 

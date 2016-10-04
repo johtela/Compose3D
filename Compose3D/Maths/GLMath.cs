@@ -51,6 +51,15 @@
 		}
 
 		/// <summary>
+		/// Returns a value equal to the nearest integer to the `value` parameter.
+		/// </summary>
+		[GLFunction ("round ({0})")]
+		public static float Round (this float value)
+		{
+			return (float)Math.Round (value);
+		}
+
+		/// <summary>
 		/// Returns the fractional part of `value`. This is calculated as `value - floor(value)`.
 		/// </summary>
 		[GLFunction ("fract ({0})")]

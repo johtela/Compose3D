@@ -74,7 +74,7 @@
 
 			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph,
 				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top,
-					Static.Label ("Options", FontStyle.Bold),
+					Label.Static ("Options", FontStyle.Bold),
 					new ListView (React.Ignore <IVisualizable> (),
 						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
 						new Visualizable (() => Visual.Label (

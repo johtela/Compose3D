@@ -226,6 +226,7 @@
     <Compile Include="Reactive\KeyboardReactions.cs" />
     <Compile Include="SceneGraph\Panel.cs" />
     <Compile Include="SceneGraph\ControlPanel.cs" />
+    <Compile Include="UI\Button.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\NumericEdit.cs" />

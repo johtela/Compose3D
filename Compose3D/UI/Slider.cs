@@ -51,27 +51,42 @@
 			}
 		}
 
+		private Pen BarPen (GraphicsContext context)
+		{
+			var pen = new Pen (context.Style.Brush, KnobWidth / 2f);
+			pen.StartCap = LineCap.Round;
+			pen.EndCap = LineCap.Round;
+			return pen;
+		}
+
+		protected virtual void PaintHorizontalBar (GraphicsContext context, SizeF size, SizeF knobSize)
+		{
+			var Y = knobSize.Height / 2f;
+			context.Graphics.DrawLine (BarPen (context), knobSize.Width, Y, size.Width - (knobSize.Width * 2f), Y);
+		}
+
+		protected virtual void PaintVerticalBar (GraphicsContext context, SizeF size, SizeF knobSize)
+		{
+			var X = knobSize.Width / 2f;
+			context.Graphics.DrawLine (BarPen (context), X, knobSize.Height, X, size.Height - (knobSize.Height * 2f));
+		}
+
 		private SizeF Paint (GraphicsContext context, SizeF size)
 		{
 			PointF pos;
 			SizeF knobSize;
 			var ratio = (Value - MinValue) / Range;
-			var pen = new Pen (context.Style.Brush, KnobWidth / 2f);
-			pen.StartCap = LineCap.Round;
-			pen.EndCap = LineCap.Round;
 			if (Direction == VisualDirection.Horizontal)
 			{
 				knobSize = new SizeF (KnobWidth / 2f, KnobWidth);
-				pos = new PointF (ratio * (size.Width - KnobWidth), 0f); 
-				var Y = knobSize.Height / 2f;
-				context.Graphics.DrawLine (pen, knobSize.Width, Y, size.Width - (knobSize.Width * 2f), Y);
+				pos = new PointF (ratio * (size.Width - KnobWidth), 0f);
+				PaintHorizontalBar (context, size, knobSize);
 			}
 			else
 			{
 				knobSize = new SizeF (KnobWidth, KnobWidth / 2f);
 				pos = new PointF (0f, (1f - ratio) * (size.Height - KnobWidth)); 
-				var X = knobSize.Width / 2f;
-				context.Graphics.DrawLine (pen, X, knobSize.Height, X, size.Height - (knobSize.Height * 2f));
+				PaintVerticalBar (context, size, knobSize);
 			}
 			context.Graphics.FillRectangle (context.Style.Brush, pos.X, pos.Y, knobSize.Width, knobSize.Height);
 			context.Graphics.DrawRectangle (context.Style.Pen, pos.X, pos.Y, knobSize.Width, knobSize.Height);

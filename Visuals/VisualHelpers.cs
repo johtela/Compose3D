@@ -30,5 +30,46 @@
 			var ctx = new GraphicsContext (gfx, style);
 			visual.Render (ctx, new VBox (bitmap.Size));
 		}
+
+		public static Color ColorFromRGB (float red, float green, float blue)
+		{
+			return Color.FromArgb ((int)Math.Round (red * 255f), (int)Math.Round (green * 255f), 
+				(int)Math.Round (blue * 255f));
+		}
+
+		public static Color ColorFromHSB (float hue, float saturation, float brightness)
+		{
+			if (hue < 0f || hue > 1f)
+				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 1].");
+			if (saturation < 0f || saturation > 1f)
+				throw new ArgumentOutOfRangeException ("saturation", saturation, "Value must be within range [0, 1].");
+			if (brightness < 0f || brightness > 1f)
+				throw new ArgumentOutOfRangeException ("brightness", brightness, "Value must be within range [0, 1].");
+
+			if (saturation == 0)
+				return ColorFromRGB (brightness, brightness, brightness);
+			// the color wheel consists of 6 sectors. Figure out which sector you're in.
+			float sectorPos = hue * 6f;
+			int sectorNumber = (int)(Math.Floor (sectorPos));
+			// get the fractional part of the sector
+			float fractionalSector = sectorPos - sectorNumber;
+
+			// calculate values for the three axes of the color.
+			float p = brightness * (1f - saturation);
+			float q = brightness * (1f - (saturation * fractionalSector));
+			float t = brightness * (1f - (saturation * (1f - fractionalSector)));
+
+			// assign the fractional colors to r, g, and b based on the sector
+			// the angle is in.
+			switch (sectorNumber)
+			{
+				case 0: return ColorFromRGB (brightness, t, p);
+				case 1: return ColorFromRGB (q, brightness, p);
+				case 2: return ColorFromRGB (p, brightness, t);
+				case 3: return ColorFromRGB (p, q, brightness);
+				case 4: return ColorFromRGB (t, p, brightness);
+				default: return ColorFromRGB (brightness, p, q);
+			}
+		}
 	}
 }

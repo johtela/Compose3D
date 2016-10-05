@@ -231,8 +231,9 @@
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\NumericEdit.cs" />
     <Compile Include="UI\Slider.cs" />
-    <Compile Include="UI\Static.cs" />
     <Compile Include="UI\ListView.cs" />
+    <Compile Include="UI\ColorSlider.cs" />
+    <Compile Include="UI\Label.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

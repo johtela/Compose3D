@@ -138,7 +138,7 @@
                 maxColorError: 0.05f);
 
 			var textureParams = new SignalTextureParams ();
-			var test = 0.5f;
+			var color = Color.White;
 			var colorDialog = new System.Windows.Forms.ColorDialog ();
 			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph,
 				new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top,
@@ -158,14 +158,12 @@
 								UpdateSignalTexture (textureParams);
 							}
 							))),
-						Label.Dynamic (() => test.ToString (), FontStyle.Italic),
-						ColorSlider.Hue (VisualDirection.Horizontal, 16f, 100f, test,
-							React.By<float> (v => test = v)),
-						ColorSlider.Saturation (VisualDirection.Horizontal, 16f, 100f, test, 0.5f,
-							React.Ignore<float> ()),
+						Label.Dynamic (() => color.ToString (), FontStyle.Italic),
+						new ColorPicker (VisualDirection.Horizontal, 16f, 100f, color,
+							React.Ignore<Color> ()),
 						new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
 					),
-					ColorSlider.Hue (VisualDirection.Vertical, 16f, 100f, 0f, React.Ignore<float> ()) 
+					ColorSlider.Hue (VisualDirection.Vertical, 16f, 100f, color, React.Ignore<float> ()) 
 				),
 				new Vec2i (200, 180));
 			

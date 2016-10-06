@@ -39,8 +39,8 @@
 
 		public static Color ColorFromHSB (float hue, float saturation, float brightness)
 		{
-			if (hue < 0f || hue > 1f)
-				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 1].");
+			if (hue < 0f || hue > 360f)
+				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 360].");
 			if (saturation < 0f || saturation > 1f)
 				throw new ArgumentOutOfRangeException ("saturation", saturation, "Value must be within range [0, 1].");
 			if (brightness < 0f || brightness > 1f)
@@ -49,7 +49,7 @@
 			if (saturation == 0)
 				return ColorFromRGB (brightness, brightness, brightness);
 			// the color wheel consists of 6 sectors. Figure out which sector you're in.
-			float sectorPos = hue * 6f;
+			float sectorPos = hue / 60f;
 			int sectorNumber = (int)(Math.Floor (sectorPos));
 			// get the fractional part of the sector
 			float fractionalSector = sectorPos - sectorNumber;
@@ -70,6 +70,28 @@
 				case 4: return ColorFromRGB (t, p, brightness);
 				default: return ColorFromRGB (brightness, p, q);
 			}
+		}
+
+		public static Color ChangeHue (this Color color, float hue)
+		{
+			return ColorFromHSB (hue, color.GetSaturation (), color.GetBrightness ());
+		}
+
+		public static Color ChangeSaturation (this Color color, float saturation)
+		{
+			return ColorFromHSB (color.GetHue (), saturation, color.GetBrightness ());
+		}
+
+		public static Color ChangeBrightness (this Color color, float brightness)
+		{
+			return ColorFromHSB (color.GetHue (), color.GetSaturation (), brightness);
+		}
+
+		public static VisualDirection Opposite (this VisualDirection direction)
+		{
+			return direction == VisualDirection.Horizontal ?
+				VisualDirection.Vertical :
+				VisualDirection.Horizontal;
 		}
 	}
 }

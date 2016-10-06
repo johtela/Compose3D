@@ -2,10 +2,6 @@
 {
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
-	using System.Linq;
-	using OpenTK.Input;
-	using Extensions;
-	using Maths;
 	using Reactive;
 	using Visuals;
 
@@ -14,8 +10,8 @@
 		public Color[] Colors { get; set; }
 
 		public ColorSlider (VisualDirection direction, float knobWidth, float minVisualLength, 
-			float value, Color[] colors, Reaction<float> changed)
-			: base (direction, knobWidth, minVisualLength, 0f, 1f, value, changed)
+			float minValue, float maxValue,	float value, Color[] colors, Reaction<float> changed)
+			: base (direction, knobWidth, minVisualLength, minValue, maxValue, value, changed)
 		{
 			Colors = colors;
 		}
@@ -50,9 +46,9 @@
 		}
 
 		public static ColorSlider Hue (VisualDirection direction, float knobWidth, float minVisualLength, 
-			float hue, Reaction<float> changed)
+			Color color, Reaction<float> changed)
 		{
-			return new ColorSlider (direction, knobWidth, minVisualLength, hue, 
+			return new ColorSlider (direction, knobWidth, minVisualLength, 0f, 360f, color.GetHue (), 
 				new [] { 
 					Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.Blue, Color.Indigo, 
 					Color.Violet, Color.Red
@@ -60,10 +56,19 @@
 		}
 
 		public static ColorSlider Saturation (VisualDirection direction, float knobWidth, float minVisualLength, 
-			float hue, float saturation, Reaction<float> changed)
+			Color color, Reaction<float> changed)
 		{
-			return new ColorSlider (direction, knobWidth, minVisualLength, saturation, 
-				new [] { Color.White, VisualHelpers.ColorFromHSB (hue, 1f, 1f) }, changed);
+			return new ColorSlider (direction, knobWidth, minVisualLength, 0f, 1f, color.GetSaturation (), 
+				new [] { Color.White, VisualHelpers.ColorFromHSB (color.GetHue (), 1f, color.GetBrightness ()) }, 
+				changed);
+		}
+
+		public static ColorSlider Brightness (VisualDirection direction, float knobWidth, float minVisualLength,
+			Color color, Reaction<float> changed)
+		{
+			return new ColorSlider (direction, knobWidth, minVisualLength, 0f, 1f, color.GetBrightness (),
+				new[] { Color.Black, VisualHelpers.ColorFromHSB (color.GetHue (), color.GetSaturation (), 1f) }, 
+				changed);
 		}
 	}
 }

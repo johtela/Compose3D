@@ -8,24 +8,19 @@
 
 	public class Container : Control
 	{
-		public readonly IEnumerable<Control> Controls;
 		public readonly VisualDirection Direction;
 		public readonly HAlign HorizAlign;
 		public readonly VAlign VertAlign;
+		public Control[] Controls { get; protected set; }
 
 		public Container (VisualDirection direction, HAlign horizAlign,
-			VAlign vertAlign, IEnumerable<Control> controls)
+			VAlign vertAlign, params Control[] controls)
 		{
 			Direction = direction;
 			Controls = controls;
 			HorizAlign = horizAlign;
 			VertAlign = vertAlign;
 		}
-
-		public Container (VisualDirection direction, HAlign horizAlign,
-			VAlign vertAlign, params Control[] controls)
-			: this (direction, horizAlign, vertAlign, (IEnumerable<Control>)controls)
-		{ }
 
 		public override Visual ToVisual ()
 		{

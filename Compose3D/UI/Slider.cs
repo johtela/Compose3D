@@ -14,7 +14,7 @@
 		public readonly float MinVisualLength;
 		public readonly float MinValue;
 		public readonly float Range;
-		public Reaction<float> Changed { get; internal set; }
+		public readonly Reaction<float> Changed;
 
 		public float Value { get; private set; }
 

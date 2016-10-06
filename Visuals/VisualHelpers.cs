@@ -39,7 +39,7 @@
 
 		public static Color ColorFromHSB (float hue, float saturation, float brightness)
 		{
-			if (hue < 0f || hue > 360f)
+			if (hue < 0f)
 				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 360].");
 			if (saturation < 0f || saturation > 1f)
 				throw new ArgumentOutOfRangeException ("saturation", saturation, "Value must be within range [0, 1].");
@@ -49,7 +49,7 @@
 			if (saturation == 0)
 				return ColorFromRGB (brightness, brightness, brightness);
 			// the color wheel consists of 6 sectors. Figure out which sector you're in.
-			float sectorPos = hue / 60f;
+			float sectorPos = (hue % 360f) / 60f;
 			int sectorNumber = (int)(Math.Floor (sectorPos));
 			// get the fractional part of the sector
 			float fractionalSector = sectorPos - sectorNumber;

@@ -18,19 +18,13 @@
 
 		public ColorPicker (VisualDirection direction, float knobWidth, float minVisualLength, Color color,
 			Reaction<Color> changed)
-			: base (direction.Opposite (), HAlign.Left, VAlign.Top, 
-				  ColorSlider.Hue (direction, knobWidth, minVisualLength, color, React.Ignore<float> ()),
-				  ColorSlider.Saturation (direction, knobWidth, minVisualLength, color, React.Ignore<float> ()),
-				  ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, React.Ignore<float> ()))
+			: base (direction.Opposite (), HAlign.Left, VAlign.Top) 
 		{
 			Changed = changed;
-			var controls = Controls.Cast<ColorSlider> ().ToArray ();
-			Hue = controls [0];
-			Hue.Changed = React.By<float> (ChangeHue);
-			Saturation = controls [1];
-			Saturation.Changed = React.By<float> (ChangeSaturation);
-			Brightness = controls [2];
-			Brightness.Changed = React.By<float> (ChangeBrightness);
+			Hue = ColorSlider.Hue (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeHue));
+			Saturation = ColorSlider.Saturation (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeSaturation));
+			Brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeBrightness));
+			Controls = new ColorSlider [] { Hue, Saturation, Brightness }; 
 		}
 
 		private void ChangeHue (float hue)

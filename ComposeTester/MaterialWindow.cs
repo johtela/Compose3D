@@ -141,31 +141,27 @@
 			var color = Color.White;
 			var colorDialog = new System.Windows.Forms.ColorDialog ();
 			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph,
-				new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top,
-					new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center,
-						Label.Static ("Perlin Noise", FontStyle.Bold),
-						Container.LabelAndControl ("Seed: ",
-							new NumericEdit (0f, 1f, React.By ((float s) =>
-							{
-								textureParams.PerlinSeed = (int)s;
-								UpdateSignalTexture (textureParams);
-							}
-							))),
-						Container.LabelAndControl ("Scale: ",
-							new NumericEdit (10f, 1f, React.By ((float s) =>
-							{
-								textureParams.PerlinScale = s;
-								UpdateSignalTexture (textureParams);
-							}
-							))),
-						Label.Dynamic (() => color.ToString (), FontStyle.Italic),
-						new ColorPicker (VisualDirection.Horizontal, 16f, 100f, color,
-							React.Ignore<Color> ()),
-						new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
-					),
-					ColorSlider.Hue (VisualDirection.Vertical, 16f, 100f, color, React.Ignore<float> ()) 
+				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
+					Label.Static ("Perlin Noise", FontStyle.Bold),
+					Container.LabelAndControl ("Seed: ",
+						new NumericEdit (0f, 1f, React.By ((float s) =>
+						{
+							textureParams.PerlinSeed = (int)s;
+							UpdateSignalTexture (textureParams);
+						}
+						)), true),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (10f, 1f, React.By ((float s) =>
+						{
+							textureParams.PerlinScale = s;
+							UpdateSignalTexture (textureParams);
+						}
+						)), true),
+					new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
+						React.By<Color> (c => color = c)),
+					new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
 				),
-				new Vec2i (200, 180));
+				new Vec2i (300, 300));
 			
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 

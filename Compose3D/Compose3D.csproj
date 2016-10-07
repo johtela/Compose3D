@@ -227,6 +227,7 @@
     <Compile Include="SceneGraph\Panel.cs" />
     <Compile Include="SceneGraph\ControlPanel.cs" />
     <Compile Include="UI\Button.cs" />
+    <Compile Include="UI\ColorMapBar.cs" />
     <Compile Include="UI\ColorPicker.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
@@ -235,6 +236,7 @@
     <Compile Include="UI\ListView.cs" />
     <Compile Include="UI\ColorSlider.cs" />
     <Compile Include="UI\Label.cs" />
+    <Compile Include="UI\UIHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

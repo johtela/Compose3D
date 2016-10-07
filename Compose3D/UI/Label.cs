@@ -37,5 +37,13 @@
 				new VisualStyle (VisualStyle.Default,
 					new Font (VisualStyle.Default.Font, style))));
 		}
+
+		public static Label ColorPreview (Func<Color> getColor, SizeF size)
+		{
+			return new Label (Visual.Delayed (() =>
+				Visual.Styled (
+					Visual.Frame (Visual.Empty (new VBox (size)), FrameKind.Rectangle, true),
+					new VisualStyle (parent: Style, brush: new SolidBrush (getColor ())))));
+		}
 	}
 }

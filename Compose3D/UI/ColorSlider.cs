@@ -2,6 +2,7 @@
 {
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
+	using System.Linq;
 	using Reactive;
 	using Visuals;
 
@@ -13,7 +14,7 @@
 			float minValue, float maxValue,	float value, Color[] colors, Reaction<float> changed)
 			: base (direction, knobWidth, minVisualLength, minValue, maxValue, value, changed)
 		{
-			Colors = colors;
+			Colors = direction == VisualDirection.Horizontal ? colors : colors.Reverse ().ToArray ();
 		}
 
 		private void DrawBar (GraphicsContext context, LinearGradientBrush brush, RectangleF rect)

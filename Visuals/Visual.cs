@@ -72,14 +72,19 @@
 		/// </summary>
 		private class _Empty : Visual
 		{
+			public _Empty (VBox size)
+			{
+				_size = size;
+			}
+
 			protected override VBox CalculateSize (GraphicsContext context)
 			{
-				return VBox.Empty;
+				return _size.Value;
 			}
 
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				return VBox.Empty;
+				return _size.Value;
 			}
 		}
 
@@ -588,9 +593,9 @@
 		/// <summary>
 		/// Create an empty visual.
 		/// </summary>
-		public static Visual Empty ()
+		public static Visual Empty (VBox size)
 		{
-			return new _Empty ();
+			return new _Empty (size);
 		}
 
 		/// <summary>

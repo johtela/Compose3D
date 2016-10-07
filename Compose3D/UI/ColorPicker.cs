@@ -1,46 +1,71 @@
 ﻿namespace Compose3D.UI
 {
 	using System.Drawing;
-	using System.Drawing.Drawing2D;
-	using System.Linq;
 	using Reactive;
 	using Visuals;
-	using Extensions;
 
 	public class ColorPicker : Container
 	{
-		public readonly Reaction<Color> Changed;
-		public readonly ColorSlider Hue;
-		public readonly ColorSlider Saturation;
-		public readonly ColorSlider Brightness;
+		private ColorSlider _hue;
+		private ColorSlider _saturation;
+		private ColorSlider _brightness;
 
+		public readonly Reaction<Color> Changed;
 		public Color Value { get; set; }
 
 		public ColorPicker (VisualDirection direction, float knobWidth, float minVisualLength, Color color,
-			Reaction<Color> changed)
-			: base (direction.Opposite (), HAlign.Left, VAlign.Top) 
+			bool preview, Reaction<Color> changed)
+			: base (preview ? direction : direction.Opposite (), HAlign.Left, VAlign.Top, true)
 		{
 			Changed = changed;
-			Hue = ColorSlider.Hue (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeHue));
-			Saturation = ColorSlider.Saturation (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeSaturation));
-			Brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, React.By<float> (ChangeBrightness));
-			Controls = new ColorSlider [] { Hue, Saturation, Brightness }; 
+			_hue = ColorSlider.Hue (direction, knobWidth, minVisualLength, color, 
+				React.By<float> (ChangeHue));
+			_saturation = ColorSlider.Saturation (direction, knobWidth, minVisualLength, color, 
+				React.By<float> (ChangeSaturation));
+			_brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, 
+				React.By<float> (ChangeBrightness));
+			var controls = new Control[] { _hue, _saturation, _brightness };
+			Controls = preview ?
+				new Control[]
+				{
+					new Container (direction, HAlign.Center, VAlign.Center, false, 
+						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, controls),
+						Label.ColorPreview (() => Value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
+				} :
+				controls;
+		}
+
+		private void UpdateValue ()
+		{
+			Value = VisualHelpers.ColorFromHSB (_hue.Value, _saturation.Value, _brightness.Value);
+			Changed (Value);
+		}
+
+		private int LastColorIndex ()
+		{
+			return Direction == VisualDirection.Horizontal ? 1 : 0;
 		}
 
 		private void ChangeHue (float hue)
 		{
-			Saturation.Colors[1] = VisualHelpers.ColorFromHSB (hue, 1f, 1f);
-			Brightness.Colors[1] = VisualHelpers.ColorFromHSB (hue, Saturation.Value, 1f);
+			int i = LastColorIndex ();
+			_saturation.Colors[i] = VisualHelpers.ColorFromHSB (hue, 1f, 1f);
+			_brightness.Colors[i] = VisualHelpers.ColorFromHSB (hue, _saturation.Value, 1f);
+			UpdateValue ();
 		}
 
 		private void ChangeSaturation (float saturation)
 		{
-			Brightness.Colors[1] = VisualHelpers.ColorFromHSB (Hue.Value, Saturation.Value, 1f);
+			_brightness.Colors[LastColorIndex ()] = 
+				VisualHelpers.ColorFromHSB (_hue.Value, _saturation.Value, 1f);
+			UpdateValue ();
 		}
 
 		private void ChangeBrightness (float brightness)
 		{
-			Brightness.Colors[1] = VisualHelpers.ColorFromHSB (Hue.Value, Saturation.Value, 1f);
+			_brightness.Colors[LastColorIndex ()] = 
+				VisualHelpers.ColorFromHSB (_hue.Value, _saturation.Value, 1f);
+			UpdateValue ();
 		}
 	}
 }

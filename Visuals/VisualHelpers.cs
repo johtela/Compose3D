@@ -37,6 +37,12 @@
 				(int)Math.Round (blue * 255f));
 		}
 
+		public static Color ColorFromRGBA (float red, float green, float blue, float alpha)
+		{
+			return Color.FromArgb ((int)Math.Round (alpha * 255f), (int)Math.Round (red * 255f), 
+				(int)Math.Round (green * 255f),	(int)Math.Round (blue * 255f));
+		}
+
 		public static Color ColorFromHSB (float hue, float saturation, float brightness)
 		{
 			if (hue < 0f)

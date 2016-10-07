@@ -26,7 +26,17 @@
 			: this ((IEnumerable<Tuple<float, V>>)samplePoints)
 		{ }
 
-		public V this[float value]
+		public float MinKey
+		{
+			get { return SamplePoints.Keys[0]; }
+		}
+
+		public float MaxKey
+		{
+			get { return SamplePoints.Keys[SamplePoints.Count - 1]; }
+		}
+
+		public V this[float key]
 		{
 			get
 			{
@@ -34,16 +44,30 @@
 					throw new InvalidOperationException ("No values in the map");
 				var keys = SamplePoints.Keys;
 				var values = SamplePoints.Values;
-				if (value <= keys[0])
+				if (key <= keys[0])
 					return values[0];
 				var last = SamplePoints.Count - 1;
-				if (last == 0 || value >= keys[last])
+				if (last == 0 || key >= keys[last])
 					return values[last];
-				var i = keys.FirstIndex (k => k > value);
+				var i = keys.FirstIndex (k => k > key);
 				var low = keys[i - 1];
 				var high = keys[i];
-				return values[i - 1].Mix (values[i], (value - low) / (high - low));
+				return values[i - 1].Mix (values[i], (key - low) / (high - low));
 			}
+			set
+			{
+				var i = SamplePoints.Keys.IndexOf (key);
+				if (i >= 0)
+					SamplePoints.Values[i] = value;
+				else
+					SamplePoints.Add (key, value);
+			}
+		}
+
+		public V this[int index]
+		{
+			get { return SamplePoints.Values[index]; }
+			set { SamplePoints.Values[index] = value; }
 		}
 	}
 }

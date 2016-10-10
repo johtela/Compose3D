@@ -87,15 +87,15 @@
 		{
 			public int PerlinSeed;
 			public float PerlinScale = 10f;
+			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3> (
+				Tuple.Create (-0.5f, new Vec3 (1f, 0f, 0f)),
+				Tuple.Create (0.3f, new Vec3 (0f, 1f, 0f)),
+				Tuple.Create (0.5f, new Vec3 (0f, 0f, 1f)));
 		}
 
 		private void UpdateSignalTexture (SignalTextureParams pars)
 		{
 			var size = new Vec2i (256);
-			var colorMap = new ColorMap<Vec3> (
-				Tuple.Create (-1f, new Vec3 (1f, 0.5f, 0.1f)),
-				Tuple.Create (0f, new Vec3 (0f, 1f, 0f)),
-				Tuple.Create (1f, new Vec3 (0.3f, 0.5f, 0.7f)));
 
 			var perlin = new Signal<Vec3, float> (new PerlinNoise (pars.PerlinSeed).Noise)
 				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * pars.PerlinScale);
@@ -157,11 +157,14 @@
 							UpdateSignalTexture (textureParams);
 						}
 						)), true),
-					new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
-						React.By<Color> (c => color = c)),
+					new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
+						new ColorMapBar (-1f, 1f, new SizeF (32f, 100f), textureParams.ColorMap,
+							React.Ignore<ColorMap<Vec3>> (), React.Ignore<Tuple<float, Color>> ()),
+						new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
+							React.By<Color> (c => color = c))),
 					new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
 				),
-				new Vec2i (300, 300));
+				new Vec2i (300, 400));
 			
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 

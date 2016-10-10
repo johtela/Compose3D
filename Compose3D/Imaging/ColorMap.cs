@@ -36,6 +36,11 @@
 			get { return SamplePoints.Keys[SamplePoints.Count - 1]; }
 		}
 
+		public int Count
+		{
+			get { return SamplePoints.Count; }
+		}
+
 		public V this[float key]
 		{
 			get

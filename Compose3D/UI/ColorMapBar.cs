@@ -9,7 +9,7 @@
 	using Reactive;
 	using Visuals;
 
-	class ColorMapBar : Control
+	public class ColorMapBar : Control
 	{
 		public readonly Reaction<ColorMap<Vec3>> Changed;
 		public readonly Reaction<Tuple<float, Color>> ItemSelected;
@@ -29,6 +29,8 @@
 			ColorMap<Vec3> value, Reaction<ColorMap<Vec3>> changed, 
 			Reaction<Tuple<float, Color>> itemSelected)
 		{
+			if (value.Count > 0 && (value.MinKey < domainMin || value.MaxKey > domainMax))
+				throw new ArgumentException ("Color map values out of min/max range.");
 			DomainMin = domainMin;
 			DomainMax = domainMax;
 			MinSize = minSize;
@@ -43,12 +45,29 @@
 
 		private SizeF Paint (GraphicsContext context, SizeF size)
 		{
-			return MinSize;
+			var cnt = Value.Count;
+			var blend = new ColorBlend (cnt + 2);
+			var domain = DomainMax - DomainMin;
+			blend.Colors[0] = Value[DomainMin].ToColor ();
+			blend.Positions[0] = 0f;
+			for (int i = 0; i < cnt; i++)
+			{
+				var val = Value.SamplePoints.Keys[i] - DomainMin;
+				blend.Colors[i + 1] = Value.SamplePoints.Values[i].ToColor ();
+				blend.Positions[i + 1] = val / domain;
+			}
+			blend.Colors [cnt + 1] = Value[DomainMax].ToColor ();
+			blend.Positions[cnt + 1] = 1f;
+			var rect = new RectangleF (new PointF (0f, 0f), new SizeF (size.Width / 2f, size.Height));
+			var brush = new LinearGradientBrush (rect, Color.Black, Color.Black, LinearGradientMode.Vertical);
+			brush.InterpolationColors = blend;
+			context.Graphics.FillRectangle (brush, rect);
+			return size;
 		}
 
 		public override Visual ToVisual ()
 		{
-			return null;
+			return Visual.Custom (MinSize, Paint);
 		}
 	}
 }

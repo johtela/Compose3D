@@ -48,7 +48,6 @@
 		{
 			var cnt = Value.Count;
 			var blend = new ColorBlend (cnt + 2);
-			var domain = DomainMax - DomainMin;
 			blend.Colors[0] = Value[DomainMin].ToColor ();
 			blend.Positions[0] = 0f;
 			var i = 1;
@@ -59,7 +58,7 @@
 			}
 			blend.Colors [i] = Value[DomainMax].ToColor ();
 			blend.Positions[i] = 1f;
-			var rect = new RectangleF (new PointF (0f, 0f), new SizeF (size.Width / 2f, size.Height));
+			var rect = new RectangleF (new PointF (0f, 0f), new SizeF (size.Width, size.Height));
 			var brush = new LinearGradientBrush (rect, Color.Black, Color.Black, LinearGradientMode.Vertical);
 			brush.InterpolationColors = blend;
 			context.Graphics.FillRectangle (brush, rect);
@@ -75,14 +74,15 @@
 
 		public override Visual ToVisual ()
 		{
-			var knobSize = new SizeF (MinSize.Width, MinSize.Width / 2f);
-			return Visual.HStack (VAlign.Top,
-				Visual.Custom (MinSize, PaintBar),
-				Visual.VPile (HAlign.Left,
-					Value.NormalizedSamplePoints (DomainMin, DomainMax).Select (sp => 
-						Tuple.Create (sp.Key, Visual.Custom (knobSize, (ctx, size) => 
-							PaintKnob (sp.Value.ToColor (), ctx, size)))
-			)));
+			var knobSize = new SizeF (MinSize.Width / 2f, MinSize.Width / 4f);
+			return Visual.Margin (
+				Visual.HStack (VAlign.Top,
+					Visual.Custom (new SizeF (MinSize.Width / 2f, MinSize.Height), PaintBar),
+					Visual.VPile (HAlign.Left, VAlign.Top,
+						Value.NormalizedSamplePoints (DomainMin, DomainMax).Select (sp => 
+							Tuple.Create (sp.Key, Visual.Custom (knobSize, (ctx, size) => 
+								PaintKnob (sp.Value.ToColor (), ctx, size)))))),
+				top: knobSize.Height, bottom: knobSize.Height);
 		}
 	}
 }

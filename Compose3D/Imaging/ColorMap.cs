@@ -42,7 +42,7 @@
 		public IEnumerable<KeyValuePair<float, V>> NormalizedSamplePoints (float keyMin, float keyMax)
 		{
 			var domain = keyMax - keyMin;
-			return SamplePoints.Select (p => new KeyValuePair<float, V> (p.Key - keyMin / domain, p.Value));
+			return SamplePoints.Select (p => new KeyValuePair<float, V> ((p.Key - keyMin) / domain, p.Value));
 		}
 
 		public float MinKey

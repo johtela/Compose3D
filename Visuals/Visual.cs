@@ -727,33 +727,33 @@
 		/// <summary>
 		/// Create a horizontal pile.
 		/// </summary>
-		public static Visual HPile (VAlign alignment, IEnumerable<Tuple<float, Visual>> visuals)
+		public static Visual HPile (HAlign horizAlign, VAlign vertAlign, IEnumerable<Tuple<float, Visual>> visuals)
 		{
-			return new _Pile (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+			return new _Pile (visuals, VisualDirection.Horizontal, horizAlign, vertAlign);
 		}
 
 		/// <summary>
 		/// Create a horizontal pile.
 		/// </summary>
-		public static Visual HPile (VAlign alignment, params Tuple<float, Visual>[] visuals)
+		public static Visual HPile (HAlign horizAlign, VAlign vertAlign, params Tuple<float, Visual>[] visuals)
 		{
-			return new _Pile (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+			return new _Pile (visuals, VisualDirection.Horizontal, horizAlign, vertAlign);
 		}
 
 		/// <summary>
 		/// Create a vertical pile.
 		/// </summary>
-		public static Visual VPile (HAlign alignment, IEnumerable<Tuple<float, Visual>> visuals)
+		public static Visual VPile (HAlign horizAlign, VAlign vertAlign, IEnumerable<Tuple<float, Visual>> visuals)
 		{
-			return new _Pile (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+			return new _Pile (visuals, VisualDirection.Vertical, horizAlign, vertAlign);
 		}
 
 		/// <summary>
 		/// Create a vertical stack.
 		/// </summary>
-		public static Visual VPile (HAlign alignment, params Tuple<float, Visual>[] visuals)
+		public static Visual VPile (HAlign horizAlign, VAlign vertAlign, params Tuple<float, Visual>[] visuals)
 		{
-			return new _Pile (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+			return new _Pile (visuals, VisualDirection.Vertical, horizAlign, vertAlign);
 		}
 
 		/// <summary>

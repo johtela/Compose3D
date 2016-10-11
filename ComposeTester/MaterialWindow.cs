@@ -90,7 +90,7 @@
 			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3>
 			{
 				{ -0.5f, new Vec3 (1f, 0f, 0f) },
-				{ 0.3f, new Vec3 (0f, 1f, 0f) },
+				{ 0f, new Vec3 (0f, 1f, 0f) },
 				{ 0.5f, new Vec3 (0f, 0f, 1f) }
 			};
 		}
@@ -104,9 +104,9 @@
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f);
 			var signal = sine.Warp (perlin.Scale (0.001f), 1f / size.X)
-				.NormalRangeToZeroOne ()
-//				.Colorize (colorMap).Vec3ToUintColor ();
-				.FloatToUintGrayscale ();
+//				.NormalRangeToZeroOne ()
+				.Colorize (pars.ColorMap).Vec3ToUintColor ();
+//				.FloatToUintGrayscale ();
 			var buffer = signal.MapInput (Signal.BitmapCoordToUnitRange (size, 1f)).SampleToBuffer (size);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
 				PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
@@ -160,7 +160,7 @@
 						}
 						)), true),
 					new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
-						new ColorMapBar (-1f, 1f, new SizeF (32f, 100f), textureParams.ColorMap,
+						new ColorMapBar (-1f, 1f, new SizeF (32f, 200f), textureParams.ColorMap,
 							React.Ignore<ColorMap<Vec3>> (), React.Ignore<Tuple<float, Color>> ()),
 						new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
 							React.By<Color> (c => color = c))),

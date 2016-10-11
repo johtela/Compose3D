@@ -38,11 +38,21 @@
     <Compile Include="GraphicsContext.cs" />
     <Compile Include="VBox.cs" />
     <Compile Include="Visual.cs" />
-    <Compile Include="VisualControl.cs" />
+    <Compile Include="VisualControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="VisualHelpers.cs" />
     <Compile Include="Visualizable.cs" />
     <Compile Include="VisualStyle.cs" />
-    <Compile Include="VisualConsole.cs" />
+    <Compile Include="VisualConsole.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,11 +1,13 @@
 ﻿namespace Compose3D.Imaging
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
+	using System.Linq;
 	using Extensions;
 	using Maths;
 
-	public class ColorMap<V>
+	public class ColorMap<V> : IEnumerable<KeyValuePair<float, V>>
 		where V : struct, IVec<V, float>
 	{
 		public readonly SortedList<float, V> SamplePoints;
@@ -22,9 +24,26 @@
 				SamplePoints.Add (sample.Item1, sample.Item2);
 		}
 
-		public ColorMap (params Tuple<float, V>[] samplePoints)
-			: this ((IEnumerable<Tuple<float, V>>)samplePoints)
-		{ }
+		public void Add (float key, V value)
+		{
+			SamplePoints.Add (key, value);
+		}
+
+		public IEnumerator<KeyValuePair<float, V>> GetEnumerator ()
+		{
+			return SamplePoints.GetEnumerator ();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator ()
+		{
+			return GetEnumerator ();
+		}
+
+		public IEnumerable<KeyValuePair<float, V>> NormalizedSamplePoints (float keyMin, float keyMax)
+		{
+			var domain = keyMax - keyMin;
+			return SamplePoints.Select (p => new KeyValuePair<float, V> (p.Key - keyMin / domain, p.Value));
+		}
 
 		public float MinKey
 		{

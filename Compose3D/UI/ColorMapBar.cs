@@ -3,6 +3,7 @@
 	using System;
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
+	using System.Linq;
 	using OpenTK.Input;
 	using Maths;
 	using Imaging;
@@ -43,21 +44,21 @@
 		{
 		}
 
-		private SizeF Paint (GraphicsContext context, SizeF size)
+		private SizeF PaintBar (GraphicsContext context, SizeF size)
 		{
 			var cnt = Value.Count;
 			var blend = new ColorBlend (cnt + 2);
 			var domain = DomainMax - DomainMin;
 			blend.Colors[0] = Value[DomainMin].ToColor ();
 			blend.Positions[0] = 0f;
-			for (int i = 0; i < cnt; i++)
+			var i = 1;
+			foreach (var sp in Value.NormalizedSamplePoints (DomainMin, DomainMax))
 			{
-				var val = Value.SamplePoints.Keys[i] - DomainMin;
-				blend.Colors[i + 1] = Value.SamplePoints.Values[i].ToColor ();
-				blend.Positions[i + 1] = val / domain;
+				blend.Colors[i] = sp.Value.ToColor ();
+				blend.Positions[i++] = sp.Key;
 			}
-			blend.Colors [cnt + 1] = Value[DomainMax].ToColor ();
-			blend.Positions[cnt + 1] = 1f;
+			blend.Colors [i] = Value[DomainMax].ToColor ();
+			blend.Positions[i] = 1f;
 			var rect = new RectangleF (new PointF (0f, 0f), new SizeF (size.Width / 2f, size.Height));
 			var brush = new LinearGradientBrush (rect, Color.Black, Color.Black, LinearGradientMode.Vertical);
 			brush.InterpolationColors = blend;
@@ -65,9 +66,23 @@
 			return size;
 		}
 
+		private SizeF PaintKnob (Color color, GraphicsContext context, SizeF size)
+		{
+			context.Graphics.FillRectangle (new SolidBrush (color), 0f, 0f, size.Width, size.Height);
+			context.Graphics.DrawRectangle (context.Style.Pen, 0f, 0f, size.Width, size.Height);
+			return size;
+		}
+
 		public override Visual ToVisual ()
 		{
-			return Visual.Custom (MinSize, Paint);
+			var knobSize = new SizeF (MinSize.Width, MinSize.Width / 2f);
+			return Visual.HStack (VAlign.Top,
+				Visual.Custom (MinSize, PaintBar),
+				Visual.VPile (HAlign.Left,
+					Value.NormalizedSamplePoints (DomainMin, DomainMax).Select (sp => 
+						Tuple.Create (sp.Key, Visual.Custom (knobSize, (ctx, size) => 
+							PaintKnob (sp.Value.ToColor (), ctx, size)))
+			)));
 		}
 	}
 }

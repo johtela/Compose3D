@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Drawing;
 	using System.Drawing.Drawing2D;
+	using Extensions;
 	
 	/// <summary>
 	/// Enumeration for defining the stack direction.
@@ -206,11 +207,72 @@
 			}
 		}
 
+		private abstract class _Container : Visual
+		{
+			/// <summary>
+			/// The direction of the items (horizontal or vertical)
+			/// </summary>
+			public readonly VisualDirection Direction;
+
+			/// <summary>
+			/// This setting controls how the items in container are aligned horizontally,
+			/// that is, whether they are aligned by their left or right edges or centered. 
+			/// The setting only has effect, if the container is vertical.
+			/// </summary>
+			public readonly HAlign HorizAlign;
+
+			/// <summary>
+			/// This setting controls how the items in container are aligned vertically,
+			/// that is, whether they are aligned by their top or bottom edges or centered. 
+			/// The setting only has effect, if the container is horizontal.
+			/// </summary>
+			public readonly VAlign VertAlign;
+
+			public _Container (VisualDirection direction, HAlign horizAlign, VAlign vertAlign)
+			{
+				Direction = direction;
+				HorizAlign = horizAlign;
+				VertAlign = vertAlign;
+			}
+
+			/// <summary>
+			/// Calulate the horizontal offset of a visual based on the alignment.
+			/// </summary>
+			protected float DeltaX (float outerWidth, float innerWidth)
+			{
+				switch (HorizAlign)
+				{
+					case HAlign.Center:
+						return (outerWidth - innerWidth) / 2;
+					case HAlign.Right:
+						return outerWidth - innerWidth;
+					default:
+						return 0;
+				}
+			}
+
+			/// <summary>
+			/// Calulate the vertical offset of a visual based on the alignment.
+			/// </summary>
+			protected float DeltaY (float outerHeight, float innerHeight)
+			{
+				switch (VertAlign)
+				{
+					case VAlign.Center:
+						return (outerHeight - innerHeight) / 2;
+					case VAlign.Bottom:
+						return outerHeight - innerHeight;
+					default:
+						return 0;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Stack of visuals that are laid out either horizontally (left to right) or
 		/// vertically (top to bottom).
 		/// </summary>
-		private sealed class _Stack : Visual
+		private sealed class _Stack : _Container
 		{
 			/// <summary>
 			/// The visuals in the stack.
@@ -218,34 +280,12 @@
 			public readonly Visual[] Items;
 			
 			/// <summary>
-			/// The direction of the stack (horizontal or vertical)
-			/// </summary>
-			public readonly VisualDirection Direction;
-			
-			/// <summary>
-			/// This setting controls how the items in stack are aligned horizontally,
-			/// that is, whether they are aligned by their left or right edges or centered. 
-			/// The setting only has effect, if the stack is vertical.
-			/// </summary>
-			public readonly HAlign HorizAlign;
-			
-			/// <summary>
-			/// This setting controls how the items in stack are aligned vertically,
-			/// that is, whether they are aligned by their top or bottom edges or centered. 
-			/// The setting only has effect, if the stack is horizontal.
-			/// </summary>
-			public readonly VAlign VertAlign;
-			
-			/// <summary>
 			/// Initializes a new stack.
 			/// </summary>
 			public _Stack (IEnumerable<Visual> items, VisualDirection direction, HAlign horizAlign,
-				VAlign vertAlign)
+				VAlign vertAlign) :	base (direction, horizAlign, vertAlign)
 			{
 				Items = items.ToArray ();
-				Direction = direction;
-				HorizAlign = horizAlign;
-				VertAlign = vertAlign;
 			}
 			
 			/// <summary>
@@ -267,40 +307,7 @@
 					return Direction == VisualDirection.Horizontal ?
 						acc.VMax (box).HAdd (box) :
 						acc.HMax (box).VAdd (box);
-				}
-				);
-			}
-			
-			/// <summary>
-			/// Calulate the horizontal offset of a visual based on the alignment.
-			/// </summary>
-			private float DeltaX (float outerWidth, float innerWidth)
-			{
-				switch (HorizAlign)
-				{
-					case HAlign.Center:
-						return (outerWidth - innerWidth) / 2;
-					case HAlign.Right:
-						return outerWidth - innerWidth;
-					default:
-						return 0;
-				}
-			}
-			
-			/// <summary>
-			/// Calulate the vertical offset of a visual based on the alignment.
-			/// </summary>
-			private float DeltaY (float outerHeight, float innerHeight)
-			{
-				switch (VertAlign)
-				{
-					case VAlign.Center:
-						return (outerHeight - innerHeight) / 2;
-					case VAlign.Bottom:
-						return outerHeight - innerHeight;
-					default:
-						return 0;
-				}
+				});
 			}
 			
 			/// <summary>
@@ -340,6 +347,77 @@
 				}
 				context.Graphics.Restore (gs1);
 				return stack;
+			}
+		}
+
+		/// <summary>
+		/// A pile is similar to stack, but instead of visuals stacked adjacently their positions
+		/// are determined by a value between [0, 1]. This value gives the relative position of
+		/// the visual inside the container. As with stacks a pile can be laid out either horizontally 
+		/// (left to right) or vertically (top to bottom).
+		/// </summary>
+		private sealed class _Pile : _Container
+		{
+			/// <summary>
+			/// The visuals in the stack.
+			/// </summary>
+			public readonly Tuple<float, Visual>[] Items;
+
+			/// <summary>
+			/// Initializes a new pile.
+			/// </summary>
+			public _Pile (IEnumerable<Tuple<float, Visual>> items, VisualDirection direction, 
+				HAlign horizAlign, VAlign vertAlign) : base (direction, horizAlign, vertAlign)
+			{
+				if (items.Any (t => t.Item1 < 0f || t.Item1 > 1f))
+					throw new ArgumentException ("The position value must be in range [0, 1].");
+				Items = items.ToArray ();
+			}
+
+			/// <summary>
+			/// Override to calculates the size of the visual. 
+			/// </summary>
+			protected override VBox CalculateSize (GraphicsContext context)
+			{
+				return Items.Select (TupleExt.Second).Aggregate (VBox.Empty, (acc, v) =>
+				{
+					var box = v.CalculateSize (context);
+					return Direction == VisualDirection.Horizontal ?
+						acc.VMax (box).HAdd (box) :
+						acc.HMax (box).VAdd (box);
+				});
+			}
+
+			/// <summary>
+			/// Draw the pile into the specified context.
+			/// </summary>
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
+			{
+				var gs1 = context.Graphics.Save ();
+
+				foreach (var pair in Items)
+				{
+					var inner = pair.Item2.GetSize (context);
+					var outer = Direction == VisualDirection.Horizontal ?
+						new VBox (0f, availableSize.Height) :
+						new VBox (availableSize.Width, 0f);
+					var dx = DeltaX (outer.Width, inner.Width);
+					var dy = DeltaY (outer.Height, inner.Height);
+					if (Direction == VisualDirection.Horizontal)
+					{
+						dx += availableSize.Width * pair.Item1;
+						outer = new VBox (inner.Width, outer.Height);
+					}
+					else
+					{
+						dy += availableSize.Height * pair.Item1;
+						outer = new VBox (outer.Width, inner.Height);
+					}
+					context.Graphics.TranslateTransform (dx, dy);
+					pair.Item2.Render (context, outer);
+					context.Graphics.Restore (gs1);
+				}
+				return availableSize;
 			}
 		}
 
@@ -644,6 +722,38 @@
 		public static Visual VStack (HAlign alignment, params Visual[] visuals)
 		{
 			return new _Stack (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+		}
+
+		/// <summary>
+		/// Create a horizontal pile.
+		/// </summary>
+		public static Visual HPile (VAlign alignment, IEnumerable<Tuple<float, Visual>> visuals)
+		{
+			return new _Pile (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+		}
+
+		/// <summary>
+		/// Create a horizontal pile.
+		/// </summary>
+		public static Visual HPile (VAlign alignment, params Tuple<float, Visual>[] visuals)
+		{
+			return new _Pile (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+		}
+
+		/// <summary>
+		/// Create a vertical pile.
+		/// </summary>
+		public static Visual VPile (HAlign alignment, IEnumerable<Tuple<float, Visual>> visuals)
+		{
+			return new _Pile (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+		}
+
+		/// <summary>
+		/// Create a vertical stack.
+		/// </summary>
+		public static Visual VPile (HAlign alignment, params Tuple<float, Visual>[] visuals)
+		{
+			return new _Pile (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
 		}
 
 		/// <summary>

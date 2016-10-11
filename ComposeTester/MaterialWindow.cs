@@ -87,10 +87,12 @@
 		{
 			public int PerlinSeed;
 			public float PerlinScale = 10f;
-			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3> (
-				Tuple.Create (-0.5f, new Vec3 (1f, 0f, 0f)),
-				Tuple.Create (0.3f, new Vec3 (0f, 1f, 0f)),
-				Tuple.Create (0.5f, new Vec3 (0f, 0f, 1f)));
+			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3>
+			{
+				{ -0.5f, new Vec3 (1f, 0f, 0f) },
+				{ 0.3f, new Vec3 (0f, 1f, 0f) },
+				{ 0.5f, new Vec3 (0f, 0f, 1f) }
+			};
 		}
 
 		private void UpdateSignalTexture (SignalTextureParams pars)

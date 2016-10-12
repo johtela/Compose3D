@@ -22,6 +22,18 @@
 
 	public class MaterialWindow : GameWindow
 	{
+		private class SignalTextureParams
+		{
+			public int PerlinSeed;
+			public float PerlinScale = 10f;
+			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3>
+			{
+				{ -0.5f, new Vec3 (1f, 0f, 0f) },
+				{ 0f, new Vec3 (0f, 1f, 0f) },
+				{ 0.5f, new Vec3 (0f, 0f, 1f) }
+			};
+		}
+
 		// Scene graph
 		private Camera _camera;
 		private Mesh<MaterialVertex> _mesh;
@@ -30,6 +42,7 @@
 		private SceneGraph _sceneGraph;
 		private ControlPanel<TexturedVertex> _infoWindow;
 		private Texture _signalTexture;
+		private DelayedUpdate<SignalTextureParams> _textureParams;
 
 		public MaterialWindow ()
 			: base (512, 512, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
@@ -37,6 +50,7 @@
 		{
 			_rotation = new Vec2 ();
 			_zoom = 1000f;
+			_textureParams = Delayed.Update (new SignalTextureParams (), UpdateSignalTexture, 0.5);
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
@@ -83,18 +97,6 @@
 				.Smoothen (0.5f);
 		}
 
-		private class SignalTextureParams
-		{
-			public int PerlinSeed;
-			public float PerlinScale = 10f;
-			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3>
-			{
-				{ -0.5f, new Vec3 (1f, 0f, 0f) },
-				{ 0f, new Vec3 (0f, 1f, 0f) },
-				{ 0.5f, new Vec3 (0f, 0f, 1f) }
-			};
-		}
-
 		private void UpdateSignalTexture (SignalTextureParams pars)
 		{
 			var size = new Vec2i (256);
@@ -110,6 +112,34 @@
 			var buffer = signal.MapInput (Signal.BitmapCoordToUnitRange (size, 1f)).SampleToBuffer (size);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
 				PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
+		}
+
+		private Control CreateUI ()
+		{
+			var color = Color.White;
+			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
+				Label.Static ("Perlin Noise", FontStyle.Bold),
+				Container.LabelAndControl ("Seed: ",
+					new NumericEdit (0f, 1f, React.By ((float s) =>
+					{
+						_textureParams.Value.PerlinSeed = (int)s;
+						_textureParams.Changed ();
+					}
+					)), true),
+				Container.LabelAndControl ("Scale: ",
+					new NumericEdit (10f, 1f, React.By ((float s) =>
+					{
+						_textureParams.Value.PerlinScale = s;
+						_textureParams.Changed ();
+					}
+					)), true),
+				new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
+					new ColorMapBar (-1f, 1f, new SizeF (32f, 200f), _textureParams.Value.ColorMap,
+						React.By ((ColorMap<Vec3> cm) => _textureParams.Changed ()), 
+						React.Ignore<Tuple<float, Color>> ()),
+					new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
+						React.By<Color> (c => color = c))),
+				new Button ("Test", React.Ignore<bool> ()));
 		}
 
 		private void CreateSceneGraph ()
@@ -139,41 +169,14 @@
                 maxDimensionError: 0.1f,
                 maxColorError: 0.05f);
 
-			var textureParams = new SignalTextureParams ();
-			var color = Color.White;
-			var colorDialog = new System.Windows.Forms.ColorDialog ();
-			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph,
-				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
-					Label.Static ("Perlin Noise", FontStyle.Bold),
-					Container.LabelAndControl ("Seed: ",
-						new NumericEdit (0f, 1f, React.By ((float s) =>
-						{
-							textureParams.PerlinSeed = (int)s;
-							UpdateSignalTexture (textureParams);
-						}
-						)), true),
-					Container.LabelAndControl ("Scale: ",
-						new NumericEdit (10f, 1f, React.By ((float s) =>
-						{
-							textureParams.PerlinScale = s;
-							UpdateSignalTexture (textureParams);
-						}
-						)), true),
-					new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
-						new ColorMapBar (-1f, 1f, new SizeF (32f, 200f), textureParams.ColorMap,
-							React.Ignore<ColorMap<Vec3>> (), React.Ignore<Tuple<float, Color>> ()),
-						new ColorPicker (VisualDirection.Vertical, 20f, 120f, color, true,
-							React.By<Color> (c => color = c))),
-					new Button ("Test", React.By<bool> (() => colorDialog.ShowDialog ()))
-				),
-				new Vec2i (300, 400));
+			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, CreateUI (), new Vec2i (300, 400));
 			
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
 				_infoWindow.Offset (new Vec3 (-0.9f, 0.9f, 0f)));
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
-			UpdateSignalTexture (textureParams);
+			UpdateSignalTexture (_textureParams.Value);
 			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
 			_sceneGraph.Root.Add (textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
 		}
@@ -188,6 +191,7 @@
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
 				.And (React.By<double> (UpdateCamera))
+				.And (_textureParams.Run ()) 
 				.And (renderMaterial)
 				.And (renderPanel)
 				.Viewport (this)

@@ -42,6 +42,7 @@
 		{
 			var i = _samplePoints.IndexOfKey (key);
 			if ((i < 0) ||
+				(key == newKey) ||
 				(i > 0 && _samplePoints.Keys[i - 1] >= newKey) ||
 				(i < _samplePoints.Count - 1 && _samplePoints.Keys [i + 1] <= newKey))
 				return false;

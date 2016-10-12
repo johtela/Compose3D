@@ -47,20 +47,20 @@
 
 		public override void HandleInput (PointF relativeMousePos)
 		{
-			var item = _mouseRegions.ItemUnderMouse (relativeMousePos);
+			var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
 			if (MouseButtonDown (MouseButton.Left))
 			{
 				if (_pressed == null)
 				{
-					_pressed = item;
-					_highlighted = item;
+					_pressed = hit.Item2;
+					_highlighted = hit.Item2;
 				}
 				else
-					_highlighted = _pressed == item ? _pressed : null;
+					_highlighted = _pressed == hit ? _pressed : null;
 			}
 			else if (_pressed != null)
 			{
-				if (_pressed == item)
+				if (_pressed == hit)
 					ItemClicked (_pressed);
 				_pressed = null;
 				_highlighted = null;

@@ -18,14 +18,24 @@
 			return rect => _regions.Add (Tuple.Create (rect, item));
 		}
 
-		public T ItemUnderMouse (PointF mouseCoords)
+		public Tuple<RectangleF, T> ItemUnderMouse (PointF mouseCoords)
 		{
 			foreach (var region in _regions)
 			{
 				if (region.Item1.Contains (mouseCoords.X, mouseCoords.Y))
-					return region.Item2;
+					return region;
 			}
 			return null;
+		}
+
+		public int Count
+		{
+			get { return _regions.Count; }
+		}
+
+		public Tuple<RectangleF, T> this[int index]
+		{
+			get { return _regions[index]; }
 		}
 	}
 }

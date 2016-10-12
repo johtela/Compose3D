@@ -23,6 +23,7 @@
 		public static VisualStyle SelectedStyle = 
 			new VisualStyle (
 				Style,
+				pen: new Pen (Color.White, 1.5f),
 				textBrush: Brushes.White,
 				brush: Brushes.CadetBlue);
 

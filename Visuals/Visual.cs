@@ -393,8 +393,6 @@
 			/// </summary>
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				var gs1 = context.Graphics.Save ();
-
 				foreach (var pair in Items)
 				{
 					var inner = pair.Item2.GetSize (context);
@@ -413,9 +411,10 @@
 						dy += availableSize.Height * pair.Item1;
 						outer = new VBox (outer.Width, inner.Height);
 					}
+					var gs = context.Graphics.Save ();
 					context.Graphics.TranslateTransform (dx, dy);
 					pair.Item2.Render (context, outer);
-					context.Graphics.Restore (gs1);
+					context.Graphics.Restore (gs);
 				}
 				return availableSize;
 			}

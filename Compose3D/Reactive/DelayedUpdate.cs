@@ -34,6 +34,15 @@
 		{
 			_elapsed = 0;
 		}
+
+		public T Change
+		{
+			get
+			{
+				Changed ();
+				return Value;
+			}
+		}
 	}
 
 	public static class Delayed

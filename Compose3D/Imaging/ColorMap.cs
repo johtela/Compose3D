@@ -62,6 +62,11 @@
 			return GetEnumerator ();
 		}
 
+		public int IndexOfKey (float key)
+		{
+			return _samplePoints.IndexOfKey (key);
+		}
+
 		public IEnumerable<KeyValuePair<float, V>> NormalizedSamplePoints (float keyMin, float keyMax)
 		{
 			var domain = keyMax - keyMin;
@@ -103,9 +108,8 @@
 			}
 			set
 			{
-				var i = _samplePoints.Keys.IndexOf (key);
-				if (i >= 0)
-					_samplePoints.Values[i] = value;
+				if (_samplePoints.ContainsKey (key))
+					_samplePoints[key] = value;
 				else
 					_samplePoints.Add (key, value);
 			}
@@ -114,7 +118,7 @@
 		public V this[int index]
 		{
 			get { return _samplePoints.Values[index]; }
-			set { _samplePoints.Values[index] = value; }
+			set { _samplePoints[_samplePoints.Keys[index]] = value; }
 		}
 	}
 }

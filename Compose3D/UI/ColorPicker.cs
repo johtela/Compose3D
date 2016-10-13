@@ -9,9 +9,20 @@
 		private ColorSlider _hue;
 		private ColorSlider _saturation;
 		private ColorSlider _brightness;
+		private Color _value;
 
 		public readonly Reaction<Color> Changed;
-		public Color Value { get; set; }
+		public Color Value
+		{
+			get { return _value; }
+			set
+			{
+				_value = value;
+				_hue.Value = _value.GetHue ();
+				_saturation.Value = _value.GetSaturation ();
+				_brightness.Value = _value.GetBrightness ();
+			}
+		}
 
 		public ColorPicker (VisualDirection direction, float knobWidth, float minVisualLength, Color color,
 			bool preview, Reaction<Color> changed)
@@ -30,15 +41,15 @@
 				{
 					new Container (direction, HAlign.Center, VAlign.Center, false, 
 						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, controls),
-						Label.ColorPreview (() => Value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
+						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
 				} :
 				controls;
 		}
 
 		private void UpdateValue ()
 		{
-			Value = VisualHelpers.ColorFromHSB (_hue.Value, _saturation.Value, _brightness.Value);
-			Changed (Value);
+			_value = VisualHelpers.ColorFromHSB (_hue.Value, _saturation.Value, _brightness.Value);
+			Changed (_value);
 		}
 
 		private int LastColorIndex ()

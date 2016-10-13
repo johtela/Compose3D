@@ -13,10 +13,10 @@
 	public class ColorMapBar : Control
 	{
 		public readonly Reaction<ColorMap<Vec3>> Changed;
-		public readonly Reaction<Tuple<float, Color>> ItemSelected;
+		public readonly Reaction<int?> ItemSelected;
 		public readonly float DomainMin;
 		public readonly float DomainMax;
-		public readonly SizeF MinSize;
+		public readonly SizeF BarSize;
 		public readonly ColorMap<Vec3> ColorMap;
 
 		// Click regions
@@ -26,15 +26,15 @@
 		private float? _selected;
 		private float? _dragging;
 
-		public ColorMapBar (float domainMin, float domainMax, SizeF minSize, 
+		public ColorMapBar (float domainMin, float domainMax, float knobWidth, float minVisualLength,
 			ColorMap<Vec3> colorMap, Reaction<ColorMap<Vec3>> changed, 
-			Reaction<Tuple<float, Color>> itemSelected)
+			Reaction<int?> itemSelected)
 		{
 			if (colorMap.Count > 0 && (colorMap.MinKey < domainMin || colorMap.MaxKey > domainMax))
 				throw new ArgumentException ("Color map values out of min/max range.");
 			DomainMin = domainMin;
 			DomainMax = domainMax;
-			MinSize = minSize;
+			BarSize = new SizeF (knobWidth, minVisualLength);
 			ColorMap = colorMap;
 			Changed = changed;
 			ItemSelected = itemSelected;
@@ -77,11 +77,11 @@
 		public override Visual ToVisual ()
 		{
 			_mouseRegions.Clear ();
-			var knobSize = new SizeF (MinSize.Width / 2f, MinSize.Width / 4f);
+			var knobSize = new SizeF (BarSize.Width, BarSize.Width / 2f);
 			return Visual.Margin (
 				Visual.HStack (VAlign.Top,
 					Visual.Clickable (
-						Visual.Custom (new SizeF (MinSize.Width / 2f, MinSize.Height), PaintBar),
+						Visual.Custom (BarSize, PaintBar),
 						_mouseRegions.Add (ColorMap)),
 					Visual.VPile (HAlign.Left, VAlign.Center,
 						ColorMap.Select (sp =>
@@ -117,9 +117,11 @@
 			if (hit != null && hit.Item2 == ColorMap && leftMousePressed)
 			{
 				var key = KeyValueAtPos (hit.Item1, relativeMousePos);
-				ColorMap.Add (key, ColorMap[key]);
+				var color = ColorMap[key];
+				ColorMap.Add (key, color);
 				Changed (ColorMap);
 				_selected = key;
+				ItemSelected (ColorMap.IndexOfKey (key));
 			}
 			else if (hit != null && hit.Item2 is float)
 			{
@@ -129,7 +131,7 @@
 					if (hitKey != _selected)
 					{
 						_selected = hitKey;
-						ItemSelected (Tuple.Create (hitKey, ColorMap[hitKey].ToColor ()));
+						ItemSelected (ColorMap.IndexOfKey (hitKey));
 					}
 					_dragging = hitKey;
 					return;

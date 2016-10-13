@@ -16,7 +16,7 @@
 		public readonly float Range;
 		public readonly Reaction<float> Changed;
 
-		public float Value { get; private set; }
+		public float Value { get; set; }
 
 		// Click region
 		private RectangleF _clickRegion;

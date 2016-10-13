@@ -228,6 +228,7 @@
     <Compile Include="SceneGraph\ControlPanel.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\ColorMapBar.cs" />
+    <Compile Include="UI\ColorMapEdit.cs" />
     <Compile Include="UI\ColorPicker.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />

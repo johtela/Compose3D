@@ -45,8 +45,8 @@
 
 		public static Color ColorFromHSB (float hue, float saturation, float brightness)
 		{
-			if (hue < 0f)
-				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 360].");
+			if (hue < 0f || hue > 1f)
+				throw new ArgumentOutOfRangeException ("hue", hue, "Value must be within range [0, 1].");
 			if (saturation < 0f || saturation > 1f)
 				throw new ArgumentOutOfRangeException ("saturation", saturation, "Value must be within range [0, 1].");
 			if (brightness < 0f || brightness > 1f)
@@ -55,7 +55,7 @@
 			if (saturation == 0)
 				return ColorFromRGB (brightness, brightness, brightness);
 			// the color wheel consists of 6 sectors. Figure out which sector you're in.
-			float sectorPos = (hue % 360f) / 60f;
+			float sectorPos = (hue % 1f) * 6f;
 			int sectorNumber = (int)(Math.Floor (sectorPos));
 			// get the fractional part of the sector
 			float fractionalSector = sectorPos - sectorNumber;
@@ -78,19 +78,32 @@
 			}
 		}
 
-		public static Color ChangeHue (this Color color, float hue)
+		public static Tuple<float, float, float> ToHSB(this Color color) 
 		{
-			return ColorFromHSB (hue, color.GetSaturation (), color.GetBrightness ());
-		}
-
-		public static Color ChangeSaturation (this Color color, float saturation)
-		{
-			return ColorFromHSB (color.GetHue (), saturation, color.GetBrightness ());
-		}
-
-		public static Color ChangeBrightness (this Color color, float brightness)
-		{
-			return ColorFromHSB (color.GetHue (), color.GetSaturation (), brightness);
+			var cmax = Math.Max (Math.Max(color.R, color.G), color.B);
+			var cmin = Math.Min (Math.Min(color.R, color.G), color.B);
+			var brightness = ((float) cmax) / 255.0f;
+			var saturation = cmax == 0 ? 0 : 
+				((float) (cmax - cmin)) / ((float) cmax);
+			float hue;
+			if (saturation == 0)
+				hue = 0;
+			else 
+			{
+				float redc = ((float) (cmax - color.R)) / ((float) (cmax - cmin));
+				float greenc = ((float) (cmax - color.G)) / ((float) (cmax - cmin));
+				float bluec = ((float) (cmax - color.B)) / ((float) (cmax - cmin));
+				if (color.R == cmax)
+					hue = bluec - greenc;
+				else if (color.G == cmax)
+					hue = 2.0f + redc - bluec;
+				else
+					hue = 4.0f + greenc - redc;
+				hue /= 6.0f;
+				if (hue < 0f)
+					hue += 1.0f;
+			}
+			return Tuple.Create (hue, saturation, brightness);
 		}
 
 		public static VisualDirection Opposite (this VisualDirection direction)

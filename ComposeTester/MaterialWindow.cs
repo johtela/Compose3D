@@ -128,7 +128,7 @@
 				Container.LabelAndControl ("Warp Scale: ",
 					new NumericEdit (_textureParams.Value.WarpScale, 0.001f, React.By ((float s) =>
 						_textureParams.Change.WarpScale = s)), true),
-				new ColorMapEdit (-1f, 1f, 16f, 200f, _textureParams.Value.ColorMap,
+				new ColorMapEdit (-1f, 1f, 20f, 200f, _textureParams.Value.ColorMap,
 						React.By ((ColorMap<Vec3> _) => _textureParams.Changed ())), 
 				new Button ("Test", React.Ignore<bool> ()));
 		}

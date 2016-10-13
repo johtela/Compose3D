@@ -49,7 +49,7 @@
 		public static ColorSlider Hue (VisualDirection direction, float knobWidth, float minVisualLength, 
 			Color color, Reaction<float> changed)
 		{
-			return new ColorSlider (direction, knobWidth, minVisualLength, 0f, 360f, color.GetHue (), 
+			return new ColorSlider (direction, knobWidth, minVisualLength, 0f, 1f, color.GetHue (), 
 				new [] { 
 					Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.Blue, Color.Indigo, 
 					Color.Violet, Color.Red

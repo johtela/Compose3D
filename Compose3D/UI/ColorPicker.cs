@@ -18,9 +18,13 @@
 			set
 			{
 				_value = value;
-				_hue.Value = _value.GetHue ();
-				_saturation.Value = _value.GetSaturation ();
-				_brightness.Value = _value.GetBrightness ();
+				var hsb = value.ToHSB ();
+				_hue.Value = hsb.Item1;
+				_saturation.Value = hsb.Item2;
+				_brightness.Value = hsb.Item3;
+				int i = LastColorIndex ();
+				_saturation.Colors[i] = VisualHelpers.ColorFromHSB (hsb.Item1, 1f, 1f);
+				_brightness.Colors[i] = VisualHelpers.ColorFromHSB (hsb.Item1, _saturation.Value, 1f);
 			}
 		}
 

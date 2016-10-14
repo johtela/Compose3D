@@ -1,6 +1,5 @@
 ﻿namespace Compose3D.UI
 {
-	using System;
 	using System.Drawing;
 	using Imaging;
 	using Reactive;
@@ -31,13 +30,9 @@
 
 		private void ItemSelected (int? item)
 		{
+			_selected = item;
 			if (item != null)
-			{
-				_selected = item;
 				_picker.Value = _bar.ColorMap[item.Value].ToColor ();
-			}
-			else
-				_selected = null;
 		}
 
 		private void ColorChanged (Color color)

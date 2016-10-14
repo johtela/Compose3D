@@ -21,21 +21,19 @@
 		public override void HandleInput (PointF relativeMousePos)
 		{ }
 
-		public static Label Static (string caption, FontStyle style)
+		public static Label Static (string caption, FontStyle fontStyle)
 		{
 			return new Label (Visual.Styled (Visual.Margin (Visual.Label (caption), left: 2f, right: 2f),
-				new VisualStyle (VisualStyle.Default, 
-					new Font (VisualStyle.Default.Font, style))));
+				Style.WithFontStyle (fontStyle)));
 		}
 
-		public static Label Dynamic (Func<string> getCaption, FontStyle style)
+		public static Label Dynamic (Func<string> getCaption, FontStyle fontStyle)
 		{
 			return new Label (Visual.Styled (
 				Visual.Margin (
 					Visual.Delayed (() => Visual.Label (getCaption ())), 
 					left: 2f, right: 2f),
-				new VisualStyle (VisualStyle.Default,
-					new Font (VisualStyle.Default.Font, style))));
+				Style.WithFontStyle (fontStyle)));
 		}
 
 		public static Label ColorPreview (Func<Color> getColor, SizeF size)

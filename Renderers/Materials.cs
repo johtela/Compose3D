@@ -43,7 +43,7 @@
 
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: position={0}, diffuse={1}, normal={3}]",
+			return string.Format ("[Vertex: position={0}, diffuse={1}, normal={2}]",
 				position, diffuse, normal);
 		}
 	}

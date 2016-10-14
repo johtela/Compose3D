@@ -4,7 +4,7 @@
 	using System.Linq;
 	using Extensions;
 
-	public delegate bool Reaction<T> (T input);
+	public delegate bool Reaction<in T> (T input);
 
 	/// <summary>
 	/// Operations for creating reactions and for extending and combining them in various ways.

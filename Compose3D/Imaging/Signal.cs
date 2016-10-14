@@ -6,7 +6,7 @@
 	using Extensions;
 	using Maths;
 
-	public delegate U Signal<T, U> (T samplePoint);
+	public delegate U Signal<in T, out U> (T samplePoint);
 
 	public static class Signal
 	{

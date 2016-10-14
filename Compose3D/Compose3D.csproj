@@ -58,6 +58,7 @@
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
+    <Compile Include="Imaging\SignalEditor.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -232,6 +233,7 @@
     <Compile Include="UI\ColorPicker.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
+    <Compile Include="UI\FoldableContainer.cs" />
     <Compile Include="UI\NumericEdit.cs" />
     <Compile Include="UI\Slider.cs" />
     <Compile Include="UI\ListView.cs" />

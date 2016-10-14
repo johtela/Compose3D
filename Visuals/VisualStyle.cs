@@ -80,4 +80,12 @@
 			}
 		}
 	}
+
+	public static class StyleHelpers
+	{
+		public static VisualStyle WithFontStyle (this VisualStyle style, FontStyle fontStyle)
+		{
+			return new VisualStyle (style, new Font (style.Font, fontStyle));
+		}
+	}
 }

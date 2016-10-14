@@ -37,7 +37,7 @@
 			var builder = new GLSLGenerator ();
 			builder.DeclareVariables (typeof (T), "out", "");
 			builder.OutputShader (shader);
-			return BuildShaderCode (builder, version);
+			return BuildShaderCode (builder);
 		}
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
@@ -57,7 +57,7 @@
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
 			builder.DeclareVariables (typeof (T), "out", "");
 			builder.OutputGeometryShader (shader);
-			return BuildShaderCode (builder, version);
+			return BuildShaderCode (builder);
 		}
 
 		public static string CreateGeometryShader<T> (int vertexCount, int invocations,
@@ -71,9 +71,9 @@
 				inputPrimitive, outputPrimitive, shader);
 		}
 
-		private static string BuildShaderCode (GLSLGenerator builder, string version)
+		private static string BuildShaderCode (GLSLGenerator builder)
 		{
-			return string.Format ("#version 400 core\nprecision highp float;\n", version) +
+			return "#version 400 core\nprecision highp float;\n" +
 				builder._decl.ToString () +
 				GenerateFunctions (builder._funcRefs) +
 				builder._code.ToString ();

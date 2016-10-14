@@ -1,9 +1,7 @@
 ﻿namespace ComposeTester
 {
-	using System.Collections.Generic;
 	using System.Linq;
 	using System.Drawing;
-	using System;
 	using Extensions;
 	using Visuals;
 	using Compose3D.Maths;
@@ -43,7 +41,7 @@
 		private SceneGraph _sceneGraph;
 		private ControlPanel<TexturedVertex> _infoWindow;
 		private Texture _signalTexture;
-		private DelayedUpdate<SignalTextureParams> _textureParams;
+		private DelayedReactionUpdater _updater;
 
 		public MaterialWindow ()
 			: base (512, 512, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
@@ -51,7 +49,7 @@
 		{
 			_rotation = new Vec2 ();
 			_zoom = 1000f;
-			_textureParams = Delayed.Update (new SignalTextureParams (), UpdateSignalTexture, 0.5);
+			_updater = new DelayedReactionUpdater (this);
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
@@ -102,12 +100,12 @@
 		{
 			var size = new Vec2i (256);
 
-			var perlin = new Signal<Vec3, float> (new PerlinNoise (pars.PerlinSeed).Noise)
+			var perlin = new Signal<Vec3, float> (new PerlinNoise (pars.PerlinSeed	).Noise)
 				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * pars.PerlinScale);
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f);
 			var signal = sine.Warp (perlin.Scale (pars.WarpScale), 1f / size.X)
-//				.NormalRangeToZeroOne ().FloatToUintGrayscale ();
+				//.NormalRangeToZeroOne ().FloatToUintGrayscale ();
 				.Colorize (pars.ColorMap).Vec3ToUintColor ();
 			var buffer = signal.MapInput (Signal.BitmapCoordToUnitRange (size, 1f)).SampleToBuffer (size);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
@@ -118,18 +116,21 @@
 		{
 			var color = Color.White;
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
-				Label.Static ("Perlin Noise", FontStyle.Bold),
-				Container.LabelAndControl ("Seed: ",
-					new NumericEdit (_textureParams.Value.PerlinSeed, 1f, React.By ((float s) =>
-						_textureParams.Change.PerlinSeed = (int)s)), true),
-				Container.LabelAndControl ("Scale: ",
-					new NumericEdit (_textureParams.Value.PerlinScale, 1f, React.By ((float s) =>
-						_textureParams.Change.PerlinScale = s)), true),
-				Container.LabelAndControl ("Warp Scale: ",
-					new NumericEdit (_textureParams.Value.WarpScale, 0.001f, React.By ((float s) =>
-						_textureParams.Change.WarpScale = s)), true),
-				new ColorMapEdit (-1f, 1f, 20f, 200f, _textureParams.Value.ColorMap,
-						React.By ((ColorMap<Vec3> _) => _textureParams.Changed ())), 
+				FoldableContainer.WithLabel ("Perlin Noise", true, HAlign.Left,
+					Container.LabelAndControl ("Seed: ",
+						new NumericEdit (_textureParams.Value.PerlinSeed, 1f, React.By ((float s) =>
+							_textureParams.Change.PerlinSeed = (int)s)), true),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (_textureParams.Value.PerlinScale, 1f, React.By ((float s) =>
+							_textureParams.Change.PerlinScale = s)), true),
+					Container.LabelAndControl ("Warp Scale: ",
+						new NumericEdit (_textureParams.Value.WarpScale, 0.001f, React.By ((float s) =>
+							_textureParams.Change.WarpScale = s)), true)
+				),
+				FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
+					new ColorMapEdit (-1f, 1f, 20f, 200f, _textureParams.Value.ColorMap,
+							React.By ((ColorMap<Vec3> _) => _textureParams.Changed ()))
+				), 
 				new Button ("Test", React.Ignore<bool> ()));
 		}
 
@@ -182,7 +183,6 @@
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
 				.And (React.By<double> (UpdateCamera))
-				.And (_textureParams.Run ()) 
 				.And (renderMaterial)
 				.And (renderPanel)
 				.Viewport (this)

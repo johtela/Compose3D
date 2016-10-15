@@ -33,9 +33,9 @@
 		public override Visual ToVisual ()
 		{
 			var header = Visual.Clickable (
-				Visual.HStack (VAlign.Center,
+				Visual.HStack (VAlign.Top,
 					Visual.Styled (
-						Visual.Label (_folded ? "\u21E9 " : "\u21E7 "),
+						Visual.Label (_folded ? "↓" : "↑"),
 						Style.WithFontStyle (FontStyle.Bold)),
 					Header), 
 				rect => _clickRegion = rect);
@@ -65,7 +65,7 @@
 			var header = Visual.Styled (
 				Visual.Margin (
 					Visual.Label (label),
-					2f),
+					left: 2f, right: 8f, top: 2f, bottom: 2f),
 				Style.WithFontStyle (FontStyle.Bold));
 			return new FoldableContainer (header, framed, alignment, controls);
 		}

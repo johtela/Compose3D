@@ -100,6 +100,16 @@
 			return input => predicate (input.Item1, input.Item2, input.Item3) ? reaction (input) : true;
 		}
 
+		public static Reaction<T> Upcast<T> (this Reaction<object> reaction)
+		{
+			return reaction.Select<T, object> (x => x);
+		}
+
+		public static Reaction<T> Adapt<T, U> (this Reaction<U> reaction, U value)
+		{
+			return reaction.Select<T, U> (input => value);
+		}
+
 		public static Reaction<T> Aggregate<T, U> (this Reaction<U> reaction, Func<U, T, U> func, U initial)
 		{
 			var current = initial;

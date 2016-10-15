@@ -20,19 +20,6 @@
 
 	public class MaterialWindow : GameWindow
 	{
-		private class SignalTextureParams
-		{
-			public int PerlinSeed;
-			public float PerlinScale = 10f;
-			public float WarpScale = 0.001f;
-			public ColorMap<Vec3> ColorMap = new ColorMap<Vec3>
-			{
-				{ -0.5f, new Vec3 (1f, 0f, 0f) },
-				{ 0f, new Vec3 (0f, 1f, 0f) },
-				{ 0.5f, new Vec3 (0f, 0f, 1f) }
-			};
-		}
-
 		// Scene graph
 		private Camera _camera;
 		private Mesh<MaterialVertex> _mesh;
@@ -96,41 +83,34 @@
 				.Smoothen (0.5f);
 		}
 
-		private void UpdateSignalTexture (SignalTextureParams pars)
+		private Control CreateSignalTextureUI ()
 		{
 			var size = new Vec2i (256);
+			SignalEditor<Vec2, Vec3> signal = null;
 
-			var perlin = new Signal<Vec3, float> (new PerlinNoise (pars.PerlinSeed	).Noise)
-				.MapInput ((Vec2 v) => new Vec3 (v, 0f) * pars.PerlinScale);
+			var changed = React.By ((object _) =>
+			{
+				var buffer = signal.Signal
+					.Vec3ToUintColor ()
+					.MapInput (Signal.BitmapCoordToUnitRange (size, 1f))
+					.SampleToBuffer (size);
+				_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
+					PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
+			}).Delay (_updater, 0.5);
+
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
-				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f);
-			var signal = sine.Warp (perlin.Scale (pars.WarpScale), 1f / size.X)
-				//.NormalRangeToZeroOne ().FloatToUintGrayscale ();
-				.Colorize (pars.ColorMap).Vec3ToUintColor ();
-			var buffer = signal.MapInput (Signal.BitmapCoordToUnitRange (size, 1f)).SampleToBuffer (size);
-			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
-				PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
-		}
+				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f).ToSignalEditor ();
+			var perlin = SignalEditor.Perlin (0, 10f, changed);
+			var warp = sine.Warp (perlin, 0.001f, 1f / size.X, changed);
+			signal = warp.Colorize (new ColorMap<Vec3> {
+				{ -0.5f, new Vec3 (1f, 0f, 0f) },
+				{ 0f, new Vec3 (0f, 1f, 0f) },
+				{ 0.5f, new Vec3 (0f, 0f, 1f) }
+			}, changed);
+			changed (null);
 
-		private Control CreateUI ()
-		{
-			var color = Color.White;
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
-				FoldableContainer.WithLabel ("Perlin Noise", true, HAlign.Left,
-					Container.LabelAndControl ("Seed: ",
-						new NumericEdit (_textureParams.Value.PerlinSeed, 1f, React.By ((float s) =>
-							_textureParams.Change.PerlinSeed = (int)s)), true),
-					Container.LabelAndControl ("Scale: ",
-						new NumericEdit (_textureParams.Value.PerlinScale, 1f, React.By ((float s) =>
-							_textureParams.Change.PerlinScale = s)), true),
-					Container.LabelAndControl ("Warp Scale: ",
-						new NumericEdit (_textureParams.Value.WarpScale, 0.001f, React.By ((float s) =>
-							_textureParams.Change.WarpScale = s)), true)
-				),
-				FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
-					new ColorMapEdit (-1f, 1f, 20f, 200f, _textureParams.Value.ColorMap,
-							React.By ((ColorMap<Vec3> _) => _textureParams.Changed ()))
-				), 
+				perlin.Control, warp.Control, signal.Control,
 				new Button ("Test", React.Ignore<bool> ()));
 		}
 
@@ -161,16 +141,15 @@
                 maxDimensionError: 0.1f,
                 maxColorError: 0.05f);
 
-			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, CreateUI (), new Vec2i (300, 400));
-			
+			_signalTexture = new Texture (TextureTarget.Texture2D);
+			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, CreateSignalTextureUI (), 
+				new Vec2i (300, 400));
+			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
+
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
-				_infoWindow.Offset (new Vec3 (-0.9f, 0.9f, 0f)));
-
-			_signalTexture = new Texture (TextureTarget.Texture2D);
-			UpdateSignalTexture (_textureParams.Value);
-			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
-			_sceneGraph.Root.Add (textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
+				_infoWindow.Offset (new Vec3 (-0.9f, 0.9f, 0f)),
+				textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
 		}
 
 		private void SetupRendering ()

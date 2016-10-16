@@ -207,23 +207,27 @@
 			return vec => vec.X * scale / bitmapSize.X;
 		}
 
-		public static Signal<V, float> SpectralControl<V> (this Signal<V, float> signal, int startBand,
-			int endBand, params float[] bandWeights)
+		public static Signal<V, float> SpectralControl<V> (this Signal<V, float> signal, int firstBand,
+			int lastBand, params float[] bandWeights)
 			where V : struct, IVec<V, float>
 		{
-			if (startBand > endBand)
-				throw new ArgumentException ("endBand must be greater or equal to startBand");
-			if (bandWeights.Length != (endBand - startBand) + 1)
+			if (firstBand < 0)
+				throw new ArgumentException ("Bands must be positive");
+			if (firstBand > lastBand)
+				throw new ArgumentException ("lastBand must be greater or equal to firstBand");
+			if (lastBand > 15)
+				throw new ArgumentException ("lastBand must be less than 16.");
+			if (bandWeights.Length != (lastBand - firstBand) + 1)
 				throw new ArgumentException ("Invalid number of bands");
 			var sumWeights = bandWeights.Aggregate (0f, (s, w) => s + w);
 			var normWeights = bandWeights.Map (w => w / sumWeights);
 			return vec =>
 			{
 				var result = 0f;
-				for (int i = startBand; i <= endBand; i++)
+				for (int i = firstBand; i <= lastBand; i++)
 				{
 					float factor = 1 << i;
-					result += signal (vec.Multiply (factor)) * normWeights[i - startBand];
+					result += signal (vec.Multiply (factor)) * normWeights[i - firstBand];
 				}
 				return result;
 			};

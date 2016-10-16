@@ -1,14 +1,17 @@
 ﻿namespace Compose3D.UI
 {
+	using System;
 	using System.Drawing;
 	using System.Linq;
 	using System.Globalization;
 	using OpenTK.Input;
+	using Maths;
 	using Reactive;
 	using Visuals;
 
 	public class NumericEdit : Control
 	{
+		public readonly bool IsInteger;
 		public readonly float Increment;
 		public readonly Reaction<float> Changed;
 
@@ -25,10 +28,11 @@
 			set { _value = value.ToString (CultureInfo.InvariantCulture); }
 		}
 
-		public NumericEdit (float value, float increment, Reaction<float> changed)
+		public NumericEdit (float value, bool isInteger, float increment, Reaction<float> changed)
 		{
-			Value = value;
-			Increment = increment;
+			IsInteger = isInteger;
+			Value = isInteger ? value.Round () : value;
+			Increment = isInteger ? increment.Round () : increment;
 			Changed = changed;
 		}
 
@@ -51,7 +55,7 @@
 				}
 				else if (num == '-' && _value.Length == 0)
 					_value = "-";
-				else if (num == '.' && _value.Length > 0 && !_value.Contains ('.'))
+				else if (!IsInteger && num == '.' && _value.Length > 0 && !_value.Contains ('.'))
 					_value += '.';
 				else if (KeyPressed (Key.BackSpace, true) && _value.Length > 0)
 				{

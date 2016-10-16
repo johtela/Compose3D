@@ -83,7 +83,7 @@
 				.Smoothen (0.5f);
 		}
 
-		private Control CreateSignalTextureUI ()
+		private Control SignalTextureUI ()
 		{
 			var size = new Vec2i (256);
 			SignalEditor<Vec2, Vec3> signal = null;
@@ -96,21 +96,18 @@
 					.SampleToBuffer (size);
 				_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
 					PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
-			}).Delay (_updater, 0.5);
+			}).Delay (_updater, 1.0);
 
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f).ToSignalEditor ();
 			var perlin = SignalEditor.Perlin (0, 10f, changed);
-			var warp = sine.Warp (perlin, 0.001f, 1f / size.X, changed);
-			signal = warp.Colorize (new ColorMap<Vec3> {
-				{ -0.5f, new Vec3 (1f, 0f, 0f) },
-				{ 0f, new Vec3 (0f, 1f, 0f) },
-				{ 0.5f, new Vec3 (0f, 0f, 1f) }
-			}, changed);
+			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
+			var warp = sine.Warp (spectral, 0.001f, 1f / size.X, changed);
+			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
 			changed (null);
 
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
-				perlin.Control, warp.Control, signal.Control,
+				perlin.Control, spectral.Control, warp.Control, signal.Control,
 				new Button ("Test", React.Ignore<bool> ()));
 		}
 
@@ -142,8 +139,8 @@
                 maxColorError: 0.05f);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
-			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, CreateSignalTextureUI (), 
-				new Vec2i (300, 400));
+			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, SignalTextureUI (), 
+				new Vec2i (300, 500));
 			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);

@@ -120,5 +120,22 @@
 			get { return _samplePoints.Values[index]; }
 			set { _samplePoints[_samplePoints.Keys[index]] = value; }
 		}
+
+		public static ColorMap<V> RGB ()
+		{
+			return new ColorMap<V> {
+				{ -1f, Vec.FromArray<V, float> (1f, 0f, 0f, 1f) },
+				{ 0f, Vec.FromArray<V, float> (0f, 1f, 0f, 1f) },
+				{ 1f, Vec.FromArray<V, float> (0f, 0f, 1f, 1f) }
+			};
+		}
+
+		public static ColorMap<V> GrayScale ()
+		{
+			return new ColorMap<V> {
+				{ -1f, Vec.FromArray<V, float> (0f, 0f, 0f, 1f) },
+				{ 1f, Vec.FromArray<V, float> (1f, 1f, 1f, 1f) }
+			};
+		}
 	}
 }

@@ -12,7 +12,7 @@
 		public readonly HAlign HorizAlign;
 		public readonly VAlign VertAlign;
 		public readonly bool Framed;
-		public Control[] Controls { get; protected set; }
+		public readonly List<Control> Controls;
 
 		public Container (VisualDirection direction, HAlign horizAlign,	VAlign vertAlign,  
 			bool framed, params Control[] controls)
@@ -21,7 +21,7 @@
 			HorizAlign = horizAlign;
 			VertAlign = vertAlign;
 			Framed = framed;
-			Controls = controls;
+			Controls = new List<Control> (controls);
 		}
 
 		public override Visual ToVisual ()

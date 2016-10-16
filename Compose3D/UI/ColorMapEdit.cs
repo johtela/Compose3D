@@ -25,7 +25,7 @@
 				React.By<int?> (ItemSelected));
 			_picker = new ColorPicker (VisualDirection.Vertical, knobWidth, minVisualLength - (3f * knobWidth), 
 				Color.Black, true, React.By<Color> (ColorChanged));
-			Controls = new Control[] { _bar, _picker };
+			Controls.AddRange (new Control[] { _bar, _picker });
 		}
 
 		private void ItemSelected (int? item)

@@ -40,14 +40,14 @@
 			_brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, 
 				React.By<float> (ChangeBrightness));
 			var controls = new Control[] { _hue, _saturation, _brightness };
-			Controls = preview ?
+			Controls.AddRange (preview ?
 				new Control[]
 				{
 					new Container (direction, HAlign.Center, VAlign.Center, false, 
 						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, controls),
 						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
 				} :
-				controls;
+				controls);
 		}
 
 		private void UpdateValue ()

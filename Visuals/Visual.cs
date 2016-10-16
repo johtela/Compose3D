@@ -420,6 +420,34 @@
 			}
 		}
 
+		private sealed class _Flow : _Container
+		{
+			public readonly Visual[] Items;
+
+			public _Flow (IEnumerable<Visual> items, VisualDirection direction, HAlign horizAlign,
+				VAlign vertAlign) :	base (direction, horizAlign, vertAlign)
+			{
+				Items = items.ToArray ();
+			}
+
+			protected override VBox CalculateSize (GraphicsContext context)
+			{
+				var result = Items.Aggregate (VBox.Empty, (acc, v) => 
+				{
+					var box = v.CalculateSize (context);
+					return Direction == VisualDirection.Horizontal ?
+						acc.VMax (box).HAdd (box) :
+						acc.HMax (box).VAdd (box);
+				});
+				return result;
+			}
+		
+			protected override VBox Draw (GraphicsContext context, VBox availableSize)
+			{
+				throw new NotImplementedException ();
+			}
+		}
+
 		/// <summary>
 		/// Hidden visual that has the same size as the undelying visual.
 		/// </summary>

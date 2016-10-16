@@ -106,7 +106,7 @@
 			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
 			changed (null);
 
-			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Center, true,
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
 				perlin.Control, spectral.Control, warp.Control, signal.Control,
 				new Button ("Test", React.Ignore<bool> ()));
 		}
@@ -140,7 +140,7 @@
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (300, 500));
+				new Vec2i (600, 300));
 			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);

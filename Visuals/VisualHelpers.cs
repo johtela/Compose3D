@@ -17,7 +17,7 @@
 			gfx.SmoothingMode = SmoothingMode.AntiAlias;
 			gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
 			var ctx = new GraphicsContext (gfx, style);
-			visual.Render (ctx, new VBox (size.Width, size.Height));
+			visual.Render (ctx, new VBox (size));
 			return result;
 		}
 

@@ -39,8 +39,8 @@
 			{
 				var pos = relativeMousePos - new SizeF (_clickRegion.Location);
 				var relPos = (Direction == VisualDirection.Horizontal ?
-					(pos.X - (KnobWidth / 2f)) / (_clickRegion.Width - KnobWidth) :
-					1f - ((pos.Y - (KnobWidth / 2f)) / (_clickRegion.Height - KnobWidth)))
+					(pos.X  - (KnobWidth / 4f)) / (_clickRegion.Width - KnobWidth) :
+					1f - ((pos.Y - (KnobWidth / 4f )) / (_clickRegion.Height - KnobWidth)))
 					.Clamp (0f, 1f);
 				var newVal = MinValue + (relPos * Range);
 				if (newVal != Value)

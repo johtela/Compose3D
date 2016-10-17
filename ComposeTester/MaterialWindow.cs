@@ -106,7 +106,7 @@
 			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
 			changed (null);
 
-			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true,
+			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, true, true,
 				perlin.Control, spectral.Control, warp.Control, signal.Control,
 				new Button ("Test", React.Ignore<bool> ()));
 		}

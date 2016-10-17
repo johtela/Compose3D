@@ -30,7 +30,7 @@
 
 		public ColorPicker (VisualDirection direction, float knobWidth, float minVisualLength, Color color,
 			bool preview, Reaction<Color> changed)
-			: base (preview ? direction : direction.Opposite (), HAlign.Left, VAlign.Top, true)
+			: base (preview ? direction : direction.Opposite (), HAlign.Left, VAlign.Top, true, false)
 		{
 			Changed = changed;
 			_hue = ColorSlider.Hue (direction, knobWidth, minVisualLength, color, 
@@ -43,8 +43,8 @@
 			Controls.AddRange (preview ?
 				new Control[]
 				{
-					new Container (direction, HAlign.Center, VAlign.Center, false, 
-						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, controls),
+					new Container (direction, HAlign.Center, VAlign.Center, false, false,
+						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, false, controls),
 						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
 				} :
 				controls);

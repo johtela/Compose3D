@@ -12,15 +12,17 @@
 		public readonly HAlign HorizAlign;
 		public readonly VAlign VertAlign;
 		public readonly bool Framed;
+		public readonly bool WrapAround;
 		public readonly List<Control> Controls;
 
 		public Container (VisualDirection direction, HAlign horizAlign,	VAlign vertAlign,  
-			bool framed, params Control[] controls)
+			bool framed, bool wrapAround, params Control[] controls)
 		{
 			Direction = direction;
 			HorizAlign = horizAlign;
 			VertAlign = vertAlign;
 			Framed = framed;
+			WrapAround = wrapAround;
 			Controls = new List<Control> (controls);
 		}
 
@@ -29,8 +31,12 @@
 			var cvisuals = Controls.Select (c => c.ToVisual ());
 			var visual = Visual.Margin (
 				Direction == VisualDirection.Horizontal ?
-					Visual.HStack (VertAlign, cvisuals.Select (v => Visual.Margin (v, left: 2f, right: 2f))) :
-					Visual.VStack (HorizAlign, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f))),
+					(WrapAround ?
+						Visual.HFlow (VertAlign, cvisuals.Select (v => Visual.Margin (v, left: 2f, right: 2f))) :
+						Visual.HStack (VertAlign, cvisuals.Select (v => Visual.Margin (v, left: 2f, right: 2f)))) :
+					(WrapAround ?
+						Visual.VFlow (HorizAlign, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f))) :
+						Visual.VStack (HorizAlign, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f)))),
 				2f);
 			return Framed ? Visual.Frame (visual, FrameKind.RoundRectangle, true) : visual;
 		}
@@ -43,7 +49,7 @@
 
 		public static Container LabelAndControl (string label, Control control, bool framed)
 		{
-			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Center, framed,
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Center, framed, false,
 				Label.Static (label, FontStyle.Regular), control);
 		}
 	}

@@ -175,7 +175,7 @@
 					var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
 						.Select (BandSlider).ToArray ();
 					_bandContainer = new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top,
-						true, sliders);
+						true, false, sliders);
 					return FoldableContainer.WithLabel ("Spectral Control", true, HAlign.Left,
 						fbEdit, lbEdit, _bandContainer);
 				}

@@ -439,12 +439,89 @@
 						acc.VMax (box).HAdd (box) :
 						acc.HMax (box).VAdd (box);
 				});
-				return result;
+				var aspectRatio = result.Width / result.Height;
+				return new VBox (result.Width / aspectRatio, result.Height * aspectRatio);
 			}
-		
+
+			private IEnumerable<Tuple<int, VBox>> WrapToLines (GraphicsContext context, 
+				VBox availableSize)
+			{
+				var remaining = availableSize;
+				var line = VBox.Empty;
+
+				for (int i = 0; i < Items.Length; i++)
+				{
+					if (remaining.IsEmpty)
+						yield break;
+					var item = Items[i].GetSize (context);
+					if (Direction == VisualDirection.Horizontal)
+					{
+						if (line.HAdd(item).Width >= availableSize.Width)
+						{
+							yield return Tuple.Create (i, line.HMin (availableSize));
+							remaining = remaining.VSub (line);
+							line = item;
+						}
+						else
+							line = line.HAdd (item).VMax (item);
+					}
+					else
+					{
+						if (line.VAdd(item).Height >= availableSize.Height)
+						{
+							yield return Tuple.Create (i, line.VMin (availableSize));
+							remaining = remaining.HSub (line);
+							line = item;
+						}
+						else 
+							line = line.VAdd (item).HMax (item);
+					}
+				}
+				if (!line.IsEmpty)
+					yield return Tuple.Create (Items.Length, line);
+			}
+
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				throw new NotImplementedException ();
+				var gs1 = context.Graphics.Save ();
+				var i = 0;
+				var totalSize = VBox.Empty;
+
+				foreach (var line in WrapToLines (context, availableSize))
+				{
+					var gs2 = context.Graphics.Save ();
+					while (i < line.Item1)
+					{
+						var visual = Items[i++];
+						var itemBox = visual.GetSize (context);
+						var outer = Direction == VisualDirection.Horizontal ?
+							new VBox (itemBox.Width, line.Item2.Height) :
+							new VBox (line.Item2.Width, itemBox.Height);
+						var gs3 = context.Graphics.Save ();
+						context.Graphics.TranslateTransform (DeltaX (outer.Width, itemBox.Width),
+							DeltaY (outer.Height, itemBox.Height));
+						visual.Render (context, outer);
+						context.Graphics.Restore (gs3);
+
+						if (Direction == VisualDirection.Horizontal)
+							context.Graphics.TranslateTransform (outer.Width, 0f);
+						else
+							context.Graphics.TranslateTransform (0f, outer.Height);
+					}
+					context.Graphics.Restore (gs2);
+					if (Direction == VisualDirection.Horizontal)
+					{
+						totalSize = totalSize.VAdd (line.Item2).HMax (line.Item2);
+						context.Graphics.TranslateTransform (0f, line.Item2.Height);
+					}
+					else
+					{
+						totalSize = totalSize.HAdd (line.Item2).VMax (line.Item2);
+						context.Graphics.TranslateTransform (line.Item2.Width, 0f);
+					}
+				}
+				context.Graphics.Restore (gs1);
+				return totalSize;
 			}
 		}
 
@@ -781,6 +858,38 @@
 		public static Visual VPile (HAlign horizAlign, VAlign vertAlign, params Tuple<float, Visual>[] visuals)
 		{
 			return new _Pile (visuals, VisualDirection.Vertical, horizAlign, vertAlign);
+		}
+
+		/// <summary>
+		/// Create a horizontal flow of visuals.
+		/// </summary>
+		public static Visual HFlow (VAlign alignment, IEnumerable<Visual> visuals)
+		{
+			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+		}
+
+		/// <summary>
+		/// Create a horizontal flow of visuals.
+		/// </summary>
+		public static Visual HFlow (VAlign alignment, params Visual[] visuals)
+		{
+			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+		}
+
+		/// <summary>
+		/// Create a vertical flow of visuals.
+		/// </summary>
+		public static Visual VFlow (HAlign alignment, IEnumerable<Visual> visuals)
+		{
+			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+		}
+
+		/// <summary>
+		/// Create a vertical flow of visuals.
+		/// </summary>
+		public static Visual VFlow (HAlign alignment, params Visual[] visuals)
+		{
+			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
 		}
 
 		/// <summary>

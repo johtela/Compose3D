@@ -73,7 +73,7 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 
 			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph,
-				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, true,
+				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, true, false,
 					Label.Static ("Options", FontStyle.Bold),
 					new ListView (React.Ignore <IVisualizable> (),
 						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),

@@ -81,7 +81,7 @@
 					var changed = Changed.Adapt<float, object> (this);
 					return FoldableContainer.WithLabel ("Warp", true, HAlign.Left,
 						Container.LabelAndControl ("Scale: ",
-							new NumericEdit (Scale, false, Dx, 
+							new NumericEdit (Scale, false, 0.001f, 
 								React.By ((float s) => Scale = s).And (changed)), true));
 				}
 			}

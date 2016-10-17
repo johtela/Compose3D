@@ -7,7 +7,7 @@
 	using Visuals;
 	using Extensions;
 
-	public abstract class Control : IVisualizable
+	public abstract class Control
 	{
 		internal static KeyboardState _currKeyboardState;
 		internal static KeyboardState _prevKeyboardState;
@@ -31,7 +31,7 @@
 
 		private static Dictionary<Key, int> _keyDownDuration = new Dictionary<Key, int> (); 
 
-		public abstract Visual ToVisual ();
+		public abstract Visual ToVisual (SizeF panelSize);
 
 		public abstract void HandleInput (PointF relativeMousePos);
 

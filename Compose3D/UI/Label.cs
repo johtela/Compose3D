@@ -13,7 +13,7 @@
 			Visual = visual;
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			return Visual;
 		}

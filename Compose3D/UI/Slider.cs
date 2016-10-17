@@ -95,7 +95,7 @@
 				new SizeF (KnobWidth, size.Height);
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			var size = Direction == VisualDirection.Horizontal ?
 				new SizeF (MinVisualLength, KnobWidth) : 

@@ -31,7 +31,7 @@
 			: this (itemClicked, (IEnumerable<IVisualizable>)items)
 		{ }
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			_mouseRegions.Clear ();
 			return Visual.VStack (HAlign.Left,

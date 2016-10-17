@@ -74,7 +74,7 @@
 			return (key - DomainMin) / (DomainMax - DomainMin);
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			_mouseRegions.Clear ();
 			var knobSize = new SizeF (BarSize.Width, BarSize.Width / 2f);

@@ -82,7 +82,7 @@
 				_active = _clickRegion.Contains (relativeMousePos);
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			var visual = Visual.Clickable (
 				Visual.Frame (

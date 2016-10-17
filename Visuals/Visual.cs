@@ -423,24 +423,18 @@
 		private sealed class _Flow : _Container
 		{
 			public readonly Visual[] Items;
+			public readonly SizeF ContainerSize;
 
 			public _Flow (IEnumerable<Visual> items, VisualDirection direction, HAlign horizAlign,
-				VAlign vertAlign) :	base (direction, horizAlign, vertAlign)
+				VAlign vertAlign, SizeF containerSize) : base (direction, horizAlign, vertAlign)
 			{
 				Items = items.ToArray ();
+				ContainerSize = containerSize;
 			}
 
 			protected override VBox CalculateSize (GraphicsContext context)
 			{
-				var result = Items.Aggregate (VBox.Empty, (acc, v) => 
-				{
-					var box = v.CalculateSize (context);
-					return Direction == VisualDirection.Horizontal ?
-						acc.VMax (box).HAdd (box) :
-						acc.HMax (box).VAdd (box);
-				});
-				var aspectRatio = result.Width / result.Height;
-				return new VBox (result.Width / aspectRatio, result.Height * aspectRatio);
+				return new VBox (ContainerSize.Width, ContainerSize.Height);
 			}
 
 			private IEnumerable<Tuple<int, VBox>> WrapToLines (GraphicsContext context, 
@@ -863,33 +857,33 @@
 		/// <summary>
 		/// Create a horizontal flow of visuals.
 		/// </summary>
-		public static Visual HFlow (VAlign alignment, IEnumerable<Visual> visuals)
+		public static Visual HFlow (VAlign alignment, SizeF containerSize, IEnumerable<Visual> visuals)
 		{
-			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment, containerSize);
 		}
 
 		/// <summary>
 		/// Create a horizontal flow of visuals.
 		/// </summary>
-		public static Visual HFlow (VAlign alignment, params Visual[] visuals)
+		public static Visual HFlow (VAlign alignment, SizeF containerSize, params Visual[] visuals)
 		{
-			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment);
+			return new _Flow (visuals, VisualDirection.Horizontal, HAlign.Left, alignment, containerSize);
 		}
 
 		/// <summary>
 		/// Create a vertical flow of visuals.
 		/// </summary>
-		public static Visual VFlow (HAlign alignment, IEnumerable<Visual> visuals)
+		public static Visual VFlow (HAlign alignment, SizeF containerSize, IEnumerable<Visual> visuals)
 		{
-			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top, containerSize);
 		}
 
 		/// <summary>
 		/// Create a vertical flow of visuals.
 		/// </summary>
-		public static Visual VFlow (HAlign alignment, params Visual[] visuals)
+		public static Visual VFlow (HAlign alignment, SizeF containerSize, params Visual[] visuals)
 		{
-			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top);
+			return new _Flow (visuals, VisualDirection.Vertical, alignment, VAlign.Top, containerSize);
 		}
 
 		/// <summary>

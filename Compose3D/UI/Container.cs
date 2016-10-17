@@ -26,16 +26,17 @@
 			Controls = new List<Control> (controls);
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
-			var cvisuals = Controls.Select (c => c.ToVisual ());
+			var cvisuals = Controls.Select (c => c.ToVisual (panelSize));
+			var flowSize = new SizeF (panelSize.Width - 8f, panelSize.Height - 8f);
 			var visual = Visual.Margin (
 				Direction == VisualDirection.Horizontal ?
 					(WrapAround ?
-						Visual.HFlow (VertAlign, cvisuals.Select (v => Visual.Margin (v, left: 2f, right: 2f))) :
+						Visual.HFlow (VertAlign, flowSize, cvisuals.Select (v => Visual.Margin (v, 2f))) :
 						Visual.HStack (VertAlign, cvisuals.Select (v => Visual.Margin (v, left: 2f, right: 2f)))) :
 					(WrapAround ?
-						Visual.VFlow (HorizAlign, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f))) :
+						Visual.VFlow (HorizAlign, flowSize, cvisuals.Select (v => Visual.Margin (v, 2f))) :
 						Visual.VStack (HorizAlign, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f)))),
 				2f);
 			return Framed ? Visual.Frame (visual, FrameKind.RoundRectangle, true) : visual;

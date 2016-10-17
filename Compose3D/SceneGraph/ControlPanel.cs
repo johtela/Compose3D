@@ -23,7 +23,7 @@
 			: base (graph, true)
 		{
 			Control = control;
-			_visual = control.ToVisual ();
+			_visual = control.ToVisual (new SizeF (size.X, size.Y));
 			_bitmap = _visual.ToBitmap (new Size (size.X, size.Y),
 				System.Drawing.Imaging.PixelFormat.Format32bppArgb, Control.Style);
 			Texture = Texture.FromBitmap (_bitmap);
@@ -34,7 +34,7 @@
 			var relPos = PanelCoordinatesAtMousePos (new Vec2i (mouse.X, mouse.Y), 
 				viewportSize);
 			Control.HandleInput (new PointF (relPos.X, relPos.Y));
-			var visual = Control.ToVisual ();
+			var visual = Control.ToVisual (new SizeF (_bitmap.Width, _bitmap.Height));
 			if (_visual != visual)
 			{
 				_visual = visual;

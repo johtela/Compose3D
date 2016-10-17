@@ -30,7 +30,7 @@
 			Alignment = alignment;
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			var header = Visual.Clickable (
 				Visual.HStack (VAlign.Top,
@@ -42,7 +42,7 @@
 			var cvisuals = 
 				(_folded ? 
 					Enumerable.Empty<Visual> () :
-					Controls.Select (c => c.ToVisual ()))
+					Controls.Select (c => c.ToVisual (panelSize)))
 				.Prepend (header);
 			var visual = Visual.Margin (
 				Visual.VStack (HAlign.Left, cvisuals.Select (v => Visual.Margin (v, top: 2f, bottom: 2f))),

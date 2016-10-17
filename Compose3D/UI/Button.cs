@@ -34,7 +34,7 @@
 			}
 		}
 
-		public override Visual ToVisual ()
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			var highlighted = _pressed && _onButton;
 			var visual = Visual.Clickable (

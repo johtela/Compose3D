@@ -47,7 +47,7 @@
 		{
 			if (_active)
 			{
-				var num = AnyNumberKeyPressed ();
+				var num = InputState.AnyNumberKeyPressed ();
 				if (num >= '0' && num <= '9')
 				{
 					_value += num;
@@ -57,28 +57,28 @@
 					_value = "-";
 				else if (!IsInteger && num == '.' && _value.Length > 0 && !_value.Contains ('.'))
 					_value += '.';
-				else if (KeyPressed (Key.BackSpace, true) && _value.Length > 0)
+				else if (InputState.KeyPressed (Key.BackSpace, true) && _value.Length > 0)
 				{
 					_value = _value.Substring (0, _value.Length - 1);
 					NotifyChanged ();
 				}
-				else if (KeyPressed (Key.Up, true))
+				else if (InputState.KeyPressed (Key.Up, true))
 				{
 					Value = Value + Increment;
 					NotifyChanged ();
 				}
-				else if (KeyPressed (Key.Down, true))
+				else if (InputState.KeyPressed (Key.Down, true))
 				{
 					Value = Value - Increment;
 					NotifyChanged ();
 				}
-				else if (MouseWheelChange () != 0)
+				else if (InputState.MouseWheelChange () != 0)
 				{
-					Value = Value + (MouseWheelChange () * Increment);
+					Value = Value + (InputState.MouseWheelChange () * Increment);
 					NotifyChanged ();
 				}
 			}
-			if (MouseButtonPressed (MouseButton.Left))
+			if (InputState.MouseButtonPressed (MouseButton.Left))
 				_active = _clickRegion.Contains (relativeMousePos);
 		}
 

@@ -113,7 +113,7 @@
 		public override void HandleInput (PointF relativeMousePos)
 		{
 			var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
-			var leftMousePressed = MouseButtonPressed (MouseButton.Left);
+			var leftMousePressed = InputState.MouseButtonPressed (MouseButton.Left);
 			if (hit != null && hit.Item2 == ColorMap && leftMousePressed)
 			{
 				var key = KeyValueAtPos (hit.Item1, relativeMousePos);
@@ -136,7 +136,7 @@
 					_dragging = hitKey;
 					return;
 				}
-				else if (ColorMap.Count > 1 && MouseButtonPressed (MouseButton.Right))
+				else if (ColorMap.Count > 1 && InputState.MouseButtonPressed (MouseButton.Right))
 				{
 					_selected = null;
 					ItemSelected (null);
@@ -144,7 +144,7 @@
 					Changed (ColorMap);
 				}
 			}
-			if (_dragging != null && MouseButtonDown (MouseButton.Left))
+			if (_dragging != null && InputState.MouseButtonDown (MouseButton.Left))
 			{
 				var newKey = KeyValueAtPos (_mouseRegions[0].Item1, relativeMousePos);
 				if (newKey >= DomainMin && newKey <= DomainMax && 

@@ -1,9 +1,12 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System.Linq;
 	using DataStructures;
 	using Geometry;
 	using GLTypes;
 	using Maths;
+	using OpenTK;
+	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
 	using Textures;
 
@@ -64,6 +67,19 @@
 						(int)(bbox.Top - pos.Y) : 
 						(int)(pos.Y - bbox.Bottom)) :
 				new Vec2i (-1);
+		}
+
+		public virtual bool Update (Vec2i viewportSize, MouseDevice mouse)
+		{
+			return false;
+		}
+
+		public static void UpdateAll (SceneGraph sceneGraph, GameWindow window, Vec2i viewportSize)
+		{
+			InputState.Update (window);
+			var panels = sceneGraph.Root.Traverse ().OfType<Panel<V>> ();
+			foreach (var panel in panels)
+				panel.Update (viewportSize, window.Mouse);
 		}
 
 		public VBO<V> VertexBuffer

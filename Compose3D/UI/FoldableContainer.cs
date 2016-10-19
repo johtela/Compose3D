@@ -52,7 +52,7 @@
 
 		public override void HandleInput (PointF relativeMousePos)
 		{
-			if (MouseButtonPressed (MouseButton.Left) && _clickRegion.Contains (relativeMousePos))
+			if (InputState.MouseButtonPressed (MouseButton.Left) && _clickRegion.Contains (relativeMousePos))
 				_folded = !_folded;
 			else if (!_folded)
 				foreach (var control in Controls)

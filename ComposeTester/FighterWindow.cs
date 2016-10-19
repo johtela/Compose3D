@@ -79,7 +79,7 @@
 						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
 						new Visualizable (() => Visual.Label (
 							string.Format ("Mouse: {0}", new Vec2i (Mouse.X , Mouse.Y)))))),
-				new Vec2i (180, 64), null);
+				new Vec2i (180, 64));
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;

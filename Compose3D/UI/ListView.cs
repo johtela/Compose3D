@@ -48,7 +48,7 @@
 		public override void HandleInput (PointF relativeMousePos)
 		{
 			var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
-			if (MouseButtonDown (MouseButton.Left))
+			if (InputState.MouseButtonDown (MouseButton.Left))
 			{
 				if (_pressed == null)
 				{

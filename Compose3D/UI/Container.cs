@@ -69,7 +69,7 @@
 			if (ControlSelected != null)
 			{
 				var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
-				if (MouseButtonPressed (MouseButton.Left))
+				if (InputState.MouseButtonPressed (MouseButton.Left))
 				{
 					_selected = hit != null ? hit.Item2 : null;
 					ControlSelected (_selected);

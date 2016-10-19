@@ -24,9 +24,9 @@
 		public override void HandleInput (PointF relativeMousePos)
 		{
 			_onButton = _clickRegion.Contains (relativeMousePos);
-			if (MouseButtonPressed (MouseButton.Left) && _onButton)
+			if (InputState.MouseButtonPressed (MouseButton.Left) && _onButton)
 				_pressed = true;
-			else if (_pressed && !MouseButtonDown (MouseButton.Left))
+			else if (_pressed && !InputState.MouseButtonDown (MouseButton.Left))
 			{
 				_pressed = false;
 				if (_onButton)

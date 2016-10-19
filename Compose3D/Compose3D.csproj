@@ -242,6 +242,7 @@
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="Reactive\DelayedUpdate.cs" />
+    <Compile Include="UI\InputState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

@@ -35,7 +35,7 @@
 
 		public override void HandleInput (PointF relativeMousePos)
 		{
-			if (MouseButtonDown (MouseButton.Left) && _clickRegion.Contains (relativeMousePos))
+			if (InputState.MouseButtonDown (MouseButton.Left) && _clickRegion.Contains (relativeMousePos))
 			{
 				var pos = relativeMousePos - new SizeF (_clickRegion.Location);
 				var relPos = (Direction == VisualDirection.Horizontal ?

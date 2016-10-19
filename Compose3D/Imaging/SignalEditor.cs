@@ -174,8 +174,7 @@
 						new NumericEdit (LastBand, true, 1f, React.By<float> (ChangeLastBand).And (changed)), true);
 					var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
 						.Select (BandSlider).ToArray ();
-					_bandContainer = new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top,
-						true, false, sliders);
+					_bandContainer = Container.Horizontal (true, false, null, sliders);
 					return FoldableContainer.WithLabel ("Spectral Control", true, HAlign.Left,
 						fbEdit, lbEdit, _bandContainer);
 				}

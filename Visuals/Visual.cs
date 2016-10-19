@@ -610,26 +610,26 @@
 					case FrameKind.Rectangle:
 						if (Filled)
 							context.Graphics.FillRectangle (context.Style.Brush,
-								0, 0, box.Width - 1, box.Height - 1);
+								0, 0, box.Width, box.Height);
 						else
 							context.Graphics.DrawRectangle (context.Style.Pen, 
-								0, 0, box.Width - 1, box.Height - 1);
+								0, 0, box.Width, box.Height);
 						break;
 					case FrameKind.Ellipse:
 						if (Filled)
 							context.Graphics.FillEllipse (context.Style.Brush,
-								0, 0, box.Width - 1, box.Height - 1);
+								0, 0, box.Width, box.Height);
 						else
 							context.Graphics.DrawEllipse (context.Style.Pen, 
-								0, 0, box.Width - 1, box.Height - 1);
+								0, 0, box.Width, box.Height);
 						break;
 					case FrameKind.RoundRectangle:
 						if (Filled)
 							DrawRoundedRectangle (context.Graphics, null, context.Style.Brush, 
-								new RectangleF (0, 0, box.Width - 1, box.Height - 1), 10);
+								new RectangleF (0, 0, box.Width, box.Height), 10);
 						else
 							DrawRoundedRectangle (context.Graphics, context.Style.Pen, null,
-							new RectangleF(0, 0, box.Width - 1, box.Height - 1), 10);
+							new RectangleF(0, 0, box.Width, box.Height), 10);
 						break;
 				}
 				return base.Draw (context, availableSize);

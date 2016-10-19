@@ -25,7 +25,7 @@
 				Style,
 				pen: new Pen (Color.White, 1.5f),
 				textBrush: Brushes.White,
-				brush: Brushes.CadetBlue);
+				brush: Brushes.LightSteelBlue);
 
 		public static int RepeatDelay = 30;
 

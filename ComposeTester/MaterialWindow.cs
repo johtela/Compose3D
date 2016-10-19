@@ -26,7 +26,6 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private SceneGraph _sceneGraph;
-		private ControlPanel<TexturedVertex> _infoWindow;
 		private Texture _signalTexture;
 		private DelayedReactionUpdater _updater;
 
@@ -106,7 +105,7 @@
 			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
 			changed (null);
 
-			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, true, true,
+			return Container.Vertical (true, true, React.Ignore<Control> (),
 				perlin.Control, spectral.Control, warp.Control, signal.Control,
 				new Button ("Test", React.Ignore<bool> ()));
 		}
@@ -139,13 +138,13 @@
                 maxColorError: 0.05f);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
-			_infoWindow = new ControlPanel<TexturedVertex> (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (600, 300));
+			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
+				new Vec2i (320, 400), new Vec2 (-1f, 1f));
 			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
-				_infoWindow.Offset (new Vec3 (-0.9f, 0.9f, 0f)),
+				infoWindow,
 				textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
 		}
 

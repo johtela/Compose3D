@@ -235,6 +235,7 @@
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\FoldableContainer.cs" />
     <Compile Include="UI\NumericEdit.cs" />
+    <Compile Include="UI\PanelFrame.cs" />
     <Compile Include="UI\Slider.cs" />
     <Compile Include="UI\ListView.cs" />
     <Compile Include="UI\ColorSlider.cs" />

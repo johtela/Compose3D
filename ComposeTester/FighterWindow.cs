@@ -73,13 +73,13 @@
 				.OffsetOrientAndScale (new Vec3 (0f, 15f, -10f), new Vec3 (0f, 0f, 0f), new Vec3 (1f));
 
 			_infoWindow = new ControlPanel<TexturedVertex> (sceneGraph,
-				new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, true, false,
+				Container.Vertical (true, false, 
 					Label.Static ("Options", FontStyle.Bold),
 					new ListView (React.Ignore <IVisualizable> (),
 						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
 						new Visualizable (() => Visual.Label (
 							string.Format ("Mouse: {0}", new Vec2i (Mouse.X , Mouse.Y)))))),
-				new Vec2i (180, 64));
+				new Vec2i (180, 64), null);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;

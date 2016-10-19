@@ -19,7 +19,7 @@
 
 		public ColorMapEdit (float domainMin, float domainMax, float knobWidth, float minVisualLength,
 			ColorMap<Vec3> colorMap, Reaction<ColorMap<Vec3>> changed)
-			: base (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, false, false)
+			: base (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, false, false, null)
 		{
 			_bar = new ColorMapBar (domainMin, domainMax, knobWidth, minVisualLength, colorMap, changed, 
 				React.By<int?> (ItemSelected));

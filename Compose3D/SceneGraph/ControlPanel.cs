@@ -1,13 +1,10 @@
 ﻿namespace Compose3D.SceneGraph
 {
 	using System.Drawing;
-	using System.Linq;
-	using OpenTK;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
 	using Geometry;
 	using Maths;
-	using Reactive;
 	using Textures;
 	using Visuals;
 	using UI;
@@ -17,46 +14,63 @@
 	{
 		private Visual _visual;
 		private Bitmap _bitmap;
+		private Vec2i _size;
 
 		public Control Control { get; private set; }
 
-		public ControlPanel (SceneGraph graph, Control control, Vec2i size)
-			: base (graph, true)
+		public ControlPanel (SceneGraph graph, Control control, Vec2i size, bool movable)
+			: base (graph, true, movable)
 		{
-			Control = new PanelFrame (control, "PanelFrame");
+			Control = control;
+			_size = size;
 			_visual = control.ToVisual (new SizeF (size.X, size.Y));
-			_bitmap = _visual.ToBitmap (new Size (size.X, size.Y),
+			CreateBitmap ();
+		}
+
+		private void CreateBitmap ()
+		{
+			_bitmap = _visual.ToBitmap (new Size (_size.X, _size.Y),
 				System.Drawing.Imaging.PixelFormat.Format32bppArgb, Control.Style);
 			Texture = Texture.FromBitmap (_bitmap);
 		}
 
-		public override bool Update (Vec2i viewportSize, MouseDevice mouse)
+		public override UpdateAction Update (Vec2i viewportSize, MouseDevice mouse)
 		{
-			var result = base.Update (viewportSize, mouse);
-			if (!result)
+			var action = base.Update (viewportSize, mouse);
+			if (action == UpdateAction.Done)
+				return action;
+			if (action == UpdateAction.HandleInput)
 			{
-				var relPos = PanelCoordinatesAtMousePos (new Vec2i (mouse.X, mouse.Y), 
+				var relPos = PanelCoordinatesAtMousePos (new Vec2i (mouse.X, mouse.Y),
 					viewportSize);
-				result = relPos.X >= 0f && relPos.Y >= 0f;
-				if (result)
+				if (relPos.X >= 0f && relPos.Y >= 0f)
 					Control.HandleInput (new PointF (relPos.X, relPos.Y));
 			}
-			var visual = Control.ToVisual (new SizeF (_bitmap.Width, _bitmap.Height));
+			var visual = Control.ToVisual (new SizeF (_size.X, _size.Y));
 			if (_visual != visual)
 			{
 				_visual = visual;
-				_visual.UpdateBitmap (_bitmap, Control.Style);
-				Texture.UpdateBitmap (_bitmap, TextureTarget.Texture2D, 0);
+				if (_bitmap == null)
+					CreateBitmap ();
+				else
+				{
+					_visual.UpdateBitmap (_bitmap, Control.Style);
+					Texture.UpdateBitmap (_bitmap, TextureTarget.Texture2D, 0);
+				}
 			}
-			return result;
+			return UpdateAction.Done;
+		}
+
+		protected override void Resize (Vec2i size)
+		{
+			_size = size;
+			_bitmap = null;
 		}
 
 		public static SceneNode Movable (SceneGraph graph, Control control, Vec2i size, Vec2 pos)
 		{
-			TransformNode result = null;
-			result = new ControlPanel<V> (graph, control, size)
+			return new ControlPanel<V> (graph, control, size, true)
 				.Offset (new Vec3 (pos, 0f));
-			return result;
 		}
 	}
 }

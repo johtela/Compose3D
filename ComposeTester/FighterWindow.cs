@@ -79,7 +79,7 @@
 						new Visualizable (() => Visual.Label (string.Format ("FPS: {0}", _fps))),
 						new Visualizable (() => Visual.Label (
 							string.Format ("Mouse: {0}", new Vec2i (Mouse.X , Mouse.Y)))))),
-				new Vec2i (180, 64));
+				new Vec2i (180, 64), false);
 			sceneGraph.Root.Add (_dirLight, _camera, _terrainScene.Root, _fighter, 
 				_infoWindow.Offset (new Vec3 (-0.95f, 0.95f, 0f)));
 			return sceneGraph;
@@ -138,7 +138,7 @@
 
 		private void AddShadowWindow ()
 		{
-			_shadowWindow = new Panel<TexturedVertex> (_sceneGraph, false, _sceneGraph.GlobalLighting.ShadowMap);
+			_shadowWindow = new Panel<TexturedVertex> (_sceneGraph, false, false, _sceneGraph.GlobalLighting.ShadowMap);
 			_sceneGraph.Root.Add (_shadowWindow.Offset (new Vec3 (0.5f, 0.95f, 0f)));
 		}
 

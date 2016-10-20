@@ -50,7 +50,7 @@
 			var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
 			if (InputState.MouseButtonDown (MouseButton.Left))
 			{
-				if (_pressed == null)
+				if (_pressed == null && hit != null)
 				{
 					_pressed = hit.Item2;
 					_highlighted = hit.Item2;

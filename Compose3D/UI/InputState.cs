@@ -3,6 +3,7 @@
 	using System.Collections.Generic;
 	using OpenTK;
 	using OpenTK.Input;
+	using Maths;
 	using Extensions;
 
 	public class InputState
@@ -54,6 +55,12 @@
 		public static bool AnyMouseButtonPressed ()
 		{
 			return !Previous.MouseState.IsAnyButtonDown && Current.MouseState.IsAnyButtonDown;
+		}
+
+		public static Vec2 MouseDelta ()
+		{
+			return new Vec2 (Current.MouseState.X - Previous.MouseState.X,
+				Current.MouseState.Y - Previous.MouseState.Y);
 		}
 
 		public static bool KeyDown (Key key)

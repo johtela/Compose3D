@@ -140,12 +140,12 @@
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
 				new Vec2i (320, 400), new Vec2 (-1f, 1f));
-			var textureWindow = new Panel<TexturedVertex> (_sceneGraph, false, _signalTexture);
+			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
+				new Vec2 (0.25f, 0.75f));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
-				infoWindow,
-				textureWindow.Offset (new Vec3 (0.25f, 0.75f, 0f)));
+				infoWindow, textureWindow);
 		}
 
 		private void SetupRendering ()

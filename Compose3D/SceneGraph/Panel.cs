@@ -1,14 +1,17 @@
 ﻿namespace Compose3D.SceneGraph
 {
+	using System;
 	using System.Linq;
+	using OpenTK;
+	using OpenTK.Input;
+	using OpenTK.Graphics.OpenGL4;
 	using DataStructures;
 	using Geometry;
 	using GLTypes;
 	using Maths;
-	using OpenTK;
-	using OpenTK.Input;
-	using OpenTK.Graphics.OpenGL4;
 	using Textures;
+
+	public enum UpdateAction { Done, Redraw, HandleInput };
 
 	public class Panel<V> : SceneNode 
 		where V : struct, IVertex, ITextured
@@ -19,20 +22,27 @@
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 		private bool _flipVertically;
+		private bool _movable;
+		private bool _moving;
+		private bool _resizing;
+		private Vec3 _origOffs;
+		private Vec2i _origMousePos;
+		private Vec2i _origSize;
 
-		public Panel (SceneGraph graph, bool flipVertically)
+		public Panel (SceneGraph graph, bool flipVertically, bool movable)
 			: base (graph)
 		{
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_flipVertically = flipVertically;
+			_movable = movable;
 			if (flipVertically)
 				_rectangle.ApplyTextureFront (1f, new Vec2 (0f, 1f), new Vec2 (1f, 0f));
 			else
 				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 		}
 
-		public Panel (SceneGraph graph, bool flipVertically, Texture texture)
-			: this (graph, flipVertically)
+		public Panel (SceneGraph graph, bool flipVertically, bool movable, Texture texture)
+			: this (graph, flipVertically, movable)
 		{
 			Texture = texture;
 		}
@@ -56,6 +66,13 @@
 			return new Aabb<Vec2> (new Vec2 (bbox.Min), new Vec2 (bbox.Max));
 		}
 
+		public bool MouseOnPanel (Vec2i mousePos, Vec2i vportSize)
+		{
+			var bbox = GetBoundsOnScreen (vportSize);
+			var pos = new Vec2 (mousePos.X, vportSize.Y - mousePos.Y);
+			return bbox & pos;
+		}
+
 		public Vec2i PanelCoordinatesAtMousePos (Vec2i mousePos, Vec2i vportSize)
 		{
 			var bbox = GetBoundsOnScreen (vportSize);
@@ -69,10 +86,61 @@
 				new Vec2i (-1);
 		}
 
-		public virtual bool Update (Vec2i viewportSize, MouseDevice mouse)
+		public virtual UpdateAction Update (Vec2i viewportSize, MouseDevice mouse)
 		{
-			return false;
+			if (_movable &&
+				InputState.MouseButtonPressed (MouseButton.Left) &&
+				(InputState.KeyDown (Key.LAlt) || InputState.KeyDown (Key.RAlt)) &&
+				MouseOnPanel (new Vec2i (mouse.X, mouse.Y), viewportSize))
+			{
+				_origMousePos = new Vec2i (mouse.X, mouse.Y);
+				var parent = Parent as TransformNode;
+				if (parent == null)
+					throw new InvalidOperationException (
+						"Parent node of movable panel needs to be TransformNode. " +
+						"Alternatively you can create the panel with 'movable' parameter as false.");
+				_origOffs = parent.Offset;
+				_moving = true;
+				return UpdateAction.Done;
+			}
+			else if (_moving && InputState.MouseButtonDown (MouseButton.Left))
+			{
+				var delta = new Vec2i (mouse.X, mouse.Y) - _origMousePos;
+				if (delta != default(Vec2i))
+				{
+					var vport = new Vec2 (viewportSize.X, -viewportSize.Y);
+					var normalizedDelta = new Vec2 (delta.X, delta.Y) * 2f / vport;
+					((TransformNode)Parent).Offset = _origOffs + new Vec3(normalizedDelta, 0f);
+				}
+				return UpdateAction.Done;
+			}
+			if (InputState.MouseButtonPressed (MouseButton.Right) &&
+				(InputState.KeyDown (Key.LAlt) || InputState.KeyDown (Key.RAlt)) &&
+				MouseOnPanel (new Vec2i (mouse.X, mouse.Y), viewportSize))
+			{
+				_origMousePos = new Vec2i (mouse.X, mouse.Y);
+				_origSize = GetSize ();
+				_resizing = true;
+				return UpdateAction.Done;
+			}
+			else if (_resizing && InputState.MouseButtonDown (MouseButton.Right))
+			{
+				var delta = new Vec2i (mouse.X, mouse.Y) - _origMousePos;
+				if (delta != default (Vec2i))
+					Resize (_origSize + delta);
+				return UpdateAction.Redraw;
+			}
+			_moving = false;
+			_resizing = false;
+			return UpdateAction.HandleInput;
 		}
+
+		protected virtual Vec2i GetSize ()
+		{
+			return Texture.Size;
+		}
+
+		protected virtual void Resize (Vec2i size) { }
 
 		public static void UpdateAll (SceneGraph sceneGraph, GameWindow window, Vec2i viewportSize)
 		{
@@ -100,6 +168,12 @@
 					_indexBuffer = new VBO<int> (_rectangle.Indices, BufferTarget.ElementArrayBuffer);
 				return _indexBuffer;
 			}
+		}
+
+		public static SceneNode Movable (SceneGraph graph, bool flipVertically, Texture texture, Vec2 pos)
+		{
+			return new Panel<V> (graph, flipVertically, true, texture)
+				.Offset (new Vec3 (pos, 0f));
 		}
 	}
 }

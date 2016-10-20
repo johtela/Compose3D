@@ -90,7 +90,7 @@
 		{
 			if (_movable &&
 				InputState.MouseButtonPressed (MouseButton.Left) &&
-				(InputState.KeyDown (Key.LAlt) || InputState.KeyDown (Key.RAlt)) &&
+				(InputState.KeyDown (Key.LControl) || InputState.KeyDown (Key.RControl)) &&
 				MouseOnPanel (new Vec2i (mouse.X, mouse.Y), viewportSize))
 			{
 				_origMousePos = new Vec2i (mouse.X, mouse.Y);
@@ -115,7 +115,7 @@
 				return UpdateAction.Done;
 			}
 			if (InputState.MouseButtonPressed (MouseButton.Right) &&
-				(InputState.KeyDown (Key.LAlt) || InputState.KeyDown (Key.RAlt)) &&
+				(InputState.KeyDown (Key.LControl) || InputState.KeyDown (Key.RControl)) &&
 				MouseOnPanel (new Vec2i (mouse.X, mouse.Y), viewportSize))
 			{
 				_origMousePos = new Vec2i (mouse.X, mouse.Y);

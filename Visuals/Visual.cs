@@ -665,6 +665,11 @@
 				Style = style;
 			}
 
+			protected override VBox CalculateSize (GraphicsContext context)
+			{
+				return base.CalculateSize (new GraphicsContext(context, Style));
+			}
+
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
 				return Visual.Draw (new GraphicsContext(context, Style), availableSize);

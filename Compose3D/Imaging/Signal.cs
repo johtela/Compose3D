@@ -77,6 +77,17 @@
 			return signal.Select (v => v.Multiply (scale));
 		}
 
+		public static Signal<T, float> Offset<T> (this Signal<T, float> signal, float delta)
+		{
+			return signal.Select (x => x + delta);
+		}
+
+		public static Signal<T, V> Offset<T, V> (this Signal<T, V> signal, V delta)
+			where V : struct, IVec<V, float>
+		{
+			return signal.Select (v => v.Add (delta));
+		}
+
 		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
 		{
 			return signal.Select (x => x * 0.5f + 0.5f);
@@ -94,7 +105,7 @@
 			return v => (signal (v.Add (delta)) - signal (v)) / dx;
 		}
 
-		public static Signal<V, V> Dfdv<V> (this Signal<V, float> signal, float dv)
+		public static Signal<V, V> Dfdv<V> (this Signal<V, float> signal, V dv)
 			where V : struct, IVec<V, float>
 		{
 			return v =>
@@ -102,12 +113,12 @@
 				var result = default (V);
 				var value = signal (v);
 				for (int i = 0; i < result.Dimensions; i++)
-					result[i] = signal (v.Add (default (V).With (i, dv))) - value;
+					result[i] = signal (v.Add (default (V).With (i, dv[i]))) - value;
 				return result.Divide (dv);
 			};
 		}
 
-		public static Signal<V, float> Warp<V> (this Signal<V, float> signal, Signal<V, float> warp, float dv)
+		public static Signal<V, float> Warp<V> (this Signal<V, float> signal, Signal<V, float> warp, V dv)
 			where V : struct, IVec<V, float>
 		{
 			var warpDv = warp.Dfdv (dv);
@@ -142,6 +153,14 @@
 			where V : struct, IVec<V, float>
 		{
 			return signal.Combine (other, mask, (v1, v2, m) => v1.Mix (v2, m));
+		}
+
+		public static Signal<Vec2, Vec3> NormalMap (this Signal<Vec2, float> signal, float strength, Vec2 dv)
+		{
+			var scale = dv * strength;
+			return from v in signal.Dfdv (dv)
+				   let n = new Vec3 (v * scale, 1f).Normalized
+				   select n * 0.5f + new Vec3 (0.5f);
 		}
 
 		public static Signal<T, uint> Vec4ToUintColor<T> (this Signal<T, Vec4> signal)

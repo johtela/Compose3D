@@ -158,6 +158,13 @@
 			return FromArray<U, T> (vec.ToArray<V, T> ());
 		}
 
+		public static U Convert<V, U> (this V vec)
+			where V : struct, IVec<V, int>
+			where U : struct, IVec<U, float>
+		{
+			return FromArray<U, float> (vec.ToArray<V, int> ().Map (x => (float)x));
+		}
+
 		/// <summary>
 		/// Returns true, when two vectors are approximetely same.
 		/// </summary>

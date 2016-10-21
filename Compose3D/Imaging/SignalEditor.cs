@@ -70,7 +70,7 @@
 			where V : struct, IVec<V, float>
 		{
 			public float Scale;
-			public float Dx;
+			public V Dv;
 			public SignalEditor<V, float> Source;
 			public SignalEditor<V, float> Warp;
 
@@ -90,7 +90,7 @@
 			{
 				get
 				{
-					return Source.Signal.Warp (Warp.Signal.Scale (Scale), Dx);
+					return Source.Signal.Warp (Warp.Signal.Scale (Scale), Dv);
 				}
 			}
 		}
@@ -190,6 +190,30 @@
 			}
 		}
 
+		private class _NormalMap : SignalEditor<Vec2, Vec3>
+		{
+			public SignalEditor<Vec2, float> Source;
+			public float Strength;
+			public Vec2 Dv;
+
+			public override Control Control
+			{
+				get
+				{
+					var changed = Changed.Adapt<float, object> (this);
+					return FoldableContainer.WithLabel ("Normal Map", true, HAlign.Left,
+						Container.LabelAndControl ("Strength: ",
+							new NumericEdit (Strength, false, 1f,
+								React.By ((float s) => Strength = s).And (changed)), true));
+				}
+			}
+
+			public override Signal<Vec2, Vec3> Signal
+			{
+				get { return Source.Signal.NormalMap (Strength, Dv); }
+			}
+		}
+
 		public static SignalEditor<T, U> ToSignalEditor<T, U> (this Signal<T, U> signal)
 		{
 			return new _Dummy<T, U> () { Source = signal };
@@ -201,10 +225,10 @@
 		}
 
 		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
-			SignalEditor<V, float> warp, float scale, float dx, Reaction<object> changed)
+			SignalEditor<V, float> warp, float scale, V dv, Reaction<object> changed)
 			where V : struct, IVec<V, float>
 		{
-			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dx = dx, Changed = changed };
+			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv, Changed = changed };
 		}
 
 		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 
@@ -224,6 +248,12 @@
 			return new _SpectralControl<V> () { 
 				Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw, Changed = changed 
 			};
+		}
+
+		public static SignalEditor<Vec2, Vec3> NormalMap (this SignalEditor<Vec2, float> source,
+			float strength, Vec2 dv, Reaction<object> changed)
+		{
+			return new _NormalMap () { Source = source, Strength = strength, Dv = dv, Changed = changed };
 		}
 	}
 }

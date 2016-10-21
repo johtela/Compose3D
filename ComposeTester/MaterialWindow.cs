@@ -1,9 +1,7 @@
 ﻿namespace ComposeTester
 {
 	using System.Linq;
-	using System.Drawing;
 	using Extensions;
-	using Visuals;
 	using Compose3D.Maths;
 	using Compose3D.Imaging;
 	using Compose3D.Geometry;
@@ -34,7 +32,7 @@
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
-			_zoom = 1000f;
+			_zoom = 2000f;
 			_updater = new DelayedReactionUpdater (this);
 			CreateSceneGraph ();
 			SetupRendering ();
@@ -99,10 +97,12 @@
 
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f).ToSignalEditor ();
+			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
 			var perlin = SignalEditor.Perlin (0, 10f, changed);
 			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
-			var warp = sine.Warp (spectral, 0.001f, 1f / size.X, changed);
-			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
+			var warp = sine.Warp (spectral, 0.001f, dv, changed);
+			//signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
+			signal = warp.NormalMap (1f, dv, changed);
 			changed (null);
 
 			return Container.Vertical (true, true, React.Ignore<Control> (),

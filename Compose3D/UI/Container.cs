@@ -22,7 +22,7 @@
 
 		public Container (VisualDirection direction, HAlign horizAlign,	VAlign vertAlign,  
 			bool framed, bool wrapAround, Reaction<Control> controlSelected, 
-			params Control[] controls)
+			IEnumerable<Control> controls)
 		{
 			Direction = direction;
 			HorizAlign = horizAlign;
@@ -37,6 +37,13 @@
 			}
 		}
 
+		public Container (VisualDirection direction, HAlign horizAlign,	VAlign vertAlign,  
+			bool framed, bool wrapAround, Reaction<Control> controlSelected, 
+			params Control[] controls)
+			: this (direction, horizAlign, vertAlign, framed, wrapAround, controlSelected, 
+				(IEnumerable<Control>)controls)
+		{}
+		
 		public override Visual ToVisual (SizeF panelSize)
 		{
 			if (ControlSelected != null)
@@ -92,7 +99,20 @@
 				controlSelected, controls);
 		}
 
+		public static Container Horizontal (bool framed, bool wrapAround, Reaction<Control> controlSelected,
+			IEnumerable<Control> controls)
+		{
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, framed, wrapAround, 
+				controlSelected, controls);
+		}
+
 		public static Container Horizontal (bool framed, bool wrapAround, params Control[] controls)
+		{
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, framed, wrapAround,
+				null, controls);
+		}
+
+		public static Container Horizontal (bool framed, bool wrapAround, IEnumerable<Control> controls)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, framed, wrapAround,
 				null, controls);
@@ -105,7 +125,20 @@
 				controlSelected, controls);
 		}
 
+		public static Container Vertical (bool framed, bool wrapAround, Reaction<Control> controlSelected,
+			IEnumerable<Control> controls)
+		{
+			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
+				controlSelected, controls);
+		}
+
 		public static Container Vertical (bool framed, bool wrapAround, params Control[] controls)
+		{
+			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
+				null, controls);
+		}
+
+		public static Container Vertical (bool framed, bool wrapAround, IEnumerable<Control> controls)
 		{
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
 				null, controls);

@@ -243,6 +243,8 @@
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="Reactive\DelayedUpdate.cs" />
     <Compile Include="UI\InputState.cs" />
+    <Compile Include="UI\Connected.cs" />
+    <Compile Include="UI\Connector.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

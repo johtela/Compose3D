@@ -327,7 +327,7 @@
 			return Visual.Anchor (
 				parent == null ? 
 					node :
-					Visual.Styled (Visual.Connector (node, parent, HAlign.Center, VAlign.Top),
+					Visual.Styled (Visual.Connector (node, parent, VisualDirection.Vertical, HAlign.Center, VAlign.Top),
 						new VisualStyle (pen: new Pen (color, 1))),
 				HAlign.Center, VAlign.Bottom);
 		}

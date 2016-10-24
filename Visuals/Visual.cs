@@ -26,7 +26,12 @@
 	/// Type of frame to be drawn.
 	/// </summary>
 	public enum FrameKind { Rectangle, Ellipse, RoundRectangle }
-		
+
+	/// <summary>
+	/// Type of the connector to be drawn.
+	/// </summary>
+	public enum ConnectorKind { Line, Curved }
+
 	/// <summary>
 	/// A visual is a drawable figure that knows how to calculate
 	/// its size. It is drawn in a two-pass algorithm with first
@@ -736,11 +741,16 @@
 		private sealed class _Connector : _Anchor
 		{
 			public readonly _Anchor Target;
+			public readonly VisualDirection Direction;
+			public readonly ConnectorKind Kind;
 
-			public _Connector (Visual visual, _Anchor target, HAlign horizAlign, VAlign vertAlign)
+			public _Connector (Visual visual, _Anchor target, VisualDirection direction, 
+				HAlign horizAlign, VAlign vertAlign, ConnectorKind kind) 
 				: base (visual, horizAlign, vertAlign)
 			{
 				Target = target;
+				Direction = direction;
+				Kind = kind;
 			}
 
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
@@ -748,7 +758,27 @@
 				var box = base.Draw (context, availableSize);
 				var state = context.Graphics.Save ();
 				context.Graphics.ResetTransform ();
-				context.Graphics.DrawLine (context.Style.Pen, Position, Target.Position);
+				if (Kind == ConnectorKind.Line)
+					context.Graphics.DrawLine (context.Style.Pen, Position, Target.Position);
+				else
+				{
+					var p1 = Position;
+					var p4 = Target.Position;
+					PointF p2, p3;
+					if (Direction == VisualDirection.Horizontal)
+					{
+						var xcenter = (p1.X + p4.X) / 2f;
+						p2 = new PointF (xcenter, p1.Y);
+						p3 = new PointF (xcenter, p4.Y);
+					}
+					else
+					{
+						var ycenter = (p1.Y + p4.Y) / 2f;
+						p2 = new PointF (p1.X, ycenter);
+						p3 = new PointF (p4.X, ycenter);
+					}
+					context.Graphics.DrawBezier (context.Style.Pen, p1, p2, p3, p4);
+				}
 				context.Graphics.Restore (state);
 				return box;
 			}
@@ -959,11 +989,12 @@
 		/// Draws a connector between visuals. The target visual must be wrapped by an
 		/// anchor in order to draw a connector to it.
 		/// </summary>
-		public static Visual Connector (Visual visual, Visual target, HAlign horizAlign, VAlign vertAlign)
+		public static Visual Connector (Visual visual, Visual target, VisualDirection direction,
+			HAlign horizAlign, VAlign vertAlign, ConnectorKind kind = ConnectorKind.Line)
 		{
 			if (!(target is _Anchor))
 				throw new ArgumentException ("Target visual must be surronded by an anchor", "target");
-			return new _Connector(visual, target as _Anchor, horizAlign, vertAlign);
+			return new _Connector(visual, target as _Anchor, direction, horizAlign, vertAlign, kind);
 		}
 
 		/// <summary>

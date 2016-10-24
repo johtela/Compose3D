@@ -21,7 +21,7 @@
 		public override void HandleInput (PointF relativeMousePos)
 		{ }
 
-		public static Label Static (string caption, FontStyle fontStyle)
+		public static Label Static (string caption, FontStyle fontStyle = FontStyle.Regular)
 		{
 			return new Label (Visual.Styled (Visual.Margin (Visual.Label (caption), left: 2f, right: 2f),
 				Style.WithFontStyle (fontStyle)));

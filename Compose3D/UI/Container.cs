@@ -143,5 +143,10 @@
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
 				null, controls);
 		}
+
+		public static Container Frame (Control control)
+		{
+			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true, false, null, control);
+		}
 	}
 }

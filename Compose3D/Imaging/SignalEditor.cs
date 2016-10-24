@@ -4,7 +4,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Drawing;
-	using System.Threading.Tasks;
 	using Extensions;
 	using Visuals;
 	using Reactive;
@@ -13,10 +12,28 @@
 
 	public abstract class AnySignalEditor
 	{
+		private Connected _control;
 		internal int _level;
 
 		public string Name { get; internal set; }
-		public abstract Control Control { get; }
+
+		public Connected Control
+		{
+			get
+			{
+				if (_control == null)
+					_control = new Connected (CreateControl (), HAlign.Right, VAlign.Center);
+				return _control;
+			}
+		}
+
+		protected Control InputSignalControl (string name, AnySignalEditor input)
+		{
+			return new Connector (Container.Frame (Label.Static (name)), input.Control,
+				VisualDirection.Horizontal, HAlign.Left, VAlign.Center, ConnectorKind.Curved);
+		}
+
+		protected abstract Control CreateControl ();
 		public abstract IEnumerable<AnySignalEditor> Inputs { get; }
 		public Reaction<object> Changed { get; internal set; }
 	}
@@ -32,9 +49,11 @@
 		{
 			public Signal<T, U> Source;
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get { return Container.Horizontal (true, false, Label.Static (Name, FontStyle.Regular)); }
+				return new Connected (
+					Container.Frame (Label.Static (Name)),
+					HAlign.Right, VAlign.Center);
 			}
 
 		 	public override IEnumerable<AnySignalEditor> Inputs
@@ -53,17 +72,14 @@
 			public int Seed;
 			public float Scale;
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get
-				{
-					var changed = Changed.Adapt<float, object> (this);
-					return FoldableContainer.WithLabel ("Perlin Noise: " + Name, true, HAlign.Left,
-						Container.LabelAndControl ("Seed: ",
-							new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s).And (changed)), true),
-						Container.LabelAndControl ("Scale: ",
-							new NumericEdit (Scale, false, 1f, React.By ((float s) => Scale = s).And (changed)), true));
-				}
+				var changed = Changed.Adapt<float, object> (this);
+				return FoldableContainer.WithLabel ("Perlin Noise: " + Name, true, HAlign.Left,
+					Container.LabelAndControl ("Seed: ",
+						new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s).And (changed)), true),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (Scale, false, 1f, React.By ((float s) => Scale = s).And (changed)), true));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -89,16 +105,15 @@
 			public SignalEditor<V, float> Source;
 			public SignalEditor<V, float> Warp;
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get
-				{
-					var changed = Changed.Adapt<float, object> (this);
-					return FoldableContainer.WithLabel ("Warp: " + Name, true, HAlign.Left,
-						Container.LabelAndControl ("Scale: ",
-							new NumericEdit (Scale, false, 0.001f, 
-								React.By ((float s) => Scale = s).And (changed)), true));
-				}
+				var changed = Changed.Adapt<float, object> (this);
+				return FoldableContainer.WithLabel ("Warp: " + Name, true, HAlign.Left,
+					InputSignalControl ("Source", Source),
+					InputSignalControl ("Warp", Warp),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (Scale, false, 0.001f,
+							React.By ((float s) => Scale = s).And (changed)), true));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -108,10 +123,7 @@
 
 			public override Signal<V, float> Signal
 			{
-				get
-				{
-					return Source.Signal.Warp (Warp.Signal.Scale (Scale), Dv);
-				}
+				get { return Source.Signal.Warp (Warp.Signal.Scale (Scale), Dv); }
 			}
 		}
 
@@ -120,14 +132,12 @@
 			public SignalEditor<T, float> Source;
 			public ColorMap<Vec3> ColorMap;
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get
-				{
-					var changed = Changed.Adapt<ColorMap<Vec3>, object> (this);
-					return FoldableContainer.WithLabel ("Color Map: " + Name, true, HAlign.Left,
-						new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
-				}
+				var changed = Changed.Adapt<ColorMap<Vec3>, object> (this);
+				return FoldableContainer.WithLabel ("Color Map: " + Name, true, HAlign.Left,
+					InputSignalControl ("Source", Source),
+					new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -188,21 +198,19 @@
 				}
 			}
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get
-				{
-					var changed = Changed.Adapt<float, object> (this);
-					var fbEdit = Container.LabelAndControl ("First Band: ",
-						new NumericEdit (FirstBand, true, 1f, React.By<float> (ChangeFirstBand).And (changed)), true);
-					var lbEdit = Container.LabelAndControl ("Last Band: ",
-						new NumericEdit (LastBand, true, 1f, React.By<float> (ChangeLastBand).And (changed)), true);
-					var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
-						.Select (BandSlider).ToArray ();
-					_bandContainer = Container.Horizontal (true, false, null, sliders);
-					return FoldableContainer.WithLabel ("Spectral Control: " + Name, true, HAlign.Left,
-						fbEdit, lbEdit, _bandContainer);
-				}
+				var changed = Changed.Adapt<float, object> (this);
+				var fbEdit = Container.LabelAndControl ("First Band: ",
+					new NumericEdit (FirstBand, true, 1f, React.By<float> (ChangeFirstBand).And (changed)), true);
+				var lbEdit = Container.LabelAndControl ("Last Band: ",
+					new NumericEdit (LastBand, true, 1f, React.By<float> (ChangeLastBand).And (changed)), true);
+				var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
+					.Select (BandSlider).ToArray ();
+				_bandContainer = Container.Horizontal (true, false, null, sliders);
+				return FoldableContainer.WithLabel ("Spectral Control: " + Name, true, HAlign.Left,
+					InputSignalControl ("Source", Source),
+					fbEdit, lbEdit, _bandContainer);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -226,16 +234,14 @@
 			public float Strength;
 			public Vec2 Dv;
 
-			public override Control Control
+			protected override Control CreateControl ()
 			{
-				get
-				{
-					var changed = Changed.Adapt<float, object> (this);
-					return FoldableContainer.WithLabel ("Normal Map: " + Name, true, HAlign.Left,
-						Container.LabelAndControl ("Strength: ",
-							new NumericEdit (Strength, false, 1f,
-								React.By ((float s) => Strength = s).And (changed)), true));
-				}
+				var changed = Changed.Adapt<float, object> (this);
+				return FoldableContainer.WithLabel ("Normal Map: " + Name, true, HAlign.Left,
+					InputSignalControl ("Source", Source),
+					Container.LabelAndControl ("Strength: ",
+						new NumericEdit (Strength, false, 1f,
+							React.By ((float s) => Strength = s).And (changed)), true));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -311,7 +317,7 @@
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{
-				var container = Container.Vertical (true, false, level.Select (e => e.Control));
+				var container = Container.Vertical (false, false, level.Select (e => e.Control));
 				levelContainers.Add (container);
 			}
 			return Container.Horizontal (true, false, levelContainers);

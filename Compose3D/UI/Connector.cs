@@ -7,16 +7,21 @@
 	public class Connector : Connected
 	{
 		public readonly Connected Target;
+		public readonly VisualDirection Direction;
+		public readonly ConnectorKind Kind;
 
-		public Connector (Control source, Connected target, HAlign horizAlign, VAlign vertAlign)
+		public Connector (Control source, Connected target, VisualDirection direction, 
+			HAlign horizAlign, VAlign vertAlign, ConnectorKind kind) 
 			: base (source, horizAlign, vertAlign)
 		{
 			Target = target;
+			Kind = kind;
 		}
 
 		public override Visual ToVisual (SizeF panelSize)
 		{
-			return Visual.Connector (Source.ToVisual (panelSize), Target._anchor, HorizAlign, VertAlign);
+			return Visual.Connector (Source.ToVisual (panelSize), Target._anchor, Direction, 
+				HorizAlign, VertAlign, Kind);
 		}
 	}
 }

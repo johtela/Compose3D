@@ -30,7 +30,8 @@
 		protected Control InputSignalControl (string name, AnySignalEditor input)
 		{
 			return new Connector (Container.Frame (Label.Static (name)), input.Control,
-				VisualDirection.Horizontal, HAlign.Left, VAlign.Center, ConnectorKind.Curved);
+				VisualDirection.Horizontal, HAlign.Left, VAlign.Center, ConnectorKind.Curved, 
+				new VisualStyle (parent: Compose3D.UI.Control.Style, pen: new Pen (Color.OrangeRed, 3f)));
 		}
 
 		protected abstract Control CreateControl ();
@@ -317,7 +318,8 @@
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{
-				var container = Container.Vertical (false, false, level.Select (e => e.Control));
+				var container = Container.Vertical (false, false, React.Ignore<Control> (),
+					level.Select (e => e.Control));
 				levelContainers.Add (container);
 			}
 			return Container.Horizontal (true, false, levelContainers);

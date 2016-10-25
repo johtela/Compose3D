@@ -15,8 +15,6 @@
 		private Connected _control;
 		internal int _level;
 
-		public string Name { get; internal set; }
-
 		public Connected Control
 		{
 			get
@@ -36,7 +34,7 @@
 
 		protected abstract Control CreateControl ();
 		public abstract IEnumerable<AnySignalEditor> Inputs { get; }
-		public Reaction<object> Changed { get; internal set; }
+		public Reaction<AnySignalEditor> Changed { get; internal set; }
 	}
 
 	public abstract class SignalEditor<T, U> : AnySignalEditor
@@ -49,6 +47,7 @@
 		private class _Dummy<T, U> : SignalEditor<T, U>
 		{
 			public Signal<T, U> Source;
+			public string Name { get; internal set; }
 
 			protected override Control CreateControl ()
 			{
@@ -75,8 +74,8 @@
 
 			protected override Control CreateControl ()
 			{
-				var changed = Changed.Adapt<float, object> (this);
-				return FoldableContainer.WithLabel ("Perlin Noise: " + Name, true, HAlign.Left,
+				var changed = Changed.Adapt<float, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Perlin Noise", true, HAlign.Left,
 					Container.LabelAndControl ("Seed: ",
 						new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s).And (changed)), true),
 					Container.LabelAndControl ("Scale: ",
@@ -108,8 +107,8 @@
 
 			protected override Control CreateControl ()
 			{
-				var changed = Changed.Adapt<float, object> (this);
-				return FoldableContainer.WithLabel ("Warp: " + Name, true, HAlign.Left,
+				var changed = Changed.Adapt<float, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Warp", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					InputSignalControl ("Warp", Warp),
 					Container.LabelAndControl ("Scale: ",
@@ -135,8 +134,8 @@
 
 			protected override Control CreateControl ()
 			{
-				var changed = Changed.Adapt<ColorMap<Vec3>, object> (this);
-				return FoldableContainer.WithLabel ("Color Map: " + Name, true, HAlign.Left,
+				var changed = Changed.Adapt<ColorMap<Vec3>, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
 			}
@@ -166,7 +165,7 @@
 			{
 				return new Slider (VisualDirection.Vertical, 16f, 100f, 0f, 1f, BandWeights [band],
 					React.By ((float x) => BandWeights [band] = x)
-					.And (Changed.Adapt<float, object> (this)));
+					.And (Changed.Adapt<float, AnySignalEditor> (this)));
 			}
 
 			private void ChangeFirstBand (float fb)
@@ -201,7 +200,7 @@
 
 			protected override Control CreateControl ()
 			{
-				var changed = Changed.Adapt<float, object> (this);
+				var changed = Changed.Adapt<float, AnySignalEditor> (this);
 				var fbEdit = Container.LabelAndControl ("First Band: ",
 					new NumericEdit (FirstBand, true, 1f, React.By<float> (ChangeFirstBand).And (changed)), true);
 				var lbEdit = Container.LabelAndControl ("Last Band: ",
@@ -209,7 +208,7 @@
 				var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
 					.Select (BandSlider).ToArray ();
 				_bandContainer = Container.Horizontal (true, false, null, sliders);
-				return FoldableContainer.WithLabel ("Spectral Control: " + Name, true, HAlign.Left,
+				return FoldableContainer.WithLabel ("Spectral Control", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					fbEdit, lbEdit, _bandContainer);
 			}
@@ -237,8 +236,8 @@
 
 			protected override Control CreateControl ()
 			{
-				var changed = Changed.Adapt<float, object> (this);
-				return FoldableContainer.WithLabel ("Normal Map: " + Name, true, HAlign.Left,
+				var changed = Changed.Adapt<float, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Normal Map", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					Container.LabelAndControl ("Strength: ",
 						new NumericEdit (Strength, false, 1f,
@@ -261,26 +260,27 @@
 			return new _Dummy<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (string name, int seed, float scale, Reaction<object> changed)
+		public static SignalEditor<Vec2, float> Perlin (int seed, float scale, 
+			Reaction<AnySignalEditor> changed)
 		{
-			return new _Perlin () { Name = name, Seed = seed, Scale = scale, Changed = changed };
+			return new _Perlin () { Seed = seed, Scale = scale, Changed = changed };
 		}
 
-		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, string name,
-			SignalEditor<V, float> warp, float scale, V dv, Reaction<object> changed)
+		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
+			SignalEditor<V, float> warp, float scale, V dv, Reaction<AnySignalEditor> changed)
 			where V : struct, IVec<V, float>
 		{
-			return new _Warp<V> () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv, Changed = changed };
+			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv, Changed = changed };
 		}
 
-		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, string name,
-			ColorMap<Vec3> colorMap, Reaction<object> changed)
+		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 
+			ColorMap<Vec3> colorMap, Reaction<AnySignalEditor> changed)
 		{
-			return new _Colorize<T> () { Name = name, Source = source, ColorMap = colorMap, Changed = changed };
+			return new _Colorize<T> () { Source = source, ColorMap = colorMap, Changed = changed };
 		}
 
 		public static SignalEditor<V, float> SpectralControl<V> (this SignalEditor<V, float> source,
-			string name, int firstBand, int lastBand, float[] bandWeights, Reaction<object> changed)
+			int firstBand, int lastBand, float[] bandWeights, Reaction<AnySignalEditor> changed)
 			where V : struct, IVec<V, float>
 		{
 			var bw = new List<float> (16);
@@ -288,15 +288,15 @@
 			for (int i = firstBand; i <= lastBand; i++)
 				bw [i] = bandWeights [i - firstBand];
 			return new _SpectralControl<V> () { 
-				Name = name, Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw, 
+				Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw, 
 				Changed = changed 
 			};
 		}
 
 		public static SignalEditor<Vec2, Vec3> NormalMap (this SignalEditor<Vec2, float> source,
-			string name, float strength, Vec2 dv, Reaction<object> changed)
+			float strength, Vec2 dv, Reaction<AnySignalEditor> changed)
 		{
-			return new _NormalMap () { Name = name, Source = source, Strength = strength, Dv = dv, Changed = changed };
+			return new _NormalMap () { Source = source, Strength = strength, Dv = dv, Changed = changed };
 		}
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, HashSet<AnySignalEditor> all)

@@ -28,7 +28,7 @@
 		private DelayedReactionUpdater _updater;
 
 		public MaterialWindow ()
-			: base (512, 512, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
+			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
@@ -98,11 +98,11 @@
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f).ToSignalEditor ("Sine");
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin ("warp", 0, 10f, changed);
-			var spectral = perlin.SpectralControl ("perlin", 0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
-			var warp = sine.Warp ("sine", spectral, 0.001f, dv, changed);
+			var perlin = SignalEditor.Perlin (0, 10f, changed);
+			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
+			var warp = sine.Warp (spectral, 0.001f, dv, changed);
 			//signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
-			signal = warp.NormalMap ("sine", 1f, dv, changed);
+			signal = warp.NormalMap (1f, dv, changed);
 			changed (null);
 
 			return SignalEditor.EditorTree (signal);
@@ -140,7 +140,7 @@
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (320, 400), new Vec2 (-1f, 1f));
+				new Vec2i (600, 300), new Vec2 (-1f, 1f));
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f));
 

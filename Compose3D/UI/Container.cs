@@ -52,8 +52,8 @@
 			{
 				var v = c.ToVisual (panelSize);
 				if (c == _selected)
-					v = Visual.Styled (v, new VisualStyle (Style,
-						brush: new SolidBrush (Color.FromArgb (50, 150, 150, 255))));
+					v = Visual.Styled (v, new VisualStyle (
+						brush: new SolidBrush (Color.FromArgb (100, 150, 200, 255))));
 				if (ControlSelected != null)
 					v = Visual.Clickable (v, _mouseRegions.Add (c));
 				return v;

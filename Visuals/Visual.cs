@@ -670,14 +670,19 @@
 				Style = style;
 			}
 
+			private VisualStyle GetStyle (VisualStyle parent)
+			{
+				return new VisualStyle (parent, Style._font, Style._textBrush, Style._pen, Style._brush);
+			}
+
 			protected override VBox CalculateSize (GraphicsContext context)
 			{
-				return base.CalculateSize (new GraphicsContext(context, Style));
+				return base.CalculateSize (new GraphicsContext(context, GetStyle (context.Style)));
 			}
 
 			protected override VBox Draw (GraphicsContext context, VBox availableSize)
 			{
-				return Visual.Draw (new GraphicsContext(context, Style), availableSize);
+				return Visual.Draw (new GraphicsContext(context, GetStyle (context.Style)), availableSize);
 			}
 		}
 

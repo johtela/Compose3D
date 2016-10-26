@@ -29,7 +29,7 @@
 		{
 			return new Connector (Container.Frame (Label.Static (name)), input.Control,
 				VisualDirection.Horizontal, HAlign.Left, VAlign.Center, ConnectorKind.Curved, 
-				new VisualStyle (parent: Compose3D.UI.Control.Style, pen: new Pen (Color.OrangeRed, 3f)));
+				new VisualStyle (pen: new Pen (Color.OrangeRed, 3f)));
 		}
 
 		protected abstract Control CreateControl ();

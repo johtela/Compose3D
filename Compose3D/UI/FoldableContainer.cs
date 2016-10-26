@@ -36,7 +36,7 @@
 				Visual.HStack (VAlign.Top,
 					Visual.Styled (
 						Visual.Label (_folded ? "↓" : "↑"),
-						Style.WithFontStyle (FontStyle.Bold)),
+						new VisualStyle (font: new Font (Control.Style.Font, FontStyle.Bold))),
 					Header), 
 				rect => _clickRegion = rect);
 			var cvisuals = 
@@ -66,7 +66,7 @@
 				Visual.Margin (
 					Visual.Label (label),
 					left: 2f, right: 8f, top: 2f, bottom: 2f),
-				Style.WithFontStyle (FontStyle.Bold));
+				new VisualStyle (font: new Font (Control.Style.Font, FontStyle.Bold)));
 			return new FoldableContainer (header, framed, alignment, controls);
 		}
 	}

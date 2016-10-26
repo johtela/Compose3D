@@ -9,11 +9,11 @@
 	/// </summary>
 	public class VisualStyle
 	{
-		private readonly VisualStyle _parent;
-		private readonly Font _font;
-		private readonly Brush _textBrush;
-		private readonly Pen _pen;
-		private readonly Brush _brush;
+		internal readonly VisualStyle _parent;
+		internal readonly Font _font;
+		internal readonly Brush _textBrush;
+		internal readonly Pen _pen;
+		internal readonly Brush _brush;
 
 		public static VisualStyle Default = new VisualStyle (
 			font: new Font ("Arial", 10),
@@ -78,14 +78,6 @@
 					vs = vs._parent;
 				return vs._brush;
 			}
-		}
-	}
-
-	public static class StyleHelpers
-	{
-		public static VisualStyle WithFontStyle (this VisualStyle style, FontStyle fontStyle)
-		{
-			return new VisualStyle (style, new Font (style.Font, fontStyle));
 		}
 	}
 }

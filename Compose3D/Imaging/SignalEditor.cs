@@ -70,16 +70,21 @@
 		private class _Perlin : SignalEditor<Vec2, float>
 		{
 			public int Seed;
-			public float Scale;
+			public Vec2 Scale;
 
 			protected override Control CreateControl ()
 			{
 				var changed = Changed.Adapt<float, AnySignalEditor> (this);
 				return FoldableContainer.WithLabel ("Perlin Noise", true, HAlign.Left,
 					Container.LabelAndControl ("Seed: ",
-						new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s).And (changed)), true),
-					Container.LabelAndControl ("Scale: ",
-						new NumericEdit (Scale, false, 1f, React.By ((float s) => Scale = s).And (changed)), true));
+						new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s)
+							.And (changed)), true),
+					Container.LabelAndControl ("Scale X: ",
+						new NumericEdit (Scale.X, false, 1f, React.By ((float s) => Scale = new Vec2 (s, Scale.Y))
+							.And (changed)), true),
+					Container.LabelAndControl ("Scale Y: ",
+						new NumericEdit (Scale.Y, false, 1f, React.By ((float s) => Scale = new Vec2 (Scale.X, s))
+							.And (changed)), true));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -92,7 +97,7 @@
 				get
 				{
 					return new Signal<Vec3, float> (new PerlinNoise (Seed).Noise)
-						.MapInput ((Vec2 v) => new Vec3 (v, 0f) * Scale);
+						.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f));
 				}
 			}
 		}
@@ -260,7 +265,7 @@
 			return new _Dummy<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (int seed, float scale, 
+		public static SignalEditor<Vec2, float> Perlin (int seed, Vec2 scale, 
 			Reaction<AnySignalEditor> changed)
 		{
 			return new _Perlin () { Seed = seed, Scale = scale, Changed = changed };

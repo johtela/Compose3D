@@ -328,7 +328,7 @@
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{
-				var container = Container.Vertical (false, false, React.Ignore<Control> (),
+				var container = Container.Vertical (false, false, 
 					level.Select (e => e.Control));
 				levelContainers.Add (container);
 			}

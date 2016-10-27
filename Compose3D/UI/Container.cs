@@ -40,7 +40,19 @@
 				  (IEnumerable<Tuple<Control, Reaction<Control>>>)controls)
 		{ }
 
-			public override Visual ToVisual (SizeF panelSize)
+		public Container (VisualDirection direction, HAlign horizAlign, VAlign vertAlign,
+			bool framed, bool wrapAround, IEnumerable<Control> controls)
+			: this (direction, horizAlign, vertAlign, framed, wrapAround, 
+				controls.Select (c => new Tuple<Control, Reaction<Control>> (c, null)))
+		{ }
+
+		public Container (VisualDirection direction, HAlign horizAlign, VAlign vertAlign,
+			bool framed, bool wrapAround, params Control[] controls)
+			: this (direction, horizAlign, vertAlign, framed, wrapAround, 
+				(IEnumerable<Control>)controls)
+		{ }
+
+		public override Visual ToVisual (SizeF panelSize)
 		{
 			if (_mouseRegions != null)
 				_mouseRegions.Clear ();
@@ -48,7 +60,7 @@
 			{
 				var v = c.Item1.ToVisual (panelSize);
 				if (c.Item1 == _selected)
-					v = Visual.Styled (v, new VisualStyle (Style,
+					v = Visual.Styled (v, new VisualStyle (
 						brush: new SolidBrush (Color.FromArgb (50, 150, 150, 255))));
 				if (c.Item2 != null)
 					v = Visual.Clickable (v, _mouseRegions.Add (c));
@@ -85,8 +97,7 @@
 		public static Container LabelAndControl (string label, Control control, bool framed)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Center, framed, false,
-				Tuple.Create<Control, Reaction<Control>> (Label.Static (label, FontStyle.Regular), null), 
-				Tuple.Create<Control, Reaction<Control>> (control, null));
+				Label.Static (label, FontStyle.Regular), control);
 		}
 
 		public static Container Horizontal (bool framed, bool wrapAround, 
@@ -106,13 +117,13 @@
 		public static Container Horizontal (bool framed, bool wrapAround, params Control[] controls)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, framed, wrapAround,
-				controls.Select (c => new Tuple<Control, Reaction<Control>> (c, null)));
+				controls);
 		}
 
 		public static Container Horizontal (bool framed, bool wrapAround, IEnumerable<Control> controls)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, framed, wrapAround,
-				controls.Select (c => new Tuple<Control, Reaction<Control>> (c, null)));
+				controls);
 		}
 
 		public static Container Vertical (bool framed, bool wrapAround, 
@@ -132,19 +143,19 @@
 		public static Container Vertical (bool framed, bool wrapAround, params Control[] controls)
 		{
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
-				controls.Select (c => new Tuple<Control, Reaction<Control>> (c, null)));
+				controls);
 		}
 
 		public static Container Vertical (bool framed, bool wrapAround, IEnumerable<Control> controls)
 		{
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,
-				controls.Select (c => new Tuple<Control, Reaction<Control>> (c, null)));
+				controls);
 		}
 
 		public static Container Frame (Control control)
 		{
 			return new Container (VisualDirection.Horizontal, HAlign.Left, VAlign.Top, true, false, 
-				new Tuple<Control, Reaction<Control>> (control, null));
+				control);
 		}
 	}
 }

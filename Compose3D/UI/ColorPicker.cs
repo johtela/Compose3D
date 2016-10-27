@@ -5,6 +5,7 @@
 	using System.Linq;
 	using Reactive;
 	using Visuals;
+	using Extensions;
 
 	public class ColorPicker : Container
 	{
@@ -32,7 +33,8 @@
 
 		public ColorPicker (VisualDirection direction, float knobWidth, float minVisualLength, Color color,
 			bool preview, Reaction<Color> changed)
-			: base (preview ? direction : direction.Opposite (), HAlign.Left, VAlign.Top, true, false, null)
+			: base (preview ? direction : direction.Opposite (), HAlign.Left, VAlign.Top, true, false, 
+				Enumerable.Empty<Control> ())
 		{
 			Changed = changed;
 			_hue = ColorSlider.Hue (direction, knobWidth, minVisualLength, color, 
@@ -41,17 +43,14 @@
 				React.By<float> (ChangeSaturation));
 			_brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, 
 				React.By<float> (ChangeBrightness));
-			var controls = new Control[] { _hue, _saturation, _brightness }
-				.Select (c => new Tuple<Control, Reaction<Control>> (c, null));
-			Controls.AddRange (preview ?
-				new Tuple<Control, Reaction<Control>>[]
-				{
-					new Tuple<Control, Reaction<Control>> (
-					new Container (direction, HAlign.Center, VAlign.Center, false, false,
-						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, false, controls),
-						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth))))
-				} :
-				controls);
+			var controls = EnumerableExt.Enumerate<Control> (_hue, _saturation, _brightness);
+			var contents = preview ?
+				EnumerableExt.Enumerate (
+	               new Container (direction, HAlign.Center, VAlign.Center, false, false,
+		               new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, false, controls),
+		               Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))) :
+				controls;
+			Controls.AddRange (contents.Select (c => new Tuple<Control, Reaction<Control>> (c, null)));
 		}
 
 		private void UpdateValue ()

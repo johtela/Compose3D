@@ -105,7 +105,7 @@
 			var normal = warp.NormalMap (1f, dv, changed);
 			changed (null);
 
-			return SignalEditor.EditorTree (normal, signal);
+			return SignalEditor.EditorTree (_signalTexture, size, normal, signal);
 //			return Container.Vertical (true, true, React.Ignore<Control> (),
 //				perlin.Control, spectral.Control, warp.Control, signal.Control,
 //				new Button ("Test", React.Ignore<bool> ()));

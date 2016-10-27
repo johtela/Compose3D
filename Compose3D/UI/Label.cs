@@ -24,7 +24,7 @@
 		public static Label Static (string caption, FontStyle fontStyle = FontStyle.Regular)
 		{
 			return new Label (Visual.Styled (Visual.Margin (Visual.Label (caption), left: 2f, right: 2f),
-				new VisualStyle (font: new Font (Control.Style.Font, FontStyle.Bold))));
+				new VisualStyle (font: new Font (Control.Style.Font, fontStyle))));
 		}
 
 		public static Label Dynamic (Func<string> getCaption, FontStyle fontStyle)
@@ -33,7 +33,7 @@
 				Visual.Margin (
 					Visual.Delayed (() => Visual.Label (getCaption ())), 
 					left: 2f, right: 2f),
-				new VisualStyle (font: new Font (Control.Style.Font, FontStyle.Bold))));
+				new VisualStyle (font: new Font (Control.Style.Font, fontStyle))));
 		}
 
 		public static Label ColorPreview (Func<Color> getColor, SizeF size)

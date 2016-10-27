@@ -8,6 +8,7 @@
 	using Visuals;
 	using Reactive;
 	using Maths;
+	using Textures;
 	using UI;
 
 	public abstract class AnySignalEditor
@@ -161,11 +162,13 @@
 
 			private Container _bandContainer;
 
-			private Slider BandSlider (int band)
+			private Tuple<Control, Reaction<Control>> BandSlider (int band)
 			{
-				return new Slider (VisualDirection.Vertical, 16f, 100f, 0f, 1f, BandWeights [band],
-					React.By ((float x) => BandWeights [band] = x)
-					.And (Changed.Adapt<float, AnySignalEditor> (this)));
+				return new Tuple<Control, Reaction<Control>> (
+					new Slider (VisualDirection.Vertical, 16f, 100f, 0f, 1f, BandWeights [band],
+						React.By ((float x) => BandWeights [band] = x)
+						.And (Changed.Adapt<float, AnySignalEditor> (this))),
+					null);
 			}
 
 			private void ChangeFirstBand (float fb)
@@ -207,7 +210,7 @@
 					new NumericEdit (LastBand, true, 1f, React.By<float> (ChangeLastBand).And (changed)), true);
 				var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
 					.Select (BandSlider).ToArray ();
-				_bandContainer = Container.Horizontal (true, false, null, sliders);
+				_bandContainer = Container.Horizontal (true, false, sliders);
 				return FoldableContainer.WithLabel ("Spectral Control", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					fbEdit, lbEdit, _bandContainer);
@@ -311,10 +314,12 @@
 			}
 		}
 
-		public static Container EditorTree (AnySignalEditor rootEditor)
+		public static Container EditorTree (Texture outputTexture, Vec2i outputSize, 
+			params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
-			CollectInputEditors (rootEditor, 0, all);
+			for (int i = 0; i < rootEditors.Length; i++)
+				CollectInputEditors (rootEditors [i], 0, all);
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{

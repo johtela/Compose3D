@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.UI
 {
+	using System;
 	using System.Drawing;
 	using Imaging;
 	using Reactive;
@@ -25,7 +26,11 @@
 				React.By<int?> (ItemSelected));
 			_picker = new ColorPicker (VisualDirection.Vertical, knobWidth, minVisualLength - (3f * knobWidth), 
 				Color.Black, true, React.By<Color> (ColorChanged));
-			Controls.AddRange (new Control[] { _bar, _picker });
+			Controls.AddRange (new Tuple<Control, Reaction<Control>>[] 
+			{
+				new Tuple<Control, Reaction<Control>> (_bar, null),
+				new Tuple<Control, Reaction<Control>> (_picker, null)
+			});
 		}
 
 		private void ItemSelected (int? item)

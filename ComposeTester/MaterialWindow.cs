@@ -101,11 +101,11 @@
 			var perlin = SignalEditor.Perlin (0, 10f, changed);
 			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
 			var warp = sine.Warp (spectral, 0.001f, dv, changed);
-			//signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
-			signal = warp.NormalMap (1f, dv, changed);
+			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
+			var normal = warp.NormalMap (1f, dv, changed);
 			changed (null);
 
-			return SignalEditor.EditorTree (signal);
+			return SignalEditor.EditorTree (normal, signal);
 //			return Container.Vertical (true, true, React.Ignore<Control> (),
 //				perlin.Control, spectral.Control, warp.Control, signal.Control,
 //				new Button ("Test", React.Ignore<bool> ()));

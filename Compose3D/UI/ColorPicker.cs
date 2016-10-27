@@ -1,6 +1,8 @@
 ﻿namespace Compose3D.UI
 {
+	using System;
 	using System.Drawing;
+	using System.Linq;
 	using Reactive;
 	using Visuals;
 
@@ -39,13 +41,15 @@
 				React.By<float> (ChangeSaturation));
 			_brightness = ColorSlider.Brightness (direction, knobWidth, minVisualLength, color, 
 				React.By<float> (ChangeBrightness));
-			var controls = new Control[] { _hue, _saturation, _brightness };
+			var controls = new Control[] { _hue, _saturation, _brightness }
+				.Select (c => new Tuple<Control, Reaction<Control>> (c, null));
 			Controls.AddRange (preview ?
-				new Control[]
+				new Tuple<Control, Reaction<Control>>[]
 				{
-					new Container (direction, HAlign.Center, VAlign.Center, false, false, null,
-						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, false, null, controls),
-						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth)))
+					new Tuple<Control, Reaction<Control>> (
+					new Container (direction, HAlign.Center, VAlign.Center, false, false,
+						new Container (direction.Opposite (), HAlign.Left, VAlign.Top, false, false, controls),
+						Label.ColorPreview (() => _value, new SizeF (3.5f * knobWidth, 3.5f * knobWidth))))
 				} :
 				controls);
 		}

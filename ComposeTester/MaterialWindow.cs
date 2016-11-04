@@ -83,32 +83,18 @@
 		private Control SignalTextureUI ()
 		{
 			var size = new Vec2i (256);
-			SignalEditor<Vec2, Vec3> signal = null;
-
-			var changed = React.By ((object _) =>
-			{
-				var buffer = signal.Signal
-					.Vec3ToUintColor ()
-					.MapInput (Signal.BitmapCoordToUnitRange (size, 1f))
-					.SampleToBuffer (size);
-				_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, 256, 256, PixelFormat.Rgba, 
-					PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
-			}).Delay (_updater, 1.0);
 
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
-				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f).ToSignalEditor ("Sine");
+				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
+				.ToSignalEditor ("Sine");
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin (0, new Vec2 (10f), changed);
-			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f }, changed);
-			var warp = sine.Warp (spectral, 0.001f, dv, changed);
-			signal = warp.Colorize (ColorMap<Vec3>.RGB (), changed);
-			var normal = warp.NormalMap (1f, dv, changed);
-			changed (null);
+			var perlin = SignalEditor.Perlin (0, new Vec2 (10f));
+			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f });
+			var warp = sine.Warp (spectral, 0.001f, dv);
+			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
+			var normal = warp.NormalMap (1f, dv);
 
-			return SignalEditor.EditorTree (_signalTexture, size, normal, signal);
-//			return Container.Vertical (true, true, React.Ignore<Control> (),
-//				perlin.Control, spectral.Control, warp.Control, signal.Control,
-//				new Button ("Test", React.Ignore<bool> ()));
+			return SignalEditor.EditorTree (_signalTexture, size, _updater, normal, signal);
 		}
 
 		private void CreateSceneGraph ()

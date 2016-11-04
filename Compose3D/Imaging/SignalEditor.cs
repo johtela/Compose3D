@@ -10,6 +10,7 @@
 	using Maths;
 	using Textures;
 	using UI;
+	using OpenTK.Graphics.OpenGL4;
 
 	public abstract class AnySignalEditor
 	{
@@ -268,27 +269,26 @@
 			return new _Dummy<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (int seed, Vec2 scale, 
-			Reaction<AnySignalEditor> changed)
+		public static SignalEditor<Vec2, float> Perlin (int seed, Vec2 scale)
 		{
-			return new _Perlin () { Seed = seed, Scale = scale, Changed = changed };
+			return new _Perlin () { Seed = seed, Scale = scale };
 		}
 
 		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
-			SignalEditor<V, float> warp, float scale, V dv, Reaction<AnySignalEditor> changed)
+			SignalEditor<V, float> warp, float scale, V dv)
 			where V : struct, IVec<V, float>
 		{
-			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv, Changed = changed };
+			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv };
 		}
 
 		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 
-			ColorMap<Vec3> colorMap, Reaction<AnySignalEditor> changed)
+			ColorMap<Vec3> colorMap)
 		{
-			return new _Colorize<T> () { Source = source, ColorMap = colorMap, Changed = changed };
+			return new _Colorize<T> () { Source = source, ColorMap = colorMap };
 		}
 
 		public static SignalEditor<V, float> SpectralControl<V> (this SignalEditor<V, float> source,
-			int firstBand, int lastBand, float[] bandWeights, Reaction<AnySignalEditor> changed)
+			int firstBand, int lastBand, float[] bandWeights)
 			where V : struct, IVec<V, float>
 		{
 			var bw = new List<float> (16);
@@ -297,41 +297,71 @@
 				bw [i] = bandWeights [i - firstBand];
 			return new _SpectralControl<V> () { 
 				Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw, 
-				Changed = changed 
 			};
 		}
 
 		public static SignalEditor<Vec2, Vec3> NormalMap (this SignalEditor<Vec2, float> source,
-			float strength, Vec2 dv, Reaction<AnySignalEditor> changed)
+			float strength, Vec2 dv)
 		{
-			return new _NormalMap () { Source = source, Strength = strength, Dv = dv, Changed = changed };
+			return new _NormalMap () { Source = source, Strength = strength, Dv = dv };
 		}
 
-		private static void CollectInputEditors (AnySignalEditor editor, int level, HashSet<AnySignalEditor> all)
+		private static void CollectInputEditors (AnySignalEditor editor, int level, 
+			Reaction<AnySignalEditor> changed, HashSet<AnySignalEditor> all)
 		{
 			if (!all.Contains (editor))
+			{
+				editor.Changed = changed;
 				all.Add (editor);
+			}
 			foreach (var input in editor.Inputs)
 			{
 				if (input._level >= level)
 					input._level = level - 1;
-				CollectInputEditors (input, level - 1, all);
+				CollectInputEditors (input, level - 1, changed, all);
 			}
 		}
 
-		public static Container EditorTree (Texture outputTexture, Vec2i outputSize, 
-			params AnySignalEditor[] rootEditors)
+		private static Signal<Vec2, uint> MapSignal (AnySignalEditor editor)
 		{
+			return
+				editor is SignalEditor<Vec2, Vec3> ? 
+					((SignalEditor<Vec2, Vec3>)editor).Signal
+					.Vec3ToUintColor () :
+				editor is SignalEditor<Vec2, float> ? 
+					((SignalEditor<Vec2, float>)editor).Signal
+					.Scale (0.5f)
+					.Offset (0.5f)
+					.FloatToUintGrayscale () :
+				null;
+		}
+
+		public static Container EditorTree (Texture outputTexture, Vec2i outputSize, 
+			DelayedReactionUpdater updater,	params AnySignalEditor[] rootEditors)
+		{
+			var changed = React.By ((AnySignalEditor editor) =>
+			{
+				var buffer = MapSignal (editor)
+					.MapInput (Signal.BitmapCoordToUnitRange (outputSize, 1f))
+					.SampleToBuffer (outputSize);
+				outputTexture.LoadArray (buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
+					PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
+			})
+			.Delay (updater, 1.0);
+
 			var all = new HashSet<AnySignalEditor> ();
 			for (int i = 0; i < rootEditors.Length; i++)
-				CollectInputEditors (rootEditors [i], 0, all);
+				CollectInputEditors (rootEditors[i], 0, changed, all);
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{
 				var container = Container.Vertical (false, false, 
-					level.Select (e => e.Control));
+					level.Select (e => new Tuple<Control, Reaction<Control>> (
+						e.Control, 
+						React.By<Control> (_ => changed (e)))));
 				levelContainers.Add (container);
 			}
+			changed (rootEditors[0]);
 			return Container.Horizontal (true, false, levelContainers);
 		}
 	}

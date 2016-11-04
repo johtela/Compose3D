@@ -86,8 +86,13 @@
 				var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
 				if (InputState.MouseButtonPressed (MouseButton.Left))
 				{
-					_selected = hit != null ? hit.Item2.Item1 : null;
-					hit.Item2.Item2 (_selected);
+					if (hit != null)
+					{
+						_selected = hit.Item2.Item1;
+						hit.Item2.Item2 (_selected);
+					}
+					else
+						_selected = null;
 				}
 			}
 			foreach (var control in Controls.Select (TupleExt.First))
@@ -133,7 +138,7 @@
 				controls);
 		}
 
-		public static Container Vertical (bool framed, bool wrapAround, Reaction<Control> controlSelected,
+		public static Container Vertical (bool framed, bool wrapAround,
 			IEnumerable<Tuple<Control, Reaction<Control>>> controls)
 		{
 			return new Container (VisualDirection.Vertical, HAlign.Left, VAlign.Top, framed, wrapAround,

@@ -89,7 +89,7 @@
 				.ToSignalEditor ("Sine");
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
 			var perlin = SignalEditor.Perlin (0, new Vec2 (10f));
-			var spectral = perlin.SpectralControl (0, 3, new float[] { 1f, 0.5f, 0.2f, 0.1f });
+			var spectral = perlin.SpectralControl (0, 3, 1f, 0.5f, 0.2f, 0.1f);
 			var warp = sine.Warp (spectral, 0.001f, dv);
 			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
 			var normal = warp.NormalMap (1f, dv);

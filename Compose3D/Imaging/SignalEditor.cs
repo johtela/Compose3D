@@ -288,7 +288,7 @@
 		}
 
 		public static SignalEditor<V, float> SpectralControl<V> (this SignalEditor<V, float> source,
-			int firstBand, int lastBand, float[] bandWeights)
+			int firstBand, int lastBand, params float[] bandWeights)
 			where V : struct, IVec<V, float>
 		{
 			var bw = new List<float> (16);

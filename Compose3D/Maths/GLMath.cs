@@ -380,5 +380,18 @@
 		{
 			throw new NotImplementedException ();
 		}
+
+		public static float HaltonSequenceItem (int basePrime, int index)
+		{
+			var result = 0.0;
+			var f = 1.0;
+			while (index > 0)
+			{
+				f /=  basePrime;
+				result += f * (index % basePrime);
+				index /= basePrime;
+			}
+			return (float)result;
+		}
 	}
 }

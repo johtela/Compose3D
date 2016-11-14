@@ -788,21 +788,21 @@
 
 		private static Random _random = new Random ();
 
-		public static V Random<V> (float range)
+		public static V Random<V> (float rangeMin, float rangeMax)
 			where V : struct, IVec<V, float>
 		{
-			return Random<V> (_random, range);
+			return Random<V> (_random, rangeMin, rangeMax);
 		}
 
-		public static V Random<V> (Random rnd, float range)
+		public static V Random<V> (Random rnd, float rangeMin, float rangeMax)
 			where V : struct, IVec<V, float>
 		{
-			var offs = range / 2f;
+			var range = rangeMax - rangeMin;
 			return FromArray<V, float> (
-				(float)rnd.NextDouble () * range - offs,
-				(float)rnd.NextDouble () * range - offs,
-				(float)rnd.NextDouble () * range - offs,
-				(float)rnd.NextDouble () * range - offs);
+				(float)rnd.NextDouble () * range + rangeMin,
+				(float)rnd.NextDouble () * range + rangeMin,
+				(float)rnd.NextDouble () * range + rangeMin,
+				(float)rnd.NextDouble () * range + rangeMin);
 		}
 	}
 }

@@ -5,8 +5,12 @@
 	using System.Threading.Tasks;
 	using Extensions;
 	using Maths;
+	using DataStructures;
+	using System.Collections.Generic;
 
 	public delegate U Signal<in T, out U> (T samplePoint);
+
+	public enum WorleyNoiseType { F1, F2, F3, F2_F1 }
 
 	public static class Signal
 	{
@@ -125,7 +129,7 @@
 			return v => signal (v.Add (warpDv (v)));
 		}
 
-		public static Signal<T, float> Blend<T> (this Signal<T, float> signal, Signal<T, float> other, 
+		public static Signal<T, float> Blend<T> (this Signal<T, float> signal, Signal<T, float> other,
 			float blendFactor)
 		{
 			if (blendFactor < 0f || blendFactor > 1f)
@@ -250,6 +254,49 @@
 				}
 				return result;
 			};
+		}
+
+		private static V[] Neighbours<V> (KdTree<V, int> tree, V vec, int num, Func<V, V, float> distance)
+			where V : struct, IVec<V, float>
+		{
+			return tree.NearestNeighbours (vec, num, distance).Keys ().ToArray ();
+		}
+
+		public static Signal<V, float> WorleyNoise<V> (WorleyNoiseType type, Func<V, V, float> distance,
+			IEnumerable<V> controlPoints) where V : struct, IVec<V, float>
+		{
+			var i = 0;
+			var tree = new KdTree<V, int> (controlPoints.Select (cp =>
+				new KeyValuePair<V, int> (cp, i++)));
+			switch (type)
+			{
+				case WorleyNoiseType.F1:
+					return vec => distance (vec, Neighbours (tree, vec, 1, distance)[0]);
+				case WorleyNoiseType.F2:
+			 		return vec => distance (vec, Neighbours (tree, vec, 2, distance)[1]);
+				case WorleyNoiseType.F3:
+					return vec => distance (vec, Neighbours (tree, vec, 3, distance)[2]);
+				default:
+					return vec =>
+					{
+						var neigbours = Neighbours (tree, vec, 2, distance);
+						return distance (vec, neigbours[1]) - distance (vec, neigbours[0]);
+					};
+			}
+		}
+
+		public static IEnumerable<V> RandomControlPoints<V> (int seed)
+			where V : struct, IVec<V, float>
+		{
+			var random = new System.Random (seed);
+			return EnumerableExt.Generate<V> (() => Vec.Random<V> (random, 0f, 1f));
+		}
+
+		public static IEnumerable<Vec2> HaltonControlPoints ()
+		{
+			var i = 1;
+			return EnumerableExt.Generate<Vec2> (() => 
+				new Vec2 (GLMath.HaltonSequenceItem (2, i), GLMath.HaltonSequenceItem (3, i++)));
 		}
 	}
 }

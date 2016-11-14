@@ -3,6 +3,15 @@
 	using System;
 	using System.Collections.Generic;
 
+
+	public class TupleList<T, U> : List<Tuple<T, U>>
+	{
+		public void Add (T item1, U item2)
+		{
+			Add (new Tuple<T, U> (item1, item2));
+		}
+	}
+
 	public static class TupleExt
 	{
 		public static T First<T, U> (this Tuple<T, U> tuple)

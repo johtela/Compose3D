@@ -245,6 +245,7 @@
     <Compile Include="UI\InputState.cs" />
     <Compile Include="UI\Connected.cs" />
     <Compile Include="UI\Connector.cs" />
+    <Compile Include="UI\Picker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\Background.md" />

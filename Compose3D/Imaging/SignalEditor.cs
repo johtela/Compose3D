@@ -44,6 +44,10 @@
 		public abstract Signal<T, U> Signal { get; }
 	}
 
+	public enum ControlPointKind { Random, Halton23 }
+
+	public enum DistanceFunctionKind { Euclidean, Manhattan }
+
 	public static class SignalEditor
 	{
 		private class _Dummy<T, U> : SignalEditor<T, U>
@@ -261,6 +265,43 @@
 			public override Signal<Vec2, Vec3> Signal
 			{
 				get { return Source.Signal.NormalMap (Strength, Dv); }
+			}
+		}
+
+		private class _Worley : SignalEditor<Vec2, float>
+		{
+			public WorleyNoiseKind NoiseType;
+			public ControlPointKind ControlPoints;
+			public DistanceFunctionKind DistanceFunction;
+			public int ControlPointCount;
+			public int Seed;
+
+			private Func<int, IEnumerable<Vec2>>[] _cpGenerators = {
+				Compose3D.Imaging.Signal.RandomControlPoints<Vec2>,
+				_ => Compose3D.Imaging.Signal.HaltonControlPoints ()
+			};
+
+			private Func<Vec2, Vec2, float>[] _distFunctions = {
+				Vec.SquaredDistanceTo<Vec2>,
+				Vec.ManhattanDistanceTo<Vec2>
+			};
+
+			protected override Compose3D.UI.Control CreateControl ()
+			{
+				throw new NotImplementedException ();
+			}
+
+			public override IEnumerable<AnySignalEditor> Inputs
+			{
+				get { return Enumerable.Empty<AnySignalEditor> (); }
+			}
+
+			public override Signal<Vec2, float> Signal
+			{
+				get
+				{
+					throw new NotImplementedException ();
+				}
 			}
 		}
 

@@ -10,7 +10,7 @@
 
 	public delegate U Signal<in T, out U> (T samplePoint);
 
-	public enum WorleyNoiseType { F1, F2, F3, F2_F1 }
+	public enum WorleyNoiseKind { F1, F2, F3, F2_F1 }
 
 	public static class Signal
 	{
@@ -262,19 +262,19 @@
 			return tree.NearestNeighbours (vec, num, distance).Keys ().ToArray ();
 		}
 
-		public static Signal<V, float> WorleyNoise<V> (WorleyNoiseType type, Func<V, V, float> distance,
+		public static Signal<V, float> WorleyNoise<V> (WorleyNoiseKind kind, Func<V, V, float> distance,
 			IEnumerable<V> controlPoints) where V : struct, IVec<V, float>
 		{
 			var i = 0;
 			var tree = new KdTree<V, int> (controlPoints.Select (cp =>
 				new KeyValuePair<V, int> (cp, i++)));
-			switch (type)
+			switch (kind)
 			{
-				case WorleyNoiseType.F1:
+				case WorleyNoiseKind.F1:
 					return vec => distance (vec, Neighbours (tree, vec, 1, distance)[0]);
-				case WorleyNoiseType.F2:
+				case WorleyNoiseKind.F2:
 			 		return vec => distance (vec, Neighbours (tree, vec, 2, distance)[1]);
-				case WorleyNoiseType.F3:
+				case WorleyNoiseKind.F3:
 					return vec => distance (vec, Neighbours (tree, vec, 3, distance)[2]);
 				default:
 					return vec =>

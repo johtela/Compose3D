@@ -107,23 +107,17 @@
 		public static Manipulator<V> JitterPosition<V> (float range)
 			where V : struct, IVertex
 		{
-			var half = range / 2f;
-			var rangeMin = range - half;
-			var rangeMax = range + half;
 			return v => v.With (
-				v.position + Vec.Random<Vec3> (new Random (v.position.GetHashCode ()), rangeMin, rangeMax), 
+				v.position.Jitter (range), 
 				v.normal);
 		}
 
 		public static Manipulator<V> JitterColor<V> (float range)
 			where V : struct, IVertex, IDiffuseColor<Vec3>
 		{
-			var half = range / 2f;
-			var rangeMin = range - half;
-			var rangeMax = range + half;
 			return v =>
 			{ 
-				v.diffuse += Vec.Random<Vec3> (new Random (v.position.GetHashCode ()), rangeMin, rangeMax);
+				v.diffuse = v.diffuse.Jitter (range);
 				return v;
 			};
 		}

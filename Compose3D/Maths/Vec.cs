@@ -804,5 +804,11 @@
 				(float)rnd.NextDouble () * range + rangeMin,
 				(float)rnd.NextDouble () * range + rangeMin);
 		}
+
+		public static V Jitter<V> (this V vec, float maxDelta)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Add (Random<V> (new Random (vec.GetHashCode ()), -maxDelta, maxDelta));
+		}
 	}
 }

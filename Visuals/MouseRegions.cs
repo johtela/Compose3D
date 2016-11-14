@@ -4,7 +4,7 @@
 	using System.Collections.Generic;
 	using System.Drawing;
 
-	public class MouseRegions<T> where T : class
+	public class MouseRegions<T>
 	{
 		private List<Tuple<RectangleF, T>> _regions = new List<Tuple<RectangleF, T>> ();
 

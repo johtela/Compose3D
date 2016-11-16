@@ -92,6 +92,11 @@
 			return signal.Select (v => v.Add (delta));
 		}
 
+		public static Signal<T, float> Clamp<T> (this Signal<T, float> signal, float min, float max)
+		{
+			return signal.Select (x => x.Clamp (min, max));
+		}
+
 		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
 		{
 			return signal.Select (x => x * 0.5f + 0.5f);

@@ -46,7 +46,7 @@
 
 	public enum ControlPointKind { Random, Halton23 }
 
-	public enum DistanceFunctionKind { Euclidean, Manhattan }
+	public enum DistanceFunctionKind { Euclidean, Squared, Manhattan }
 
 	public static class SignalEditor
 	{
@@ -104,6 +104,67 @@
 				{
 					return new Signal<Vec3, float> (new PerlinNoise (Seed).Noise)
 						.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f));
+				}
+			}
+		}
+
+		private class _Worley : SignalEditor<Vec2, float>
+		{
+			public WorleyNoiseKind NoiseKind;
+			public ControlPointKind ControlPoints;
+			public DistanceFunctionKind DistanceFunction;
+			public int ControlPointCount;
+			public int Seed;
+			public float Scale;
+
+			private Func<int, IEnumerable<Vec2>>[] _cpGenerators = {
+				Imaging.Signal.RandomControlPoints<Vec2>,
+				_ => Imaging.Signal.HaltonControlPoints ()
+			};
+
+			private Func<Vec2, Vec2, float>[] _distFunctions = {
+				Vec.DistanceTo<Vec2>,
+				Vec.SquaredDistanceTo<Vec2>,
+				Vec.ManhattanDistanceTo<Vec2>
+			};
+
+			protected override Control CreateControl ()
+			{
+				var changed = Changed.Adapt<int, AnySignalEditor> (this);
+				var changedf = Changed.Adapt<float, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Worley Noise", true, HAlign.Left,
+					Container.LabelAndControl ("Type: ",
+						new Picker (React.By ((int i) => NoiseKind = (WorleyNoiseKind)i).And (changed),
+							Enum.GetNames (typeof (WorleyNoiseKind))), true),
+					Container.LabelAndControl ("Seed: ",
+						new NumericEdit (Seed, true, 1,
+							React.By ((float i) => Seed = (int)i).And (changedf)), true),
+					Container.LabelAndControl ("CP Type: ",
+						new Picker (React.By ((int i) => ControlPoints = (ControlPointKind)i).And (changed),
+							Enum.GetNames (typeof (ControlPointKind))), true),
+					Container.LabelAndControl ("CP Count: ",
+						new NumericEdit (ControlPointCount, true, 1,
+							React.By ((float i) => ControlPointCount = (int)i).And (changedf).Where (i => i > 2)), true),
+					Container.LabelAndControl ("Distance: ",
+						new Picker (React.By ((int i) => DistanceFunction = (DistanceFunctionKind)i).And (changed),
+							Enum.GetNames (typeof (DistanceFunctionKind))), true),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (Scale, false, 0.1f,
+							React.By ((float s) => Scale = s).And (changedf)), true));
+			}
+
+			public override IEnumerable<AnySignalEditor> Inputs
+			{
+				get { return Enumerable.Empty<AnySignalEditor> (); }
+			}
+
+			public override Signal<Vec2, float> Signal
+			{
+				get
+				{
+					var cpoints = _cpGenerators[(int)ControlPoints] (Seed).Take (ControlPointCount);
+					var dfunc = _distFunctions[(int)DistanceFunction];
+					return Imaging.Signal.WorleyNoise (NoiseKind, dfunc, cpoints).Scale (Scale).Clamp (-1f, 1f);
 				}
 			}
 		}
@@ -268,43 +329,6 @@
 			}
 		}
 
-		private class _Worley : SignalEditor<Vec2, float>
-		{
-			public WorleyNoiseKind NoiseType;
-			public ControlPointKind ControlPoints;
-			public DistanceFunctionKind DistanceFunction;
-			public int ControlPointCount;
-			public int Seed;
-
-			private Func<int, IEnumerable<Vec2>>[] _cpGenerators = {
-				Compose3D.Imaging.Signal.RandomControlPoints<Vec2>,
-				_ => Compose3D.Imaging.Signal.HaltonControlPoints ()
-			};
-
-			private Func<Vec2, Vec2, float>[] _distFunctions = {
-				Vec.SquaredDistanceTo<Vec2>,
-				Vec.ManhattanDistanceTo<Vec2>
-			};
-
-			protected override Compose3D.UI.Control CreateControl ()
-			{
-				throw new NotImplementedException ();
-			}
-
-			public override IEnumerable<AnySignalEditor> Inputs
-			{
-				get { return Enumerable.Empty<AnySignalEditor> (); }
-			}
-
-			public override Signal<Vec2, float> Signal
-			{
-				get
-				{
-					throw new NotImplementedException ();
-				}
-			}
-		}
-
 		public static SignalEditor<T, U> ToSignalEditor<T, U> (this Signal<T, U> signal, string name)
 		{
 			return new _Dummy<T, U> () { Name = name, Source = signal };
@@ -313,6 +337,14 @@
 		public static SignalEditor<Vec2, float> Perlin (int seed, Vec2 scale)
 		{
 			return new _Perlin () { Seed = seed, Scale = scale };
+		}
+
+		public static SignalEditor<Vec2, float> Worley (WorleyNoiseKind kind, ControlPointKind controlPoints,
+			int controlPointCount, int seed, DistanceFunctionKind distanceFunction, float scale)
+		{
+			return new _Worley () { NoiseKind = kind, ControlPoints = controlPoints,
+				ControlPointCount = controlPointCount, Seed = seed, DistanceFunction = distanceFunction,
+				Scale = scale };
 		}
 
 		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 

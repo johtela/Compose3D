@@ -38,11 +38,13 @@
 					var visual = Visual.Clickable (Visual.Label (str), _mouseRegions.Add (i));
 					return i != _selected ?
 							visual :
-							Visual.Styled (Visual.Frame (visual, FrameKind.RoundRectangle, true), SelectedStyle);
+							Visual.Styled (Visual.Frame (
+								Visual.Margin (visual, 2f),
+								FrameKind.RoundRectangle, true), SelectedStyle);
 				})) :
 				Visual.Clickable (
 					Visual.Frame (
-						Visual.Margin (Visual.Label (Items [_selected]), left: 2f, right: 8f),
+						Visual.Margin (Visual.Label (Items [_selected]), 2f),
 						FrameKind.Rectangle, false),
 					_mouseRegions.Add (_selected));
 

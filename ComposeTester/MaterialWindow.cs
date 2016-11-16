@@ -87,14 +87,16 @@
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
 				.ToSignalEditor ("Sine");
+			var worley = SignalEditor.Worley (WorleyNoiseKind.F1, ControlPointKind.Random, 10, 0,
+				DistanceFunctionKind.Euclidean, 0.7f);
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
 			var perlin = SignalEditor.Perlin (0, new Vec2 (10f));
 			var spectral = perlin.SpectralControl (0, 3, 1f, 0.5f, 0.2f, 0.1f);
-			var warp = sine.Warp (spectral, 0.001f, dv);
+			var warp = worley.Warp (spectral, 0.001f, dv);
 			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
 			var normal = warp.NormalMap (1f, dv);
 
-			return SignalEditor.EditorTree (_signalTexture, size, _updater, normal, signal);
+			return SignalEditor.EditorTree (_signalTexture, size, _updater, normal, signal, worley);
 		}
 
 		private void CreateSceneGraph ()
@@ -126,7 +128,7 @@
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (600, 300), new Vec2 (-1f, 1f));
+				new Vec2i (600, 600), new Vec2 (-1f, 1f));
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f));
 

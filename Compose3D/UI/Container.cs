@@ -86,12 +86,12 @@
 				var hit = _mouseRegions.ItemUnderMouse (relativeMousePos);
 				if (InputState.MouseButtonPressed (MouseButton.Left))
 				{
-					if (hit != null)
+					if (hit != null && _selected != hit.Item2.Item1)
 					{
 						_selected = hit.Item2.Item1;
 						hit.Item2.Item2 (_selected);
 					}
-					else
+					else if (hit == null)
 						_selected = null;
 				}
 			}

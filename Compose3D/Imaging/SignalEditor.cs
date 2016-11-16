@@ -16,6 +16,7 @@
 	{
 		private Connected _control;
 		internal int _level;
+		internal uint[] _buffer;
 
 		public Connected Control
 		{
@@ -412,17 +413,19 @@
 		public static Container EditorTree (Texture outputTexture, Vec2i outputSize, 
 			DelayedReactionUpdater updater,	params AnySignalEditor[] rootEditors)
 		{
+			var all = new HashSet<AnySignalEditor> ();
 			var changed = React.By ((AnySignalEditor editor) =>
 			{
-				var buffer = MapSignal (editor)
+				foreach (var e in all)
+					e._buffer = null;
+				editor._buffer = MapSignal (editor)
 					.MapInput (Signal.BitmapCoordToUnitRange (outputSize, 1f))
 					.SampleToBuffer (outputSize);
-				outputTexture.LoadArray (buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
+				outputTexture.LoadArray (editor._buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
 					PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 			})
-			.Delay (updater, 1.0);
+			.Delay (updater, 0.5);
 
-			var all = new HashSet<AnySignalEditor> ();
 			for (int i = 0; i < rootEditors.Length; i++)
 				CollectInputEditors (rootEditors[i], 0, changed, all);
 			var levelContainers = new List<Container> ();
@@ -431,7 +434,17 @@
 				var container = Container.Vertical (false, false, 
 					level.Select (e => new Tuple<Control, Reaction<Control>> (
 						e.Control, 
-						React.By<Control> (_ => changed (e)))));
+						React.By<Control> (_ => 
+						{
+							if (e._buffer == null)
+								e._buffer = MapSignal (e)
+									.MapInput (Signal.BitmapCoordToUnitRange (outputSize, 1f))
+									.SampleToBuffer (outputSize);
+							outputTexture.LoadArray (e._buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
+								PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
+						})
+						.Delay (updater, 0.5)
+					)));
 				levelContainers.Add (container);
 			}
 			changed (rootEditors[0]);

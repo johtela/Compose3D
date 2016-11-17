@@ -27,7 +27,8 @@
 		private Panels ()
 		{
 			texture = new TextureUniforms (_panelShader, new Sampler2D (0).NearestColor ()
-				.ClampToEdges (Axes.X | Axes.Y));
+				//.ClampToEdges (Axes.X | Axes.Y)
+				);
 			transform = new TransformUniforms (_panelShader);
 		}
 

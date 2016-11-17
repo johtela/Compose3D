@@ -90,7 +90,7 @@
 			var worley = SignalEditor.Worley (WorleyNoiseKind.F1, ControlPointKind.Random, 10, 0,
 				DistanceFunctionKind.Euclidean, 0.7f);
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin (0, new Vec2 (10f));
+			var perlin = SignalEditor.Perlin (0, new Vec2 (10f), false);
 			var spectral = perlin.SpectralControl (0, 3, 1f, 0.5f, 0.2f, 0.1f);
 			var warp = worley.Warp (spectral, 0.001f, dv);
 			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
@@ -130,7 +130,7 @@
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
 				new Vec2i (600, 600), new Vec2 (-1f, 1f));
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
-				new Vec2 (0.25f, 0.75f));
+				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 

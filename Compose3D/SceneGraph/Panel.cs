@@ -29,23 +29,27 @@
 		private Vec2i _origMousePos;
 		private Vec2i _origSize;
 
-		public Panel (SceneGraph graph, bool flipVertically, bool movable)
+		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat)
 			: base (graph)
 		{
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_flipVertically = flipVertically;
 			_movable = movable;
+			var fac = repeat.Convert<Vec2i, Vec2> ();
 			if (flipVertically)
-				_rectangle.ApplyTextureFront (1f, new Vec2 (0f, 1f), new Vec2 (1f, 0f));
+				_rectangle.ApplyTextureFront (1f, new Vec2 (0f, 1f) * fac, new Vec2 (1f, 0f) * fac);
 			else
-				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
+				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f) * fac);
 		}
 
-		public Panel (SceneGraph graph, bool flipVertically, bool movable, Texture texture)
-			: this (graph, flipVertically, movable)
+		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat, Texture texture)
+			: this (graph, flipVertically, movable, repeat)
 		{
 			Texture = texture;
 		}
+
+		public Panel (SceneGraph graph, bool flipVertically, bool movable, Texture texture)
+			: this (graph, flipVertically, movable, new Vec2i (1), texture) { }
 
 		public Mat4 GetModelViewMatrix (Vec2i viewportSize)
 		{
@@ -173,6 +177,13 @@
 		public static SceneNode Movable (SceneGraph graph, bool flipVertically, Texture texture, Vec2 pos)
 		{
 			return new Panel<V> (graph, flipVertically, true, texture)
+				.Offset (new Vec3 (pos, 0f));
+		}
+
+		public static SceneNode Movable (SceneGraph graph, bool flipVertically, Texture texture, Vec2 pos,
+			Vec2i repeat)
+		{
+			return new Panel<V> (graph, flipVertically, true, repeat, texture)
 				.Offset (new Vec3 (pos, 0f));
 		}
 	}

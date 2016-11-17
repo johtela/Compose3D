@@ -109,5 +109,43 @@
 					faded.Y),
 				faded.Z);
 		}
+
+		public float PeriodicNoise (Vec3 vec, Vec3 period)
+		{
+			var cube = vec.Floor ();
+			var pt = vec - cube;
+			var faded = Fade (pt);
+			var iv = cube.Mod (period).Floor<Vec3, Vec3i> ();
+			var jv = (cube + new Vec3 (1f)).Mod (period).Floor<Vec3, Vec3i> ();
+			int A = Permutation (iv.X),
+				AA = Permutation (A + iv.Y),
+				AB = Permutation (A + jv.Y),
+				B = Permutation (jv.X),
+				BA = Permutation (B + iv.Y),
+				BB = Permutation (B + jv.Y);
+
+			return GLMath.Mix (
+				GLMath.Mix (
+					GLMath.Mix (
+						Gradient (Permutation (AA + iv.Z), pt.X, pt.Y, pt.Z),
+						Gradient (Permutation (BA + iv.Z), pt.X - 1f, pt.Y, pt.Z),
+						faded.X),
+					GLMath.Mix (
+						Gradient (Permutation (AB + iv.Z), pt.X, pt.Y - 1f, pt.Z),
+						Gradient (Permutation (BB + iv.Z), pt.X - 1f, pt.Y - 1f, pt.Z),
+						faded.X),
+					faded.Y),
+				GLMath.Mix (
+					GLMath.Mix (
+						Gradient (Permutation (AA + jv.Z), pt.X, pt.Y, pt.Z - 1f),
+						Gradient (Permutation (BA + jv.Z), pt.X - 1f, pt.Y, pt.Z - 1f),
+						faded.X),
+					GLMath.Mix (
+						Gradient (Permutation (AB + jv.Z), pt.X, pt.Y - 1f, pt.Z - 1f),
+						Gradient (Permutation (BB + jv.Z), pt.X - 1f, pt.Y - 1f, pt.Z - 1f),
+						faded.X),
+					faded.Y),
+				faded.Z);
+		}
 	}
 }

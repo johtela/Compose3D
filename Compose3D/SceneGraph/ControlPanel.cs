@@ -19,7 +19,7 @@
 		public Control Control { get; private set; }
 
 		public ControlPanel (SceneGraph graph, Control control, Vec2i size, bool movable)
-			: base (graph, true, movable)
+			: base (graph, true, movable, new Vec2i (1))
 		{
 			Control = control;
 			_size = size;

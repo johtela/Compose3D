@@ -689,6 +689,20 @@
 			return vec.Map<V, float> (GLMath.InverseSqrt);
 		}
 
+		[GLFunction ("mod ({0})")]
+		public static V Mod<V> (this V vec, float modulo)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map<V, float> (x => x % modulo);
+		}
+
+		[GLFunction ("mod ({0})")]
+		public static V Mod<V> (this V vec, V modulo)
+			where V : struct, IVec<V, float>
+		{
+			return vec.Map2<V, float> (modulo, (x, m) => x % m);
+		}
+
 		/// <summary>
 		/// Calculates the reflection vector along given normal.
 		/// </summary>

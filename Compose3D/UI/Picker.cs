@@ -17,17 +17,18 @@
 
 		// Control state
 		private bool _active;
-		private int _selected;
+		private int _value;
 
-		public Picker (Reaction<int> selected, params string[] items) 
+		public Picker (int value, Reaction<int> selected, params string[] items) 
 		{ 
 			Items = items;
 			Selected = selected;
+			_value = value;
 			_mouseRegions = new MouseRegions<int> ();		
 		}
 
-		public Picker (Reaction<int> selected, IEnumerable<string> items)
-			: this (selected, items.ToArray ()) {}
+		public Picker (int value, Reaction<int> selected, IEnumerable<string> items)
+			: this (value, selected, items.ToArray ()) {}
 
 		public override Visual ToVisual (SizeF panelSize)
 		{
@@ -36,7 +37,7 @@
 				Visual.VStack (HAlign.Left, Items.Select ((str, i) =>
 				{
 					var visual = Visual.Clickable (Visual.Label (str), _mouseRegions.Add (i));
-					return i != _selected ?
+					return i != _value ?
 							visual :
 							Visual.Styled (Visual.Frame (
 								Visual.Margin (visual, 2f),
@@ -44,9 +45,9 @@
 				})) :
 				Visual.Clickable (
 					Visual.Frame (
-						Visual.Margin (Visual.Label (Items [_selected]), 2f),
+						Visual.Margin (Visual.Label (Items [_value]), 2f),
 						FrameKind.Rectangle, false),
-					_mouseRegions.Add (_selected));
+					_mouseRegions.Add (_value));
 
 		}
 
@@ -56,11 +57,11 @@
 			if (_active)
 			{
 				if (hit != null)
-					_selected = hit.Item2;
+					_value = hit.Item2;
 				if (!InputState.MouseButtonDown (MouseButton.Left))
 				{
 					_active = false;
-					Selected (_selected);
+					Selected (_value);
 				}
 			}
 			else if (hit != null && InputState.MouseButtonPressed (MouseButton.Left))

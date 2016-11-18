@@ -37,9 +37,9 @@
 			_movable = movable;
 			var fac = repeat.Convert<Vec2i, Vec2> ();
 			if (flipVertically)
-				_rectangle.ApplyTextureFront (1f, new Vec2 (0f, 1f) * fac, new Vec2 (1f, 0f) * fac);
+				_rectangle.ApplyTextureFront (1f, TexturePos.TopLeft * fac, TexturePos.BottomRight * fac);
 			else
-				_rectangle.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f) * fac);
+				_rectangle.ApplyTextureFront (1f, TexturePos.BottomLeft, TexturePos.TopRight * fac);
 		}
 
 		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat, Texture texture)

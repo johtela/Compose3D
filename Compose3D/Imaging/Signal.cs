@@ -66,40 +66,45 @@
 			where V : struct, IVec<V, float>
 			where M : struct, ISquareMat<M, float>
 		{
-			return from v in signal
-				   select matrix.Multiply (v);
+			return x =>  matrix.Multiply (signal (x));
 		}
 
 		public static Signal<T, float> Scale<T> (this Signal<T, float> signal, float scale)
 		{
-			return signal.Select (x => x * scale);
+			return from x in signal
+			       select x * scale;
 		}
 
 		public static Signal<T, V> Scale<T, V> (this Signal<T, V> signal, V scale)
 			where V : struct, IVec<V, float>
 		{
-			return signal.Select (v => v.Multiply (scale));
+			return from v in signal
+			       select v.Multiply (scale);
 		}
 
 		public static Signal<T, float> Offset<T> (this Signal<T, float> signal, float delta)
 		{
-			return signal.Select (x => x + delta);
+			return from x in signal
+			       select x + delta;
 		}
 
 		public static Signal<T, V> Offset<T, V> (this Signal<T, V> signal, V delta)
 			where V : struct, IVec<V, float>
 		{
-			return signal.Select (v => v.Add (delta));
+			return from v in signal
+			       select v.Add (delta);
 		}
 
 		public static Signal<T, float> Clamp<T> (this Signal<T, float> signal, float min, float max)
 		{
-			return signal.Select (x => x.Clamp (min, max));
+			return from x in signal
+			       select x.Clamp (min, max);
 		}
 
 		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
 		{
-			return signal.Select (x => x * 0.5f + 0.5f);
+			return from x in signal
+			       select x * 0.5f + 0.5f;
 		}
 
 		public static Signal<float, float> Dfdx (this Signal<float, float> signal, float dx)
@@ -218,14 +223,14 @@
 			return result;
 		}
 
-		public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
+		public static Signal<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
 		{
 			return vec => new Vec2 (
 				vec.X * scale / bitmapSize.X,
 				vec.Y * scale / bitmapSize.Y);
 		}
 
-		public static Func<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)
+		public static Signal<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)
 		{
 			return vec => vec.X * scale / bitmapSize.X;
 		}

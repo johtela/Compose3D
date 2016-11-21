@@ -217,8 +217,8 @@
 			var result = new T[length];
 			Parallel.For (0, bufferSize.Y, y =>
 			{
-				for (int x = 0; x < bufferSize.X; x++)
-					result[y * bufferSize.Y + x] = signal (new Vec2i (x, y));
+				Parallel.For (0, bufferSize.X, x =>
+					result[y * bufferSize.Y + x] = signal (new Vec2i (x, y)));
 			});
 			return result;
 		}

@@ -28,6 +28,7 @@
 		private Vec3 _origOffs;
 		private Vec2i _origMousePos;
 		private Vec2i _origSize;
+		private Vec2i _repeat;
 
 		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat)
 			: base (graph)
@@ -35,6 +36,7 @@
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_flipVertically = flipVertically;
 			_movable = movable;
+			_repeat = repeat;
 			var fac = repeat.Convert<Vec2i, Vec2> ();
 			if (flipVertically)
 				_rectangle.ApplyTextureFront (1f, TexturePos.TopLeft * fac, TexturePos.BottomRight * fac);
@@ -53,7 +55,7 @@
 
 		public Mat4 GetModelViewMatrix (Vec2i viewportSize)
 		{
-			var texSize = Texture.Size * 2;
+			var texSize = Texture.Size * _repeat * 2;
 			var scalingMat = Mat.Scaling<Mat4> (
 				(float)texSize.X / viewportSize.X, 
 				(float)texSize.Y / viewportSize.Y);

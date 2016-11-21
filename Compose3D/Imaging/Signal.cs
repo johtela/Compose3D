@@ -223,19 +223,19 @@
 			return result;
 		}
 
-		public static Signal<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
+		public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
 		{
 			return vec => new Vec2 (
 				vec.X * scale / bitmapSize.X,
 				vec.Y * scale / bitmapSize.Y);
 		}
 
-		public static Signal<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)
+		public static Func<Vec2i, float> BitmapXToFloat (Vec2i bitmapSize, float scale)
 		{
 			return vec => vec.X * scale / bitmapSize.X;
 		}
 
-		public static Signal<Vec2i, float> BitmapYToFloat (Vec2i bitmapSize, float scale)
+		public static Func<Vec2i, float> BitmapYToFloat (Vec2i bitmapSize, float scale)
 		{
 			return vec => vec.X * scale / bitmapSize.X;
 		}
@@ -307,6 +307,26 @@
 			var i = 1;
 			return EnumerableExt.Generate<Vec2> (() => 
 				new Vec2 (GLMath.HaltonSequenceItem (2, i), GLMath.HaltonSequenceItem (3, i++)));
+		}
+
+		public static IEnumerable<V> Jitter<V> (this IEnumerable<V> controlPoints, float maxDelta)
+			where V : struct, IVec<V, float>
+		{
+			return from v in controlPoints
+				   select v.Jitter (maxDelta);
+		}
+
+		public static IEnumerable<Vec2> ReplicateOnTorus (this IEnumerable<Vec2> controlPoints)
+		{
+			foreach (var cp in controlPoints)
+			{
+				var nx = cp.X + (cp.X < 0.5f ? 1f : -1f);
+				var ny = cp.Y + (cp.Y < 0.5f ? 1f : -1f);
+				yield return cp;
+				yield return new Vec2 (nx, cp.Y);
+				yield return new Vec2 (cp.X, ny);
+				yield return new Vec2 (nx, ny);
+			}
 		}
 	}
 }

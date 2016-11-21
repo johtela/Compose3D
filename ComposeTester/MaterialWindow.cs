@@ -88,11 +88,12 @@
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
 				.ToSignalEditor ("Sine");
 			var worley = SignalEditor.Worley (WorleyNoiseKind.F1, ControlPointKind.Random, 10, 0,
-				DistanceFunctionKind.Euclidean, 0.7f);
+				DistanceFunctionKind.Euclidean, 0f, false);
+			var transform = worley.Transform (1f, 0f);
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
 			var perlin = SignalEditor.Perlin (0, new Vec2 (10f), false);
 			var spectral = perlin.SpectralControl (0, 3, 1f, 0.5f, 0.2f, 0.1f);
-			var warp = worley.Warp (spectral, 0.001f, dv);
+			var warp = transform.Warp (spectral, 0.001f, dv);
 			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
 			var normal = warp.NormalMap (1f, dv);
 

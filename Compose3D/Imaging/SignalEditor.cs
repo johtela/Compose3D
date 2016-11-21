@@ -125,7 +125,8 @@
 			public DistanceFunctionKind DistanceFunction;
 			public int ControlPointCount;
 			public int Seed;
-			public float Scale;
+			public float Jitter;
+			public bool Periodic;
 
 			private Func<int, IEnumerable<Vec2>>[] _cpGenerators = {
 				Imaging.Signal.RandomControlPoints<Vec2>,
@@ -161,9 +162,13 @@
 						new Picker ((int)DistanceFunction,
 							React.By ((int i) => DistanceFunction = (DistanceFunctionKind)i).And (changed),
 							Enum.GetNames (typeof (DistanceFunctionKind))), true),
-					Container.LabelAndControl ("Scale: ",
-						new NumericEdit (Scale, false, 0.1f,
-							React.By ((float s) => Scale = s).And (changedf)), true));
+					Container.LabelAndControl ("Jitter: ",
+						new NumericEdit (Jitter, false, 0.1f,
+							React.By ((float x) => Jitter = x).And (changedf)), true),
+					Container.LabelAndControl ("Periodic: ",
+						new Picker (Periodic ? 1 : 0,
+							React.By ((int i) => Periodic = i != 0).And (changed),
+							"No", "Yes"), true));
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -175,10 +180,45 @@
 			{
 				get
 				{
-					var cpoints = _cpGenerators[(int)ControlPoints] (Seed).Take (ControlPointCount);
+					var cpoints = _cpGenerators[(int)ControlPoints] (Seed)
+						.Take (ControlPointCount)
+						.Jitter (Jitter);
+					if (Periodic)
+						cpoints = cpoints.ReplicateOnTorus ();
 					var dfunc = _distFunctions[(int)DistanceFunction];
-					return Imaging.Signal.WorleyNoise (NoiseKind, dfunc, cpoints).Scale (Scale).Clamp (-1f, 1f);
+					return Imaging.Signal.WorleyNoise (NoiseKind, dfunc, cpoints);
 				}
+			}
+		}
+
+		private class _Transform<V> : SignalEditor<V, float>
+			where V : struct, IVec<V, float>
+		{
+			public float Scale;
+			public float Offset;
+			public SignalEditor<V, float> Source;
+
+			public override Signal<V, float> Signal
+			{
+				get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (-1f, 1f); }
+			}
+
+			public override IEnumerable<AnySignalEditor> Inputs
+			{
+				get { return EnumerableExt.Enumerate (Source); }
+			}
+
+			protected override Control CreateControl ()
+			{
+				var changed = Changed.Adapt<float, AnySignalEditor> (this);
+				return FoldableContainer.WithLabel ("Transform", true, HAlign.Left,
+					InputSignalControl ("Source", Source),
+					Container.LabelAndControl ("Scale: ",
+						new NumericEdit (Scale, false, 0.1f,
+							React.By ((float s) => Scale = s).And (changed)), true),
+					Container.LabelAndControl ("Offset: ",
+						new NumericEdit (Offset, false, 0.1f,
+							React.By ((float s) => Offset = s).And (changed)), true));
 			}
 		}
 
@@ -353,11 +393,12 @@
 		}
 
 		public static SignalEditor<Vec2, float> Worley (WorleyNoiseKind kind, ControlPointKind controlPoints,
-			int controlPointCount, int seed, DistanceFunctionKind distanceFunction, float scale)
+			int controlPointCount, int seed, DistanceFunctionKind distanceFunction, float jitter,
+			bool periodic)
 		{
 			return new _Worley () { NoiseKind = kind, ControlPoints = controlPoints,
 				ControlPointCount = controlPointCount, Seed = seed, DistanceFunction = distanceFunction,
-				Scale = scale };
+				Jitter = jitter, Periodic = periodic };
 		}
 
 		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
@@ -365,6 +406,13 @@
 			where V : struct, IVec<V, float>
 		{
 			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv };
+		}
+
+		public static SignalEditor<V, float> Transform<V> (this SignalEditor<V, float> source,
+			float scale, float offset)
+			where V : struct, IVec<V, float>
+		{
+			return new _Transform<V> () { Source = source, Scale = scale, Offset = offset };
 		}
 
 		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 

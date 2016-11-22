@@ -248,7 +248,7 @@
 
 			public override Signal<V, float> Signal
 			{
-				get { return Source.Signal.Warp (Warp.Signal.Scale (Scale), Dv); }
+				get { return Source.Signal.Warp (Warp.Signal.Cache ().Scale (Scale), Dv); }
 			}
 		}
 
@@ -378,7 +378,7 @@
 
 			public override Signal<Vec2, Vec3> Signal
 			{
-				get { return Source.Signal.NormalMap (Strength, Dv); }
+				get { return Source.Signal.Cache ().NormalMap (Strength, Dv); }
 			}
 		}
 

@@ -1,12 +1,13 @@
 ﻿namespace Compose3D.Imaging
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Collections.Concurrent;
 	using System.Linq;
 	using System.Threading.Tasks;
 	using Extensions;
 	using Maths;
 	using DataStructures;
-	using System.Collections.Generic;
 
 	public delegate U Signal<in T, out U> (T samplePoint);
 
@@ -327,6 +328,20 @@
 				yield return new Vec2 (cp.X, ny);
 				yield return new Vec2 (nx, ny);
 			}
+		}
+
+		public static Signal<T, V> Cache<T, V> (this Signal<T, V> signal)
+		{
+			var cache = new ConcurrentDictionary<T, V> ();
+			return x =>
+			{
+				V value;
+				if (cache.TryGetValue (x, out value))
+					return value;
+				value = signal (x);
+				cache.TryAdd (x, value);
+				return value;
+			};
 		}
 	}
 }

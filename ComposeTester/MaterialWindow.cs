@@ -86,16 +86,16 @@
 
 			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
 				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
-				.ToSignalEditor ("Sine");
-			var worley = SignalEditor.Worley (WorleyNoiseKind.F1, ControlPointKind.Random, 10, 0,
-				DistanceFunctionKind.Euclidean, 0f, false);
-			var transform = worley.Transform (1f, 0f);
+				.ToSignalEditor ("sine");
+			var worley = SignalEditor.Worley ("worley", WorleyNoiseKind.F1, ControlPointKind.Random, 
+				10, 0, DistanceFunctionKind.Euclidean, 0f, true);
+			var transform = worley.Transform ("transform", -30f, 0.5f);
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin (0, new Vec2 (10f), false);
-			var spectral = perlin.SpectralControl (0, 3, 1f, 0.5f, 0.2f, 0.1f);
-			var warp = transform.Warp (spectral, 0.001f, dv);
-			var signal = warp.Colorize (ColorMap<Vec3>.RGB ());
-			var normal = warp.NormalMap (1f, dv);
+			var perlin = SignalEditor.Perlin ("perlin", 0, new Vec2 (10f), false);
+			var spectral = perlin.SpectralControl ("spectral", 0, 2, 1f, 0.5f, 0.2f);
+			var warp = transform.Warp ("warp", spectral, 0.001f, dv);
+			var signal = warp.Colorize ("signal", ColorMap<Vec3>.GrayScale ());
+			var normal = warp.NormalMap ("normal", 1f, dv);
 
 			return SignalEditor.EditorTree (_signalTexture, size, _updater, normal, signal, worley);
 		}

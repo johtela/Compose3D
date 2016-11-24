@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Threading.Tasks;
+	using System.Linq;
 	using Extensions;
 	using GLTypes;
 
@@ -163,6 +163,14 @@
 			where U : struct, IVec<U, float>
 		{
 			return FromArray<U, float> (vec.ToArray<V, int> ().Map (x => (float)x));
+		}
+
+		public static string ConstructorString<V, T> (this V vec)
+			where V : struct, IVec<V, T>
+			where T : struct, IEquatable<T>
+		{
+			return string.Format ("new {0} ({1})", typeof (V).Name,
+				vec.ToArray<V, T> ().Select (i => i.ToString ()).SeparateWith (", "));
 		}
 
 		/// <summary>

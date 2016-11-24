@@ -18,6 +18,8 @@
 		internal int _level;
 		internal uint[] _buffer;
 
+		public string Name { get; internal set; }
+
 		public Connected Control
 		{
 			get
@@ -35,7 +37,22 @@
 				new VisualStyle (pen: new Pen (Color.OrangeRed, 3f)));
 		}
 
+		private string ParameterAsString (object obj)
+		{
+			return obj is string ?
+				"\"" + obj as string + "\"" :
+				obj.ToString ();
+		}
+
+		protected string MethodSignature (string instance, string method, params object[] args)
+		{
+			return string.Format ("{0}.{1} ({2})", instance, method, 
+				args.Select (ParameterAsString).SeparateWith (", "));
+		}
+
 		protected abstract Control CreateControl ();
+		protected abstract string ToCode ();
+
 		public abstract IEnumerable<AnySignalEditor> Inputs { get; }
 		public Reaction<AnySignalEditor> Changed { get; internal set; }
 	}
@@ -54,7 +71,6 @@
 		private class _Dummy<T, U> : SignalEditor<T, U>
 		{
 			public Signal<T, U> Source;
-			public string Name { get; internal set; }
 
 			protected override Control CreateControl ()
 			{
@@ -63,7 +79,12 @@
 					HAlign.Right, VAlign.Center);
 			}
 
-		 	public override IEnumerable<AnySignalEditor> Inputs
+			protected override string ToCode ()
+			{
+				return Name;
+			}
+
+			public override IEnumerable<AnySignalEditor> Inputs
 			{
 				get { return Enumerable.Empty<AnySignalEditor> (); }
 			}
@@ -100,6 +121,12 @@
 							"No", "Yes"), true));
 			}
 
+			protected override string ToCode ()
+			{
+				return MethodSignature ("SignalEditor", "Perlin",
+					Name, Seed, Scale.ConstructorString<Vec2, float> (), Periodic); 
+			}
+		
 			public override IEnumerable<AnySignalEditor> Inputs
 			{
 				get { return Enumerable.Empty<AnySignalEditor> (); }
@@ -171,6 +198,13 @@
 							"No", "Yes"), true));
 			}
 
+			protected override string ToCode ()
+			{
+				return MethodSignature ("SignalEditor", "Worley",
+					Name, NoiseKind, Seed, ControlPoints, ControlPointCount, Seed,
+					DistanceFunction, Jitter, Periodic);
+			}
+
 			public override IEnumerable<AnySignalEditor> Inputs
 			{
 				get { return Enumerable.Empty<AnySignalEditor> (); }
@@ -220,6 +254,11 @@
 						new NumericEdit (Offset, false, 0.1f,
 							React.By ((float s) => Offset = s).And (changed)), true));
 			}
+
+			protected override string ToCode ()
+			{
+				return MethodSignature (Source.Name, "Transform", Name, Scale, Offset);
+			}
 		}
 
 		private class _Warp<V> : SignalEditor<V, float>
@@ -239,6 +278,11 @@
 					Container.LabelAndControl ("Scale: ",
 						new NumericEdit (Scale, false, 0.001f,
 							React.By ((float s) => Scale = s).And (changed)), true));
+			}
+
+			protected override string ToCode ()
+			{
+				return MethodSignature (Source.Name, "Warp", Name, Warp.Name, Scale, Dv);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -263,6 +307,11 @@
 				return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
+			}
+
+			protected override string ToCode ()
+			{
+				return MethodSignature (Source.Name, "Colorize", Name);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -387,42 +436,42 @@
 			return new _Dummy<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (int seed, Vec2 scale, bool periodic)
+		public static SignalEditor<Vec2, float> Perlin (string name, int seed, Vec2 scale, bool periodic)
 		{
-			return new _Perlin () { Seed = seed, Scale = scale, Periodic = periodic };
+			return new _Perlin () { Name = name, Seed = seed, Scale = scale, Periodic = periodic };
 		}
 
-		public static SignalEditor<Vec2, float> Worley (WorleyNoiseKind kind, ControlPointKind controlPoints,
-			int controlPointCount, int seed, DistanceFunctionKind distanceFunction, float jitter,
-			bool periodic)
+		public static SignalEditor<Vec2, float> Worley (string name, WorleyNoiseKind kind, 
+			ControlPointKind controlPoints,	int controlPointCount, int seed, 
+			DistanceFunctionKind distanceFunction, float jitter, bool periodic)
 		{
-			return new _Worley () { NoiseKind = kind, ControlPoints = controlPoints,
+			return new _Worley () { Name = name, NoiseKind = kind, ControlPoints = controlPoints,
 				ControlPointCount = controlPointCount, Seed = seed, DistanceFunction = distanceFunction,
 				Jitter = jitter, Periodic = periodic };
 		}
 
 		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
-			SignalEditor<V, float> warp, float scale, V dv)
+			string name, SignalEditor<V, float> warp, float scale, V dv)
 			where V : struct, IVec<V, float>
 		{
-			return new _Warp<V> () { Source = source, Warp = warp, Scale = scale, Dv = dv };
+			return new _Warp<V> () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv };
 		}
 
 		public static SignalEditor<V, float> Transform<V> (this SignalEditor<V, float> source,
-			float scale, float offset)
+			string name, float scale, float offset)
 			where V : struct, IVec<V, float>
 		{
-			return new _Transform<V> () { Source = source, Scale = scale, Offset = offset };
+			return new _Transform<V> () { Name = name, Source = source, Scale = scale, Offset = offset };
 		}
 
 		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 
-			ColorMap<Vec3> colorMap)
+			string name, ColorMap<Vec3> colorMap)
 		{
-			return new _Colorize<T> () { Source = source, ColorMap = colorMap };
+			return new _Colorize<T> () { Name = name, Source = source, ColorMap = colorMap };
 		}
 
 		public static SignalEditor<V, float> SpectralControl<V> (this SignalEditor<V, float> source,
-			int firstBand, int lastBand, params float[] bandWeights)
+			string name, int firstBand, int lastBand, params float[] bandWeights)
 			where V : struct, IVec<V, float>
 		{
 			var bw = new List<float> (16);
@@ -430,14 +479,14 @@
 			for (int i = firstBand; i <= lastBand; i++)
 				bw [i] = bandWeights [i - firstBand];
 			return new _SpectralControl<V> () { 
-				Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw, 
+				Name = name, Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw
 			};
 		}
 
 		public static SignalEditor<Vec2, Vec3> NormalMap (this SignalEditor<Vec2, float> source,
-			float strength, Vec2 dv)
+			string name, float strength, Vec2 dv)
 		{
-			return new _NormalMap () { Source = source, Strength = strength, Dv = dv };
+			return new _NormalMap () { Name = name, Source = source, Strength = strength, Dv = dv };
 		}
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, 

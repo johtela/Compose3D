@@ -4,12 +4,14 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Drawing;
+	using System.Text;
 	using Extensions;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using Textures;
 	using UI;
+	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
 
 	public abstract class AnySignalEditor
@@ -37,17 +39,15 @@
 				new VisualStyle (pen: new Pen (Color.OrangeRed, 3f)));
 		}
 
-		private string ParameterAsString (object obj)
-		{
-			return obj is string ?
-				"\"" + obj as string + "\"" :
-				obj.ToString ();
-		}
-
 		protected string MethodSignature (string instance, string method, params object[] args)
 		{
 			return string.Format ("{0}.{1} ({2})", instance, method, 
-				args.Select (ParameterAsString).SeparateWith (", "));
+				args.Select (CodeGen.ToCode).SeparateWith (", "));
+		}
+
+		internal string InitializationCode ()
+		{
+			return string.Format ("var {0} = {1};\n", Name, ToCode ());
 		}
 
 		protected abstract Control CreateControl ();
@@ -123,8 +123,7 @@
 
 			protected override string ToCode ()
 			{
-				return MethodSignature ("SignalEditor", "Perlin",
-					Name, Seed, Scale.ConstructorString<Vec2, float> (), Periodic); 
+				return MethodSignature ("SignalEditor", "Perlin", Name, Seed, Scale, Periodic); 
 			}
 		
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -200,9 +199,8 @@
 
 			protected override string ToCode ()
 			{
-				return MethodSignature ("SignalEditor", "Worley",
-					Name, NoiseKind, Seed, ControlPoints, ControlPointCount, Seed,
-					DistanceFunction, Jitter, Periodic);
+				return MethodSignature ("SignalEditor", "Worley", Name, NoiseKind, ControlPoints, 
+					ControlPointCount, Seed, DistanceFunction, Jitter, Periodic);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -282,7 +280,7 @@
 
 			protected override string ToCode ()
 			{
-				return MethodSignature (Source.Name, "Warp", Name, Warp.Name, Scale, Dv);
+				return MethodSignature (Source.Name, "Warp", Name, Warp, Scale, Dv);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -311,7 +309,7 @@
 
 			protected override string ToCode ()
 			{
-				return MethodSignature (Source.Name, "Colorize", Name);
+				return MethodSignature (Source.Name, "Colorize", Name, ColorMap);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -389,6 +387,17 @@
 					fbEdit, lbEdit, _bandContainer);
 			}
 
+			private IEnumerable<float> ActiveBandWeights ()
+			{
+				return BandWeights.Skip (FirstBand).Take (LastBand - FirstBand + 1);
+			}
+
+			protected override string ToCode ()
+			{
+				return MethodSignature (Source.Name, "SpectralControl", Name, FirstBand, LastBand, 
+					ActiveBandWeights ());
+			}
+
 			public override IEnumerable<AnySignalEditor> Inputs
 			{
 				get { return EnumerableExt.Enumerate (Source); }
@@ -399,7 +408,7 @@
 				get 
 				{ 
 					return Source.Signal.SpectralControl (FirstBand, LastBand, 
-						BandWeights.Skip (FirstBand).Take (LastBand - FirstBand + 1).ToArray ()); 
+						ActiveBandWeights ().ToArray ()); 
 				}
 			}
 		}
@@ -418,6 +427,11 @@
 					Container.LabelAndControl ("Strength: ",
 						new NumericEdit (Strength, false, 1f,
 							React.By ((float s) => Strength = s).And (changed)), true));
+			}
+
+			protected override string ToCode ()
+			{
+				return MethodSignature (Source.Name, "NormalMap", Name, Strength, Dv);
 			}
 
 			public override IEnumerable<AnySignalEditor> Inputs
@@ -494,7 +508,8 @@
 		{
 			if (!all.Contains (editor))
 			{
-				editor.Changed = changed;
+				if (changed != null)
+					editor.Changed = changed;
 				all.Add (editor);
 			}
 			foreach (var input in editor.Inputs)
@@ -519,7 +534,7 @@
 				null;
 		}
 
-		public static Container EditorTree (Texture outputTexture, Vec2i outputSize, 
+		public static Control EditorTree (Texture outputTexture, Vec2i outputSize, 
 			DelayedReactionUpdater updater,	params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
@@ -558,7 +573,22 @@
 				levelContainers.Add (container);
 			}
 			changed (rootEditors[0]);
-			return Container.Horizontal (true, false, levelContainers);
+			return new KeyboardCommand (Container.Horizontal (true, false, levelContainers),
+				React.By ((Key key) => System.Windows.Forms.Clipboard.SetText (ToCode (rootEditors))),
+				Key.C, Key.LControl);
+		}
+
+		public static string ToCode (params AnySignalEditor[] rootEditors)
+		{
+			var all = new HashSet<AnySignalEditor> ();
+			for (int i = 0; i < rootEditors.Length; i++)
+				CollectInputEditors (rootEditors[i], 0, null, all);
+
+			var result = new StringBuilder ();
+			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
+				foreach (var editor in level)
+					result.Append (editor.InitializationCode ());
+			return result.ToString ();
 		}
 	}
 }

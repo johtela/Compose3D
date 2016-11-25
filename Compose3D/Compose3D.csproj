@@ -37,6 +37,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="OpenTK">
       <HintPath>..\Binaries\OpenTK\Debug\OpenTK.dll</HintPath>
@@ -49,6 +50,7 @@
     <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
+    <Compile Include="Imaging\CodeGen.cs" />
     <Compile Include="Imaging\ColorMap.cs" />
     <Compile Include="Imaging\GaussianFilter.cs" />
     <Compile Include="Imaging\Signal.cs" />
@@ -234,6 +236,7 @@
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\FoldableContainer.cs" />
+    <Compile Include="UI\KeyboardCommand.cs" />
     <Compile Include="UI\NumericEdit.cs" />
     <Compile Include="UI\PanelFrame.cs" />
     <Compile Include="UI\Slider.cs" />

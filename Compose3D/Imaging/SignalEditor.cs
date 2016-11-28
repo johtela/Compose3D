@@ -574,6 +574,7 @@
 			}
 			changed (rootEditors[0]);
 			return new KeyboardCommand (Container.Horizontal (true, false, levelContainers),
+				"Code copied to clipboard.",
 				React.By ((Key key) => System.Windows.Forms.Clipboard.SetText (ToCode (rootEditors))),
 				Key.C, Key.LControl);
 		}

@@ -47,7 +47,12 @@
 		Vec3 INormalMapped.tangent
 		{
 			get { return tangent; }
-			set { tangent = value; }
+			set
+			{
+				if (value.IsNaN ())
+					throw new ArgumentException ("Tangent component NaN");
+				tangent = value;
+			}
 		}
 
 		public override string ToString ()
@@ -76,6 +81,8 @@
 			using (program.Scope ())
 			{
 				transforms = new TransformUniforms (program);
+				diffuseMap &= new Sampler2D (0).LinearFiltering ().ClampToEdges (Axes.All);
+				normalMap &= new Sampler2D (1).LinearFiltering ().ClampToEdges (Axes.All);
 			}
 		}
 
@@ -130,8 +137,8 @@
 				{
 					gl_Position = !t.perspectiveMatrix * viewPos,
 					texPosition = v.texturePos,
-					tangentViewDir = TBN * new Vec3 (0f),
-					tangentLightDir = TBN * new Vec3 (0f)
+					tangentViewDir = (TBN * new Vec3 (0f, 0f, 1f)).Normalized,
+					tangentLightDir = (TBN * new Vec3 (0f, 1f, 1f)).Normalized
 				});
 		}
 
@@ -144,10 +151,10 @@
 				from f in Shader.Inputs<MaterialFragment> ()
 				from u in Shader.Uniforms<Materials> ()
 				let diffuse = (!u.diffuseMap).Texture (f.texPosition)[Coord.x, Coord.y, Coord.z]
-				let normal = (!u.normalMap).Texture (f.texPosition)[Coord.x, Coord.y, Coord.z]
+				let normal = (!u.normalMap).Texture (f.texPosition)[Coord.x, Coord.y, Coord.z] * 2f - new Vec3 (1f)
 				select new
 				{
-					outputColor = normal.Dot (f.tangentLightDir) * diffuse
+					outputColor = normal.Dot (f.tangentLightDir).Clamp (0f, 1f) * diffuse
 				}
 			);
 		}

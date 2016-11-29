@@ -26,6 +26,8 @@
 		private float _zoom;
 		private SceneGraph _sceneGraph;
 		private Texture _signalTexture;
+		private Texture _diffuseMap;
+		private Texture _normalMap;
 		private DelayedReactionUpdater _updater;
 
 		public MaterialWindow ()
@@ -79,7 +81,9 @@
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -10000f),
 				aspectRatio: 1f);
 
-			var mesh = Quadrilateral<MaterialVertex>.Rectangle (100f, 100f);
+			var rect = Quadrilateral<MaterialVertex>.Rectangle (100f, 100f);
+			rect.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
+			rect.UpdateTangents (BeginMode.Triangles);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
@@ -87,14 +91,17 @@
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 
-			_mesh = new Mesh<MaterialVertex> (_sceneGraph, mesh);
-			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
+			_diffuseMap = new Texture (TextureTarget.Texture2D);
+			_normalMap = new Texture (TextureTarget.Texture2D);
+
+			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
+			_sceneGraph.Root.Add (_camera, _mesh, 
 				infoWindow, textureWindow);
 		}
 
 		private void SetupRendering ()
 		{
-			var renderMaterial = Materials.Renderer ().Select ((double _) => _camera);
+			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture).Select ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
 				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));

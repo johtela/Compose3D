@@ -9,24 +9,35 @@
 	using Visuals;
 	using Extensions;
 
-	public class KeyboardCommand : Control
+	public class KeyboardCommand
 	{
-		public readonly Control Inner;
-		public readonly string CommandDesc;
+		public readonly string Description;
 		public readonly Reaction<Key> Pressed;
-		public Key Command;
-		public Key[] Modifiers;
+		public readonly Key Command;
+		public readonly Key[] Modifiers;
 
-		private int _countDown;
-
-		public KeyboardCommand (Control inner, string commandDesc, Reaction<Key> pressed, 
+		public KeyboardCommand (string description, Reaction<Key> pressed,
 			Key command, params Key[] modifiers)
 		{
-			Inner = inner;
-			CommandDesc = commandDesc;
+			Description = description;
 			Pressed = pressed;
 			Command = command;
 			Modifiers = modifiers;
+		}
+	}
+
+	public class CommandContainer : Control
+	{
+		public readonly Control Inner;
+		public readonly KeyboardCommand[] Commands;
+
+		private int _countDown;
+		private string _message;
+
+		public CommandContainer (Control inner, params KeyboardCommand[] commands)
+		{
+			Inner = inner;
+			Commands = commands;
 		}
 
 		private VisualStyle NotifierStyle (int alpha)
@@ -38,13 +49,16 @@
 
 		public override void HandleInput (PointF relativeMousePos)
 		{
-			if (InputState.KeyPressed (Command, false) && Modifiers.All (InputState.KeyDown))
-			{
-				Pressed (Command);
-				_countDown = 256;
-			}
-			else
-				Inner.HandleInput (relativeMousePos);
+			foreach (var command in Commands)
+				if (InputState.KeyPressed (command.Command, false) &&
+					command.Modifiers.All (InputState.KeyDown))
+				{
+					command.Pressed (command.Command);
+					_message = command.Description;
+					_countDown = 256;
+				}
+				else
+					Inner.HandleInput (relativeMousePos);
 		}
 
 		public override Visual ToVisual (SizeF panelSize)
@@ -54,7 +68,7 @@
 			return _countDown > 0 ?
 				Visual.VStack (HAlign.Left,
 					inner,
-					Visual.Styled (Visual.Label (CommandDesc), NotifierStyle (_countDown))) :
+					Visual.Styled (Visual.Label (_message), NotifierStyle (_countDown))) :
 				inner;
 		}
 	}

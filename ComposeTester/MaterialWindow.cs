@@ -33,52 +33,11 @@
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
-			_zoom = 2000f;
+			_zoom = 200f;
 			_updater = new DelayedReactionUpdater (this);
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
-		}
-
-		public static Geometry<V> Brick<V> (float width, float height, float depth, 
-			Vec3 color, float edgeSharpness)
-			where V : struct, IVertex, IDiffuseColor<Vec3>
-		{
-			return Polygon<V>.FromPath (
-				Path<PathNode, Vec3>.FromRectangle (width, height).Subdivide (4))
-				.Scale (edgeSharpness, edgeSharpness)
-				.ExtrudeToScale (
-					depth: depth,
-					targetScale: 1f / edgeSharpness,
-					steepness: 2f,
-					numSteps: 5,
-					includeFrontFace: true,
-					includeBackFace: false)
-				.ColorInPlace (color);
-		}
-
-		public static Geometry<V> BrickWall<V> (Geometry<V> brick, float seamWidth, int rows, int cols,
-			float offset, Vec3 mortarColor, float maxDimensionError, float maxColorError)
-			where V : struct, IVertex, IDiffuseColor<Vec3>
-		{
-			var size = brick.BoundingBox.Size + new Vec3 (seamWidth, seamWidth, 0f);
-			var bricks = Composite.Create (
-				from r in Enumerable.Range (0, rows)
-				from c in Enumerable.Range (0, cols)
-				let offs = (r & 1) == 1 ? offset : 0f
-				select brick.Translate (c * size.X - offs, r * size.Y))
-				.Center ()
-				.ManipulateVertices (
-					Manipulators.JitterPosition<V> (maxDimensionError).Compose (
-						Manipulators.JitterColor<V> (maxColorError))
-					.Where (v => v.position.Z >= 0f), true);
-			var bbox = bricks.BoundingBox;
-			var mortar = Quadrilateral<V>.Rectangle (bbox.Size.X, bbox.Size.Y)
-				.Translate (0f, 0f, bbox.Back)
-				.ColorInPlace (mortarColor)
-				.ManipulateVertices<V> (Manipulators.JitterColor<V> (maxColorError), false);
-			return Composite.Create (bricks, mortar)
-				.Smoothen (0.5f);
 		}
 
 		private Control SignalTextureUI ()
@@ -120,21 +79,7 @@
 				frustum: new ViewingFrustum (FrustumKind.Perspective, 1f, 1f, -1f, -10000f),
 				aspectRatio: 1f);
 
-			var brick = Brick<MaterialVertex> (
-	            width: 28.5f,
-	            height: 8.5f,
-				depth: 1f,
-	            color: new Vec3 (0.54f, 0.41f, 0.34f),
-	            edgeSharpness: 0.95f);
-			var brickWall = BrickWall<MaterialVertex> (
-                brick: brick, 
-                seamWidth: 1.5f, 
-                rows: 10, 
-                cols: 5, 
-                offset: 10f,
-                mortarColor: new Vec3 (0.52f, 0.5f, 0.45f),
-                maxDimensionError: 0.1f,
-                maxColorError: 0.05f);
+			var mesh = Quadrilateral<MaterialVertex>.Rectangle (100f, 100f);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
@@ -142,7 +87,7 @@
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 
-			_mesh = new Mesh<MaterialVertex> (_sceneGraph, brickWall);
+			_mesh = new Mesh<MaterialVertex> (_sceneGraph, mesh);
 			_sceneGraph.Root.Add (_camera, _mesh.Scale (new Vec3 (10f)), 
 				infoWindow, textureWindow);
 		}

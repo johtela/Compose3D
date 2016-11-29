@@ -8,7 +8,7 @@
 		public static VisualStyle Style =
 			new VisualStyle (
 				VisualStyle.Default,
-				font: new Font (FontFamily.GenericSansSerif, 9f),
+				font: new Font ("Arial", 9f),
 				pen: new Pen (Color.Black, 1.5f), 
 				brush: new SolidBrush (Color.FromArgb (150, 140, 140, 140)));
 

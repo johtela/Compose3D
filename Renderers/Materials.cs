@@ -1,22 +1,25 @@
 ﻿namespace Compose3D.Renderers
 {
-	using Compose3D.Maths;
-	using Compose3D.Geometry;
-	using Compose3D.GLTypes;
-	using Compose3D.Reactive;
-	using Compose3D.SceneGraph;
-	using Compose3D.Shaders;
-	using OpenTK.Graphics.OpenGL4;
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime.InteropServices;
+	using Maths;
+	using Geometry;
+	using GLTypes;
+	using Reactive;
+	using SceneGraph;
+	using Shaders;
+	using Textures;
+	using OpenTK.Graphics.OpenGL4;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct MaterialVertex : IVertex, IDiffuseColor<Vec3>
+	public struct MaterialVertex : IVertex, ITextured, INormalMapped
 	{
 		public Vec3 position;
 		public Vec3 normal;
-		public Vec3 diffuse;
+		public Vec2 texturePos;
+		public Vec3 tangent;
 
 		Vec3 IPositional<Vec3>.position
 		{
@@ -24,10 +27,10 @@
 			set { position = value; }
 		}
 
-		Vec3 IDiffuseColor<Vec3>.diffuse
+		Vec2 ITextured.texturePos
 		{
-			get { return diffuse; }
-			set { diffuse = value; }
+			get { return texturePos; }
+			set { texturePos = value; }
 		}
 
 		Vec3 IPlanar<Vec3>.normal
@@ -41,23 +44,31 @@
 			}
 		}
 
+		Vec3 INormalMapped.tangent
+		{
+			get { return tangent; }
+			set { tangent = value; }
+		}
+
 		public override string ToString ()
 		{
-			return string.Format ("[Vertex: position={0}, diffuse={1}, normal={2}]",
-				position, diffuse, normal);
+			return string.Format ("[Vertex: position={0}, normal={1}, texturePos={2}, tangent={3}]",
+				position, normal, texturePos, tangent);
 		}
 	}
 	
-	public class MaterialFragment : Fragment, IFragmentPosition, IFragmentDiffuse
+	public class MaterialFragment : Fragment
 	{
-		public Vec3 fragPosition { get; set; }
-		public Vec3 fragNormal { get; set; }
-		public Vec3 fragDiffuse { get; set; }
+		public Vec2 texPosition { get; set; }
+		public Vec3 tangentLightDir { get; set; }
+		public Vec3 tangentViewDir { get; set; }
 	}
 
 	public class Materials : Uniforms
 	{
 		public TransformUniforms transforms;
+		public Uniform<Sampler2D> diffuseMap;
+		public Uniform<Sampler2D> normalMap;
 
 		public Materials (Program program)
 			: base (program)
@@ -71,7 +82,7 @@
 		private static Materials _materials;
 		private static Program _materialShader;
 
-		public static Reaction<Camera> Renderer ()
+		public static Reaction<Camera> Renderer (Texture diffuseMap, Texture normalMap)
 		{
 			_materialShader = new Program (
 				VertexShader (), 
@@ -79,6 +90,11 @@
 			_materials = new Materials (_materialShader);
 
 			return React.By<Camera> (_materials.Render)
+				.BindSamplers (new Dictionary<Sampler, Texture> ()
+				{
+					{ !_materials.diffuseMap, diffuseMap },
+					{ !_materials.normalMap, normalMap }
+				})
 				.DepthTest ()
 				.Culling ()
 				.Program (_materialShader);
@@ -106,12 +122,16 @@
 				from v in Shader.Inputs<MaterialVertex> ()
 				from t in Shader.Uniforms<TransformUniforms> ()
 				let viewPos = !t.modelViewMatrix * new Vec4 (v.position, 1f)
+				let tangent = (!t.normalMatrix * v.tangent).Normalized
+				let normal = (!t.normalMatrix * v.normal).Normalized
+				let bitangent = tangent.Cross (normal)
+				let TBN = new Mat3 (tangent, bitangent, normal).Transposed
 				select new MaterialFragment ()
 				{
 					gl_Position = !t.perspectiveMatrix * viewPos,
-					fragPosition = viewPos[Coord.x, Coord.y, Coord.z],
-					fragNormal = (!t.normalMatrix * v.normal).Normalized,
-					fragDiffuse = v.diffuse,
+					texPosition = v.texturePos,
+					tangentViewDir = TBN * new Vec3 (0f),
+					tangentLightDir = TBN * new Vec3 (0f)
 				});
 		}
 
@@ -122,10 +142,12 @@
 				ShaderType.FragmentShader, () =>
 
 				from f in Shader.Inputs<MaterialFragment> ()
+				from u in Shader.Uniforms<Materials> ()
+				let diffuse = (!u.diffuseMap).Texture (f.texPosition)[Coord.x, Coord.y, Coord.z]
+				let normal = (!u.normalMap).Texture (f.texPosition)[Coord.x, Coord.y, Coord.z]
 				select new
 				{
-					outputColor = f.fragNormal.Dot (new Vec3 (0f, 0f, 1f)) * f.fragDiffuse
-//					outputColor = f.fragDiffuse
+					outputColor = normal.Dot (f.tangentLightDir) * diffuse
 				}
 			);
 		}

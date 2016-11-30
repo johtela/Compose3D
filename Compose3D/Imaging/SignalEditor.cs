@@ -2,9 +2,11 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.IO;
 	using System.Linq;
 	using System.Drawing;
 	using System.Text;
+	using System.Xml.Linq;
 	using Extensions;
 	using Visuals;
 	using Reactive;
@@ -50,8 +52,33 @@
 			return string.Format ("var {0} = {1};\n", Name, ToCode ());
 		}
 
+		private string XElementName ()
+		{
+			var result = GetType ().Name.Substring (1);
+			var i = result.IndexOf ('`');
+			if (i > 0)
+				result = result.Substring (0, i);
+			return result;
+		}
+
+		internal XElement ToXml ()
+		{
+			var result = new XElement (XElementName (),
+				new XAttribute ("Name", Name));
+			Save (result);
+			return result;
+		}
+
+		internal void FromXml (XElement xml)
+		{
+			Load (xml.Elements (XElementName ()).Single (xe => xe.Attribute ("Name").Value == Name));
+		}
+
 		protected abstract Control CreateControl ();
 		protected abstract string ToCode ();
+
+		protected virtual void Load (XElement xelem) { }
+		protected virtual void Save (XElement xelem) { }
 
 		public abstract IEnumerable<AnySignalEditor> Inputs { get; }
 		public Reaction<AnySignalEditor> Changed { get; internal set; }
@@ -125,7 +152,21 @@
 			{
 				return MethodSignature ("SignalEditor", "Perlin", Name, Seed, Scale, Periodic); 
 			}
-		
+
+			protected override void Load (XElement xelem)
+			{
+				Seed = xelem.AttrInt(nameof (Seed));
+				Scale = xelem.AttrVec<Vec2> (nameof (Scale));
+				Periodic = xelem.AttrBool (nameof (Periodic));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (Seed), Seed);
+				xelem.SetAttributeValue (nameof (Scale), Scale);
+				xelem.SetAttributeValue (nameof (Periodic), Periodic);
+			}
+
 			public override IEnumerable<AnySignalEditor> Inputs
 			{
 				get { return Enumerable.Empty<AnySignalEditor> (); }
@@ -197,6 +238,28 @@
 							"No", "Yes"), true));
 			}
 
+			protected override void Load (XElement xelem)
+			{
+				NoiseKind = xelem.AttrEnum<WorleyNoiseKind> (nameof (NoiseKind));
+				ControlPoints = xelem.AttrEnum<ControlPointKind> (nameof (ControlPoints));
+				DistanceFunction = xelem.AttrEnum<DistanceFunctionKind> (nameof (DistanceFunction));
+				ControlPointCount = xelem.AttrInt (nameof (ControlPointCount));
+				Seed = xelem.AttrInt (nameof (Seed));
+				Jitter = xelem.AttrFloat (nameof (Jitter));
+				Periodic = xelem.AttrBool (nameof (Periodic));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (NoiseKind), NoiseKind);
+				xelem.SetAttributeValue (nameof (ControlPoints), ControlPoints);
+				xelem.SetAttributeValue (nameof (DistanceFunction), DistanceFunction);
+				xelem.SetAttributeValue (nameof (ControlPointCount), ControlPointCount);
+				xelem.SetAttributeValue (nameof (Seed), Seed);
+				xelem.SetAttributeValue (nameof (Jitter), Jitter);
+				xelem.SetAttributeValue (nameof (Periodic), Periodic);
+			}
+
 			protected override string ToCode ()
 			{
 				return MethodSignature ("SignalEditor", "Worley", Name, NoiseKind, ControlPoints, 
@@ -253,6 +316,18 @@
 							React.By ((float s) => Offset = s).And (changed)), true));
 			}
 
+			protected override void Load (XElement xelem)
+			{
+				Scale = xelem.AttrFloat (nameof (Scale));
+				Offset = xelem.AttrFloat (nameof (Offset));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (Scale), Scale);
+				xelem.SetAttributeValue (nameof (Offset), Offset);
+			}
+
 			protected override string ToCode ()
 			{
 				return MethodSignature (Source.Name, "Transform", Name, Scale, Offset);
@@ -276,6 +351,16 @@
 					Container.LabelAndControl ("Scale: ",
 						new NumericEdit (Scale, false, 0.001f,
 							React.By ((float s) => Scale = s).And (changed)), true));
+			}
+
+			protected override void Load (XElement xelem)
+			{
+				Scale = xelem.AttrFloat (nameof (Scale));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (Scale), Scale);
 			}
 
 			protected override string ToCode ()
@@ -305,6 +390,16 @@
 				return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
 					InputSignalControl ("Source", Source),
 					new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
+			}
+
+			protected override void Load (XElement xelem)
+			{
+				ColorMap = xelem.LoadColorMap<Vec3> ();
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SaveColorMap<Vec3> (ColorMap);
 			}
 
 			protected override string ToCode ()
@@ -372,6 +467,11 @@
 				}
 			}
 
+			private IEnumerable<float> ActiveBandWeights ()
+			{
+				return BandWeights.Skip (FirstBand).Take (LastBand - FirstBand + 1);
+			}
+
 			protected override Control CreateControl ()
 			{
 				var changed = Changed.Adapt<float, AnySignalEditor> (this);
@@ -387,9 +487,23 @@
 					fbEdit, lbEdit, _bandContainer);
 			}
 
-			private IEnumerable<float> ActiveBandWeights ()
+			protected override void Load (XElement xelem)
 			{
-				return BandWeights.Skip (FirstBand).Take (LastBand - FirstBand + 1);
+				FirstBand = xelem.AttrInt (nameof (FirstBand));
+				LastBand = xelem.AttrInt (nameof (LastBand));
+				BandWeights = new List<float> (
+					from sp in xelem.Element (nameof (BandWeights)).Descendants ("Weight")
+					select sp.AttrFloat ("Value"));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (FirstBand), FirstBand);
+				xelem.SetAttributeValue (nameof (LastBand), LastBand);
+				xelem.Add (new XElement (nameof (BandWeights),
+					from weight in BandWeights
+					select new XElement ("Weight",
+						new XAttribute ("Value", weight))));
 			}
 
 			protected override string ToCode ()
@@ -427,6 +541,16 @@
 					Container.LabelAndControl ("Strength: ",
 						new NumericEdit (Strength, false, 1f,
 							React.By ((float s) => Strength = s).And (changed)), true));
+			}
+
+			protected override void Load (XElement xelem)
+			{
+				Strength = xelem.AttrFloat (nameof (Strength));
+			}
+
+			protected override void Save (XElement xelem)
+			{
+				xelem.SetAttributeValue (nameof (Strength), Strength);
 			}
 
 			protected override string ToCode ()
@@ -534,7 +658,7 @@
 				null;
 		}
 
-		public static Control EditorTree (Texture outputTexture, Vec2i outputSize, 
+		public static Control EditorUI (Texture outputTexture, Vec2i outputSize, 
 			DelayedReactionUpdater updater,	params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
@@ -579,17 +703,58 @@
 					Key.C, Key.LControl));
 		}
 
-		public static string ToCode (params AnySignalEditor[] rootEditors)
+		public static Control EditorUI (string filePath, Texture outputTexture, Vec2i outputSize,
+			DelayedReactionUpdater updater, params AnySignalEditor[] rootEditors)
+		{
+			if (File.Exists (filePath))
+				LoadFromFile (filePath, rootEditors);
+			return new CommandContainer (EditorUI (outputTexture, outputSize, updater, rootEditors),
+				new KeyboardCommand ("Saved to file: " + filePath,
+					React.By ((Key key) => SaveToFile (filePath, rootEditors)),
+					Key.S, Key.LControl));
+		}
+
+
+		private static IEnumerable<AnySignalEditor> EditorsByLevel (AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
 			for (int i = 0; i < rootEditors.Length; i++)
 				CollectInputEditors (rootEditors[i], 0, null, all);
 
+			return from level in all.GroupBy (e => e._level).OrderBy (g => g.Key)
+				   from editor in level
+				   select editor;
+		}
+
+		public static string ToCode (params AnySignalEditor[] rootEditors)
+		{
 			var result = new StringBuilder ();
-			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
-				foreach (var editor in level)
-					result.Append (editor.InitializationCode ());
+			foreach (var editor in EditorsByLevel (rootEditors))
+				result.Append (editor.InitializationCode ());
 			return result.ToString ();
+		}
+
+		public static XElement SaveToXml (params AnySignalEditor[] rootEditors)
+		{
+			return new XElement ("SignalEditors",
+				from editor in EditorsByLevel (rootEditors)
+				select editor.ToXml ());
+		}
+
+		public static void LoadFromXml (XElement xml, params AnySignalEditor[] rootEditors)
+		{
+			foreach (var editor in EditorsByLevel (rootEditors))
+				editor.FromXml (xml);
+		}
+
+		public static void SaveToFile (string filePath, params AnySignalEditor[] rootEditors)
+		{
+			SaveToXml (rootEditors).Save (filePath);
+		}
+
+		public static void LoadFromFile (string filePath, params AnySignalEditor[] rootEditors)
+		{
+			LoadFromXml (XElement.Load (filePath), rootEditors);
 		}
 	}
 }

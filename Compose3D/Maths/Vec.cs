@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
+	using System.Globalization;
 	using Extensions;
 	using GLTypes;
 
@@ -144,6 +144,19 @@
 				res[i] = value;
 			return res;
 		}
+
+		public static V Parse<V> (string text)
+            where V : struct, IVec<V, float>
+		{
+			var parts = text.Split (' ');
+			var last = parts.Length - 1;
+			if (parts[0] != "[" || parts[last] != "]")
+				throw new FormatException ("The string is not in the canonical vector format.");
+			var values = new float[last - 1];
+			for (int i = 1; i < last; i++)
+				values[i - 1] = float.Parse (parts[i], CultureInfo.InvariantCulture);
+			return FromArray<V, float> (values);
+		} 
 
 		/// <summary>
 		/// Convert a vector type to another vector type that has the same component type.

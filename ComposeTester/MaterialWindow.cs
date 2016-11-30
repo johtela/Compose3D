@@ -1,7 +1,7 @@
 ﻿namespace ComposeTester
 {
-	using System;
 	using System.Linq;
+	using System.Xml.Linq;
 	using Extensions;
 	using Compose3D.Maths;
 	using Compose3D.Imaging;
@@ -46,28 +46,21 @@
 		{
 			var size = new Vec2i (256);
 
-			//var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
-			//	.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
-			//	.ToSignalEditor ("sine");
-			//var worley = SignalEditor.Worley ("worley", WorleyNoiseKind.F1, ControlPointKind.Random, 
-			//	10, 0, DistanceFunctionKind.Euclidean, 0f, true);
-			//var transform = worley.Transform ("transform", -30f, 0.5f);
-			//var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			//var perlin = SignalEditor.Perlin ("perlin", 0, new Vec2 (10f), false);
-			//var spectral = perlin.SpectralControl ("spectral", 0, 2, 1f, 0.5f, 0.2f);
-			//var warp = transform.Warp ("warp", spectral, 0.001f, dv);
-			//var signal = warp.Colorize ("signal", ColorMap<Vec3>.GrayScale ());
-			//var normal = warp.NormalMap ("normal", 1f, dv);
-
-			var worley = SignalEditor.Worley ("worley", WorleyNoiseKind.F1, ControlPointKind.Random, 10, 0, DistanceFunctionKind.Euclidean, 0f, true);
-			var perlin = SignalEditor.Perlin ("perlin", 0, new Vec2 (10f, 10f), false);
+			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
+				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
+				.ToSignalEditor ("sine");
+			var worley = SignalEditor.Worley ("worley", WorleyNoiseKind.F1, ControlPointKind.Random,
+				10, 0, DistanceFunctionKind.Euclidean, 0f, true);
 			var transform = worley.Transform ("transform", -30f, 0.5f);
+			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
+			var perlin = SignalEditor.Perlin ("perlin", 0, new Vec2 (10f), false);
 			var spectral = perlin.SpectralControl ("spectral", 0, 2, 1f, 0.5f, 0.2f);
-			var warp = transform.Warp ("warp", spectral, 0.001f, new Vec2 (0.00390625f, 0.00390625f));
-			var normal = warp.NormalMap ("normal", 1f, new Vec2 (0.00390625f, 0.00390625f));
-			var signal = warp.Colorize ("signal", new ColorMap<Vec3> { { -1f, new Vec3 (0f, 0f, 0f) }, { 0.1f, new Vec3 (1f, 1f, 1f) } });
+			var warp = transform.Warp ("warp", spectral, 0.001f, dv);
+			var signal = warp.Colorize ("signal", ColorMap<Vec3>.GrayScale ());
+			var normal = warp.NormalMap ("normal", 1f, dv);
 
-			return SignalEditor.EditorTree (_signalTexture, size, _updater, normal, signal);
+			return SignalEditor.EditorUI (@"Materials\Ground.xml", 
+				_signalTexture, size, _updater, normal, signal);
 		}
 
 		private void CreateSceneGraph ()

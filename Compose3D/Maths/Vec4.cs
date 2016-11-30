@@ -1,7 +1,11 @@
-﻿namespace Compose3D.Maths
+﻿
+
+
+namespace Compose3D.Maths
 {
     using System;
     using System.Text;
+	using System.Globalization;
 	using GLTypes;
 
 	/// <summary>
@@ -36,9 +40,11 @@
 		[GLField ("w")]
         public float W; 
 
+
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
+
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float x, float y, float z, float w)
 		{	
@@ -48,9 +54,11 @@
 			W = w; 
 		}
 
+
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
+
 		[GLConstructor ("vec4 ({0})")]
 		public Vec4 (float value)
 		{	
@@ -59,6 +67,9 @@
 			Z = value; 
 			W = value; 
 		}
+
+
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -70,6 +81,7 @@
 			Z = z; 
 			W = w; 
 		}
+
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -83,6 +95,7 @@
 			W = w; 
 		}
 
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -95,6 +108,7 @@
 			W = vec.W; 
 		}
 
+
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -103,6 +117,7 @@
 		{
 			return new Vec4 (-X, -Y, -Z, -W);
 		}
+
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -113,6 +128,7 @@
 			return new Vec4 (X + other.X, Y + other.Y, Z + other.Z, W + other.W);
 		}
 
+
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -121,6 +137,7 @@
 		{
 			return new Vec4 (X - other.X, Y - other.Y, Z - other.Z, W - other.W);
 		}
+
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -131,6 +148,7 @@
 			return new Vec4 (X * other.X, Y * other.Y, Z * other.Z, W * other.W);
 		}
 
+
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -139,6 +157,7 @@
 		{
 			return new Vec4 (X * scalar, Y * scalar, Z * scalar, W * scalar);
 		}
+
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -149,6 +168,7 @@
 			return new Vec4 (X / other.X, Y / other.Y, Z / other.Z, W / other.W);
 		}
 
+
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -157,6 +177,7 @@
 		{
 			return new Vec4 (X / scalar, Y / scalar, Z / scalar, W / scalar);
 		}
+
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -167,6 +188,7 @@
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
 
+
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -174,6 +196,9 @@
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
+
+
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -196,6 +221,7 @@
 					case 1: return Y;          
 					case 2: return Z;          
 					case 3: return W; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -207,10 +233,14 @@
 					case 1: Y = value; break;          
 					case 2: Z = value; break;          
 					case 3: W = value; break; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
+
+
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -227,6 +257,7 @@
 			}
 		}
 
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -241,6 +272,7 @@
 				this[(int)z] = value.Z; 
 			}
 		}
+
 
 		
 		/// <summary>
@@ -307,7 +339,7 @@
         {
             var sb = new StringBuilder ("[");
             for (int i = 0; i < 4; i++)
-                sb.AppendFormat (" {0}", this[i].ToString ());
+                sb.AppendFormat (" {0}", this[i].ToString (CultureInfo.InvariantCulture));
             sb.Append (" ]");
             return sb.ToString ();
         }

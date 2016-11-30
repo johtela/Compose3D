@@ -1,7 +1,11 @@
-﻿namespace Compose3D.Maths
+﻿
+
+
+namespace Compose3D.Maths
 {
     using System;
     using System.Text;
+	using System.Globalization;
 	using GLTypes;
 
 	/// <summary>
@@ -24,9 +28,11 @@
 		[GLField ("y")]
         public int Y; 
 
+
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
+
 		[GLConstructor ("ivec2 ({0})")]
 		public Vec2i (int x, int y)
 		{	
@@ -34,15 +40,20 @@
 			Y = y; 
 		}
 
+
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
+
 		[GLConstructor ("ivec2 ({0})")]
 		public Vec2i (int value)
 		{	
 			X = value; 
 			Y = value; 
 		}
+
+
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -52,6 +63,7 @@
 			X = vec.X; 
 			Y = vec.Y; 
 		}
+
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -63,6 +75,7 @@
 			Y = vec.Y; 
 		}
 
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -73,6 +86,7 @@
 			Y = vec.Y; 
 		}
 
+
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -81,6 +95,7 @@
 		{
 			return new Vec2i (-X, -Y);
 		}
+
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -91,6 +106,7 @@
 			return new Vec2i (X + other.X, Y + other.Y);
 		}
 
+
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -99,6 +115,7 @@
 		{
 			return new Vec2i (X - other.X, Y - other.Y);
 		}
+
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -109,6 +126,7 @@
 			return new Vec2i (X * other.X, Y * other.Y);
 		}
 
+
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -117,6 +135,7 @@
 		{
 			return new Vec2i (X * scalar, Y * scalar);
 		}
+
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -127,6 +146,7 @@
 			return new Vec2i (X / other.X, Y / other.Y);
 		}
 
+
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -135,6 +155,7 @@
 		{
 			return new Vec2i (X / scalar, Y / scalar);
 		}
+
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -145,6 +166,7 @@
 			return X * other.X + Y * other.Y;
 		}
 
+
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -152,6 +174,9 @@
 		{
 			return X == other.X && Y == other.Y;
 		}
+
+
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -172,6 +197,7 @@
 				{	         
 					case 0: return X;          
 					case 1: return Y; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -181,10 +207,14 @@
 				{	         
 					case 0: X = value; break;          
 					case 1: Y = value; break; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
+
+
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -250,7 +280,7 @@
         {
             var sb = new StringBuilder ("[");
             for (int i = 0; i < 2; i++)
-                sb.AppendFormat (" {0}", this[i].ToString ());
+                sb.AppendFormat (" {0}", this[i].ToString (CultureInfo.InvariantCulture));
             sb.Append (" ]");
             return sb.ToString ();
         }

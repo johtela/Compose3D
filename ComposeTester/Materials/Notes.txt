@@ -1,0 +1,1 @@
+﻿Put signal editor save files here. Remember to add them to Git repo.

@@ -31,6 +31,7 @@
     <Reference Include="OpenTK">
       <HintPath>..\Binaries\OpenTK\Debug\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FighterGeometry.cs" />
@@ -97,6 +98,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Materials\Notes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Textures\sky_right.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -38,10 +38,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="OpenTK">
       <HintPath>..\Binaries\OpenTK\Debug\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\Aabb.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
     <Compile Include="Imaging\SignalEditor.cs" />
+    <Compile Include="Imaging\XmlSerialization.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

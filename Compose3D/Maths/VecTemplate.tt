@@ -9,6 +9,7 @@
 {
     using System;
     using System.Text;
+	using System.Globalization;
 	using GLTypes;
 
 	/// <summary>
@@ -140,7 +141,7 @@
         {
             var sb = new StringBuilder ("[");
             for (int i = 0; i < <#= dim #>; i++)
-                sb.AppendFormat (" {0}", this[i].ToString ());
+                sb.AppendFormat (" {0}", this[i].ToString (CultureInfo.InvariantCulture));
             sb.Append (" ]");
             return sb.ToString ();
         }

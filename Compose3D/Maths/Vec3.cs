@@ -1,7 +1,11 @@
-﻿namespace Compose3D.Maths
+﻿
+
+
+namespace Compose3D.Maths
 {
     using System;
     using System.Text;
+	using System.Globalization;
 	using GLTypes;
 
 	/// <summary>
@@ -30,9 +34,11 @@
 		[GLField ("z")]
         public float Z; 
 
+
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
+
 		[GLConstructor ("vec3 ({0})")]
 		public Vec3 (float x, float y, float z)
 		{	
@@ -41,9 +47,11 @@
 			Z = z; 
 		}
 
+
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
+
 		[GLConstructor ("vec3 ({0})")]
 		public Vec3 (float value)
 		{	
@@ -51,6 +59,9 @@
 			Y = value; 
 			Z = value; 
 		}
+
+
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -61,6 +72,7 @@
 			Y = vec.Y; 
 			Z = z; 
 		}
+
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -73,6 +85,7 @@
 			Z = vec.Z; 
 		}
 
+
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -84,6 +97,7 @@
 			Z = vec.Z; 
 		}
 
+
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -92,6 +106,7 @@
 		{
 			return new Vec3 (-X, -Y, -Z);
 		}
+
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -102,6 +117,7 @@
 			return new Vec3 (X + other.X, Y + other.Y, Z + other.Z);
 		}
 
+
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -110,6 +126,7 @@
 		{
 			return new Vec3 (X - other.X, Y - other.Y, Z - other.Z);
 		}
+
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -120,6 +137,7 @@
 			return new Vec3 (X * other.X, Y * other.Y, Z * other.Z);
 		}
 
+
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -128,6 +146,7 @@
 		{
 			return new Vec3 (X * scalar, Y * scalar, Z * scalar);
 		}
+
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -138,6 +157,7 @@
 			return new Vec3 (X / other.X, Y / other.Y, Z / other.Z);
 		}
 
+
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -146,6 +166,7 @@
 		{
 			return new Vec3 (X / scalar, Y / scalar, Z / scalar);
 		}
+
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -156,6 +177,7 @@
 			return X * other.X + Y * other.Y + Z * other.Z;
 		}
 
+
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -163,6 +185,9 @@
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
 		}
+
+
+
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -184,6 +209,7 @@
 					case 0: return X;          
 					case 1: return Y;          
 					case 2: return Z; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -194,10 +220,14 @@
 					case 0: X = value; break;          
 					case 1: Y = value; break;          
 					case 2: Z = value; break; 
+
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
+
+
+
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -212,6 +242,7 @@
 				this[(int)z] = value.Z; 
 			}
 		}
+
 
 		
 		/// <summary>
@@ -278,7 +309,7 @@
         {
             var sb = new StringBuilder ("[");
             for (int i = 0; i < 3; i++)
-                sb.AppendFormat (" {0}", this[i].ToString ());
+                sb.AppendFormat (" {0}", this[i].ToString (CultureInfo.InvariantCulture));
             sb.Append (" ]");
             return sb.ToString ();
         }

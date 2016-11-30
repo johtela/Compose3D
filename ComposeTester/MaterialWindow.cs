@@ -31,7 +31,7 @@
 		private DelayedReactionUpdater _updater;
 
 		public MaterialWindow ()
-			: base (800, 600, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
+			: base (1024, 700, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
 				DisplayDevice.Default, 4, 0, GraphicsContextFlags.Default)
 		{
 			_rotation = new Vec2 ();
@@ -53,7 +53,7 @@
 				10, 0, DistanceFunctionKind.Euclidean, 0f, true);
 			var transform = worley.Transform ("transform", -30f, 0.5f);
 			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin ("perlin", 0, new Vec2 (10f), false);
+			var perlin = SignalEditor.Perlin ("perlin", new Vec2 (10f));
 			var spectral = perlin.SpectralControl ("spectral", 0, 2, 1f, 0.5f, 0.2f);
 			var warp = transform.Warp ("warp", spectral, 0.001f, dv);
 			var signal = warp.Colorize ("signal", ColorMap<Vec3>.GrayScale ());
@@ -80,7 +80,7 @@
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (600, 600), new Vec2 (-1f, 1f));
+				new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 

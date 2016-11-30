@@ -43,7 +43,7 @@
 		private VisualStyle NotifierStyle (int alpha)
 		{
 			return new VisualStyle (Style,
-				font: new Font ("Arial", 11f, FontStyle.Bold),
+				font: new Font ("Calibri", 10f, FontStyle.Bold),
 				textBrush: new SolidBrush (Color.FromArgb (alpha, Color.White)));
 		}
 

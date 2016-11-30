@@ -21,6 +21,7 @@
 		private Connected _control;
 		internal int _level;
 		internal uint[] _buffer;
+		internal Texture _texture;
 
 		public string Name { get; internal set; }
 
@@ -38,7 +39,7 @@
 		{
 			return new Connector (Container.Frame (Label.Static (name)), input.Control,
 				VisualDirection.Horizontal, HAlign.Left, VAlign.Center, ConnectorKind.Curved, 
-				new VisualStyle (pen: new Pen (Color.OrangeRed, 3f)));
+				new VisualStyle (pen: new Pen (Color.AliceBlue, 2f)));
 		}
 
 		protected string MethodSignature (string instance, string method, params object[] args)
@@ -61,7 +62,7 @@
 			return result;
 		}
 
-		internal XElement ToXml ()
+		internal XElement SaveToXml ()
 		{
 			var result = new XElement (XElementName (),
 				new XAttribute ("Name", Name));
@@ -69,7 +70,7 @@
 			return result;
 		}
 
-		internal void FromXml (XElement xml)
+		internal void LoadFromXml (XElement xml)
 		{
 			Load (xml.Elements (XElementName ()).Single (xe => xe.Attribute ("Name").Value == Name));
 		}
@@ -574,14 +575,16 @@
 			return new _Dummy<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (string name, int seed, Vec2 scale, bool periodic)
+		public static SignalEditor<Vec2, float> Perlin (string name, Vec2 scale, int seed = 0, 
+			bool periodic = false)
 		{
 			return new _Perlin () { Name = name, Seed = seed, Scale = scale, Periodic = periodic };
 		}
 
-		public static SignalEditor<Vec2, float> Worley (string name, WorleyNoiseKind kind, 
-			ControlPointKind controlPoints,	int controlPointCount, int seed, 
-			DistanceFunctionKind distanceFunction, float jitter, bool periodic)
+		public static SignalEditor<Vec2, float> Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
+			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, int seed = 0, 
+			DistanceFunctionKind distanceFunction = DistanceFunctionKind.Euclidean, float jitter = 0f, 
+			bool periodic = false)
 		{
 			return new _Worley () { Name = name, NoiseKind = kind, ControlPoints = controlPoints,
 				ControlPointCount = controlPointCount, Seed = seed, DistanceFunction = distanceFunction,
@@ -596,7 +599,7 @@
 		}
 
 		public static SignalEditor<V, float> Transform<V> (this SignalEditor<V, float> source,
-			string name, float scale, float offset)
+			string name, float scale = 1f, float offset = 0f)
 			where V : struct, IVec<V, float>
 		{
 			return new _Transform<V> () { Name = name, Source = source, Scale = scale, Offset = offset };
@@ -625,6 +628,12 @@
 			string name, float strength, Vec2 dv)
 		{
 			return new _NormalMap () { Name = name, Source = source, Strength = strength, Dv = dv };
+		}
+
+		public static AnySignalEditor ToTexture (this AnySignalEditor editor, Texture texture)
+		{
+			editor._texture = texture;
+			return editor;
 		}
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, 
@@ -738,13 +747,13 @@
 		{
 			return new XElement ("SignalEditors",
 				from editor in EditorsByLevel (rootEditors)
-				select editor.ToXml ());
+				select editor.SaveToXml ());
 		}
 
 		public static void LoadFromXml (XElement xml, params AnySignalEditor[] rootEditors)
 		{
 			foreach (var editor in EditorsByLevel (rootEditors))
-				editor.FromXml (xml);
+				editor.LoadFromXml (xml);
 		}
 
 		public static void SaveToFile (string filePath, params AnySignalEditor[] rootEditors)

@@ -238,7 +238,7 @@
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\Control.cs" />
     <Compile Include="UI\FoldableContainer.cs" />
-    <Compile Include="UI\KeyboardCommand.cs" />
+    <Compile Include="UI\CommandContainer.cs" />
     <Compile Include="UI\NumericEdit.cs" />
     <Compile Include="UI\PanelFrame.cs" />
     <Compile Include="UI\Slider.cs" />

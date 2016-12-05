@@ -18,7 +18,7 @@
 		public static Reaction<Reaction<MouseMoveEventArgs>> WhenMouseXYChangesOn (this Reaction<Vec2> reaction, 
 			GameWindow window)
 		{
-			return reaction.Select<MouseMoveEventArgs, Vec2> (e => new Vec2 (e.X, e.Y))
+			return reaction.MapInput<MouseMoveEventArgs, Vec2> (e => new Vec2 (e.X, e.Y))
 				.WhenMouseMovesOn (window);
 		}
 
@@ -33,7 +33,7 @@
 		public static Reaction<Reaction<MouseWheelEventArgs>> WhenMouseWheelDeltaChangesOn (
 			this Reaction<float> reaction, GameWindow window)
 		{
-			return reaction.Select<MouseWheelEventArgs, float> (e => e.DeltaPrecise)
+			return reaction.MapInput<MouseWheelEventArgs, float> (e => e.DeltaPrecise)
 				.WhenMouseWheelRollsOn (window);
 		}
 	}

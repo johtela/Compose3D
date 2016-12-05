@@ -51,7 +51,7 @@
     <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
-    <Compile Include="Imaging\CodeGen.cs" />
+    <Compile Include="Imaging\SignalEditors\CodeGen.cs" />
     <Compile Include="Imaging\ColorMap.cs" />
     <Compile Include="Imaging\GaussianFilter.cs" />
     <Compile Include="Imaging\Signal.cs" />
@@ -61,7 +61,15 @@
     <Compile Include="Geometry\Path.cs" />
     <Compile Include="Geometry\Tesselator.cs" />
     <Compile Include="GLTypes\GLObject.cs" />
-    <Compile Include="Imaging\SignalEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\ColorizeEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\DummyEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\NormalMapEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\PerlinEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\SignalEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\SpectralControlEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\TransformEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\WarpEditor.cs" />
+    <Compile Include="Imaging\SignalEditors\WorleyEditor.cs" />
     <Compile Include="Imaging\XmlSerialization.cs" />
     <Compile Include="Maths\MatTemplate.cs">
       <AutoGen>True</AutoGen>

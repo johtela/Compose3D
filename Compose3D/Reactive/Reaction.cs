@@ -61,40 +61,40 @@
 			};
 		}
 
-		public static Reaction<T> Select<T, U> (this Reaction<U> reaction, Func<T, U> func)
+		public static Reaction<T> MapInput<T, U> (this Reaction<U> reaction, Func<T, U> func)
 		{
 			return input => reaction (func (input));
 		}
 
-		public static Reaction<T> Select<T> (this Reaction<T> reaction, Func<T, T> func)
+		public static Reaction<T> MapInput<T> (this Reaction<T> reaction, Func<T, T> func)
 		{
 			return input => reaction (func (input));
 		}
 
-		public static Reaction<Tuple<T, U>> Select<T, U, V> (this Reaction<V> reaction, 
+		public static Reaction<Tuple<T, U>> MapInput<T, U, V> (this Reaction<V> reaction, 
 			Func<T, U, V> func)
 		{
 			return input => reaction (func (input.Item1, input.Item2));
 		}
 
-		public static Reaction<Tuple<T, U, V>> Select<T, U, V, W> (this Reaction<W> reaction,
+		public static Reaction<Tuple<T, U, V>> MapInput<T, U, V, W> (this Reaction<W> reaction,
 			Func<T, U, V, W> func)
 		{
 			return input => reaction (func (input.Item1, input.Item2, input.Item3));
 		}
 
-		public static Reaction<T> Where<T> (this Reaction<T> reaction, Func<T, bool> predicate)
+		public static Reaction<T> Filter<T> (this Reaction<T> reaction, Func<T, bool> predicate)
 		{
 			return input => predicate (input) ? reaction (input) : true;
 		}
 
-		public static Reaction<Tuple<T, U>> Where<T, U> (this Reaction<Tuple<T, U>> reaction, 
+		public static Reaction<Tuple<T, U>> Filter<T, U> (this Reaction<Tuple<T, U>> reaction, 
 			Func<T, U, bool> predicate)
 		{
 			return input => predicate (input.Item1, input.Item2) ? reaction (input) : true;
 		}
 
-		public static Reaction<Tuple<T, U, V>> Where<T, U, V> (this Reaction<Tuple<T, U, V>> reaction,
+		public static Reaction<Tuple<T, U, V>> Filter<T, U, V> (this Reaction<Tuple<T, U, V>> reaction,
 			Func<T, U, V, bool> predicate)
 		{
 			return input => predicate (input.Item1, input.Item2, input.Item3) ? reaction (input) : true;
@@ -102,12 +102,12 @@
 
 		public static Reaction<T> Upcast<T> (this Reaction<object> reaction)
 		{
-			return reaction.Select<T, object> (x => x);
+			return reaction.MapInput<T, object> (x => x);
 		}
 
 		public static Reaction<T> Adapt<T, U> (this Reaction<U> reaction, U value)
 		{
-			return reaction.Select<T, U> (input => value);
+			return reaction.MapInput<T, U> (input => value);
 		}
 
 		public static Reaction<T> Aggregate<T, U> (this Reaction<U> reaction, Func<U, T, U> func, U initial)

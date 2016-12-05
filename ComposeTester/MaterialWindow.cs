@@ -1,10 +1,9 @@
 ﻿namespace ComposeTester
 {
-	using System.Linq;
-	using System.Xml.Linq;
 	using Extensions;
 	using Compose3D.Maths;
 	using Compose3D.Imaging;
+	using Compose3D.Imaging.SignalEditors;
 	using Compose3D.Geometry;
 	using Compose3D.Reactive;
 	using Compose3D.SceneGraph;
@@ -94,10 +93,11 @@
 
 		private void SetupRendering ()
 		{
-			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture).Select ((double _) => _camera);
+			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture)
+				.MapInput ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
-				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
+				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
@@ -109,7 +109,7 @@
 				.WhenRendered (this).Evoke ();
 
 			Materials.UpdatePerspectiveMatrix ()
-				.Select ((Vec2 size) =>
+				.MapInput ((Vec2 size) =>
 					(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -10000f))
 					.CameraToScreen)
 				.WhenResized (this).Evoke ();
@@ -118,14 +118,14 @@
 		private void SetupCameraMovement ()
 		{
 			React.By<Vec2> (rot => _rotation += rot)
-				.Select ((MouseMoveEventArgs e) =>
+				.MapInput ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
-				.Where (_ => Mouse[MouseButton.Left])
+				.Filter (_ => Mouse[MouseButton.Left])
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
 			React.By<float> (delta => _zoom += delta)
-				.Select (delta => delta * -0.5f)
+				.MapInput (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
 				.Evoke ();
 		}

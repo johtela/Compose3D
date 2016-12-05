@@ -88,14 +88,14 @@
 		private void SetupRendering ()
 		{
 			var shadowRender= Shadows.Renderer (_sceneGraph, 2500, ShadowMapType.Depth, true)
-				.Select ((double _) => _camera);
+				.MapInput ((double _) => _camera);
 
 			var skyboxRender = Skybox.Renderer (_sceneGraph, _skyColor);
 			var terrainRender = Terrain.Renderer (_sceneGraph, _skyColor, Shadows.Instance.csmUniforms);
 			var entityRender = Entities.Renderer (_sceneGraph, Shadows.Instance.csmUniforms);
 			var panelRender = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
-				.Select ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
+				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			var moveFighter = React.By<float> (UpdateFighterAndCamera)
 				.Aggregate ((float s, double t) => s + (float)t * 25f, 0f);
@@ -105,7 +105,7 @@
 				.And (skyboxRender
 					.And (terrainRender)
 					.And (entityRender)
-					.Select ((double _) => _camera)
+					.MapInput ((double _) => _camera)
 				.And (panelRender)
 				.Viewport (this)))
 			.And (moveFighter)
@@ -115,7 +115,7 @@
 			Entities.UpdatePerspectiveMatrix()
 			.And (Skybox.UpdatePerspectiveMatrix ())
 			.And (Terrain.UpdatePerspectiveMatrix ())
-			.Select ((Vec2 size) =>
+			.MapInput ((Vec2 size) =>
 				(_camera.Frustum = new ViewingFrustum (FrustumKind.Perspective, size.X, size.Y, -1f, -400f))
 				.CameraToScreen)
 			.WhenResized (this).Evoke ();
@@ -124,14 +124,14 @@
 		private void SetupCameraMovement ()
 		{
 			React.By<Vec2> (RotateCamera)
-				.Select ((MouseMoveEventArgs e) =>
+				.MapInput ((MouseMoveEventArgs e) =>
 					new Vec2 (-e.XDelta.Radians (), -e.YDelta.Radians ()) * 0.2f)
-				.Where (_ => Mouse[MouseButton.Left])
+				.Filter (_ => Mouse[MouseButton.Left])
 				.WhenMouseMovesOn (this)
 				.Evoke ();
 
 			React.By<float> (ZoomCamera)
-				.Select (delta => delta * -0.5f)
+				.MapInput (delta => delta * -0.5f)
 				.WhenMouseWheelDeltaChangesOn (this)
 				.Evoke ();
 		}

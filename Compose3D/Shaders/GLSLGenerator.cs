@@ -13,7 +13,7 @@
 	using Extensions;
 	using Compiler;
 
-	public class GLSLGenerator
+	public class GLSLCompiler
     {
 		internal static Dictionary<MemberInfo, Function> _functions = new Dictionary<MemberInfo, Function> ();
 		private StringBuilder _decl;
@@ -25,7 +25,7 @@
         private int _tabLevel;
 		private Type _linqType;
 
-		private GLSLGenerator ()
+		private GLSLCompiler ()
         {
 			_decl = new StringBuilder ();
 			_code = new StringBuilder ();
@@ -37,10 +37,10 @@
 
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
-			var builder = new GLSLGenerator ();
-			builder.DeclareVariables (typeof (T), "out", "");
-			builder.OutputShader (shader);
-			return BuildShaderCode (builder);
+			var compiler = new GLSLCompiler ();
+			compiler.DeclareVariables (typeof (T), "out", "");
+			compiler.OutputShader (shader);
+			return BuildShaderCode (compiler);
 		}
 
 		public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
@@ -52,15 +52,15 @@
 			int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
-			var builder = new GLSLGenerator ();
+			var compiler = new GLSLCompiler ();
 			if (invocations > 0)
-				builder.DeclOut ("layout(invocations = {0}) in;", invocations);
-			builder.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
-			builder.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
+				compiler.DeclOut ("layout(invocations = {0}) in;", invocations);
+			compiler.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
+			compiler.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
-			builder.DeclareVariables (typeof (T), "out", "");
-			builder.OutputGeometryShader (shader);
-			return BuildShaderCode (builder);
+			compiler.DeclareVariables (typeof (T), "out", "");
+			compiler.OutputGeometryShader (shader);
+			return BuildShaderCode (compiler);
 		}
 
 		public static string CreateGeometryShader<T> (int vertexCount, int invocations,
@@ -74,7 +74,7 @@
 				inputPrimitive, outputPrimitive, shader);
 		}
 
-		private static string BuildShaderCode (GLSLGenerator builder)
+		private static string BuildShaderCode (GLSLCompiler builder)
 		{
 			return "#version 400 core\nprecision highp float;\n" +
 				builder._decl.ToString () +
@@ -93,9 +93,9 @@
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
-			var builder = new GLSLGenerator ();
-			builder.OutputFunction (member.Name, expr);
-			_functions.Add (member, new Function (member, builder._code.ToString (), builder._funcRefs));
+			var compiler = new GLSLCompiler ();
+			compiler.OutputFunction (member.Name, expr);
+			_functions.Add (member, new Function (member, compiler._code.ToString (), compiler._funcRefs));
 		}
 
 		private static string GenerateFunctions (HashSet<Function> functions)
@@ -650,7 +650,7 @@
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			CodeOut ("return {0};", ExprToGLSL (RemoveAggregates (
-				node != null && node.Method.IsEvaluate (_linqType) ?	ParseShader (node.Arguments [0]) : expr)));
+				node != null && node.Method.IsEvaluate (_linqType) ? ParseShader (node.Arguments [0]) : expr)));
 		}
 	}
 }

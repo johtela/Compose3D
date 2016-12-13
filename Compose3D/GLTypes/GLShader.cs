@@ -32,7 +32,7 @@
 
 		public static GLShader Create<T> (ShaderType type, Expression<Func<Shader<T>>> func)
 		{
-			var source = GLSLGenerator.CreateShader (func);
+			var source = GLSLCompiler.CreateShader (func);
 			Console.WriteLine(source);
 			return new GLShader (type, source);
 		}
@@ -45,7 +45,7 @@
 			PrimitiveType inputPrimitive, PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
 			where V : PerVertexOut, new ()
 		{
-			var source = GLSLGenerator.CreateGeometryShader (vertexCount, invocations, inputPrimitive, 
+			var source = GLSLCompiler.CreateGeometryShader (vertexCount, invocations, inputPrimitive, 
 				outputPrimitive, func);
 			Console.WriteLine (source);
 			return new GLShader (ShaderType.GeometryShader, source);
@@ -60,28 +60,28 @@
 
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
 		{
-			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
 		}
 
 		public static Func<T1, TRes> Function<T1, TRes> (Expression<Func<Func<T1, TRes>>> member, 
 			Expression<Func<T1, TRes>> func)
 		{
-			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
 		}
 
 		public static Func<T1, T2, TRes> Function<T1, T2, TRes> (Expression<Func<Func<T1, T2, TRes>>> member, 
 			Expression<Func<T1, T2, TRes>> func)
 		{
-			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
 		}
 
 		public static Func<T1, T2, T3, TRes> Function<T1, T2, T3, TRes> (Expression<Func<Func<T1, T2, T3, TRes>>> member, 
 			Expression<Func<T1, T2, T3, TRes>> func)
 		{
-			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
 		}	
 
@@ -89,7 +89,7 @@
 			Expression<Func<Func<T1, T2, T3, T4, TRes>>> member, 
 			Expression<Func<T1, T2, T3, T4, TRes>> func)
 		{
-			GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+			GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
 		}
 
@@ -97,7 +97,7 @@
             Expression<Func<Func<T1, T2, T3, T4, T5, TRes>>> member,
             Expression<Func<T1, T2, T3, T4, T5, TRes>> func)
         {
-            GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+            GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
             return func.Compile ();
         }
 
@@ -105,7 +105,7 @@
             Expression<Func<Func<T1, T2, T3, T4, T5, T6, TRes>>> member,
             Expression<Func<T1, T2, T3, T4, T5, T6, TRes>> func)
         {
-            GLSLGenerator.CreateFunction ((member.Body as MemberExpression).Member, func);
+            GLSLCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);
             return func.Compile ();
         }
     }

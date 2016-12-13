@@ -55,7 +55,7 @@
 	{
 		public Uniform<Sampler2D> textureMap;
 
-		public TextureUniforms (Program program, Sampler2D sampler) : base (program)
+		public TextureUniforms (GLProgram program, Sampler2D sampler) : base (program)
 		{
 			using (program.Scope ())
 				textureMap &= sampler;

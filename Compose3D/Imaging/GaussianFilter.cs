@@ -19,12 +19,12 @@
 
 		public static Filter Horizontal ()
 		{
-			return TextureFilter.Renderer (new Program (HorizontalVertexShader (), FragmentShader ()));
+			return TextureFilter.Renderer (new GLProgram (HorizontalVertexShader (), FragmentShader ()));
 		}
 
 		public static Filter Vertical ()
 		{
-			return TextureFilter.Renderer (new Program (VerticalVertexShader (), FragmentShader ()));
+			return TextureFilter.Renderer (new GLProgram (VerticalVertexShader (), FragmentShader ()));
 		}
 
 		public static Filter Both ()

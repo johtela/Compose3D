@@ -45,6 +45,8 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CLTypes\CLAttributes.cs" />
+    <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="DataStructures\Aabb.cs" />
     <Compile Include="DataStructures\BoundingBoxTree.cs" />
     <Compile Include="DataStructures\IBoundingTree.cs" />
@@ -87,11 +89,11 @@
     <Compile Include="DataStructures\Octree.cs" />
     <Compile Include="Geometry\Composite.cs" />
     <Compile Include="Geometry\Transform.cs" />
-    <Compile Include="GLTypes\Attributes.cs" />
+    <Compile Include="GLTypes\GLAttributes.cs" />
     <Compile Include="GLTypes\GLError.cs" />
     <Compile Include="GLTypes\TypeHelpers.cs" />
-    <Compile Include="GLTypes\TypeMapping.cs" />
-    <Compile Include="GLTypes\Program.cs" />
+    <Compile Include="GLTypes\GLTypeMapping.cs" />
+    <Compile Include="GLTypes\GLProgram.cs" />
     <Compile Include="GLTypes\Uniform.cs" />
     <Compile Include="GLTypes\VBO.cs" />
     <Compile Include="GLTypes\VertexAttr.cs" />
@@ -225,7 +227,7 @@
     <Compile Include="Geometry\Lathe.cs" />
     <Compile Include="Geometry\VertexManipulator.cs" />
     <Compile Include="Shaders\Shader.cs" />
-    <Compile Include="Shaders\ParsingHelpers.cs" />
+    <Compile Include="Compiler\ParsingHelpers.cs" />
     <Compile Include="Shaders\GLSLGenerator.cs" />
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />

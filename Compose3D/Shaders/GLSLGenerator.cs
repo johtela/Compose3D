@@ -11,6 +11,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
 	using Extensions;
+	using Compiler;
 
 	public class GLSLGenerator
     {
@@ -22,6 +23,7 @@
 		private Dictionary<string, Constant> _constants;
         private int _localVarCount;
         private int _tabLevel;
+		private Type _linqType;
 
 		private GLSLGenerator ()
         {
@@ -30,6 +32,7 @@
             _typesDefined = new HashSet<Type> ();
 			_funcRefs = new HashSet<Function> ();
 			_constants = new Dictionary<string, Constant> ();
+			_linqType = typeof (Shader);
         }
 
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
@@ -298,7 +301,7 @@
         {
             var attr = type.GetGLAttribute ();
             if (attr == null) 
-				return TypeMapping.Type (type);
+				return GLTypeMapping.Type (type);
 			if (attr is GLStruct)
 				OutputStruct (type);
 			return attr.Syntax;
@@ -316,7 +319,7 @@
                 {
                     var attr = be.Method.GetGLAttribute ();
                     return "(" + string.Format (
-                        attr != null ? attr.Syntax : TypeMapping.Operator (be.NodeType),
+                        attr != null ? attr.Syntax : GLTypeMapping.Operator (be.NodeType),
                         ExprToGLSL (be.Left), ExprToGLSL (be.Right)) + ")";
 
                 }) ??
@@ -325,8 +328,8 @@
                     var attr = ue.Method.GetGLAttribute ();
                     return string.Format (attr != null ? attr.Syntax :
  						ue.NodeType == ExpressionType.Convert ?
-							string.Format ("{0} ({1})", TypeMapping.Type (ue.Type), ExprToGLSL (ue.Operand)) :
-							TypeMapping.Operator (ue.NodeType), ExprToGLSL (ue.Operand));
+							string.Format ("{0} ({1})", GLTypeMapping.Type (ue.Type), ExprToGLSL (ue.Operand)) :
+							GLTypeMapping.Operator (ue.NodeType), ExprToGLSL (ue.Operand));
                 }) ??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
@@ -335,7 +338,7 @@
 						return string.Format ("{0}.{1}", ExprToGLSL (mc.Object),
 							mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (""));
 					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
-					return string.Format (attr != null ? attr.Syntax : TypeMapping.Function (mc.Method),
+					return string.Format (attr != null ? attr.Syntax : GLTypeMapping.Function (mc.Method),
 						args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
                 }) ??
 				expr.Match<InvocationExpression, string> (ie => 
@@ -394,7 +397,7 @@
         {
 			var mce = source.Current;
 			var arg0 = CastFromBinding (mce.Arguments[0]);
-			if (mce.Method.IsSelectMany ())
+			if (mce.Method.IsSelectMany (_linqType))
 			{
 				var arg1 = CastFromBinding (mce.GetSelectLambda ().Body);
 				if (arg1 == null)
@@ -449,7 +452,7 @@
             var iterVar = aggrFun.Parameters[1];
             CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
                 ExprToGLSL (expr.Arguments[1]));
-			var se = expr.Arguments[0].GetSelect ();
+			var se = expr.Arguments[0].GetSelect (_linqType);
 			if (se != null)
 			{
 				ParseFor (se);
@@ -472,13 +475,13 @@
 
 		public void ParseFor (MethodCallExpression mce)
 		{
-			if (mce.Arguments[0].GetSelect () == null)
+			if (mce.Arguments[0].GetSelect (_linqType) == null)
 				IterateArray (mce);
 			else
 				Parse.ExactlyOne (ForLoop).IfFail (new ParseException (
 					"Must have exactly one from clause in the beginning of aggregate expression."))
 					.Then (Parse.ZeroOrMore (LetBinding))
-					.Execute (new Source (mce.Arguments[0].Traverse ()));
+					.Execute (new Source (mce.Arguments[0].Traverse (_linqType)));
 		}
 
 		public void IterateArray (MethodCallExpression expr)
@@ -502,7 +505,7 @@
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
 			var indexVar = NewLocalVar ("ind");
-			var item = expr.Method.IsSelect () ?
+			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
             CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
@@ -514,7 +517,7 @@
 
 		public void OutputForLoop (MethodCallExpression expr)
 		{
-			var indexVar = expr.Method.IsSelect () ?
+			var indexVar = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
@@ -544,7 +547,7 @@
 
 		public bool Where (Source source)
 		{
-			if (!source.Current.Method.IsWhere ())
+			if (!source.Current.Method.IsWhere (_linqType))
 				return false;
 			var predicate = source.Current.Arguments[1].ExpectLambda ().Body;
 			CodeOut ("if (!{0}) return;", ExprToGLSL (predicate));
@@ -627,13 +630,13 @@
 
 		Expression ParseShader (Expression expr)
 		{
-			var mce = expr.ExpectSelect ();
+			var mce = expr.ExpectSelect (_linqType);
 			var me = CastFromBinding (mce.Arguments [0]);
 			if (me != null)
 				OutputFromBinding (mce.Arguments [1].GetLambdaParameter (0), me);
 			else
 				Parse.OneOrMore (FromBinding).Then (Parse.ZeroOrMore (Parse.Either (LetBinding, Where)))
-					.Execute (new Source (mce.Arguments [0].Traverse ()));
+					.Execute (new Source (mce.Arguments [0].Traverse (_linqType)));
 			me = CastFromBinding (mce.Arguments [1].ExpectLambda ().Body);
 			if (me != null)
 			{
@@ -647,7 +650,7 @@
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			CodeOut ("return {0};", ExprToGLSL (RemoveAggregates (
-				node != null && node.Method.IsEvaluate () ?	ParseShader (node.Arguments [0]) : expr)));
+				node != null && node.Method.IsEvaluate (_linqType) ?	ParseShader (node.Arguments [0]) : expr)));
 		}
 	}
 }

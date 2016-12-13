@@ -75,7 +75,7 @@
 		public Uniform<Sampler2D> diffuseMap;
 		public Uniform<Sampler2D> normalMap;
 
-		public Materials (Program program)
+		public Materials (GLProgram program)
 			: base (program)
 		{
 			using (program.Scope ())
@@ -87,11 +87,11 @@
 		}
 
 		private static Materials _materials;
-		private static Program _materialShader;
+		private static GLProgram _materialShader;
 
 		public static Reaction<Camera> Renderer (Texture diffuseMap, Texture normalMap)
 		{
-			_materialShader = new Program (
+			_materialShader = new GLProgram (
 				VertexShader (), 
 				FragmentShader ());
 			_materials = new Materials (_materialShader);

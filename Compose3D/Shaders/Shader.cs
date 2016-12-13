@@ -5,7 +5,7 @@
 
 	public abstract class Uniforms
 	{
-		public Uniforms (Program program)
+		public Uniforms (GLProgram program)
 		{
 			foreach (var field in GetType ().GetUniforms ())
 				field.SetValue (this, Activator.CreateInstance (field.FieldType, program, field));

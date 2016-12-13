@@ -116,7 +116,7 @@
 		public TransformUniforms transforms;
 		public CascadedShadowUniforms shadows;
 
-		public Entities (Program program, SceneGraph scene)
+		public Entities (GLProgram program, SceneGraph scene)
 			: base (program)
 		{
 			var numPointLights = 0;
@@ -149,12 +149,12 @@
 			}
 		}
 
-		private static Program _entityShader;
+		private static GLProgram _entityShader;
 		private static Entities _entities;
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, CascadedShadowUniforms shadowSource)
 		{
-			_entityShader = new Program (
+			_entityShader = new GLProgram (
 				VertexShader (), 
 				FragmentShader ());
 			_entities = new Entities (_entityShader, sceneGraph);

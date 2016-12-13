@@ -112,7 +112,7 @@
 		public Uniform<Sampler2D> rockSampler;
 		public Uniform<Sampler2D> grassSampler;
 
-		private Terrain (Program program, SceneGraph scene, Vec3 skyCol)
+		private Terrain (GLProgram program, SceneGraph scene, Vec3 skyCol)
 			: base (program)
 		{
 			transforms = new TransformUniforms (program);
@@ -129,7 +129,7 @@
 			}
 		}
 		
-		private static Program _terrainShader;
+		private static GLProgram _terrainShader;
 		private static Terrain _terrain;
 		
 		private const int _patchSize = 64;
@@ -138,7 +138,7 @@
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, Vec3 skyCol, 
 			CascadedShadowUniforms shadowSource)
 		{
-			_terrainShader = new Program (VertexShader (), FragmentShader ());
+			_terrainShader = new GLProgram (VertexShader (), FragmentShader ());
 			_terrain = new Terrain (_terrainShader, sceneGraph, skyCol);
 			var sandTexture = LoadTexture ("Sand");
 			var rockTexture = LoadTexture ("Rock");

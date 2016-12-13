@@ -41,7 +41,7 @@
 
 	public static class LineSegments
 	{
-		private static Program _shader;
+		private static GLProgram _shader;
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph)
 		{
@@ -60,7 +60,7 @@
 				_shader.DrawLinePath (ls.VertexBuffer);
 		}
 
-		public static Program PassThrough = new Program (
+		public static GLProgram PassThrough = new GLProgram (
 			GLShader.Create (ShaderType.VertexShader,
 				() =>
 				from v in Shader.Inputs<PathNode> ()

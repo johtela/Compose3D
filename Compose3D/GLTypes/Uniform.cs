@@ -40,7 +40,7 @@
         private Tuple<GLStructField, int>[] _mappings;
         private T _value;
 
-        public Uniform (Program program, FieldInfo field)
+        public Uniform (GLProgram program, FieldInfo field)
 		{
             if (field.FieldType.GetGenericTypeDefinition () != typeof (Uniform<>))
                 throw new ArgumentException ("Field must be of Uniform<> generic type.");
@@ -55,12 +55,12 @@
                 CreateUniform (program, field.Name, type);
 		}
 
-        public Uniform (Program program, string name)
+        public Uniform (GLProgram program, string name)
 		{
             CreateUniform (program, name, typeof (T));
 		}
 
-        private void CreateUniform (Program program, string name, Type type)
+        private void CreateUniform (GLProgram program, string name, Type type)
         {
             if (type.IsGLStruct ())
                 _mappings = (from field in type.GetGLStructFields (name + ".")
@@ -71,7 +71,7 @@
 			_name = name;
         }
 
-        private static int GetUniformLocation (Program program, string name)
+        private static int GetUniformLocation (GLProgram program, string name)
         {
             var loc = GL.GetUniformLocation (program._glProgram, name);
 			if (loc < 0)

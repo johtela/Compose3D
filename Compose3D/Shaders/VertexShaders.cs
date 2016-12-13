@@ -81,7 +81,7 @@
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<Mat3> normalMatrix;
 
-		public TransformUniforms (Program program) : base (program) { }
+		public TransformUniforms (GLProgram program) : base (program) { }
 
 		public void UpdateModelViewAndNormalMatrices (Mat4 modelView)
 		{

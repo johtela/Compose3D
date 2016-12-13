@@ -1,14 +1,12 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Text;
+	using System;
+	using System.Collections.Generic;
+	using System.Linq.Expressions;
+	using System.Reflection;
 	using Extensions;
 
-    public static class TypeMapping
+	public static class CLTypeMapping
     {
 		private static Type boolT = typeof (bool);
 		private static Type floatT = typeof (float);
@@ -88,7 +86,7 @@
         {
 			string result;
 			if (!_types.TryGetValue (type, out result))
-				throw new GLError ("No mapping defined for type: " + type);
+				throw new ArgumentException ("No mapping defined for type: " + type);
 			return result;
         }
 
@@ -96,7 +94,7 @@
         {
 			string result;
 			if (!_functions.TryGetValue (method, out result))
-				throw new GLError ("No mapping defined for method: " + method);
+				throw new ArgumentException ("No mapping defined for method: " + method);
 			return result;
         }
 
@@ -104,7 +102,7 @@
         {
 			string result;
 			if (!_operators.TryGetValue (et, out result))
-				throw new GLError ("No mapping defined for operator: " + et);
+				throw new ArgumentException ("No mapping defined for operator: " + et);
 			return result;
         }
     }

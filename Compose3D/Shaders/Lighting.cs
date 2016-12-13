@@ -13,7 +13,7 @@
 		public Uniform<LightingShaders.GlobalLight> globalLighting;
 		public Uniform<LightingShaders.DirectionalLight> directionalLight;
 
-		public LightingUniforms (Program program, SceneGraph scene)
+		public LightingUniforms (GLProgram program, SceneGraph scene)
 			: base (program)
 		{
 			using (program.Scope ())

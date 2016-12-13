@@ -25,13 +25,13 @@
 		public Uniform<Mat4> perspectiveMatrix;
 		public Uniform<SamplerCube> cubeMap;
 
-		private Skybox (Program program) : base (program)
+		private Skybox (GLProgram program) : base (program)
 		{
 			using (program.Scope ())
 				cubeMap &= new SamplerCube (0).LinearFiltering ().ClampToEdges (Axes.All);
 		}
 
-		private static Program _skyboxShader;
+		private static GLProgram _skyboxShader;
 		private static VBO<PositionalVertex> _vertices;
 		private static VBO<int> _indices;
 		private static Skybox _skybox;
@@ -43,7 +43,7 @@
 
 		public static Reaction<Camera> Renderer (SceneGraph sceneGraph, Vec3 skyColor)
 		{
-			_skyboxShader = new Program (VertexShader (), FragmentShader ());
+			_skyboxShader = new GLProgram (VertexShader (), FragmentShader ());
 			_skybox = new Skybox (_skyboxShader);
 			_skyColor = skyColor;
 			var cube = Extrusion.Cube<PositionalVertex> (_cubeSize, _cubeSize, _cubeSize).Center ();

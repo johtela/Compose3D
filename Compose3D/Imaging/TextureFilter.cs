@@ -13,13 +13,13 @@
 
 	public class TextureFilter
 	{
-		private Program _program;
+		private GLProgram _program;
 		private TextureUniforms _uniforms;
 		private Framebuffer _framebuffer;
 		private VBO<TexturedVertex> _vertexBuffer;
 		private VBO<int> _indexBuffer;
 
-		private TextureFilter (Program program)
+		private TextureFilter (GLProgram program)
 		{
 			_program = program;
 			_uniforms = new TextureUniforms (_program, new Sampler2D (0).LinearFiltering ()
@@ -33,7 +33,7 @@
 			_indexBuffer = new VBO<int> (rectangle.Indices, BufferTarget.ElementArrayBuffer);
 		}
 
-		public static Filter Renderer (Program program)
+		public static Filter Renderer (GLProgram program)
 		{
 			var filter = new TextureFilter (program);
 

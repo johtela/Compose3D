@@ -115,7 +115,7 @@
 			return render.DrawBuffer (i => mode);
 		}
 
-		public static Reaction<T> Program<T> (this Reaction<T> render, Func<T, Program> getProgram)
+		public static Reaction<T> Program<T> (this Reaction<T> render, Func<T, GLProgram> getProgram)
 		{
 			return input =>
 			{
@@ -124,7 +124,7 @@
 			};
 		}
 
-		public static Reaction<T> Program<T> (this Reaction<T> render, Program program)
+		public static Reaction<T> Program<T> (this Reaction<T> render, GLProgram program)
 		{
 			return render.Program (i => program);
 		}

@@ -20,7 +20,7 @@
 		private TextureUniforms texture;
 		private TransformUniforms transform;
 
-		private static Program _panelShader;
+		private static GLProgram _panelShader;
 		private static Panels _panels;
 		private static SceneGraph _scene;
 
@@ -34,7 +34,7 @@
 
 		public static Reaction<Vec2i> Renderer (SceneGraph scene)
 		{
-			_panelShader = new Program (
+			_panelShader = new GLProgram (
 				VertexShaders.TransformedTexture<TexturedVertex, PanelFragment, TransformUniforms> (),
 				FragmentShaders.TexturedOutput<PanelFragment, TextureUniforms> ());
 			_panels = new Panels ();

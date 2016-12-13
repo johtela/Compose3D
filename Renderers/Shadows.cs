@@ -21,7 +21,7 @@
 		public ShadowUniforms shadowUniforms;
 		public CascadedShadowUniforms csmUniforms;
 
-		private static Program _shadowShader;
+		private static GLProgram _shadowShader;
 		private static Shadows _instance;
 		private bool _cascaded;
 
@@ -30,7 +30,7 @@
 			get { return _instance; }
 		}
 
-		private Shadows (Program program, bool cascaded) : base (program)
+		private Shadows (GLProgram program, bool cascaded) : base (program)
 		{
 			_cascaded = cascaded;
 			if (_cascaded)
@@ -46,11 +46,11 @@
 		{
 			var depthFramebuffer = new Framebuffer (FramebufferTarget.Framebuffer);
 			_shadowShader = cascaded ?
-				new Program (
+				new GLProgram (
 					VertexShaderCascaded (),
 					GeometryShaderCascaded (),
 					DepthFragmentShader ()) :
-				new Program (
+				new GLProgram (
 					VertexShader (),
 					type == ShadowMapType.Depth ? DepthFragmentShader () : VarianceFragmentShader ());
 

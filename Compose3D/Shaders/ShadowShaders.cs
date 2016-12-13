@@ -12,9 +12,9 @@
 		public Uniform<Mat4> lightSpaceMatrix;
 		public Uniform<Sampler2D> shadowMap;
 
-		public ShadowUniforms (Program program) : base (program) { }
+		public ShadowUniforms (GLProgram program) : base (program) { }
 
-		public ShadowUniforms (Program program, Sampler2D sampler) : base (program)
+		public ShadowUniforms (GLProgram program, Sampler2D sampler) : base (program)
 		{
 			using (program.Scope ())
 				shadowMap &= sampler;
@@ -34,9 +34,9 @@
 		public Uniform<Mat4[]> viewLightMatrices;
 		public Uniform<Sampler2DArray> csmShadowMap;
 
-		public CascadedShadowUniforms (Program program) : base (program) { }
+		public CascadedShadowUniforms (GLProgram program) : base (program) { }
 
-		public CascadedShadowUniforms (Program program, Sampler2DArray sampler) : base (program)
+		public CascadedShadowUniforms (GLProgram program, Sampler2DArray sampler) : base (program)
 		{
 			using (program.Scope ())
 				csmShadowMap &= sampler;

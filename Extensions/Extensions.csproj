@@ -45,6 +45,7 @@
     <Compile Include="PrintableEnumerable.cs" />
     <Compile Include="StringExt.cs" />
     <Compile Include="TupleExt.cs" />
+    <Compile Include="TypeExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

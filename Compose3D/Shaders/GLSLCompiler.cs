@@ -197,19 +197,11 @@
         {
 			if (!DefineType (type))
 				return;
-			if (type.IsGLInterface ())
-			{
-				DeclOut ("{0} {1}", prefix, type.Name);
-				DeclOut ("{");
-				prefix = "";
-			}
             if (!type.Name.StartsWith ("<>"))
 				foreach (var field in type.GetGLFields ())
 					DeclareVariable (field, field.FieldType, prefix);
 			foreach (var prop in type.GetGLProperties ())
 				DeclareVariable (prop, prop.PropertyType, prefix);
-			if (type.IsGLInterface ())
-				DeclOut ("}} {0};", instanceName);
 		}
 
 		private void DeclareConstants (Expression expr)
@@ -358,7 +350,7 @@
                     var attr = me.Member.GetGLAttribute ();
                     return attr != null ?
                         string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Expression.Type.IsGLType () || me.Expression.Type.IsGLInterface () ?
+                        me.Expression.Type.IsGLType () ?
                             string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
                             me.Member.Name;
                 }) ??

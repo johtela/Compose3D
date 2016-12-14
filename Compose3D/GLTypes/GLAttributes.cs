@@ -12,9 +12,6 @@
 	[AttributeUsage (AttributeTargets.Method)]
 	public class LiftMethodAttribute : Attribute { }
 
-	[AttributeUsage (AttributeTargets.Class)]
-	public class GLInterfaceAttribute : Attribute { }
-
     [AttributeUsage (AttributeTargets.Field | AttributeTargets.Property)]
     public class GLQualifierAttribute : Attribute
     {

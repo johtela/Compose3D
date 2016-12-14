@@ -47,6 +47,8 @@
   <ItemGroup>
     <Compile Include="CLTypes\CLAttributes.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />
+    <Compile Include="CLTypes\CLTypeHelpers.cs" />
+    <Compile Include="Compiler\TypeMapping.cs" />
     <Compile Include="Compiler\LinqCompiler.cs" />
     <Compile Include="DataStructures\Aabb.cs" />
     <Compile Include="DataStructures\BoundingBoxTree.cs" />
@@ -92,7 +94,7 @@
     <Compile Include="Geometry\Transform.cs" />
     <Compile Include="GLTypes\GLAttributes.cs" />
     <Compile Include="GLTypes\GLError.cs" />
-    <Compile Include="GLTypes\TypeHelpers.cs" />
+    <Compile Include="GLTypes\GLTypeHelpers.cs" />
     <Compile Include="GLTypes\GLTypeMapping.cs" />
     <Compile Include="GLTypes\GLProgram.cs" />
     <Compile Include="GLTypes\Uniform.cs" />

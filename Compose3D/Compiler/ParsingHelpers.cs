@@ -77,7 +77,21 @@
 		}
 	}
 
-    public static class Parse
+	[AttributeUsage (AttributeTargets.Method)]
+	public class LiftMethodAttribute : Attribute { }
+
+	[AttributeUsage (AttributeTargets.Field)]
+	public class FixedArrayAttribute : Attribute
+	{
+		public int Length;
+
+		public FixedArrayAttribute (int length)
+		{
+			Length = length;
+		}
+	}
+
+	public static class Parse
     {
         public static T CastExpr<T> (this Expression expr, ExpressionType type) where T : Expression
         {
@@ -143,7 +157,29 @@
             return expr.Expect<LambdaExpression> (ExpressionType.Lambda);
         }
 
-        public static bool IsSelect (this MethodInfo mi, Type declaringType)
+		/// <summary>
+		/// Return an GLArray attribute defined on a member. Throws an exception, if such
+		/// is not found.
+		/// </summary>
+		public static FixedArrayAttribute ExpectFixedArrayAttribute (this MemberInfo mi)
+		{
+			var res = mi.GetAttribute<FixedArrayAttribute> ();
+			if (res == null)
+				throw new ParseException ("Missing FixedArray attribute for array.");
+			return res;
+		}
+
+		/// <summary>
+		/// Check whether the [LiftMethod] attribute is defined for a method. This
+		/// attribute is used to determine which methods can be used to construct
+		/// Linq expressions.
+		/// </summary>
+		public static bool IsLiftMethod (this MethodInfo mi)
+		{
+			return mi.IsDefined (typeof (LiftMethodAttribute), true);
+		}
+
+		public static bool IsSelect (this MethodInfo mi, Type declaringType)
         {
 			return (mi.DeclaringType == declaringType || mi.DeclaringType == typeof (Enumerable))
 				&& (mi.Name == "Select" || mi.Name == "SelectMany");

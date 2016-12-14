@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Shaders
+﻿namespace Compose3D.Compiler
 {
 	using System;
 	using System.Collections.Generic;

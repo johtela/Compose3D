@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Linq;
+	using Compiler;
 	using Maths;
 	using GLTypes;
 	using SceneGraph;
@@ -30,7 +31,7 @@
 	{
 		public const int MapCount = 4;
 
-		[GLArray (MapCount)]
+		[FixedArray (MapCount)]
 		public Uniform<Mat4[]> viewLightMatrices;
 		public Uniform<Sampler2DArray> csmShadowMap;
 

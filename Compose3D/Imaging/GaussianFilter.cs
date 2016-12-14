@@ -2,6 +2,7 @@
 {
 	using System.Linq;
 	using Extensions;
+	using Compiler;
 	using GLTypes;
 	using Maths;
 	using Reactive;
@@ -13,7 +14,7 @@
 	{
 		public class GaussianFragment : Fragment
 		{
-			[GLArray (7)]
+			[FixedArray (7)]
 			public Vec2[] fragTexturePos;
 		}
 

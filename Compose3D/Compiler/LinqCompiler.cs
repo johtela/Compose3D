@@ -1,7 +1,5 @@
-﻿namespace Compose3D.Shaders
+﻿namespace Compose3D.Compiler
 {
-	using GLTypes;
-    using OpenTK.Graphics.OpenGL4;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -9,11 +7,9 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-    using System.Text.RegularExpressions;
 	using Extensions;
-	using Compiler;
 
-	public class LinqCompiler
+	public abstract class LinqCompiler
     {
 		internal static Dictionary<MemberInfo, Function> _functions = new Dictionary<MemberInfo, Function> ();
 		private StringBuilder _decl;
@@ -24,20 +20,57 @@
         private int _indexVarCount;
         private int _tabLevel;
 		private Type _linqType;
+		private TypeMapping _typeMapping;
 
-		protected LinqCompiler ()
+		protected LinqCompiler (Type linqType, TypeMapping typeMapping)
         {
 			_decl = new StringBuilder ();
 			_code = new StringBuilder ();
             _typesDefined = new HashSet<Type> ();
 			_funcRefs = new HashSet<Function> ();
 			_constants = new Dictionary<string, Constant> ();
-			_linqType = typeof (Shader);
+			_linqType = linqType;
+			_typeMapping = typeMapping;
         }
 
-		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
+		protected virtual string MapType (Type type)
 		{
-			var compiler = new LinqCompiler ();
+			var result = _typeMapping.Type (type);
+			if (result == null)
+				throw new ParseException ("No mapping defined for type: " + type.Name);
+			return result;
+		}
+
+		protected string MapFunction (MethodInfo method)
+		{
+			var result = _typeMapping.Function (method);
+			if (result == null)
+				throw new ParseException ("No mapping defined for method: " + method.Name);
+			return result;
+		}
+
+		protected string MapOperator (MethodInfo method, ExpressionType expression)
+		{
+			var result = _typeMapping.Operator (method, expression);
+			if (result == null)
+				throw new ParseException ("No mapping defined for operator: " + expression);
+			return result;
+		}
+
+		protected string MapConstructor (ConstructorInfo constructor)
+		{
+			var result = _typeMapping.Constructor (constructor);
+			if (result == null)
+				throw new ParseException ("No mapping defined for constructor: " + constructor.Name);
+			return result;
+		}
+
+		protected abstract string MapMemberAccess (MemberExpression member);
+
+		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
+
+		public static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
+		{
 			compiler.OutputFunction (member.Name, expr);
 			_functions.Add (member, new Function (member, compiler._code.ToString (), compiler._funcRefs));
 		}
@@ -62,7 +95,7 @@
             return sb.ToString ();
         }
 
-		private void DeclOut (string code, params object[] args)
+		protected void DeclOut (string code, params object[] args)
 		{
 			if (args.Length == 0)
 				_decl.AppendLine (code);
@@ -70,7 +103,7 @@
 				_decl.AppendFormat (code + "\n", args);
 		}
 
-        private void CodeOut (string code, params object[] args)
+		protected void CodeOut (string code, params object[] args)
 		{
 			if (args.Length == 0)
 				_code.AppendLine (Tabs () + code);
@@ -78,7 +111,7 @@
 				_code.AppendFormat (Tabs () + code + "\n", args);
 		}
 
-		private bool DefineType (Type type)
+		protected bool DefineType (Type type)
 		{
 			if (_typesDefined.Contains (type))
 				return false;
@@ -86,134 +119,12 @@
 			return true;
 		}
 
-        private void OutputStruct (Type structType)
-		{
-			if (!DefineType (structType)) return;
-			foreach (var field in structType.GetGLFields ())
-				if (field.FieldType.IsGLStruct ())
-					OutputStruct (field.FieldType);
-			DeclOut ("struct {0}\n{{", structType.Name);
-			foreach (var field in structType.GetGLFields ())
-				DeclareVariable (field, field.FieldType, "    ");
-			DeclOut ("};");
-		}
-
-		private static string GetArrayDecl (MemberInfo member, ref Type memberType)
-		{
-			var arrayDecl = "";
-			if (memberType.IsArray)
-			{
-				var arrAttr = member.ExpectGLArrayAttribute ();
-				arrayDecl = string.Format ("[{0}]", arrAttr.Length);
-				memberType = memberType.GetElementType ();
-			}
-			return arrayDecl;
-		}
-
-		private void DeclareUniforms (Type type)
-        {
-			if (!DefineType (type)) return;
-			foreach (var field in type.GetUniforms ())
-			{
-				var uniType = field.FieldType.GetGenericArguments ().Single ();
-				string arrayDecl = GetArrayDecl (field, ref uniType);
-				if (uniType.GetGLAttribute () is GLStruct)
-					OutputStruct (uniType);
-				DeclOut ("uniform {0} {1}{2};", GLType (uniType), field.Name, arrayDecl);
-			}
-		}
-
-		private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
-        {
-            if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
-				member.Name.StartsWith ("<>")))
-            {
-				string arrayDecl = GetArrayDecl (member, ref memberType);
-				var syntax = GLType (memberType);
-				var qualifiers = member.GetQualifiers ();
-				DeclOut (string.IsNullOrEmpty (qualifiers) ?
-                    string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
-                    string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
-            }
-        }
-
-        private void DeclareVariables (Type type, string prefix, string instanceName)
-        {
-			if (!DefineType (type))
-				return;
-            if (!type.Name.StartsWith ("<>"))
-				foreach (var field in type.GetGLFields ())
-					DeclareVariable (field, field.FieldType, prefix);
-			foreach (var prop in type.GetGLProperties ())
-				DeclareVariable (prop, prop.PropertyType, prefix);
-		}
-
-		private void DeclareConstants (Expression expr)
-		{
-			var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
-			if (ne == null)
-			{
-				var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
-				if (mie == null)
-					throw new ParseException ("Unsupported shader expression: " + expr);
-				foreach (MemberAssignment assign in mie.Bindings)
-				{
-					var memberType = assign.Member is FieldInfo ?
-						(assign.Member as FieldInfo).FieldType :
-						(assign.Member as PropertyInfo).PropertyType;
-					OutputConst (memberType, assign.Member.Name, assign.Expression);
-				}
-			}
-			else
-			{
-				for (int i = 0; i < ne.Members.Count; i++)
-				{
-					var prop = (PropertyInfo)ne.Members[i];
-					if (!prop.Name.StartsWith ("<>"))
-						OutputConst (prop.PropertyType, prop.Name, ne.Arguments[i]);
-				}
-			}
-		}
-
-		private void OutputConst (Type constType, string name, Expression value)
-		{
-			_constants.Add (name, new Constant (constType, name, value));
-			if (constType.IsArray)
-			{
-				var elemType = constType.GetElementType ();
-				var elemGLType = GLType (elemType);
-				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				CodeOut ("const {0} {1}[{2}] = {0}[] (\n\t{3});",
-					elemGLType, name, nai.Expressions.Count,
-					nai.Expressions.Select (ExprToGLSL).SeparateWith (",\n\t"));
-			}
-			else
-				CodeOut ("const {0} {1} = {2};", GLType (constType), name, ExprToGLSL (value));
-		}
-
-		private void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
-		{
-			if (node.Method.Name == "State")
-				return;
-			var type = node.Method.GetGenericArguments () [0];
-			if (node.Method.Name == "Inputs")
-				DeclareVariables (type, "in", par.Name);
-			else if (node.Method.Name == "Uniforms")
-				DeclareUniforms (type);
-			else if (node.Method.Name == "Constants")
-				DeclareConstants (node.Arguments [0]);
-			else if (node.Method.Name == "ToShader")
-				CodeOut ("{0} {1} = {2};", GLType (type), par.Name, ExprToGLSL (node.Arguments [0]));
-			else
-				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
-		}
-
-		private void OutputFunction (string name, LambdaExpression expr)
+		protected void OutputFunction (string name, LambdaExpression expr)
 		{
 			var pars = (from p in expr.Parameters
-			            select string.Format ("{0} {1}", GLType (p.Type), p.Name))
+			            select string.Format ("{0} {1}", MapType (p.Type), p.Name))
 				.SeparateWith (", ");
-			CodeOut ("{0} {1} ({2})", GLType (expr.ReturnType), name, pars);
+			CodeOut ("{0} {1} ({2})", MapType (expr.ReturnType), name, pars);
 			CodeOut ("{");
 			_tabLevel++;
 			FunctionBody (expr.Body);
@@ -233,49 +144,31 @@
             _tabLevel++;
         }
 
-        private string GLType (Type type)
-        {
-            var attr = type.GetGLAttribute ();
-            if (attr == null) 
-				return GLTypeMapping.Type (type);
-			if (attr is GLStruct)
-				OutputStruct (type);
-			return attr.Syntax;
-        }
-
-        private string NewLocalVar (string name)
+        private string NewIndexVar (string name)
         {
             return string.Format ("_gen_{0}{1}", name, ++_indexVarCount);
         }
 
-        private string ExprToGLSL (Expression expr)
+        private string Expr (Expression expr)
         {
             var result =
                 expr.Match<BinaryExpression, string> (be =>
-                {
-                    var attr = be.Method.GetGLAttribute ();
-                    return "(" + string.Format (
-                        attr != null ? attr.Syntax : GLTypeMapping.Operator (be.NodeType),
-                        ExprToGLSL (be.Left), ExprToGLSL (be.Right)) + ")";
-
-                }) ??
+					"(" + string.Format (MapOperator (be.Method, be.NodeType), 
+					Expr (be.Left), Expr (be.Right)) + ")") 
+				??
                 expr.Match<UnaryExpression, string> (ue =>
-                {
-                    var attr = ue.Method.GetGLAttribute ();
-                    return string.Format (attr != null ? attr.Syntax :
- 						ue.NodeType == ExpressionType.Convert ?
-							string.Format ("{0} ({1})", GLTypeMapping.Type (ue.Type), ExprToGLSL (ue.Operand)) :
-							GLTypeMapping.Operator (ue.NodeType), ExprToGLSL (ue.Operand));
-                }) ??
+                    string.Format (ue.NodeType == ExpressionType.Convert ?
+						string.Format ("{0} ({1})", MapType (ue.Type), Expr (ue.Operand)) :
+						MapOperator (ue.Method, ue.NodeType), Expr (ue.Operand))) 
+				??
                 expr.Match<MethodCallExpression, string> (mc =>
                 {
-                    var attr = mc.Method.GetGLAttribute ();
-					if (attr == null && mc.Method.Name == "get_Item")
-						return string.Format ("{0}.{1}", ExprToGLSL (mc.Object),
-							mc.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (""));
+					if (mc.Method.Name == "get_Item")
+						return string.Format ("{0}.{1}", Expr (mc.Object),
+							mc.Arguments.Select (a => Expr (a)).SeparateWith (""));
 					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
-					return string.Format (attr != null ? attr.Syntax : GLTypeMapping.Function (mc.Method),
-						args.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+					return string.Format (MapFunction (mc.Method),
+						args.Select (a => Expr (a)).SeparateWith (", "));
                 }) ??
 				expr.Match<InvocationExpression, string> (ie => 
 				{
@@ -285,39 +178,30 @@
 					{
 						_funcRefs.Add (fun);
 						return string.Format ("{0} ({1})", member.Name,
-							ie.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
+							ie.Arguments.Select (a => Expr (a)).SeparateWith (", "));
 					}
 					throw new ParseException ("Undefined function: " + member.Name);
 				}) ??
-                expr.Match<MemberExpression, string> (me =>
-                {
-                    var attr = me.Member.GetGLAttribute ();
-                    return attr != null ?
-                        string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Expression.Type.IsGLType () ?
-                            string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
-                            me.Member.Name;
-                }) ??
+                expr.Match<MemberExpression, string> (MapMemberAccess)
+                ??
                 expr.Match<NewExpression, string> (ne =>
-                {
-                    var attr = ne.Constructor.GetGLAttribute ();
-                    return attr == null ? null :
-                        string.Format (attr.Syntax, ne.Arguments.Select (a => ExprToGLSL (a)).SeparateWith (", "));
-                }) ??
+					string.Format (MapConstructor (ne.Constructor), ne.Arguments.Select (a => 
+						Expr (a)).SeparateWith (", ")))
+                ??
                 expr.Match<ConstantExpression, string> (ce => ce.Type == typeof(float) ? 
 					string.Format (CultureInfo.InvariantCulture, "{0:0.0############}f", ce.Value) :
-					string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)
-                ) ?? 
+					string.Format (CultureInfo.InvariantCulture, "{0}", ce.Value)) 
+				?? 
 				expr.Match<NewArrayExpression, string> (na => string.Format ("{0}[{1}] (\n\t{2})",
-					GLType (na.Type.GetElementType ()), na.Expressions.Count,
-					na.Expressions.Select (ExprToGLSL).SeparateWith (",\n\t"))
-				) ??
+					MapType (na.Type.GetElementType ()), na.Expressions.Count,
+					na.Expressions.Select (Expr).SeparateWith (",\n\t"))) 
+				??
                 expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
-                    ExprToGLSL (ce.Test), ExprToGLSL (ce.IfTrue), ExprToGLSL (ce.IfFalse))
-                ) ?? 
-                expr.Match<ParameterExpression, string> (pe => 
-                    pe.Name
-                ) ?? null;
+                    Expr (ce.Test), Expr (ce.IfTrue), Expr (ce.IfFalse))) 
+				?? 
+                expr.Match<ParameterExpression, string> (pe => pe.Name) 
+				?? 
+				null;
             if (result == null)
                 throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
             return result;
@@ -365,8 +249,8 @@
                 var prop = (PropertyInfo)ne.Members[i];
 				if (!(prop.Name.StartsWith ("<>") || ne.Arguments[i] is ParameterExpression))
 				{
-					var type = GLType (prop.PropertyType);
-					var val = ExprToGLSL (RemoveAggregates (ne.Arguments[i]));
+					var type = MapType (prop.PropertyType);
+					var val = Expr (RemoveAggregates (ne.Arguments[i]));
 					if (prop.Name != val)
 						CodeOut ("{0} {1} = {2};", type, prop.Name, val);
 				}
@@ -386,14 +270,14 @@
             var aggrFun = expr.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
-            CodeOut ("{0} {1} = {2};", GLType(accum.Type), accum.Name, 
-                ExprToGLSL (expr.Arguments[1]));
+            CodeOut ("{0} {1} = {2};", MapType (accum.Type), accum.Name, 
+                Expr (expr.Arguments[1]));
 			var se = expr.Arguments[0].GetSelect (_linqType);
 			if (se != null)
 			{
 				ParseFor (se);
-				CodeOut ("{0} {1} = {2};", GLType (iterVar.Type), iterVar.Name,
-					ExprToGLSL (se.Arguments[1].ExpectLambda ().Body));
+				CodeOut ("{0} {1} = {2};", MapType (iterVar.Type), iterVar.Name,
+					Expr (se.Arguments[1].ExpectLambda ().Body));
 			}
 			else
 			{
@@ -403,7 +287,7 @@
 				else
 					IterateArray (expr);
 			}
-            CodeOut ("{0} = {1};", accum.Name, ExprToGLSL (aggrFun.Body));
+            CodeOut ("{0} = {1};", accum.Name, Expr (aggrFun.Body));
             _tabLevel--;
             CodeOut ("}");
             return accum;
@@ -428,7 +312,7 @@
 			var len = 0;
 			var field = member as FieldInfo;
 			if (field != null)
-				len = field.ExpectGLArrayAttribute ().Length;
+				len = field.ExpectFixedArrayAttribute ().Length;
 			else if (_constants.ContainsKey (member.Name))
 			{
 				var constant = _constants[member.Name];
@@ -440,15 +324,15 @@
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = NewLocalVar ("ind");
+			var indexVar = NewIndexVar ("ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
             CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
             CodeOut ("{");
             _tabLevel++;
-            CodeOut ("{0} {1} = {2}[{3}];", GLType (item.Type), item.Name, 
-                ExprToGLSL (array), indexVar);
+            CodeOut ("{0} {1} = {2}[{3}];", MapType (item.Type), item.Name, 
+                Expr (array), indexVar);
         }
 
 		public void OutputForLoop (MethodCallExpression expr)
@@ -457,16 +341,16 @@
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
-			var start = ExprToGLSL (range.Arguments[0]);
+			var start = Expr (range.Arguments[0]);
 			if (range.Method.DeclaringType == typeof (Enumerable))
 			{
-				var len = ExprToGLSL (range.Arguments[1]);
+				var len = Expr (range.Arguments[1]);
 				CodeOut ("for (int {0} = {1}; {0} < {2}; {0}++)", indexVar, start, len);
 			}
 			else
 			{
-				var end = ExprToGLSL (range.Arguments[1]);
-				var step = ExprToGLSL (range.Arguments[2]);
+				var end = Expr (range.Arguments[1]);
+				var step = Expr (range.Arguments[2]);
 				CodeOut ("for (int {0} = {1}; {0} != {2}; {0} += {3})", indexVar, start, end, step);
 			}
 			CodeOut ("{");
@@ -486,7 +370,7 @@
 			if (!source.Current.Method.IsWhere (_linqType))
 				return false;
 			var predicate = source.Current.Arguments[1].ExpectLambda ().Body;
-			CodeOut ("if (!{0}) return;", ExprToGLSL (predicate));
+			CodeOut ("if (!{0}) return;", Expr (predicate));
 			return true;
 		}
 
@@ -498,9 +382,9 @@
             {
                 var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
                 if (mie == null)
-                    throw new ParseException ("Unsupported shader expression: " + expr);
+                    throw new ParseException ("Unsupported expression: " + expr);
                 foreach (MemberAssignment assign in mie.Bindings)
-                    CodeOut ("{0} = {1};", assign.Member.Name, ExprToGLSL (assign.Expression));
+                    CodeOut ("{0} = {1};", assign.Member.Name, Expr (assign.Expression));
             }
             else
             {
@@ -508,23 +392,10 @@
                 {
                     var prop = (PropertyInfo)ne.Members[i];
                     if (!prop.Name.StartsWith ("<>"))
-                        CodeOut ("{0} = {1};", prop.Name, ExprToGLSL (ne.Arguments[i]));
+                        CodeOut ("{0} = {1};", prop.Name, Expr (ne.Arguments[i]));
                 }
             }
         }
-
-		public void ReturnArrayOfVertices (Expression expr)
-		{
-			var nai = expr.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-			foreach (var subExpr in nai.Expressions)
-			{
-				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
-				foreach (MemberAssignment assign in mie.Bindings)
-					CodeOut ("{0} = {1};", assign.Member.Name, ExprToGLSL (assign.Expression));
-				CodeOut ("EmitVertex ();");
-			}
-			CodeOut ("EndPrimitive ();");
-		}
 
 		public void ConditionalReturn (Expression expr, Action<Expression> returnAction)
 		{
@@ -533,7 +404,7 @@
 				returnAction (expr);
 			else
 			{
-				CodeOut ("if ({0})", ExprToGLSL (ce.Test));
+				CodeOut ("if ({0})", Expr (ce.Test));
 				CodeOut ("{");
 				_tabLevel++;
 				returnAction (ce.IfTrue);
@@ -548,23 +419,7 @@
 			}
 		}
 
-		public void OutputShader (LambdaExpression expr)
-        {
-			StartMain ();
-			var retExpr = ParseShader (expr.Body);
-            ConditionalReturn (retExpr, Return);
-			EndFunction ();
-        }
-
-		public void OutputGeometryShader (LambdaExpression expr)
-		{
-			StartMain ();
-			var retExpr = ParseShader (expr.Body);
-			ConditionalReturn (retExpr, ReturnArrayOfVertices);
-			EndFunction ();
-		}
-
-		Expression ParseShader (Expression expr)
+		Expression ParseLinqExpression (Expression expr)
 		{
 			var mce = expr.ExpectSelect (_linqType);
 			var me = CastFromBinding (mce.Arguments [0]);
@@ -585,8 +440,8 @@
 		public void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-			CodeOut ("return {0};", ExprToGLSL (RemoveAggregates (
-				node != null && node.Method.IsEvaluate (_linqType) ? ParseShader (node.Arguments [0]) : expr)));
+			CodeOut ("return {0};", Expr (RemoveAggregates (
+				node != null && node.Method.IsEvaluate (_linqType) ? ParseLinqExpression (node.Arguments [0]) : expr)));
 		}
-	}
+	} 
 }

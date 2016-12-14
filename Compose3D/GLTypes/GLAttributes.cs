@@ -1,16 +1,12 @@
 ﻿namespace Compose3D.GLTypes
 {
     using System;
-    using System.Linq;
 
     [AttributeUsage (AttributeTargets.Field)]
     public class BuiltinAttribute : Attribute { }
 
 	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property)]
 	public class OmitInGlslAttribute : Attribute { }
-
-	[AttributeUsage (AttributeTargets.Method)]
-	public class LiftMethodAttribute : Attribute { }
 
     [AttributeUsage (AttributeTargets.Field | AttributeTargets.Property)]
     public class GLQualifierAttribute : Attribute
@@ -20,17 +16,6 @@
         public GLQualifierAttribute (string qualifier)
         {
             Qualifier = qualifier;
-        }
-    }
-
-    [AttributeUsage (AttributeTargets.Field)]
-    public class GLArrayAttribute : Attribute
-    {
-        public int Length;
-
-        public GLArrayAttribute (int length)
-        {
-            Length = length;
         }
     }
 

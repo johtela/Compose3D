@@ -1,28 +1,14 @@
-﻿namespace Compose3D.GLTypes
+﻿namespace Compose3D.CLTypes
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq.Expressions;
 	using System.Reflection;
+	using Compiler;
 	using Extensions;
 
-	public static class CLTypeMapping
+	public class CLTypeMapping : TypeMapping
     {
-		private static Type boolT = typeof (bool);
-		private static Type floatT = typeof (float);
-        private static Type doubleT = typeof (double);
-		private static Type intT = typeof (int);
-        private static Type mathT = typeof (Math);
-
-        private static MethodInfo GetMethod (Type type, string name, params Type[] args)
-        {
-			var res = type.GetMethod (name, args);
-			if (res == null)
-				throw new GLError (string.Format ("Method {0}.{1}({2}) not found.", type, name,
-					args.SeparateWith (", ")));
-			return res;
-        }
-
         private static Dictionary<Type, string> _types = new Dictionary<Type, string> ()
         {
             { boolT, "bool" },
@@ -82,28 +68,33 @@
             { ExpressionType.ArrayLength, "{0}.length ()" }
         };
  
-        public static string Type (Type type)
+        public override string Type (Type type)
         {
 			string result;
-			if (!_types.TryGetValue (type, out result))
-				throw new ArgumentException ("No mapping defined for type: " + type);
-			return result;
+			return _types.TryGetValue (type, out result) ?
+				result :
+				type.GetCLSyntax ();
         }
 
-        public static string Function (MethodInfo method)
+        public override string Function (MethodInfo method)
         {
 			string result;
-			if (!_functions.TryGetValue (method, out result))
-				throw new ArgumentException ("No mapping defined for method: " + method);
-			return result;
+			return !_functions.TryGetValue (method, out result) ?
+				result :
+				method.GetCLSyntax ();
         }
 
-		public static string Operator (ExpressionType et)
+		public override string Operator (MethodInfo method, ExpressionType et)
         {
 			string result;
-			if (!_operators.TryGetValue (et, out result))
-				throw new ArgumentException ("No mapping defined for operator: " + et);
-			return result;
+			return !_operators.TryGetValue (et, out result) ?
+				result :
+				method.GetCLSyntax ();
         }
-    }
+
+		public override string Constructor (ConstructorInfo constructor)
+		{
+			return constructor.GetCLSyntax ();
+		}
+	}
 }

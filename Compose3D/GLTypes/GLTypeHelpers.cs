@@ -7,7 +7,7 @@
 	using OpenTK.Graphics.OpenGL4;
 	using System.Collections.Generic;
 	using Extensions;
-	using GLTypes;
+	using Compiler;
 
 	/// <summary>
 	/// Metadata about a field in a GLSL struct type. This class also helps accessing
@@ -46,7 +46,7 @@
         public Func<object, object> Getter { get; private set; }
     }
 
-    public static class TypeHelpers
+    public static class GLTypeHelpers
     {
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public;
 
@@ -68,17 +68,11 @@
             return mi.GetAttribute<GLAttribute> ();
         }
 
-		/// <summary>
-		/// Return an GLArray attribute defined on a member. Throws an exception, if such
-		/// is not found.
-		/// </summary>
-        public static GLArrayAttribute ExpectGLArrayAttribute (this MemberInfo mi)
-        {
-            var res = mi.GetAttribute<GLArrayAttribute> ();
-            if (res == null)
-                throw new ArgumentException ("Missing GLArray attribute for array.");
-            return res;
-        }
+		public static string GetGLSyntax (this MemberInfo mi)
+		{
+			var result = GetGLAttribute (mi);
+			return result != null ? result.Syntax : null;
+		}
 
 		/// <summary>
 		/// Check if a type is used in GLSL. This is done by checking if the type is
@@ -107,16 +101,6 @@
         {
             return mi.IsDefined (typeof (BuiltinAttribute), true);
         }
-
-		/// <summary>
-		/// Check whether the [LiftMethod] attribute is defined for a method. This
-		/// attribute is used to determine which methods can be used to construct
-		/// GLSL Linq expressions.
-		/// </summary>
-		public static bool IsLiftMethod (this MethodInfo mi)
-		{
-			return mi.IsDefined (typeof (LiftMethodAttribute), true);
-		}
 
 		/// <summary>
 		/// Check whether a type contains the [GLStruct] attribute and thus is 
@@ -227,7 +211,7 @@
 						prefix + field.Name + ".");
                 else if (fieldType.IsArray)
                     CreateArrayFields (fieldType, fieldExpr, parameter, fields, 
-						prefix + field.Name, field.ExpectGLArrayAttribute ().Length);
+						prefix + field.Name, field.ExpectFixedArrayAttribute ().Length);
                 else
                     fields.Add (new GLStructField (prefix + field.Name, fieldType,
                         Expression.Lambda<Func<object, object>> (

@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using Compose3D.Maths;
+	using Compiler;
+    using Maths;
 	using Textures;
     using OpenTK.Graphics.OpenGL4;
     using System;
@@ -48,7 +49,7 @@
             if (type != typeof (T))
                 throw new ArgumentException ("Field type is different from uniform type.");
             if (type.IsArray)
-                _mappings = (from elem in type.GetGLArrayElements (field.Name, field.ExpectGLArrayAttribute ().Length)
+                _mappings = (from elem in type.GetGLArrayElements (field.Name, field.ExpectFixedArrayAttribute ().Length)
                              select Tuple.Create (elem, GetUniformLocation (program, elem.Name)))
                             .ToArray ();
             else

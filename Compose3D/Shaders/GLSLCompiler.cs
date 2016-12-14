@@ -35,6 +35,16 @@
 			_linqType = typeof (Shader);
         }
 
+		protected string MapMemberAccess (MemberExpression me)
+		{
+			var syntax = me.Member.GetGLSyntax ();
+			return syntax != null ?
+				string.Format (syntax, ExprToGLSL (me.Expression)) :
+				me.Expression.Type.IsGLType () ?
+					string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
+					me.Member.Name;
+		}
+
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
 			var compiler = new GLSLCompiler ();
@@ -54,7 +64,7 @@
 		{
 			var compiler = new GLSLCompiler ();
 			if (invocations > 0)
-				compiler.DeclOut ("layout(invocations = {0}) in;", invocations);
+				compiler.DeclOut ("layout (invocations = {0}) in;", invocations);
 			compiler.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
 			compiler.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
@@ -159,7 +169,7 @@
 			var arrayDecl = "";
 			if (memberType.IsArray)
 			{
-				var arrAttr = member.ExpectGLArrayAttribute ();
+				var arrAttr = member.ExpectFixedArrayAttribute ();
 				arrayDecl = string.Format ("[{0}]", arrAttr.Length);
 				memberType = memberType.GetElementType ();
 			}
@@ -345,15 +355,8 @@
 					}
 					throw new ParseException ("Undefined function: " + member.Name);
 				}) ??
-                expr.Match<MemberExpression, string> (me =>
-                {
-                    var attr = me.Member.GetGLAttribute ();
-                    return attr != null ?
-                        string.Format (attr.Syntax, ExprToGLSL (me.Expression)) :
-                        me.Expression.Type.IsGLType () ?
-                            string.Format ("{0}.{1}", ExprToGLSL (me.Expression), me.Member.GetGLFieldName ()) :
-                            me.Member.Name;
-                }) ??
+                expr.Match<MemberExpression, string> (MapMemberAccess)
+                ??
                 expr.Match<NewExpression, string> (ne =>
                 {
                     var attr = ne.Constructor.GetGLAttribute ();
@@ -484,7 +487,7 @@
 			var len = 0;
 			var field = member as FieldInfo;
 			if (field != null)
-				len = field.ExpectGLArrayAttribute ().Length;
+				len = field.ExpectFixedArrayAttribute ().Length;
 			else if (_constants.ContainsKey (member.Name))
 			{
 				var constant = _constants[member.Name];

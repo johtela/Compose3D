@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Shaders
 {
 	using System;
+	using Compiler;
 	using GLTypes;
 
 	public abstract class Uniforms

@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Renderers
 {
+	using Compose3D.Compiler;
 	using Compose3D.Maths;
 	using Compose3D.Geometry;
 	using Compose3D.GLTypes;
@@ -106,9 +107,9 @@
 
 	public class Entities : Uniforms
 	{
-		[GLArray (4)]
+		[FixedArray (4)]
 		public Uniform<LightingShaders.PointLight[]> pointLights;
-		[GLArray (4)]
+		[FixedArray (4)]
 		public Uniform<Sampler2D[]> samplers;
 		public Uniform<SamplerCube> diffuseMap;
 

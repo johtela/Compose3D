@@ -86,8 +86,8 @@
 				fun.Output (sb, outputted);
 			return sb.ToString ();
 		}
-        
-        private string Tabs ()
+
+		protected string Tabs ()
         {
             var sb = new StringBuilder ();
             for (int i = 0; i < _tabLevel; i++)
@@ -131,25 +131,25 @@
 			EndFunction ();
 		}
 
-		private void EndFunction ()
+		protected void EndFunction ()
 		{
 			_tabLevel--;
 			CodeOut ("}");
 		}
 
-        private void StartMain ()
+        protected void StartMain ()
         {
             CodeOut ("void main ()");
             CodeOut ("{");
             _tabLevel++;
         }
 
-        private string NewIndexVar (string name)
+        protected string NewIndexVar (string name)
         {
             return string.Format ("_gen_{0}{1}", name, ++_indexVarCount);
         }
 
-        private string Expr (Expression expr)
+        protected string Expr (Expression expr)
         {
             var result =
                 expr.Match<BinaryExpression, string> (be =>
@@ -207,13 +207,13 @@
             return result;
         }
 
-		private MethodCallExpression CastFromBinding (Expression expr)
+		protected MethodCallExpression CastFromBinding (Expression expr)
 		{
 			var me = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			return  me != null && me.Method.IsLiftMethod () ? me : null;
 		}
 
-        public bool FromBinding (Source source)
+        protected bool FromBinding (Source source)
         {
 			var mce = source.Current;
 			var arg0 = CastFromBinding (mce.Arguments[0]);
@@ -237,12 +237,12 @@
 			return true;
         }
 
-        public bool LetBinding (Source source)
+        protected bool LetBinding (Source source)
         {
             return source.ParseLambda ((_, ne) => OutputLet (ne));
         }
 
-        private bool OutputLet (NewExpression ne)
+        protected bool OutputLet (NewExpression ne)
         {
             for (int i = 0; i < ne.Members.Count; i++)
             {
@@ -258,12 +258,12 @@
             return true;
         }
 
-		public Expression RemoveAggregates (Expression expr)
+		protected Expression RemoveAggregates (Expression expr)
 		{
 			return expr.ReplaceSubExpression<MethodCallExpression> (ExpressionType.Call, Aggregate);
 		}
 
-        public Expression Aggregate (MethodCallExpression expr)
+        protected Expression Aggregate (MethodCallExpression expr)
         {
             if (!expr.Method.IsAggregate ())
                 return expr;
@@ -293,7 +293,7 @@
             return accum;
         }
 
-		public void ParseFor (MethodCallExpression mce)
+		protected void ParseFor (MethodCallExpression mce)
 		{
 			if (mce.Arguments[0].GetSelect (_linqType) == null)
 				IterateArray (mce);
@@ -304,7 +304,7 @@
 					.Execute (new Source (mce.Arguments[0].Traverse (_linqType)));
 		}
 
-		public void IterateArray (MethodCallExpression expr)
+		protected void IterateArray (MethodCallExpression expr)
         {
 			var array = expr.Arguments[0];
             var member  = array.SkipUnary (ExpressionType.Not)
@@ -335,7 +335,7 @@
                 Expr (array), indexVar);
         }
 
-		public void OutputForLoop (MethodCallExpression expr)
+		protected void OutputForLoop (MethodCallExpression expr)
 		{
 			var indexVar = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
@@ -357,7 +357,7 @@
 			_tabLevel++;
 		}
 
-		public bool ForLoop (Source source)
+		protected bool ForLoop (Source source)
 		{
 			var se = source.Current;
 			IterateArray (se);
@@ -365,7 +365,7 @@
 			return true;
 		}
 
-		public bool Where (Source source)
+		protected bool Where (Source source)
 		{
 			if (!source.Current.Method.IsWhere (_linqType))
 				return false;
@@ -374,7 +374,7 @@
 			return true;
 		}
 
-        public void Return (Expression expr)
+        protected void Return (Expression expr)
         {
 			expr = RemoveAggregates (expr);
             var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
@@ -397,7 +397,7 @@
             }
         }
 
-		public void ConditionalReturn (Expression expr, Action<Expression> returnAction)
+		protected void ConditionalReturn (Expression expr, Action<Expression> returnAction)
 		{
 			var ce = expr.CastExpr<ConditionalExpression> (ExpressionType.Conditional);
 			if (ce == null)
@@ -419,7 +419,7 @@
 			}
 		}
 
-		Expression ParseLinqExpression (Expression expr)
+		protected Expression ParseLinqExpression (Expression expr)
 		{
 			var mce = expr.ExpectSelect (_linqType);
 			var me = CastFromBinding (mce.Arguments [0]);
@@ -437,7 +437,7 @@
 			return mce.Arguments[1].ExpectLambda ().Body;
 		}
 
-		public void FunctionBody (Expression expr)
+		protected void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			CodeOut ("return {0};", Expr (RemoveAggregates (

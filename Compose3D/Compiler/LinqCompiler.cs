@@ -12,15 +12,15 @@
 	public abstract class LinqCompiler
     {
 		internal static Dictionary<MemberInfo, Function> _functions = new Dictionary<MemberInfo, Function> ();
-		private StringBuilder _decl;
-		private StringBuilder _code;
-		private HashSet<Type> _typesDefined;
-		private HashSet<Function> _funcRefs;
-		private Dictionary<string, Constant> _constants;
-        private int _indexVarCount;
-        private int _tabLevel;
-		private Type _linqType;
-		private TypeMapping _typeMapping;
+		protected StringBuilder _decl;
+		protected StringBuilder _code;
+		protected HashSet<Type> _typesDefined;
+		internal HashSet<Function> _funcRefs;
+		internal Dictionary<string, Constant> _constants;
+		protected int _indexVarCount;
+		protected int _tabLevel;
+		protected Type _linqType;
+		protected TypeMapping _typeMapping;
 
 		protected LinqCompiler (Type linqType, TypeMapping typeMapping)
         {
@@ -69,7 +69,7 @@
 
 		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
 
-		public static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
+		protected static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
 		{
 			compiler.OutputFunction (member.Name, expr);
 			_functions.Add (member, new Function (member, compiler._code.ToString (), compiler._funcRefs));
@@ -149,23 +149,31 @@
             return string.Format ("_gen_{0}{1}", name, ++_indexVarCount);
         }
 
-        protected string Expr (Expression expr)
-        {
-            var result =
-                expr.Match<BinaryExpression, string> (be =>
-					"(" + string.Format (MapOperator (be.Method, be.NodeType), 
-					Expr (be.Left), Expr (be.Right)) + ")") 
+		protected string Expr (Expression expr)
+		{
+			var result =
+				expr.Match<BinaryExpression, string> (be =>
+					"(" + string.Format (MapOperator (be.Method, be.NodeType),
+					Expr (be.Left), Expr (be.Right)) + ")")
 				??
-                expr.Match<UnaryExpression, string> (ue =>
-                    string.Format (ue.NodeType == ExpressionType.Convert ?
+				expr.Match<UnaryExpression, string> (ue =>
+					string.Format (ue.NodeType == ExpressionType.Convert ?
 						string.Format ("{0} ({1})", MapType (ue.Type), Expr (ue.Operand)) :
-						MapOperator (ue.Method, ue.NodeType), Expr (ue.Operand))) 
+						MapOperator (ue.Method, ue.NodeType), Expr (ue.Operand)))
 				??
-                expr.Match<MethodCallExpression, string> (mc =>
-                {
+				expr.Match<MethodCallExpression, string> (mc =>
+				{
 					if (mc.Method.Name == "get_Item")
-						return string.Format ("{0}.{1}", Expr (mc.Object),
-							mc.Arguments.Select (a => Expr (a)).SeparateWith (""));
+					{
+						if (mc.Arguments[0].Type == typeof (Maths.Coord))
+							return string.Format ("{0}.{1}", Expr (mc.Object),
+								mc.Arguments.Select (a => Expr (a)).SeparateWith (""));
+						var syntax = _typeMapping.Indexer (mc.Method);
+						return syntax == null ? 
+							null :
+							string.Format (syntax, Expr (mc.Object), 
+								mc.Arguments.Select (a => Expr (a)).SeparateWith (", "));
+					}
 					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
 					return string.Format (MapFunction (mc.Method),
 						args.Select (a => Expr (a)).SeparateWith (", "));

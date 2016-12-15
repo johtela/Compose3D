@@ -34,5 +34,7 @@
 		public abstract string Operator (MethodInfo method, ExpressionType et);
 
 		public abstract string Constructor (ConstructorInfo constructor);
+
+		public abstract string Indexer (MethodInfo method);
     }
 }

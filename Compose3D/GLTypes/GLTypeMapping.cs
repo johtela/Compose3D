@@ -5,24 +5,10 @@
 	using System.Linq.Expressions;
 	using System.Reflection;
 	using Extensions;
+	using Compiler;
 
-	public static class GLTypeMapping
+	public class GLTypeMapping : TypeMapping
     {
-		private static Type boolT = typeof (bool);
-		private static Type floatT = typeof (float);
-        private static Type doubleT = typeof (double);
-		private static Type intT = typeof (int);
-        private static Type mathT = typeof (Math);
-
-        private static MethodInfo GetMethod (Type type, string name, params Type[] args)
-        {
-			var res = type.GetMethod (name, args);
-			if (res == null)
-				throw new GLError (string.Format ("Method {0}.{1}({2}) not found.", type, name,
-					args.SeparateWith (", ")));
-			return res;
-        }
-
         private static Dictionary<Type, string> _types = new Dictionary<Type, string> ()
         {
             { boolT, "bool" },
@@ -82,28 +68,35 @@
             { ExpressionType.ArrayLength, "{0}.length ()" }
         };
  
-        public static string Type (Type type)
+        public override string Type (Type type)
         {
 			string result;
-			if (!_types.TryGetValue (type, out result))
-				throw new ArgumentException ("No mapping defined for type: " + type);
-			return result;
-        }
+			return type.GetGLSyntax () ??
+				(_types.TryGetValue (type, out result) ? result : null);
+		}
 
-        public static string Function (MethodInfo method)
+		public override string Function (MethodInfo method)
         {
 			string result;
-			if (!_functions.TryGetValue (method, out result))
-				throw new ArgumentException ("No mapping defined for method: " + method);
-			return result;
-        }
+			return method.GetGLSyntax () ??
+				(_functions.TryGetValue (method, out result) ? result : null);
+		}
 
-		public static string Operator (ExpressionType et)
+		public override string Operator (MethodInfo method, ExpressionType et)
         {
 			string result;
-			if (!_operators.TryGetValue (et, out result))
-				throw new ArgumentException ("No mapping defined for operator: " + et);
-			return result;
-        }
-    }
+			return method.GetGLSyntax () ??
+				(_operators.TryGetValue (et, out result) ? result : null);
+		}
+
+		public override string Constructor (ConstructorInfo constructor)
+		{
+			return constructor.GetGLSyntax ();
+		}
+
+		public override string Indexer (MethodInfo method)
+		{
+			return "{0}[{1}]";
+		}
+	}
 }

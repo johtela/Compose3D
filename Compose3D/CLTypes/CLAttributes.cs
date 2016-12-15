@@ -1,9 +1,19 @@
 ﻿namespace Compose3D.CLTypes
 {
     using System;
-    using System.Linq;
 
-    public class CLAttribute : Attribute
+	[AttributeUsage (AttributeTargets.Field)]
+	public class CLFieldAttribute : Attribute
+	{
+		public string Name;
+
+		public CLFieldAttribute (string name)
+		{
+			Name = name;
+		}
+	}
+
+	public class CLAttribute : Attribute
     {
         public string Syntax;
 

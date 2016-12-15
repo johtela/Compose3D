@@ -71,30 +71,32 @@
         public override string Type (Type type)
         {
 			string result;
-			return _types.TryGetValue (type, out result) ?
-				result :
-				type.GetCLSyntax ();
-        }
+			return type.GetCLSyntax () ??
+				(_types.TryGetValue (type, out result) ? result : null);
+		}
 
-        public override string Function (MethodInfo method)
+		public override string Function (MethodInfo method)
         {
 			string result;
-			return !_functions.TryGetValue (method, out result) ?
-				result :
-				method.GetCLSyntax ();
-        }
+			return method.GetCLSyntax () ??
+				(_functions.TryGetValue (method, out result) ? result : null);
+		}
 
 		public override string Operator (MethodInfo method, ExpressionType et)
         {
 			string result;
-			return !_operators.TryGetValue (et, out result) ?
-				result :
-				method.GetCLSyntax ();
-        }
+			return method.GetCLSyntax () ??
+				(_operators.TryGetValue (et, out result) ? result : null);
+		}
 
 		public override string Constructor (ConstructorInfo constructor)
 		{
 			return constructor.GetCLSyntax ();
+		}
+
+		public override string Indexer (MethodInfo method)
+		{
+			return null;
 		}
 	}
 }

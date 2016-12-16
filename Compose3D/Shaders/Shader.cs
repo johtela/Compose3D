@@ -33,11 +33,6 @@
 			return state => func (shader (state)) (state);
 		}
 
-		public static T Execute<T> (this Shader<T> shader, ShaderState state)
-		{
-			return shader (state);
-		}
-
 		public static T Evaluate<T> (this Shader<T> shader)
 		{
 			return shader (new ShaderState ());

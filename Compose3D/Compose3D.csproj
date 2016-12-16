@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CLTypes\CLAttributes.cs" />
+    <Compile Include="CLTypes\CLBuffer.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="CLTypes\CLTypeHelpers.cs" />
     <Compile Include="Compiler\TypeMapping.cs" />
@@ -86,6 +87,7 @@
     </Compile>
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
+    <Compile Include="Parallel\Kernel.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
@@ -374,4 +376,5 @@
       <Name>Visuals</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
 </Project>

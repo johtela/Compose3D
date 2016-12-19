@@ -42,7 +42,7 @@
 		}
 
 		[LiftMethod]
-		public static Kernel<T> Parameter<T> ()
+		public static Kernel<T> Argument<T> ()
 		{
 			return state => default (T);
 		}

@@ -63,5 +63,13 @@
         {
             return type.GetProperties (_bindingFlags);
         }
+
+		public static IEnumerable<FieldInfo> GetCLArguments (this Type type)
+		{
+			return from field in type.GetFields (_bindingFlags)
+				   where field.FieldType.IsGenericType &&
+					   field.FieldType.GetGenericTypeDefinition ().IsSubclassOf(typeof (CLArgument<>))
+				   select field;
+		}
 	}
 }

@@ -3,6 +3,17 @@
 	using System;
 	using Compiler;
 	using CLTypes;
+	using Cloo;
+
+	public abstract class KernelArguments
+	{
+		public KernelArguments (ComputeKernel kernel)
+		{
+			var index = 0;
+			foreach (var field in GetType ().GetCLArguments ())
+				field.SetValue (this, Activator.CreateInstance (field.FieldType, kernel, index++));
+		}
+	}
 
 	public class KernelState
 	{
@@ -35,14 +46,10 @@
 			return kernel (new KernelState ());
 		}
 
-		[LiftMethod]
-		public static Kernel<T[]> Buffer<T> ()
-		{
-			return state => new T[0];
-		}
 
 		[LiftMethod]
-		public static Kernel<T> Argument<T> ()
+		public static Kernel<T> Arguments<T> ()
+			where T : KernelArguments
 		{
 			return state => default (T);
 		}

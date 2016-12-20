@@ -2,7 +2,7 @@
 {
 	using Cloo;
 
-	public abstract class CLArgument<T>
+	public abstract class CLArgument
 	{
 		protected ComputeKernel _clKernel;
 		protected int _index;
@@ -14,7 +14,7 @@
 		}
 	}
 
-	public class CLInput<T> : CLArgument<T>
+	public class CLInput<T> : CLArgument
 		where T : struct
 	{
 		private T _value;
@@ -36,7 +36,7 @@
 		}
 	}
 
-	public class CLBuffer<T> : CLArgument<ComputeBuffer<T>>
+	public class CLBuffer<T> : CLArgument
 		where T : struct
 	{
 		private ComputeBuffer<T> _clBuffer;

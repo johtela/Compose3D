@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Parallel
 {
 	using System;
+	using Extensions;
 	using Compiler;
 	using CLTypes;
 	using Cloo;

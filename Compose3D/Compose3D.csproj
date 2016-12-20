@@ -94,7 +94,9 @@
     </Compile>
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
+    <Compile Include="Parallel\CLCCompiler.cs" />
     <Compile Include="Parallel\Kernel.cs" />
+    <Compile Include="Parallel\KernelExample.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />

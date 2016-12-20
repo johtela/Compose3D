@@ -4,6 +4,7 @@
 	using System.Linq.Expressions;
 	using Cloo;
 	using CLTypes;
+	using Extensions;
 
 	public class KernelExample : KernelArguments
 	{
@@ -18,10 +19,7 @@
 		public static Expression<Func<KernelExample>> Example ()
 		{
 			return () => from arg in Kernel.Arguments<KernelExample> ()
-						 select new
-						 {
-							 buffer = ((!arg.buffer)[1] = 1f)
-						 };
+						 select (!arg.buffer).Insert (0f, !arg.param1);
 		} 
 	}
 }

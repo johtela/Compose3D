@@ -34,20 +34,10 @@
 
 		private static string BuildKernelCode (CLCCompiler compiler)
 		{
-			return "#version 400 core\nprecision highp float;\n" +
-				compiler._decl.ToString () +
+			return compiler._decl.ToString () +
 				GenerateFunctions (compiler._funcRefs) +
 				compiler._code.ToString ();
 		}
-
-		//private static int GetGLSLVersion ()
-		//{
-		//	var glslVersion = GL.GetString (StringName.ShadingLanguageVersion);
-		//	var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
-		//	if (!match.Success || match.Groups.Count != 3)
-		//		throw new ParseException ("Invalid GLSL version string: " + glslVersion);
-		//	return int.Parse (match.Groups[1].Value + match.Groups[2].Value);
-		//}
 
 		protected override string MapMemberAccess (MemberExpression me)
 		{
@@ -187,19 +177,6 @@
 			//	else
 			//		throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
-
-		//private void ReturnArrayOfVertices (Expression expr)
-		//{
-		//	var nai = expr.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-		//	foreach (var subExpr in nai.Expressions)
-		//	{
-		//		var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
-		//		foreach (MemberAssignment assign in mie.Bindings)
-		//			CodeOut ("{0} = {1};", assign.Member.Name, Expr (assign.Expression));
-		//		CodeOut ("EmitVertex ();");
-		//	}
-		//	CodeOut ("EndPrimitive ();");
-		//}
 
 		private void OutputKernel (LambdaExpression expr)
 		{

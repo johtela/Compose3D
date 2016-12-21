@@ -1,6 +1,5 @@
-﻿namespace Compose3D.Shaders
+﻿namespace Compose3D.GLTypes
 {
-	using GLTypes;
     using OpenTK.Graphics.OpenGL4;
     using System;
     using System.Linq;
@@ -9,6 +8,7 @@
     using System.Text.RegularExpressions;
 	using Extensions;
 	using Compiler;
+	using Shaders;
 
 	public class GLSLCompiler : LinqCompiler
     {

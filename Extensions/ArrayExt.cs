@@ -150,7 +150,7 @@
 			return res;
 		}
 
-		public static T[] Insert<T> (this T[] array, T item, int index)
+		public static T[] Insert<T> (this T[] array, int index, T item)
 		{
 			if (index < 0 || index >= array.Length)
 				throw new ArgumentOutOfRangeException ("index");
@@ -160,6 +160,15 @@
 					i < index ? array[i] :
 					i == index ? item :	
 					array[i - 1];
+			return result;
+		}
+
+		public static T[] Replace<T> (this T[] array, int index, T item)
+		{
+			if (index < 0 || index >= array.Length)
+				throw new ArgumentOutOfRangeException ("index");
+			var result = (T[])array.Clone ();
+			result[index] = item;
 			return result;
 		}
 	}

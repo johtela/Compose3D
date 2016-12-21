@@ -64,12 +64,14 @@
             return type.GetProperties (_bindingFlags);
         }
 
-		public static IEnumerable<FieldInfo> GetCLArguments (this Type type)
+		/// <summary>
+		/// Get the name of the field in GLSL. The [GLField] attribute is used in 
+		/// built-in types to map C# names to GLSL.
+		/// </summary>
+		public static string GetCLFieldName (this MemberInfo mi)
 		{
-			return from field in type.GetFields (_bindingFlags)
-				   where field.FieldType.IsGenericType &&
-					   field.FieldType.GetGenericTypeDefinition ().IsSubclassOf(typeof (CLArgument<>))
-				   select field;
+			var attr = mi.GetAttribute<CLFieldAttribute> ();
+			return attr == null ? mi.Name : attr.Name;
 		}
 	}
 }

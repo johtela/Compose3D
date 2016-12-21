@@ -6,16 +6,6 @@
 	using CLTypes;
 	using Cloo;
 
-	public abstract class KernelArguments
-	{
-		public KernelArguments (ComputeKernel kernel)
-		{
-			var index = 0;
-			foreach (var field in GetType ().GetCLArguments ())
-				field.SetValue (this, Activator.CreateInstance (field.FieldType, kernel, index++));
-		}
-	}
-
 	public class KernelState
 	{
 		[CLFunction ("get_global_id ()")]
@@ -47,12 +37,18 @@
 			return kernel (new KernelState ());
 		}
 
-
 		[LiftMethod]
-		public static Kernel<T> Arguments<T> ()
-			where T : KernelArguments
+		public static Kernel<T> Argument<T> ()
+			where T : struct
 		{
 			return state => default (T);
+		}
+
+		[LiftMethod]
+		public static Kernel<T[]> Buffer<T> ()
+			where T : struct
+		{
+			return state => new T[0];
 		}
 
 		[LiftMethod]

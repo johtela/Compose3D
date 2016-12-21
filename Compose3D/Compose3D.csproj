@@ -53,7 +53,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CLTypes\CLAttributes.cs" />
-    <Compile Include="CLTypes\CLArgument.cs" />
+    <Compile Include="CLTypes\CLArguments.cs" />
+    <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="CLTypes\CLTypeHelpers.cs" />
     <Compile Include="Compiler\TypeMapping.cs" />
@@ -94,7 +95,7 @@
     </Compile>
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
-    <Compile Include="Parallel\CLCCompiler.cs" />
+    <Compile Include="CLTypes\CLCCompiler.cs" />
     <Compile Include="Parallel\Kernel.cs" />
     <Compile Include="Parallel\KernelExample.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
@@ -242,7 +243,7 @@
     <Compile Include="Geometry\VertexManipulator.cs" />
     <Compile Include="Shaders\Shader.cs" />
     <Compile Include="Compiler\ParsingHelpers.cs" />
-    <Compile Include="Shaders\GLSLCompiler.cs" />
+    <Compile Include="GLTypes\GLSLCompiler.cs" />
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />
     <Compile Include="Geometry\VertexFilter.cs" />

@@ -1,6 +1,5 @@
-﻿namespace Compose3D.Parallel
+﻿namespace Compose3D.CLTypes
 {
-	using CLTypes;
     using System;
     using System.Linq;
     using System.Linq.Expressions;
@@ -8,63 +7,38 @@
     using System.Text.RegularExpressions;
 	using Extensions;
 	using Compiler;
+	using Parallel;
 
-	//public class CLCCompiler : LinqCompiler
- //   {
-	//	private CLCCompiler () : base (typeof (Kernel), new CLTypeMapping ())
- //       { }
+	public class CLCCompiler : LinqCompiler
+	{
+		private CLArguments _arguments;
 
-		//public static string CreateKernel<T> (string version, Expression<Func<Kernel<T>>> shader)
-		//{
-		//	var compiler = new CLCCompiler ();
-		//	compiler.DeclareVariables (typeof (T), "out", "");
-		//	compiler.OutputShader (shader);
-		//	return BuildShaderCode (compiler);
-		//}
+		private CLCCompiler (CLArguments arguments) : 
+			base (typeof (Kernel), new CLTypeMapping ())
+		{
+			_arguments = arguments;
+		}
 
-		//public static string CreateShader<T> (Expression<Func<Shader<T>>> shader)
-		//{
-		//	return CreateShader<T> (GetGLSLVersion ().ToString (), shader);
-		//}
+		public static string CreateKernel<T> (string name, 
+			Expression<Func<Kernel<T>>> kernel, CLArguments arguments)
+		{
+			var compiler = new CLCCompiler (arguments);
+			compiler.OutputKernel (kernel);
+			return BuildKernelCode (compiler);
+		}
 
-		//public static string CreateGeometryShader<T> (string version, int vertexCount,
-		//	int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
-		//	Expression<Func<Shader<T[]>>> shader)
-		//{
-		//	var compiler = new GLSLCompiler ();
-		//	if (invocations > 0)
-		//		compiler.DeclOut ("layout (invocations = {0}) in;", invocations);
-		//	compiler.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
-		//	compiler.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
-		//		outputPrimitive.MapOutputGSPrimitive (), vertexCount);
-		//	compiler.DeclareVariables (typeof (T), "out", "");
-		//	compiler.OutputGeometryShader (shader);
-		//	return BuildShaderCode (compiler);
-		//}
+		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
+		{
+			CreateFunction (new CLCCompiler (null), member, expr);
+		}
 
-		//public static string CreateGeometryShader<T> (int vertexCount, int invocations,
-		//	PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
-		//	Expression<Func<Shader<T[]>>> shader)
-		//{
-		//	var currVersion = GetGLSLVersion ();
-		//	var minVersion = invocations == 0 ? 150 : 400;
-		//	var version = currVersion > minVersion ? currVersion : minVersion;
-		//	return CreateGeometryShader<T> (version.ToString (), vertexCount, invocations, 
-		//		inputPrimitive, outputPrimitive, shader);
-		//}
-
-		//public static void CreateFunction (MemberInfo member, LambdaExpression expr)
-		//{
-		//	CreateFunction (new GLSLCompiler (), member, expr);
-		//}
-
-		//private static string BuildShaderCode (GLSLCompiler builder)
-		//{
-		//	return "#version 400 core\nprecision highp float;\n" +
-		//		builder._decl.ToString () +
-		//		GenerateFunctions (builder._funcRefs) +
-		//		builder._code.ToString ();
-		//}
+		private static string BuildKernelCode (CLCCompiler compiler)
+		{
+			return "#version 400 core\nprecision highp float;\n" +
+				compiler._decl.ToString () +
+				GenerateFunctions (compiler._funcRefs) +
+				compiler._code.ToString ();
+		}
 
 		//private static int GetGLSLVersion ()
 		//{
@@ -75,15 +49,15 @@
 		//	return int.Parse (match.Groups[1].Value + match.Groups[2].Value);
 		//}
 
-		//protected override string MapMemberAccess (MemberExpression me)
-		//{
-		//	var syntax = me.Member.GetGLSyntax ();
-		//	return syntax != null ?
-		//		string.Format (syntax, Expr (me.Expression)) :
-		//		me.Expression.Type.IsGLType () ?
-		//			string.Format ("{0}.{1}", Expr (me.Expression), me.Member.GetGLFieldName ()) :
-		//			me.Member.Name;
-		//}
+		protected override string MapMemberAccess (MemberExpression me)
+		{
+			var syntax = me.Member.GetCLSyntax ();
+			return syntax != null ?
+				string.Format (syntax, Expr (me.Expression)) :
+				me.Expression.Type.IsCLType () ?
+					string.Format ("{0}.{1}", Expr (me.Expression), me.Member.GetCLFieldName ()) :
+					me.Member.Name;
+		}
 
 		//protected override string MapType (Type type)
 		//{
@@ -117,7 +91,7 @@
 		//}
 
 		//private void DeclareUniforms (Type type)
-  //      {
+		//      {
 		//	if (!DefineType (type)) return;
 		//	foreach (var field in type.GetUniforms ())
 		//	{
@@ -130,24 +104,24 @@
 		//}
 
 		//private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
-  //      {
-  //          if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
+		//      {
+		//          if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
 		//		member.Name.StartsWith ("<>")))
-  //          {
+		//          {
 		//		string arrayDecl = GetArrayDecl (member, ref memberType);
 		//		var syntax = MapType (memberType);
 		//		var qualifiers = member.GetQualifiers ();
 		//		DeclOut (string.IsNullOrEmpty (qualifiers) ?
-  //                  string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
-  //                  string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
-  //          }
-  //      }
+		//                  string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
+		//                  string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
+		//          }
+		//      }
 
-  //      private void DeclareVariables (Type type, string prefix, string instanceName)
-  //      {
+		//      private void DeclareVariables (Type type, string prefix, string instanceName)
+		//      {
 		//	if (!DefineType (type))
 		//		return;
-  //          if (!type.Name.StartsWith ("<>"))
+		//          if (!type.Name.StartsWith ("<>"))
 		//		foreach (var field in type.GetGLFields ())
 		//			DeclareVariable (field, field.FieldType, prefix);
 		//	foreach (var prop in type.GetGLProperties ())
@@ -197,22 +171,22 @@
 		//		CodeOut ("const {0} {1} = {2};", MapType (constType), name, Expr (value));
 		//}
 
-		//protected override void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
-		//{
-		//	if (node.Method.Name == "State")
-		//		return;
-		//	var type = node.Method.GetGenericArguments () [0];
-		//	if (node.Method.Name == "Inputs")
-		//		DeclareVariables (type, "in", par.Name);
-		//	else if (node.Method.Name == "Uniforms")
-		//		DeclareUniforms (type);
-		//	else if (node.Method.Name == "Constants")
-		//		DeclareConstants (node.Arguments [0]);
-		//	else if (node.Method.Name == "ToShader")
-		//		CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments [0]));
-		//	else
-		//		throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
-		//}
+		protected override void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
+		{
+			//	if (node.Method.Name == "State")
+			//		return;
+			//	var type = node.Method.GetGenericArguments () [0];
+			//	if (node.Method.Name == "Inputs")
+			//		DeclareVariables (type, "in", par.Name);
+			//	else if (node.Method.Name == "Uniforms")
+			//		DeclareUniforms (type);
+			//	else if (node.Method.Name == "Constants")
+			//		DeclareConstants (node.Arguments [0]);
+			//	else if (node.Method.Name == "ToShader")
+			//		CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments [0]));
+			//	else
+			//		throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
+		}
 
 		//private void ReturnArrayOfVertices (Expression expr)
 		//{
@@ -227,20 +201,12 @@
 		//	CodeOut ("EndPrimitive ();");
 		//}
 
-		//private void OutputShader (LambdaExpression expr)
-  //      {
-		//	StartMain ();
-		//	var retExpr = ParseLinqExpression (expr.Body);
-  //          ConditionalReturn (retExpr, Return);
-		//	EndFunction ();
-  //      }
-
-		//private void OutputGeometryShader (LambdaExpression expr)
-		//{
-		//	StartMain ();
-		//	var retExpr = ParseLinqExpression (expr.Body);
-		//	ConditionalReturn (retExpr, ReturnArrayOfVertices);
-		//	EndFunction ();
-		//}
-	//}
+		private void OutputKernel (LambdaExpression expr)
+		{
+			StartMain ();
+			var retExpr = ParseLinqExpression (expr.Body);
+			ConditionalReturn (retExpr, Return);
+			EndFunction ();
+		}
+	}
 }

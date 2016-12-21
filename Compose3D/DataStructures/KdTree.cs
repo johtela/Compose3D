@@ -159,7 +159,7 @@
 				if (currDist < bestDist)
 				{
 					var i = Array.FindLastIndex (bests, n => n != null && distance (n.Position, pos) < currDist) + 1;
-					bests = bests.Insert (tree, i);
+					bests = bests.Insert (i, tree);
 					bestDist = LastBestDistance (bests, pos, distance);
 				}
 				if (pos [k] < split && DistanceToBBox (pos, rightBounds, distance) < bestDist)

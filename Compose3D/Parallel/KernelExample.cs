@@ -6,20 +6,14 @@
 	using CLTypes;
 	using Extensions;
 
-	public class KernelExample : KernelArguments
+	public static class KernelExample
 	{
-		CLInput<int> param1;
-		CLBuffer<float> buffer;
-
-		public KernelExample () : base (null)
+		public static CLProgram Example (ComputeContext context)
 		{
-			param1 &= 1;
-		}
-
-		public static Expression<Func<KernelExample>> Example ()
-		{
-			return () => from arg in Kernel.Arguments<KernelExample> ()
-						 select (!arg.buffer).Insert (0f, !arg.param1);
+			return CLProgram.Create (context, nameof (Example),
+				() => from arg in Kernel.Argument<int> ()
+					  from buffer in Kernel.Buffer<float> ()
+					  select buffer.Replace (arg, 0f));
 		} 
 	}
 }

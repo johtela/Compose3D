@@ -4,17 +4,21 @@
 	using System.Collections.Generic;
 	using Cloo;
 
+	public enum CLArgumentKind { Value, Buffer }
+
 	public class CLArguments
 	{
 		private class Arg
 		{
 			public readonly string Name;
 			public readonly Type Type;
+			public readonly CLArgumentKind Kind;
 
-			public Arg (string name, Type type)
+			public Arg (string name, Type type, CLArgumentKind kind)
 			{
 				Name = name;
 				Type = type;
+				Kind = kind;
 			}
 		}
 
@@ -26,9 +30,9 @@
 			_arguments = new List<Arg> ();
 		}
 
-		internal void Add (string name, Type type)
+		internal void Add (string name, Type type, CLArgumentKind kind)
 		{
-			_arguments.Add (new Arg (name, type));
+			_arguments.Add (new Arg (name, type, kind));
 		}
 
 		public int Count
@@ -46,9 +50,18 @@
 			return _arguments[index].Type;
 		}
 
-		private void CheckArgType<T> (int index) where T : struct
+		public CLArgumentKind ArgumentKind (int index)
+		{
+			return _arguments[index].Kind;
+		}
+
+		private void CheckArgType<T> (int index, CLArgumentKind kind) where T : struct
 		{
 			var arg = _arguments[index];
+			if (arg.Kind != kind)
+				throw new ArgumentException (
+					string.Format ("Wrong kind of argument for index {0}. Expected {1} got {2}.",
+						index, arg.Kind, kind));
 			if (arg.Type != typeof (T))
 				throw new ArgumentException (
 					string.Format ("Wrong type {0} for argument index {1}. Expected {2}.",
@@ -66,14 +79,14 @@
 		public void Set<T> (int index, T value)
 			where T : struct
 		{
-			CheckArgType<T> (index);
+			CheckArgType<T> (index, CLArgumentKind.Value);
 			_program._comKernel.SetValueArgument (index, value);
 		}
 
 		public void Set<T> (int index, ComputeBuffer<T> buffer)
 			where T : struct
 		{
-			CheckArgType<T> (index);
+			CheckArgType<T> (index, CLArgumentKind.Buffer);
 			_program._comKernel.SetMemoryArgument (index, buffer);
 		}
 

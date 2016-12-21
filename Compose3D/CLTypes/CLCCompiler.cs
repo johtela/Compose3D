@@ -68,56 +68,6 @@
 		//	DeclOut ("};");
 		//}
 
-		//private static string GetArrayDecl (MemberInfo member, ref Type memberType)
-		//{
-		//	var arrayDecl = "";
-		//	if (memberType.IsArray)
-		//	{
-		//		var arrAttr = member.ExpectFixedArrayAttribute ();
-		//		arrayDecl = string.Format ("[{0}]", arrAttr.Length);
-		//		memberType = memberType.GetElementType ();
-		//	}
-		//	return arrayDecl;
-		//}
-
-		//private void DeclareUniforms (Type type)
-		//      {
-		//	if (!DefineType (type)) return;
-		//	foreach (var field in type.GetUniforms ())
-		//	{
-		//		var uniType = field.FieldType.GetGenericArguments ().Single ();
-		//		string arrayDecl = GetArrayDecl (field, ref uniType);
-		//		if (uniType.GetGLAttribute () is GLStruct)
-		//			OutputStruct (uniType);
-		//		DeclOut ("uniform {0} {1}{2};", MapType (uniType), field.Name, arrayDecl);
-		//	}
-		//}
-
-		//private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
-		//      {
-		//          if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
-		//		member.Name.StartsWith ("<>")))
-		//          {
-		//		string arrayDecl = GetArrayDecl (member, ref memberType);
-		//		var syntax = MapType (memberType);
-		//		var qualifiers = member.GetQualifiers ();
-		//		DeclOut (string.IsNullOrEmpty (qualifiers) ?
-		//                  string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
-		//                  string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
-		//          }
-		//      }
-
-		//      private void DeclareVariables (Type type, string prefix, string instanceName)
-		//      {
-		//	if (!DefineType (type))
-		//		return;
-		//          if (!type.Name.StartsWith ("<>"))
-		//		foreach (var field in type.GetGLFields ())
-		//			DeclareVariable (field, field.FieldType, prefix);
-		//	foreach (var prop in type.GetGLProperties ())
-		//		DeclareVariable (prop, prop.PropertyType, prefix);
-		//}
-
 		//private void DeclareConstants (Expression expr)
 		//{
 		//	var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
@@ -163,12 +113,13 @@
 
 		protected override void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
 		{
-			//	if (node.Method.Name == "State")
-			//		return;
-			//	var type = node.Method.GetGenericArguments () [0];
-			//	if (node.Method.Name == "Inputs")
-			//		DeclareVariables (type, "in", par.Name);
-			//	else if (node.Method.Name == "Uniforms")
+			if (node.Method.Name == "State")
+				return;
+			var type = node.Method.GetGenericArguments ()[0];
+			if (node.Method.Name == "Argument")
+				_arguments.Add (par.Name, type, CLArgumentKind.Value);
+			else if (node.Method.Name == "Buffer")
+				_arguments.Add (par.Name, type, CLArgumentKind.Buffer);
 			//		DeclareUniforms (type);
 			//	else if (node.Method.Name == "Constants")
 			//		DeclareConstants (node.Arguments [0]);

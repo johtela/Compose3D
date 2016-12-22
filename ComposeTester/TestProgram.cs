@@ -7,6 +7,7 @@
 	using Visuals;
 	using System.Windows.Forms;
 	using OpenTK.Input;
+	using Compose3D.Parallel;
 
 	public class TestProgram
 	{
@@ -15,8 +16,9 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			var wnd = new FighterWindow ();
-			wnd.Run ();
+			TestParallel ();
+			//var wnd = new FighterWindow ();
+			//wnd.Run ();
 //			Task.Factory.StartNew (() =>
 //				Tester.RunTestsTimed (
 //					new VecTests (),
@@ -27,6 +29,11 @@
 //					new BoundingTreeTests (),
 //					new KdTreeTests ()));
 //			Application.Run (VConsole);
+		}
+
+		private static void TestParallel ()
+		{
+			var prog = KernelExample.Example (null);
 		}
 	}
 }

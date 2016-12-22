@@ -14,6 +14,8 @@
 
 	public delegate T Kernel<T> (KernelState state);
 
+	public class KernelResult<T> : Params<int, T> { }
+
 	public static class Kernel
 	{
 		[LiftMethod]

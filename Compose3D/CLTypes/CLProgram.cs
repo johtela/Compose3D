@@ -23,9 +23,10 @@
 		public static CLProgram Create<T> (ComputeContext context, string name, 
 			Expression<Func<Kernel<T>>> func)
 		{
-			//var source = CLCCompiler.CreateShader (func);
-			//Console.WriteLine (source);
-			return new CLProgram (context, name, null, new CLArguments ());
+			var args = new CLArguments ();
+			var source = CLCCompiler.CreateKernel (name, func, args);
+			Console.WriteLine (source);
+			return new CLProgram (context, name, null, args);
 		}
 
 	}

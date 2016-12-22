@@ -15,6 +15,7 @@
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
+	using Compose3D.Parallel;
 
 	public class MaterialWindow : GameWindow
 	{

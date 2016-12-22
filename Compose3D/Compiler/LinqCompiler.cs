@@ -390,20 +390,26 @@
             {
                 var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
                 if (mie == null)
-                    throw new ParseException ("Unsupported expression: " + expr);
-                foreach (MemberAssignment assign in mie.Bindings)
-                    CodeOut ("{0} = {1};", assign.Member.Name, Expr (assign.Expression));
+                    throw new ParseException (
+						"The select clause must be a 'new' expression. Currently it is: " + expr);
+				foreach (MemberAssignment assign in mie.Bindings)
+					OutputReturnAssignment (assign.Member, assign.Expression);
             }
             else
             {
                 for (int i = 0; i < ne.Members.Count; i++)
                 {
                     var prop = (PropertyInfo)ne.Members[i];
-                    if (!prop.Name.StartsWith ("<>"))
-                        CodeOut ("{0} = {1};", prop.Name, Expr (ne.Arguments[i]));
+					if (!prop.Name.StartsWith ("<>"))
+						OutputReturnAssignment (prop, ne.Arguments[i]);
                 }
             }
         }
+
+		protected virtual void OutputReturnAssignment (MemberInfo member, Expression expr)
+		{
+			CodeOut ("{0} = {1};", member.Name, Expr (expr));
+		}
 
 		protected void ConditionalReturn (Expression expr, Action<Expression> returnAction)
 		{

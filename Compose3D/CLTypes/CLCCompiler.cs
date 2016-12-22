@@ -129,6 +129,12 @@
 			//		throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
 
+		protected override void OutputReturnAssignment (MemberInfo member, Expression expr)
+		{
+			_arguments.Add (member.Name, expr.Type, CLArgumentKind.Buffer);
+			base.OutputReturnAssignment (member, expr);
+		}
+
 		private void OutputKernel (LambdaExpression expr)
 		{
 			StartMain ();

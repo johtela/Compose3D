@@ -120,13 +120,12 @@
 				_arguments.Add (par.Name, type, CLArgumentKind.Value);
 			else if (node.Method.Name == "Buffer")
 				_arguments.Add (par.Name, type, CLArgumentKind.Buffer);
-			//		DeclareUniforms (type);
 			//	else if (node.Method.Name == "Constants")
 			//		DeclareConstants (node.Arguments [0]);
-			//	else if (node.Method.Name == "ToShader")
-			//		CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments [0]));
-			//	else
-			//		throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
+			else if (node.Method.Name == "ToKernel")
+				CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments[0]));
+			else
+				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
 
 		protected override void OutputReturnAssignment (MemberInfo member, Expression expr)

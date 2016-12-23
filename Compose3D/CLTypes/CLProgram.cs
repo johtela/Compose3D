@@ -9,24 +9,25 @@
 	{
 		internal ComputeProgram _comProgram;
 		internal ComputeKernel _comKernel;
-		private CLArguments _arguments;
+		private KernelArguments _arguments;
 
-		public CLProgram (ComputeContext context, string kernelName, string source,
-			CLArguments arguments)
+		public CLProgram (CLContext context, string kernelName, string source,
+			KernelArguments arguments)
 		{
-			_comProgram = new ComputeProgram (context, source);
+			_comProgram = new ComputeProgram (context._comContext, source);
+			_comProgram.Build (null, null, null, IntPtr.Zero);
 			_comKernel = _comProgram.CreateKernel (kernelName);
 			_arguments = arguments;
 			_arguments._program = this;
 		}
 
-		public static CLProgram Create<T> (ComputeContext context, string name, 
+		public static CLProgram Create<T> (CLContext context, string name, 
 			Expression<Func<Kernel<T>>> func)
 		{
-			var args = new CLArguments ();
+			var args = new KernelArguments ();
 			var source = CLCCompiler.CreateKernel (name, func, args);
 			Console.WriteLine (source);
-			return new CLProgram (context, name, null, args);
+			return new CLProgram (context, name, source, args);
 		}
 
 	}

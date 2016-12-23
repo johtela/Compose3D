@@ -64,7 +64,7 @@
             { ExpressionType.AndAlso, "{0} && {1}" },
             { ExpressionType.OrElse, "{0} || {1}" },
             { ExpressionType.Not, "!{0}" },
-            { ExpressionType.ArrayIndex, "{0} [{1}]" },
+            { ExpressionType.ArrayIndex, "{0}[{1}]" },
             { ExpressionType.ArrayLength, "{0}.length ()" }
         };
  

@@ -7,14 +7,14 @@
 
 	public static class KernelExample
 	{
-		public static CLProgram Example (ComputeContext context)
+		public static CLProgram Example (CLContext context)
 		{
 			return CLProgram.Create (context, nameof (Example), () =>
-				from arg in Kernel.Argument<int> ()
 				from buffer in Kernel.Buffer<float> ()
+				let i = Kernel.GetGlobalId (0)
 				select new
 				{
-					result = new KernelResult<float> { { arg, buffer[arg] } }
+					result = new KernelResult<float> { { i, buffer[i] } }
 				}
 			);
 		} 

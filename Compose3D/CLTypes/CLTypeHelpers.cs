@@ -73,5 +73,10 @@
 			var attr = mi.GetAttribute<CLFieldAttribute> ();
 			return attr == null ? mi.Name : attr.Name;
 		}
+
+		public static bool IsGenericTypeDef (this Type type, Type genericTypeDef)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition () == genericTypeDef;
+		}
 	}
 }

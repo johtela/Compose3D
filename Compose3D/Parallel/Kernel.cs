@@ -6,13 +6,7 @@
 	using CLTypes;
 	using Cloo;
 
-	public class KernelState
-	{
-		[CLFunction ("get_global_id ()")]
-		public int GetGlobalId () { return 0; }
-	}
-
-	public delegate T Kernel<T> (KernelState state);
+	public delegate T Kernel<T> ();
 
 	public class KernelResult<T> : Params<int, T> { }
 
@@ -21,48 +15,43 @@
 		[LiftMethod]
 		public static Kernel<T> ToKernel<T> (this T value)
 		{
-			return state => value;
+			return () => value;
 		}
 
 		public static Kernel<U> Bind<T, U> (this Kernel<T> kernel, Func<T, Kernel<U>> func)
 		{
-			return state => func (kernel (state)) (state);
-		}
-
-		public static T Execute<T> (this Kernel<T> kernel, KernelState state)
-		{
-			return kernel (state);
+			return () => func (kernel ()) ();
 		}
 
 		public static T Evaluate<T> (this Kernel<T> kernel)
 		{
-			return kernel (new KernelState ());
+			return kernel ();
 		}
 
 		[LiftMethod]
 		public static Kernel<T> Argument<T> ()
 			where T : struct
 		{
-			return state => default (T);
+			return () => default (T);
 		}
 
 		[LiftMethod]
 		public static Kernel<T[]> Buffer<T> ()
 			where T : struct
 		{
-			return state => new T[0];
+			return () => new T[0];
 		}
 
 		[LiftMethod]
 		public static Kernel<T> Constants<T> (T constants)
 		{
-			return state => constants;
+			return () => constants;
 		}
 
-		[LiftMethod]
-		public static Kernel<KernelState> State ()
+		[CLFunction ("get_global_id ({0})")]
+		public static int GetGlobalId (int dimension)
 		{
-			return state => state;
+			return 0;
 		}
 
 		public static Kernel<U> Select<T, U> (this Kernel<T> kernel, Func<T, U> select)
@@ -78,9 +67,9 @@
 
 		public static Kernel<T> Where<T> (this Kernel<T> kernel, Func<T, bool> predicate)
 		{
-			return state =>
+			return () =>
 			{
-				var res = kernel (state);
+				var res = kernel ();
 				return predicate (res) ? res : default (T);
 			};
 		}

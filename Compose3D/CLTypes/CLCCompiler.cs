@@ -4,27 +4,26 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Text.RegularExpressions;
-	using Extensions;
+    using Extensions;
 	using Compiler;
 	using Parallel;
 
 	public class CLCCompiler : LinqCompiler
 	{
-		private CLArguments _arguments;
+		private KernelArguments _arguments;
 
-		private CLCCompiler (CLArguments arguments) : 
+		private CLCCompiler (KernelArguments arguments) : 
 			base (typeof (Kernel), new CLTypeMapping ())
 		{
 			_arguments = arguments;
 		}
 
 		public static string CreateKernel<T> (string name, 
-			Expression<Func<Kernel<T>>> kernel, CLArguments arguments)
+			Expression<Func<Kernel<T>>> kernel, KernelArguments arguments)
 		{
 			var compiler = new CLCCompiler (arguments);
 			compiler.OutputKernel (kernel);
-			return BuildKernelCode (compiler);
+			return BuildKernelCode (name, compiler);
 		}
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
@@ -32,12 +31,34 @@
 			CreateFunction (new CLCCompiler (null), member, expr);
 		}
 
-		private static string BuildKernelCode (CLCCompiler compiler)
+		private static string BuildKernelCode (string kernelName, CLCCompiler compiler)
 		{
 			return compiler._decl.ToString () +
 				GenerateFunctions (compiler._funcRefs) +
+                compiler.KernelSignature (kernelName) +
 				compiler._code.ToString ();
 		}
+
+        private string KernelSignature (string kernelName)
+        {
+            return string.Format ("kernel void {0} ({1})\n{{\n", kernelName,
+                _arguments.Select (ArgumentDefinition).SeparateWith (", "));
+        }
+
+        private string ArgumentDefinition (KernelArgument arg)
+        {
+            switch (arg.Kind)
+            {
+                case KernelArgumentKind.Value:
+                    return string.Format ("{0} {1}", MapType (arg.Type), arg.Name);
+                case KernelArgumentKind.Buffer:
+                    return string.Format ("global {0} {1}* {2}",
+                        arg.Access == KernelArgumentAccess.Read ? "read_only" : "write_only",
+                        MapType (arg.Type), arg.Name);
+                default:
+                    throw new ArgumentException ("Invalid argument type");
+            }
+        }
 
 		protected override string MapMemberAccess (MemberExpression me)
 		{
@@ -117,9 +138,9 @@
 				return;
 			var type = node.Method.GetGenericArguments ()[0];
 			if (node.Method.Name == "Argument")
-				_arguments.Add (par.Name, type, CLArgumentKind.Value);
+				_arguments.Add (par.Name, type, KernelArgumentKind.Value, KernelArgumentAccess.Read);
 			else if (node.Method.Name == "Buffer")
-				_arguments.Add (par.Name, type, CLArgumentKind.Buffer);
+				_arguments.Add (par.Name, type, KernelArgumentKind.Buffer, KernelArgumentAccess.Read);
 			//	else if (node.Method.Name == "Constants")
 			//		DeclareConstants (node.Arguments [0]);
 			else if (node.Method.Name == "ToKernel")
@@ -130,13 +151,21 @@
 
 		protected override void OutputReturnAssignment (MemberInfo member, Expression expr)
 		{
-			_arguments.Add (member.Name, expr.Type, CLArgumentKind.Buffer);
-			base.OutputReturnAssignment (member, expr);
+			var lie = expr.Expect<ListInitExpression> (ExpressionType.ListInit);
+            if (!lie.Type.IsGenericTypeDef(typeof(KernelResult<>)))
+                throw new ParseException("Kernel return parameters have to be of KernelResult<> type");
+            var bufType = lie.Type.GetGenericArguments()[0];
+            _arguments.Add (member.Name, bufType, KernelArgumentKind.Buffer, KernelArgumentAccess.Write);
+			foreach (var init in lie.Initializers)
+            {
+                var args = init.Arguments;
+				CodeOut ("{0}[{1}] = {2};", member.Name, Expr (args[0]), Expr (args[1]));
+            }
 		}
 
 		private void OutputKernel (LambdaExpression expr)
 		{
-			StartMain ();
+            _tabLevel++;
 			var retExpr = ParseLinqExpression (expr.Body);
 			ConditionalReturn (retExpr, Return);
 			EndFunction ();

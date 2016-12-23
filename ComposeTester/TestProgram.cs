@@ -1,12 +1,14 @@
 ﻿namespace ComposeTester
 {
 	using System;
+	using System.Linq;
 	using System.Threading.Tasks;
 	using LinqCheck;
 	using Compose3D.Reactive;
 	using Visuals;
 	using System.Windows.Forms;
 	using OpenTK.Input;
+	using Compose3D.CLTypes;
 	using Compose3D.Parallel;
 
 	public class TestProgram
@@ -33,7 +35,9 @@
 
 		private static void TestParallel ()
 		{
-			var prog = KernelExample.Example (null);
+			var device = CLContext.Gpus.First ();
+			var context = CLContext.CreateContextForDevices (device);
+			var prog = KernelExample.Example (context);
 		}
 	}
 }

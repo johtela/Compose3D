@@ -6,6 +6,7 @@ namespace Compose3D.Maths
     using System;
     using System.Text;
 	using System.Globalization;
+	using CLTypes;
 	using GLTypes;
 
 	/// <summary>
@@ -14,30 +15,35 @@ namespace Compose3D.Maths
 	/// implementented in C# as well.
 	/// </summary>
 	[GLType ("ivec4")]
+	[CLType ("int4")]
     public struct Vec4i : IVec<Vec4i, int>
     { 
 		/// <summary>
 		/// The X component of the vector.
 		/// </summary>
 		[GLField ("x")]
+		[CLField ("x")]
         public int X; 
 
 		/// <summary>
 		/// The Y component of the vector.
 		/// </summary>
 		[GLField ("y")]
+		[CLField ("y")]
         public int Y; 
 
 		/// <summary>
 		/// The Z component of the vector.
 		/// </summary>
 		[GLField ("z")]
+		[CLField ("z")]
         public int Z; 
 
 		/// <summary>
 		/// The W component of the vector.
 		/// </summary>
 		[GLField ("w")]
+		[CLField ("w")]
         public int W; 
 
 
@@ -46,6 +52,7 @@ namespace Compose3D.Maths
 		/// </summary>
 
 		[GLConstructor ("ivec4 ({0})")]
+		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (int x, int y, int z, int w)
 		{	
 			X = x; 
@@ -60,6 +67,7 @@ namespace Compose3D.Maths
 		/// </summary>
 
 		[GLConstructor ("ivec4 ({0})")]
+		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (int value)
 		{	
 			X = value; 
@@ -74,6 +82,7 @@ namespace Compose3D.Maths
 		/// Copy the components of the vector from another vector.
 		/// </summary>
 		[GLConstructor ("ivec4 ({0})")]
+		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (Vec2i vec, int z, int w)
 		{	
 			X = vec.X; 
@@ -87,6 +96,7 @@ namespace Compose3D.Maths
 		/// Copy the components of the vector from another vector.
 		/// </summary>
 		[GLConstructor ("ivec4 ({0})")]
+		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (Vec3i vec, int w)
 		{	
 			X = vec.X; 
@@ -100,6 +110,7 @@ namespace Compose3D.Maths
 		/// Copy the components of the vector from another vector.
 		/// </summary>
 		[GLConstructor ("ivec4 ({0})")]
+		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (Vec4i vec)
 		{	
 			X = vec.X; 
@@ -113,6 +124,7 @@ namespace Compose3D.Maths
 		/// Negate all of the components of the vector.
 		/// </summary>
 		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
 		public Vec4i Invert ()
 		{
 			return new Vec4i (-X, -Y, -Z, -W);
@@ -123,6 +135,7 @@ namespace Compose3D.Maths
 		/// Add another vector this one componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
 		public Vec4i Add (Vec4i other)
 		{
 			return new Vec4i (X + other.X, Y + other.Y, Z + other.Z, W + other.W);
@@ -133,6 +146,7 @@ namespace Compose3D.Maths
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
 		public Vec4i Subtract (Vec4i other)
 		{
 			return new Vec4i (X - other.X, Y - other.Y, Z - other.Z, W - other.W);
@@ -143,6 +157,7 @@ namespace Compose3D.Maths
 		/// Multiply with another vector componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
 		public Vec4i Multiply (Vec4i other)
 		{
 			return new Vec4i (X * other.X, Y * other.Y, Z * other.Z, W * other.W);
@@ -153,6 +168,7 @@ namespace Compose3D.Maths
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
 		public Vec4i Multiply (int scalar)
 		{
 			return new Vec4i (X * scalar, Y * scalar, Z * scalar, W * scalar);
@@ -163,6 +179,7 @@ namespace Compose3D.Maths
 		/// Divide the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
 		public Vec4i Divide (Vec4i other)
 		{
 			return new Vec4i (X / other.X, Y / other.Y, Z / other.Z, W / other.W);
@@ -173,6 +190,7 @@ namespace Compose3D.Maths
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
 		public Vec4i Divide (int scalar)
 		{
 			return new Vec4i (X / scalar, Y / scalar, Z / scalar, W / scalar);
@@ -183,6 +201,7 @@ namespace Compose3D.Maths
 		/// Calculate the dot product with another vector.
 		/// </summary>
 		[GLFunction ("dot ({0})")]
+		[CLFunction ("dot ({0})")]
 		public int Dot (Vec4i other)
 		{
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
@@ -301,6 +320,7 @@ namespace Compose3D.Maths
 		/// The lengh of the vector.
 		/// </summary>
 		[GLFunction ("length ({0})")]
+		[CLFunction ("length ({0})")]
 		public int Length
 		{
 			get { return (int)Math.Sqrt (LengthSquared); }
@@ -310,6 +330,7 @@ namespace Compose3D.Maths
 		/// The normalized vector. I.e. vector with same direction, but with lenght of 1.
 		/// </summary>
 		[GLFunction ("normalize ({0})")]
+		[CLFunction ("normalize ({0})")]
 		public Vec4i Normalized
 		{
 			get { return Divide (Length); }
@@ -348,6 +369,7 @@ namespace Compose3D.Maths
 		/// Negate all of the components of the vector.
 		/// </summary>
 		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
         public static Vec4i operator - (Vec4i vec)
         {
             return vec.Invert ();
@@ -357,6 +379,7 @@ namespace Compose3D.Maths
 		/// Subtracts the right vector from the left componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
         public static Vec4i operator - (Vec4i left, Vec4i right)
         {
             return left.Subtract (right);
@@ -366,6 +389,7 @@ namespace Compose3D.Maths
 		/// Multiply the components of the vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static Vec4i operator * (int scalar, Vec4i vec)
         {
             return vec.Multiply (scalar);
@@ -375,6 +399,7 @@ namespace Compose3D.Maths
 		/// Multiply the components of the vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static Vec4i operator * (Vec4i vec, int scalar)
         {
             return vec.Multiply (scalar);
@@ -384,6 +409,7 @@ namespace Compose3D.Maths
 		/// Multiply the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static Vec4i operator * (Vec4i vec, Vec4i scale)
         {
             return vec.Multiply (scale);
@@ -393,6 +419,7 @@ namespace Compose3D.Maths
 		/// Divide the components of the vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
         public static Vec4i operator / (Vec4i vec, int scalar)
         {
             return vec.Divide (scalar);
@@ -402,6 +429,7 @@ namespace Compose3D.Maths
 		/// Divide the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
         public static Vec4i operator / (Vec4i vec, Vec4i scale)
         {
             return vec.Divide (scale);
@@ -411,6 +439,7 @@ namespace Compose3D.Maths
 		/// Add the two vectors together componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
         public static Vec4i operator + (Vec4i left, Vec4i right)
         {
             return left.Add (right);
@@ -420,6 +449,7 @@ namespace Compose3D.Maths
 		/// Componentwise equality comparison between the two vectors.
 		/// </summary>
 		[GLBinaryOperator ("{0} == {1}")]
+		[CLBinaryOperator ("{0} == {1}")]
         public static bool operator == (Vec4i left, Vec4i right)
         {
             return left.Equals (right);
@@ -429,6 +459,7 @@ namespace Compose3D.Maths
 		/// Componentwise inequality comparison between the two vectors.
 		/// </summary>
 		[GLBinaryOperator ("{0} != {1}")]
+		[CLBinaryOperator ("{0} != {1}")]
         public static bool operator != (Vec4i left, Vec4i right)
         {
             return !left.Equals (right);

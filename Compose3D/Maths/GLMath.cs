@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.Maths
 {
 	using GLTypes;
+	using CLTypes;
 	using OpenTK;
 	using System;
 
@@ -21,6 +22,7 @@
 		/// Returns the largest integer number that is smaller or equal to `value`.
 		/// </summary>
 		[GLFunction ("floor ({0})")]
+		[CLFunction ("floor ({0})")]
 		public static float Floor (this float value)
 		{
 			return (float)Math.Floor (value);
@@ -30,6 +32,7 @@
 		/// Returns the smallest number that is larger or equal to `value`.
 		/// </summary>
 		[GLFunction ("ceil ({0})")]
+		[CLFunction ("ceil ({0})")]
 		public static float Ceiling (this float value)
 		{
 			return (float)Math.Ceiling (value);
@@ -45,6 +48,7 @@
 		/// >	Floor rounds down, Ceiling rounds up, and Truncate rounds towards zero. Thus, Truncate is Floor for 
 		/// >	positive numbers, and like Ceiling for negative numbers.
 		[GLFunction ("trunc ({0})")]
+		[CLFunction ("trunc ({0})")]
 		public static float Truncate (this float value)
 		{
 			return (float)Math.Truncate (value);
@@ -54,6 +58,7 @@
 		/// Returns a value equal to the nearest integer to the `value` parameter.
 		/// </summary>
 		[GLFunction ("round ({0})")]
+		[CLFunction ("round ({0})")]
 		public static float Round (this float value)
 		{
 			return (float)Math.Round (value);
@@ -63,6 +68,7 @@
 		/// Returns the fractional part of `value`. This is calculated as `value - floor(value)`.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
+		[CLFunction ("fract ({0})")]
 		public static float Fraction (this float value)
 		{
 			return value - Floor (value);
@@ -72,6 +78,7 @@
 		/// Returns the fractional part of `value`. This is calculated as `value - floor(value)`.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
+		[CLFunction ("fract ({0})")]
 		public static double Fraction (this double value)
 		{
 			return value - Math.Floor (value);
@@ -83,6 +90,7 @@
 		/// If `value` is larger than the `max` parameter, then that is returned.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static float Clamp (this float value, float min, float max)
 		{
 			return 
@@ -97,6 +105,7 @@
 		/// If `value` is larger than the `max` parameter, then that is returned.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static double Clamp (this double value, double min, double max)
 		{
 			return 
@@ -111,6 +120,7 @@
 		/// If `value` is larger than the `max` parameter, then that is returned.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static int Clamp (this int value, int min, int max)
 		{
 			return Math.Min (Math.Max (value, min), max);
@@ -121,6 +131,7 @@
 		/// I.e. the product of `start` and `(1 - interPos)` plus the product of `end` and `interPos`.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
+		[CLFunction ("mix ({0})")]
 		public static float Mix (float start, float end, float interPos)
 		{
 			return start + (interPos * (end - start));
@@ -131,6 +142,7 @@
 		/// I.e. the product of `start` and `(1 - interPos)` plus the product of `end` and `interPos`.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
+		[CLFunction ("mix ({0})")]
 		public static double Mix (double start, double end, double interPos)
 		{
 			return start + (interPos * (end - start));
@@ -153,6 +165,7 @@
 		/// Returns 0.0 if `value` is smaller then `edge` and otherwise 1.0.
 		/// </summary>
 		[GLFunction ("step ({0})")]
+		[CLFunction ("step ({0})")]
 		public static float Step (float edge, float value)
 		{
 			return value < edge ? 0f : 1f;
@@ -162,6 +175,7 @@
 		/// Returns 0.0 if `value` is smaller then `edge` and otherwise 1.0.
 		/// </summary>
 		[GLFunction ("step ({0})")]
+		[CLFunction ("step ({0})")]
 		public static double Step (double edge, double value)
 		{
 			return value < edge ? 0.0 : 1.0;
@@ -172,6 +186,7 @@
 		/// Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials. 
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
+		[CLFunction ("smoothstep ({0})")]
 		public static float SmoothStep (float edgeLower, float edgeUpper, float value)
 		{
 			var t = Clamp ((value - edgeLower) / (edgeUpper - edgeLower), 0f, 1f);
@@ -183,6 +198,7 @@
 		/// Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials. 
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
+		[CLFunction ("smoothstep ({0})")]
 		public static double SmoothStep (double edgeLower, double edgeUpper, double value)
 		{
 			var t = Clamp ((value - edgeLower) / (edgeUpper - edgeLower), 0.0, 1.1);
@@ -193,6 +209,7 @@
 		/// Returns `value` raised to the power of `exponent`.
 		/// </summary>
 		[GLFunction ("pow ({0})")]
+		[CLFunction ("pow ({0})")]
 		public static float Pow (this float value, float exponent)
 		{
 			return (float)Math.Pow (value, exponent);
@@ -202,6 +219,7 @@
 		/// Returns `value` raised to the power of `exponent`.
 		/// </summary>
 		[GLFunction ("pow ({0})")]
+		[CLFunction ("pow ({0})")]
 		public static int Pow (this int value, int exponent)
 		{
 			return (int)Math.Pow (value, exponent);
@@ -211,6 +229,7 @@
 		/// Returns the constant e raised to the power of `value`.
 		/// </summary>
 		[GLFunction ("exp ({0})")]
+		[CLFunction ("exp ({0})")]
 		public static float Exp (this float value)
 		{
 			return (float)Math.Exp (value);
@@ -220,6 +239,7 @@
 		/// Returns the power to which the constant e has to be raised to produce `value`.
 		/// </summary>
 		[GLFunction ("log ({0})")]
+		[CLFunction ("log ({0})")]
 		public static float Log (this float value)
 		{
 			return (float)Math.Log (value);
@@ -229,6 +249,7 @@
 		/// Returns the square root of `value`.
 		/// </summary>
 		[GLFunction ("sqrt ({0})")]
+		[CLFunction ("sqrt ({0})")]
 		public static float Sqrt (this float value)
 		{
 			return (float)Math.Sqrt (value);
@@ -238,6 +259,7 @@
 		/// Returns the inverse of square root of `value`. I.e. `1 / sqrt (value)`.
 		/// </summary>
 		[GLFunction ("inversesqrt ({0})")]
+		[CLFunction ("inversesqrt ({0})")]
 		public static float InverseSqrt (this float value)
 		{
 			return 1f / (float)Math.Sqrt (value);
@@ -247,6 +269,7 @@
 		/// Converts degrees to radians.
 		/// </summary>
 		[GLFunction ("radians ({0})")]
+		[CLFunction ("radians ({0})")]
 		public static float Radians (this float degrees)
 		{
 			return degrees * MathHelper.Pi / 180f;
@@ -256,6 +279,7 @@
 		/// Converts degrees to radians.
 		/// </summary>
 		[GLFunction ("radians ({0})")]
+		[CLFunction ("radians ({0})")]
 		public static double Radians (this double degrees)
 		{
 			return degrees * Math.PI / 180.0;
@@ -273,6 +297,7 @@
 		/// Convert radians to degrees.
 		/// </summary>
 		[GLFunction ("radians ({0})")]
+		[CLFunction ("radians ({0})")]
 		public static float Degrees (this float radians)
 		{
 			return radians * 180f / MathHelper.Pi;
@@ -282,6 +307,7 @@
 		/// Convert radians to degrees.
 		/// </summary>
 		[GLFunction ("radians ({0})")]
+		[CLFunction ("radians ({0})")]
 		public static double Degrees (this double radians)
 		{
 			return radians * 180f / MathHelper.Pi;
@@ -291,6 +317,7 @@
 		/// Returns the sine of an `angle` in radians.
 		/// </summary>
 		[GLFunction ("sin ({0})")]
+		[CLFunction ("sin ({0})")]
 		public static float Sin (this float angle)
 		{
 			return (float)Math.Sin (angle);
@@ -300,6 +327,7 @@
 		/// Returns the cosine of an `angle` in radians.
 		/// </summary>
 		[GLFunction ("cos ({0})")]
+		[CLFunction ("cos ({0})")]
 		public static float Cos (this float angle)
 		{
 			return (float)Math.Cos (angle);
@@ -309,6 +337,7 @@
 		/// Returns the tangent of an `angle` in radians.
 		/// </summary>
 		[GLFunction ("tan ({0})")]
+		[CLFunction ("tan ({0})")]
 		public static float Tan (this float angle)
 		{
 			return (float)Math.Tan (angle);
@@ -318,6 +347,7 @@
 		/// Returns the arcsine of an `angle` in radians.
 		/// </summary>
 		[GLFunction ("asin ({0})")]
+		[CLFunction ("asin ({0})")]
 		public static float Asin (this float x)
 		{
 			return (float)Math.Asin (x);
@@ -327,6 +357,7 @@
 		/// Returns the arccosine of an `angle` in radians.
 		/// </summary>
 		[GLFunction ("acos ({0})")]
+		[CLFunction ("acos ({0})")]
 		public static float Acos (this float x)
 		{
 			return (float)Math.Acos (x);
@@ -336,6 +367,7 @@
 		/// Returns the arctangent of an `y_over_x` in radians.
 		/// </summary>
 		[GLFunction ("atan ({0})")]
+		[CLFunction ("atan ({0})")]
 		public static float Atan (this float y_over_x)
 		{
 			return (float)Math.Atan (y_over_x);
@@ -346,6 +378,7 @@
 		/// angle θ of the same point with polar coordinates (r, θ).
 		/// </summary>
 		[GLFunction ("atan ({0})")]
+		[CLFunction ("atan ({0})")]
 		public static float Atan2 (float y, float x)
 		{
 			return (float)Math.Atan2 (y, x);
@@ -356,6 +389,7 @@
 		/// `-value` when it is negative.
 		/// </summary>
 		[GLFunction ("abs ({0})")]
+		[CLFunction ("abs ({0})")]
 		public static float Abs (this float value)
 		{
 			return (float)Math.Abs (value);

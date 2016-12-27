@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Globalization;
 	using Extensions;
+	using CLTypes;
 	using GLTypes;
 
 	/// <summary>
@@ -401,6 +402,7 @@
 		/// Cross returns a vector perpendicular to the two vectors given as arguments. This operation
 		/// only makes sense in 3D, so function is only defined for <see cref="Vec3"/>.
 		[GLFunction ("cross ({0})")]
+		[CLFunction ("cross ({0})")]
 		public static Vec3 Cross (this Vec3 v1, Vec3 v2)
 		{
 			return new Vec3 (
@@ -429,6 +431,7 @@
 		/// Convert a vector of degree values to radians.
 		/// </summary>
 		[GLFunction ("radians ({0})")]
+		[CLFunction ("radians ({0})")]
 		public static V Radians<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -439,6 +442,7 @@
 		/// Convert a vector of radian values to degrees.
 		/// </summary>
 		[GLFunction ("degrees ({0})")]
+		[CLFunction ("degrees ({0})")]
 		public static V Degrees<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -449,6 +453,7 @@
 		/// Applies the <see cref="Math.Abs(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("abs ({0})")]
+		[CLFunction ("abs ({0})")]
 		public static V Abs<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -459,6 +464,7 @@
 		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("floor ({0})")]
+		[CLFunction ("floor ({0})")]
 		public static V Floor<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -469,6 +475,7 @@
 		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("floor ({0})")]
+		[CLFunction ("floor ({0})")]
 		public static U Floor<V, U> (this V vec)
 			where V : struct, IVec<V, float>
 			where U : struct, IVec<U, int>
@@ -480,6 +487,7 @@
 		/// Applies the <see cref="GLMath.Ceiling(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("ceil ({0})")]
+		[CLFunction ("ceil ({0})")]
 		public static V Ceiling<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -490,6 +498,7 @@
 		/// Applies the <see cref="GLMath.Truncate(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("trunc ({0})")]
+		[CLFunction ("trunc ({0})")]
 		public static V Truncate<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -500,6 +509,7 @@
 		/// Applies the <see cref="GLMath.Fraction(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
+		[CLFunction ("fract ({0})")]
 		public static V Fraction<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -510,6 +520,7 @@
 		/// Applies the <see cref="Math.Min(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("min ({0})")]
+		[CLFunction ("min ({0})")]
 		public static V Min<V> (this V vec, V other)
 			where V : struct, IVec<V, float>
 		{
@@ -520,6 +531,7 @@
 		/// Applies the <see cref="Math.Min(int, int)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("min ({0})")]
+		[CLFunction ("min ({0})")]
 		public static V Mini<V> (this V vec, V other)
 			where V : struct, IVec<V, int>
 		{
@@ -530,6 +542,7 @@
 		/// Applies the <see cref="Math.Max(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("max ({0})")]
+		[CLFunction ("max ({0})")]
 		public static V Max<V> (this V vec, V other)
 			where V : struct, IVec<V, float>
 		{
@@ -540,6 +553,7 @@
 		/// Applies the <see cref="Math.Max(int, int)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("max ({0})")]
+		[CLFunction ("max ({0})")]
 		public static V Maxi<V> (this V vec, V other)
 			where V : struct, IVec<V, int>
 		{
@@ -550,6 +564,7 @@
 		/// Applies the <see cref="GLMath.Clamp(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static V Clamp<V> (this V vec, float min, float max)
 			where V : struct, IVec<V, float>
 		{
@@ -560,6 +575,7 @@
 		/// Applies the <see cref="GLMath.Clamp(int, int, int)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static V Clamp<V> (this V vec, int min, int max)
 			where V : struct, IVec<V, int>
 		{
@@ -571,6 +587,7 @@
 		/// The minimum and maximum values are also given as vectors.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static V Clamp<V> (this V vec, V min, V max)
 			where V : struct, IVec<V, float>
 		{
@@ -582,6 +599,7 @@
 		/// The minimum and maximum values are also given as vectors.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
+		[CLFunction ("clamp ({0})")]
 		public static V Clampi<V> (this V vec, V min, V max)
 			where V : struct, IVec<V, int>
 		{
@@ -593,6 +611,7 @@
 		/// The interPos parameter is also given as vector.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
+		[CLFunction ("mix ({0})")]
 		public static V Mix<V> (this V vec, V other, V interPos)
 			where V : struct, IVec<V, float>
 		{
@@ -603,6 +622,7 @@
 		/// Applies the <see cref="GLMath.Mix(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
+		[CLFunction ("mix ({0})")]
 		public static V Mix<V> (this V vec, V other, float interPos)
 			where V : struct, IVec<V, float>
 		{
@@ -613,6 +633,7 @@
 		/// Applies the <see cref="GLMath.Step(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("step ({0})")]
+		[CLFunction ("step ({0})")]
 		public static V Step<V> (float edge, V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -624,6 +645,7 @@
 		/// The edge values are also given as vector.
 		/// </summary>
 		[GLFunction ("step ({0})")]
+		[CLFunction ("step ({0})")]
 		public static V Step<V> (V edge, V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -634,6 +656,7 @@
 		/// Applies the <see cref="GLMath.SmoothStep(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
+		[CLFunction ("smoothstep ({0})")]
 		public static V SmoothStep<V> (float edgeLower, float edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -645,6 +668,7 @@
 		/// The edge values are also given as vector.
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
+		[CLFunction ("smoothstep ({0})")]
 		public static V SmoothStep<V> (V edgeLower, V edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -656,6 +680,7 @@
 		/// The exp values are also given as vector.
 		/// </summary>
 		[GLFunction ("pow ({0})")]
+		[CLFunction ("pow ({0})")]
 		public static V Pow<V> (this V vec, V exp)
 			where V : struct, IVec<V, float>
 		{
@@ -666,6 +691,7 @@
 		/// Applies the <see cref="GLMath.Exp(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("exp ({0})")]
+		[CLFunction ("exp ({0})")]
 		public static V Exp<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -676,6 +702,7 @@
 		/// Applies the <see cref="GLMath.Log(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("log ({0})")]
+		[CLFunction ("log ({0})")]
 		public static V Log<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -686,6 +713,7 @@
 		/// Applies the <see cref="GLMath.Sqrt(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("sqrt ({0})")]
+		[CLFunction ("sqrt ({0})")]
 		public static V Sqrt<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -696,6 +724,7 @@
 		/// Applies the <see cref="GLMath.InverseSqrt(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("inversesqrt ({0})")]
+		[CLFunction ("inversesqrt ({0})")]
 		public static V InverseSqrt<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -703,6 +732,7 @@
 		}
 
 		[GLFunction ("mod ({0})")]
+		[CLFunction ("mod ({0})")]
 		public static V Mod<V> (this V vec, float modulo)
 			where V : struct, IVec<V, float>
 		{
@@ -710,6 +740,7 @@
 		}
 
 		[GLFunction ("mod ({0})")]
+		[CLFunction ("mod ({0})")]
 		public static V Mod<V> (this V vec, V modulo)
 			where V : struct, IVec<V, float>
 		{
@@ -738,6 +769,7 @@
 		/// Applies the <see cref="GLMath.Sin(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("sin ({0})")]
+		[CLFunction ("sin ({0})")]
 		public static V Sin<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
@@ -748,6 +780,7 @@
 		/// Applies the <see cref="GLMath.Cos(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("cos ({0})")]
+		[CLFunction ("cos ({0})")]
 		public static V Cos<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
@@ -758,6 +791,7 @@
 		/// Applies the <see cref="GLMath.Tan(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("tan ({0})")]
+		[CLFunction ("tan ({0})")]
 		public static V Tan<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
@@ -768,6 +802,7 @@
 		/// Applies the <see cref="GLMath.Asin(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("asin ({0})")]
+		[CLFunction ("asin ({0})")]
 		public static V Asin<V> (this V x)
 			where V : struct, IVec<V, float>
 		{
@@ -778,6 +813,7 @@
 		/// Applies the <see cref="GLMath.Acos(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("acos ({0})")]
+		[CLFunction ("acos ({0})")]
 		public static V Acos<V> (this V x)
 			where V : struct, IVec<V, float>
 		{
@@ -788,6 +824,7 @@
 		/// Applies the <see cref="GLMath.Atan(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("atan ({0})")]
+		[CLFunction ("atan ({0})")]
 		public static V Atan<V> (this V y_over_x)
 			where V : struct, IVec<V, float>
 		{
@@ -798,6 +835,7 @@
 		/// Applies the <see cref="GLMath.Atan2(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("atan ({0})")]
+		[CLFunction ("atan ({0})")]
 		public static V Atan2<V> (this V y, V x)
 			where V : struct, IVec<V, float>
 		{

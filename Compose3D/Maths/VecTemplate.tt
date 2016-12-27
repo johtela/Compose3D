@@ -10,6 +10,7 @@
     using System;
     using System.Text;
 	using System.Globalization;
+	using CLTypes;
 	using GLTypes;
 
 	/// <summary>
@@ -18,6 +19,7 @@
 	/// implementented in C# as well.
 	/// </summary>
 	[GLType ("<#= suffix #>vec<#= dim #>")]
+	[CLType ("<#= type #><#= dim #>")]
     public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
     { 
 <#+		ComponentFields (dim, type); #>
@@ -37,48 +39,56 @@
 		/// Negate all of the components of the vector.
 		/// </summary>
 		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
 <#+		Unary (dim, vecType, "Invert", "-", ", "); #>
 
 		/// <summary>
 		/// Add another vector this one componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
 <#+		Binary (dim, vecType, "Add", "+", ", "); #>
 
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
 <#+		Binary (dim, vecType, "Subtract", "-", ", "); #>
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
 <#+		Binary (dim, vecType, "Multiply", "*", ", "); #>
 
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
 <#+		Scalar (dim, vecType, type, "Multiply", "*", ", "); #>
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
 <#+		Binary (dim, vecType, "Divide", "/", ", "); #>
 
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
 <#+		Scalar (dim, vecType, type, "Divide", "/", ", "); #>
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
 		/// </summary>
 		[GLFunction ("dot ({0})")]
+		[CLFunction ("dot ({0})")]
 <#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
 
 		/// <summary>
@@ -103,6 +113,7 @@
 		/// The lengh of the vector.
 		/// </summary>
 		[GLFunction ("length ({0})")]
+		[CLFunction ("length ({0})")]
 		public <#= type #> Length
 		{
 			get { return (<#= type #>)Math.Sqrt (LengthSquared); }
@@ -112,6 +123,7 @@
 		/// The normalized vector. I.e. vector with same direction, but with lenght of 1.
 		/// </summary>
 		[GLFunction ("normalize ({0})")]
+		[CLFunction ("normalize ({0})")]
 		public <#= vecType #> Normalized
 		{
 			get { return Divide (Length); }
@@ -150,6 +162,7 @@
 		/// Negate all of the components of the vector.
 		/// </summary>
 		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
         public static <#= vecType #> operator - (<#= vecType #> vec)
         {
             return vec.Invert ();
@@ -159,6 +172,7 @@
 		/// Subtracts the right vector from the left componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
         public static <#= vecType #> operator - (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Subtract (right);
@@ -168,6 +182,7 @@
 		/// Multiply the components of the vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= type #> scalar, <#= vecType #> vec)
         {
             return vec.Multiply (scalar);
@@ -177,6 +192,7 @@
 		/// Multiply the components of the vector with a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= vecType #> vec, <#= type #> scalar)
         {
             return vec.Multiply (scalar);
@@ -186,6 +202,7 @@
 		/// Multiply the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
         public static <#= vecType #> operator * (<#= vecType #> vec, <#= vecType #> scale)
         {
             return vec.Multiply (scale);
@@ -195,6 +212,7 @@
 		/// Divide the components of the vector by a same scalar value.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
         public static <#= vecType #> operator / (<#= vecType #> vec, <#= type #> scalar)
         {
             return vec.Divide (scalar);
@@ -204,6 +222,7 @@
 		/// Divide the two vectors componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
         public static <#= vecType #> operator / (<#= vecType #> vec, <#= vecType #> scale)
         {
             return vec.Divide (scale);
@@ -213,6 +232,7 @@
 		/// Add the two vectors together componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
         public static <#= vecType #> operator + (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Add (right);
@@ -222,6 +242,7 @@
 		/// Componentwise equality comparison between the two vectors.
 		/// </summary>
 		[GLBinaryOperator ("{0} == {1}")]
+		[CLBinaryOperator ("{0} == {1}")]
         public static bool operator == (<#= vecType #> left, <#= vecType #> right)
         {
             return left.Equals (right);
@@ -231,6 +252,7 @@
 		/// Componentwise inequality comparison between the two vectors.
 		/// </summary>
 		[GLBinaryOperator ("{0} != {1}")]
+		[CLBinaryOperator ("{0} != {1}")]
         public static bool operator != (<#= vecType #> left, <#= vecType #> right)
         {
             return !left.Equals (right);
@@ -280,6 +302,7 @@ void ComponentFields(int dim, string type) {
 		/// The <#= comp #> component of the vector.
 		/// </summary>
 		[GLField ("<#= comp.ToLower() #>")]
+		[CLField ("<#= comp.ToLower() #>")]
         public <#= type #> <#= comp #>; 
 
 <#+ }
@@ -287,6 +310,7 @@ void ComponentFields(int dim, string type) {
  
 void BasicConstructor(int dim, string type, string suffix) { #>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= ArgumentList(dim, type) #>)
 		{	
 <#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); 
@@ -295,6 +319,7 @@ void BasicConstructor(int dim, string type, string suffix) { #>
 
 void SingleValueConstructor(int dim, string type, string suffix) { #>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
 		public Vec<#= dim #><#= suffix #> (<#= type #> value)
 		{	
 <#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); 
@@ -307,6 +332,7 @@ void CopyConstructor(int dim, string type, string suffix, int otherDim) {
 		/// Copy the components of the vector from another vector.
 		/// </summary>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
 		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec, <#= PartialArgumentList(otherDim, dim, type) #>)
 		{	
 <#+ }
@@ -315,6 +341,7 @@ void CopyConstructor(int dim, string type, string suffix, int otherDim) {
 		/// Copy the components of the vector from another vector.
 		/// </summary>
 		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
 		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec)
 		{	
 <#+ 

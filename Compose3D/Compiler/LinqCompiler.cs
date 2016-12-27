@@ -67,6 +67,8 @@
 
 		protected abstract string MapMemberAccess (MemberExpression member);
 
+		protected abstract string MapTypeCast (Type type);
+
 		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
 
 		protected static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
@@ -158,9 +160,11 @@
 					Expr (be.Left), Expr (be.Right)) + ")")
 				??
 				expr.Match<UnaryExpression, string> (ue =>
-					string.Format (ue.NodeType == ExpressionType.Convert ?
-						string.Format ("{0} ({1})", MapType (ue.Type), Expr (ue.Operand)) :
-						MapOperator (ue.Method, ue.NodeType), Expr (ue.Operand)))
+					string.Format (
+						ue.NodeType == ExpressionType.Convert ?
+							MapTypeCast (ue.Type) :
+							MapOperator (ue.Method, ue.NodeType), 
+						Expr (ue.Operand)))
 				??
 				expr.Match<MethodCallExpression, string> (mc =>
 				{

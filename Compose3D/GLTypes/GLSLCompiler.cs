@@ -86,6 +86,11 @@
 					me.Member.Name;
 		}
 
+		protected override string MapTypeCast (Type type)
+		{
+			return string.Format ("{0} ({{0}})", MapType (type));
+		}
+
 		protected override string MapType (Type type)
 		{
 			if (type.IsGLStruct ())

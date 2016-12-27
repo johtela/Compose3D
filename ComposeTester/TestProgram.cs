@@ -37,7 +37,7 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var prog = ParallelPerlin.Example (context);
+			var prog = ParPerlin.Example (context);
 		}
 	}
 }

@@ -6,7 +6,7 @@
     using Cloo;
     using CLTypes;
 
-    public enum KernelArgumentKind { Value, Buffer }
+    public enum KernelArgumentKind { Value, Buffer, Image }
     public enum KernelArgumentAccess { Read, Write }
 
     public class KernelArgument

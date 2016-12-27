@@ -72,10 +72,11 @@
 		protected static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
 		{
 			compiler.OutputFunction (member.Name, expr);
-			_functions.Add (member, new Function (member, compiler._code.ToString (), compiler._funcRefs));
+			_functions.Add (member, new Function (
+				member, compiler._decl.ToString (), compiler._code.ToString (), compiler._funcRefs));
 		}
 
-		internal static string GenerateFunctions (HashSet<Function> functions)
+		internal static string GenerateFunctions (HashSet<Function> functions, bool outputDecls)
 		{
 			if (functions.Count == 0)
 				return "";
@@ -83,7 +84,7 @@
 			var sb = new StringBuilder ();
 			sb.AppendLine ();
 			foreach (var fun in functions)
-				fun.Output (sb, outputted);
+				fun.Output (sb, outputted, outputDecls);
 			return sb.ToString ();
 		}
 

@@ -21,23 +21,23 @@
 			TestParallel ();
 			//var wnd = new FighterWindow ();
 			//wnd.Run ();
-//			Task.Factory.StartNew (() =>
-//				Tester.RunTestsTimed (
-//					new VecTests (),
-//					new MatTests (),
-//					new QuatTests (),
-//					new SceneTests (),
-//					new IntervalTreeTests (),
-//					new BoundingTreeTests (),
-//					new KdTreeTests ()));
-//			Application.Run (VConsole);
+			//			Task.Factory.StartNew (() =>
+			//				Tester.RunTestsTimed (
+			//					new VecTests (),
+			//					new MatTests (),
+			//					new QuatTests (),
+			//					new SceneTests (),
+			//					new IntervalTreeTests (),
+			//					new BoundingTreeTests (),
+			//					new KdTreeTests ()));
+			//			Application.Run (VConsole);
 		}
 
 		private static void TestParallel ()
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var prog = KernelExample.Example (context);
+			var prog = ParallelPerlin.Example (context);
 		}
 	}
 }

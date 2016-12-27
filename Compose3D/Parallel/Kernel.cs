@@ -4,7 +4,6 @@
 	using Extensions;
 	using Compiler;
 	using CLTypes;
-	using Cloo;
 
 	public delegate T Kernel<T> ();
 

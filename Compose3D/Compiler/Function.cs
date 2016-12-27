@@ -8,22 +8,26 @@
 	internal class Function : IEquatable<Function>
 	{
 		public readonly MemberInfo Member;
+		public readonly string Declarations;
 		public readonly string Code;
 		public readonly HashSet<Function> Dependencies;
 
-		public Function (MemberInfo member, string code, HashSet<Function> dependencies)
+		public Function (MemberInfo member, string decls, string code, HashSet<Function> dependencies)
 		{
 			Member = member;
+			Declarations = decls;
 			Code = code;
 			Dependencies = dependencies;
 		}
 
-		public void Output (StringBuilder sb, HashSet<Function> outputted)
+		public void Output (StringBuilder sb, HashSet<Function> outputted, bool outputDecls)
 		{
 			foreach (var fun in Dependencies)
 				if (!outputted.Contains (fun))
-					fun.Output (sb, outputted);
+					fun.Output (sb, outputted, outputDecls);
 			outputted.Add (this);
+			if (outputDecls)
+				sb.AppendLine (Declarations);
 			sb.AppendLine (Code);
 		}
 

@@ -34,7 +34,7 @@
 		private static string BuildKernelCode (string kernelName, CLCCompiler compiler)
 		{
 			return compiler._decl.ToString () +
-				GenerateFunctions (compiler._funcRefs) +
+				GenerateFunctions (compiler._funcRefs, true) +
                 compiler.KernelSignature (kernelName) +
 				compiler._code.ToString ();
 		}
@@ -52,10 +52,13 @@
                 case KernelArgumentKind.Value:
                     return string.Format ("{0} {1}", MapType (arg.Type), arg.Name);
                 case KernelArgumentKind.Buffer:
-                    return string.Format ("global {0} {1}* {2}",
-                        arg.Access == KernelArgumentAccess.Read ? "read_only" : "write_only",
+                    return string.Format ("global {0}* {1}",
                         MapType (arg.Type), arg.Name);
-                default:
+				case KernelArgumentKind.Image:
+					return string.Format ("global {0} {1}* {2}",
+						arg.Access == KernelArgumentAccess.Read ? "read_only" : "write_only",
+						MapType (arg.Type), arg.Name);
+				default:
                     throw new ArgumentException ("Invalid argument type");
             }
         }
@@ -89,48 +92,48 @@
 		//	DeclOut ("};");
 		//}
 
-		//private void DeclareConstants (Expression expr)
-		//{
-		//	var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
-		//	if (ne == null)
-		//	{
-		//		var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
-		//		if (mie == null)
-		//			throw new ParseException ("Unsupported shader expression: " + expr);
-		//		foreach (MemberAssignment assign in mie.Bindings)
-		//		{
-		//			var memberType = assign.Member is FieldInfo ?
-		//				(assign.Member as FieldInfo).FieldType :
-		//				(assign.Member as PropertyInfo).PropertyType;
-		//			OutputConst (memberType, assign.Member.Name, assign.Expression);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		for (int i = 0; i < ne.Members.Count; i++)
-		//		{
-		//			var prop = (PropertyInfo)ne.Members[i];
-		//			if (!prop.Name.StartsWith ("<>"))
-		//				OutputConst (prop.PropertyType, prop.Name, ne.Arguments[i]);
-		//		}
-		//	}
-		//}
+		private void DeclareConstants (Expression expr)
+		{
+			var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
+			if (ne == null)
+			{
+				var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
+				if (mie == null)
+					throw new ParseException ("Unsupported kernel expression: " + expr);
+				foreach (MemberAssignment assign in mie.Bindings)
+				{
+					var memberType = assign.Member is FieldInfo ?
+						(assign.Member as FieldInfo).FieldType :
+						(assign.Member as PropertyInfo).PropertyType;
+					OutputConst (memberType, assign.Member.Name, assign.Expression);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < ne.Members.Count; i++)
+				{
+					var prop = (PropertyInfo)ne.Members[i];
+					if (!prop.Name.StartsWith ("<>"))
+						OutputConst (prop.PropertyType, prop.Name, ne.Arguments[i]);
+				}
+			}
+		}
 
-		//private void OutputConst (Type constType, string name, Expression value)
-		//{
-		//	_constants.Add (name, new Constant (constType, name, value));
-		//	if (constType.IsArray)
-		//	{
-		//		var elemType = constType.GetElementType ();
-		//		var elemGLType = MapType (elemType);
-		//		var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-		//		CodeOut ("const {0} {1}[{2}] = {0}[] (\n\t{3});",
-		//			elemGLType, name, nai.Expressions.Count,
-		//			nai.Expressions.Select (Expr).SeparateWith (",\n\t"));
-		//	}
-		//	else
-		//		CodeOut ("const {0} {1} = {2};", MapType (constType), name, Expr (value));
-		//}
+		private void OutputConst (Type constType, string name, Expression value)
+		{
+			_constants.Add (name, new Constant (constType, name, value));
+			if (constType.IsArray)
+			{
+				var elemType = constType.GetElementType ();
+				var elemGLType = MapType (elemType);
+				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
+				DeclOut ("constant {0} {1}[{2}] = {{ \n\t{3} }};",
+					elemGLType, name, nai.Expressions.Count,
+					nai.Expressions.Select (Expr).SeparateWith (",\n\t"));
+			}
+			else
+				DeclOut ("constant {0} {1} = {2};", MapType (constType), name, Expr (value));
+		}
 
 		protected override void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
 		{
@@ -141,8 +144,8 @@
 				_arguments.Add (par.Name, type, KernelArgumentKind.Value, KernelArgumentAccess.Read);
 			else if (node.Method.Name == "Buffer")
 				_arguments.Add (par.Name, type, KernelArgumentKind.Buffer, KernelArgumentAccess.Read);
-			//	else if (node.Method.Name == "Constants")
-			//		DeclareConstants (node.Arguments [0]);
+			else if (node.Method.Name == "Constants")
+				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToKernel")
 				CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments[0]));
 			else

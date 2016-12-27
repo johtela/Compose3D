@@ -55,6 +55,9 @@
             { ExpressionType.Multiply, "{0} * {1}" },
             { ExpressionType.Divide, "{0} / {1}" },
             { ExpressionType.Negate, "-{0}"},
+            { ExpressionType.And, "{0} & {1}"},
+            { ExpressionType.Or, "{0} | {1}"},
+            { ExpressionType.OnesComplement, "~{0}"},
             { ExpressionType.Equal, "{0} == {1}" },
             { ExpressionType.NotEqual, "{0} != {1}" },
             { ExpressionType.LessThan, "{0} < {1}" },
@@ -70,6 +73,8 @@
  
         public override string Type (Type type)
         {
+			if (type.IsArray)
+				return (Type (type.GetElementType ())) + "*";
 			string result;
 			return type.GetCLSyntax () ??
 				(_types.TryGetValue (type, out result) ? result : null);

@@ -34,7 +34,7 @@
 		private static string BuildKernelCode (string kernelName, CLCCompiler compiler)
 		{
 			return compiler._decl.ToString () +
-				GenerateFunctions (compiler._funcRefs, true) +
+				GenerateFunctions (compiler._invokations, true) +
                 compiler.KernelSignature (kernelName) +
 				compiler._code.ToString ();
 		}
@@ -76,6 +76,11 @@
 		protected override string MapTypeCast (Type type)
 		{
 			return string.Format ("({0}){{0}}", MapType (type));
+		}
+
+		protected override LinqCompiler NewCompiler ()
+		{
+			return new CLCCompiler (null);
 		}
 
 		//protected override string MapType (Type type)

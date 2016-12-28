@@ -7,7 +7,8 @@
 	public static class ParPerlin
 	{
 		private static readonly Func<int, int> Permutation =
-			CLProgram.Function (() => Permutation, (int index) =>
+			CLProgram.Function (() => Permutation,
+			(int index) =>
 				(from con in Kernel.Constants (new
 				{
 					perm = new int[]

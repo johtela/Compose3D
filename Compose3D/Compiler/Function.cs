@@ -2,33 +2,26 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Reflection;
 	using System.Text;
 
 	internal class Function : IEquatable<Function>
 	{
-		public readonly MemberInfo Member;
+		public readonly string Name;
 		public readonly string Declarations;
 		public readonly string Code;
-		public readonly HashSet<Function> Dependencies;
+		public readonly int FuncParamsCount;
+		public readonly HashSet<Invokation> Invokations;
 
-		public Function (MemberInfo member, string decls, string code, HashSet<Function> dependencies)
+		internal int instanceCount;
+
+		public Function (string name, string decls, string code, int funcParamsCount,
+			HashSet<Invokation> invokations)
 		{
-			Member = member;
+			Name = name;
 			Declarations = decls;
 			Code = code;
-			Dependencies = dependencies;
-		}
-
-		public void Output (StringBuilder sb, HashSet<Function> outputted, bool outputDecls)
-		{
-			foreach (var fun in Dependencies)
-				if (!outputted.Contains (fun))
-					fun.Output (sb, outputted, outputDecls);
-			outputted.Add (this);
-			if (outputDecls)
-				sb.AppendLine (Declarations);
-			sb.AppendLine (Code);
+			FuncParamsCount = funcParamsCount;
+			Invokations = invokations;
 		}
 
 		public override bool Equals (object obj)
@@ -39,14 +32,14 @@
 
 		public override int GetHashCode ()
 		{
-			return Member.GetHashCode ();
+			return Name.GetHashCode ();
 		}
 
 		#region IEquatable implementation
 
 		public bool Equals (Function other)
 		{
-			return Member.Equals (other.Member);
+			return Name.Equals (other.Name);
 		}
 
 		#endregion

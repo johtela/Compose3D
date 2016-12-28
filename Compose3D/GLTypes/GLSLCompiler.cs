@@ -63,7 +63,7 @@
 		{
 			return "#version 400 core\nprecision highp float;\n" +
 				builder._decl.ToString () +
-				GenerateFunctions (builder._funcRefs, false) +
+				GenerateFunctions (builder._invokations, false) +
 				builder._code.ToString ();
 		}
 
@@ -96,6 +96,11 @@
 			if (type.IsGLStruct ())
 				OutputStruct (type);
 			return base.MapType (type);
+		}
+
+		protected override LinqCompiler NewCompiler ()
+		{
+			return new GLSLCompiler ();
 		}
 
 		private void OutputStruct (Type structType)

@@ -11,23 +11,24 @@
 
 	public abstract class LinqCompiler
     {
-		internal static Dictionary<MemberInfo, Function> _functions = new Dictionary<MemberInfo, Function> ();
+		internal static Dictionary<string, Function> _functions = new Dictionary<string, Function> ();
 		protected StringBuilder _decl;
 		protected StringBuilder _code;
 		protected HashSet<Type> _typesDefined;
-		internal HashSet<Function> _funcRefs;
+		internal HashSet<Function> _invokations;
 		internal Dictionary<string, Constant> _constants;
 		protected int _indexVarCount;
 		protected int _tabLevel;
 		protected Type _linqType;
 		protected TypeMapping _typeMapping;
+		protected Dictionary<ParameterExpression, string> _funcParams;
 
 		protected LinqCompiler (Type linqType, TypeMapping typeMapping)
         {
 			_decl = new StringBuilder ();
 			_code = new StringBuilder ();
             _typesDefined = new HashSet<Type> ();
-			_funcRefs = new HashSet<Function> ();
+			_invokations = new HashSet<Function> ();
 			_constants = new Dictionary<string, Constant> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
@@ -71,11 +72,28 @@
 
 		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
 
+		protected abstract LinqCompiler NewCompiler ();
+
 		protected static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
 		{
-			compiler.OutputFunction (member.Name, expr);
-			_functions.Add (member, new Function (
-				member, compiler._decl.ToString (), compiler._code.ToString (), compiler._funcRefs));
+			var name = ConstructFunctionName (member);
+			compiler.CollectFuncParams (expr);
+			compiler.OutputFunction (name, expr);
+			_functions.Add (name, new Function (
+				name, compiler._decl.ToString (), compiler._code.ToString (), compiler._funcParams.Count, 
+				compiler._invokations));
+		}
+
+		private void CollectFuncParams (LambdaExpression expr)
+		{
+			var pars = from p in expr.Parameters
+					   where p.Type.IsSubclassOf (typeof (Delegate))
+					   select p;
+
+			_funcParams = new Dictionary<ParameterExpression, string> ();
+			var i = 0;
+			foreach (var par in pars)
+				_funcParams.Add (par, "#" + i++);
 		}
 
 		internal static string GenerateFunctions (HashSet<Function> functions, bool outputDecls)
@@ -88,6 +106,11 @@
 			foreach (var fun in functions)
 				fun.Output (sb, outputted, outputDecls);
 			return sb.ToString ();
+		}
+
+		protected static string ConstructFunctionName (MemberInfo member)
+		{
+			return member.DeclaringType.Name + "_" + member.Name;
 		}
 
 		protected string Tabs ()
@@ -125,6 +148,7 @@
 		protected void OutputFunction (string name, LambdaExpression expr)
 		{
 			var pars = (from p in expr.Parameters
+						where !p.Type.IsSubclassOf (typeof (Delegate))
 			            select string.Format ("{0} {1}", MapType (p.Type), p.Name))
 				.SeparateWith (", ");
 			CodeOut ("{0} {1} ({2})", MapType (expr.ReturnType), name, pars);
@@ -186,14 +210,15 @@
 				expr.Match<InvocationExpression, string> (ie => 
 				{
 					var	member = ie.Expression.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
+					var name = ConstructFunctionName (member);
 					Function fun;
-					if (_functions.TryGetValue (member, out fun))
+					if (_functions.TryGetValue (name, out fun))
 					{
-						_funcRefs.Add (fun);
-						return string.Format ("{0} ({1})", member.Name,
+						_invokations.Add (fun);
+						return string.Format ("{0} ({1})", fun.Name,
 							ie.Arguments.Select (a => Expr (a)).SeparateWith (", "));
 					}
-					throw new ParseException ("Undefined function: " + member.Name);
+					throw new ParseException ("Undefined function: " + name);
 				}) ??
                 expr.Match<MemberExpression, string> (MapMemberAccess)
                 ??

@@ -35,6 +35,7 @@
 
 		private static void TestParallel ()
 		{
+			ParSignal.Use ();
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
 			var prog = ParPerlin.Example (context);

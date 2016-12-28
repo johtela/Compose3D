@@ -15,7 +15,7 @@
 		protected StringBuilder _decl;
 		protected StringBuilder _code;
 		protected HashSet<Type> _typesDefined;
-		internal HashSet<Function> _invokations;
+		internal List<Invocation> _invocations;
 		internal Dictionary<string, Constant> _constants;
 		protected int _indexVarCount;
 		protected int _tabLevel;
@@ -28,7 +28,7 @@
 			_decl = new StringBuilder ();
 			_code = new StringBuilder ();
             _typesDefined = new HashSet<Type> ();
-			_invokations = new HashSet<Function> ();
+			_invocations = new List<Invocation> ();
 			_constants = new Dictionary<string, Constant> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
@@ -78,10 +78,10 @@
 		{
 			var name = ConstructFunctionName (member);
 			compiler.CollectFuncParams (expr);
-			compiler.OutputFunction (name, expr);
+			compiler.OutputFunction (expr);
 			_functions.Add (name, new Function (
-				name, compiler._decl.ToString (), compiler._code.ToString (), compiler._funcParams.Count, 
-				compiler._invokations));
+				name, compiler._decl.ToString (), compiler._code.ToString (), compiler._invocations,
+				compiler._funcParams.Select (fp => expr.Parameters.IndexOf (fp.Key)).ToArray ()));
 		}
 
 		private void CollectFuncParams (LambdaExpression expr)
@@ -91,20 +91,20 @@
 					   select p;
 
 			_funcParams = new Dictionary<ParameterExpression, string> ();
-			var i = 0;
+			var i = 1;
 			foreach (var par in pars)
 				_funcParams.Add (par, "#" + i++);
 		}
 
-		internal static string GenerateFunctions (HashSet<Function> functions, bool outputDecls)
+		internal static string GenerateFunctions (List<Invocation> invocations, bool outputDecls)
 		{
-			if (functions.Count == 0)
+			if (invocations.Count == 0)
 				return "";
-			var outputted = new HashSet<Function> ();
+			var outputted = new HashSet<Invocation> ();
 			var sb = new StringBuilder ();
 			sb.AppendLine ();
-			foreach (var fun in functions)
-				fun.Output (sb, outputted, outputDecls);
+			foreach (var inv in invocations)
+				inv.Output (sb, outputted, outputDecls);
 			return sb.ToString ();
 		}
 
@@ -145,13 +145,13 @@
 			return true;
 		}
 
-		protected void OutputFunction (string name, LambdaExpression expr)
+		protected void OutputFunction (LambdaExpression expr)
 		{
 			var pars = (from p in expr.Parameters
-						where !p.Type.IsSubclassOf (typeof (Delegate))
-			            select string.Format ("{0} {1}", MapType (p.Type), p.Name))
-				.SeparateWith (", ");
-			CodeOut ("{0} {1} ({2})", MapType (expr.ReturnType), name, pars);
+						where !_funcParams.ContainsKey (p)
+						select string.Format ("{0} {1}", MapType (p.Type), p.Name))
+						.SeparateWith (", ");
+			CodeOut ("{0} #0 ({1})", MapType (expr.ReturnType), pars);
 			CodeOut ("{");
 			_tabLevel++;
 			FunctionBody (expr.Body);
@@ -214,9 +214,12 @@
 					Function fun;
 					if (_functions.TryGetValue (name, out fun))
 					{
-						_invokations.Add (fun);
-						return string.Format ("{0} ({1})", fun.Name,
-							ie.Arguments.Select (a => Expr (a)).SeparateWith (", "));
+						name = AddInvocation (fun, ie);
+						return string.Format ("{0} ({1})", name,
+							(from i in Enumerable.Range (0, ie.Arguments.Count)
+							 where !fun.FuncParams.Contains (i)
+							 select Expr (ie.Arguments[i]))
+							.SeparateWith (", "));
 					}
 					throw new ParseException ("Undefined function: " + name);
 				}) ??
@@ -237,13 +240,47 @@
                 expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
                     Expr (ce.Test), Expr (ce.IfTrue), Expr (ce.IfFalse))) 
 				?? 
-                expr.Match<ParameterExpression, string> (pe => pe.Name) 
+                expr.Match<ParameterExpression, string> (MapParameter) 
 				?? 
 				null;
             if (result == null)
                 throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
             return result;
         }
+
+		private string ResolveFuncParam (Expression expr)
+		{
+			var me = expr.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
+			if (me != null)
+				return ConstructFunctionName (me.Member);
+			var pe = expr.CastExpr<ParameterExpression> (ExpressionType.Parameter);
+			string parStr;
+			if (pe != null && _funcParams.TryGetValue (pe, out parStr))
+				return parStr;
+			throw new ParseException ("Unsupported function parameter expression: " + expr);
+		}
+
+		private string AddInvocation (Function func, InvocationExpression ie)
+		{
+			var funcParams = (from i in func.FuncParams
+							  select ResolveFuncParam (ie.Arguments[i]))
+							  .ToArray ();
+			var inv = new Invocation (func, funcParams);
+			var index = _invocations.IndexOf (inv);
+			if (index < 0)
+			{
+				_invocations.Add (inv);
+				return inv.Name;
+			}
+			return _invocations[index].Name;
+		}
+
+		private string MapParameter (ParameterExpression pe)
+		{
+			string result;
+			return _funcParams != null && _funcParams.TryGetValue (pe, out result) ?
+				result : pe.Name;
+		}
 
 		protected MethodCallExpression CastFromBinding (Expression expr)
 		{

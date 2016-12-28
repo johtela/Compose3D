@@ -9,19 +9,19 @@
 		public readonly string Name;
 		public readonly string Declarations;
 		public readonly string Code;
-		public readonly int FuncParamsCount;
-		public readonly HashSet<Invokation> Invokations;
+		public readonly int[] FuncParams;
+		public readonly List<Invocation> Invocations;
 
 		internal int instanceCount;
 
-		public Function (string name, string decls, string code, int funcParamsCount,
-			HashSet<Invokation> invokations)
+		public Function (string name, string decls, string code, List<Invocation> invocations,
+			params int[] funcParams)
 		{
 			Name = name;
 			Declarations = decls;
 			Code = code;
-			FuncParamsCount = funcParamsCount;
-			Invokations = invokations;
+			FuncParams = funcParams;
+			Invocations = invocations;
 		}
 
 		public override bool Equals (object obj)

@@ -55,7 +55,7 @@
     <Compile Include="CLTypes\CLAttributes.cs" />
     <Compile Include="CLTypes\CLContext.cs" />
     <Compile Include="CLTypes\GLError.cs" />
-    <Compile Include="Compiler\Invokation.cs" />
+    <Compile Include="Compiler\Invocation.cs" />
     <Compile Include="Parallel\KernelArguments.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />

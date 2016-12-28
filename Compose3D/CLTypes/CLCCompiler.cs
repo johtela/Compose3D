@@ -34,7 +34,7 @@
 		private static string BuildKernelCode (string kernelName, CLCCompiler compiler)
 		{
 			return compiler._decl.ToString () +
-				GenerateFunctions (compiler._invokations, true) +
+				GenerateFunctions (compiler._invocations, true) +
                 compiler.KernelSignature (kernelName) +
 				compiler._code.ToString ();
 		}

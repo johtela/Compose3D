@@ -63,7 +63,7 @@
 		{
 			return "#version 400 core\nprecision highp float;\n" +
 				builder._decl.ToString () +
-				GenerateFunctions (builder._invokations, false) +
+				GenerateFunctions (builder._invocations, false) +
 				builder._code.ToString ();
 		}
 

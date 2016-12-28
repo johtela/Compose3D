@@ -18,9 +18,9 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			TestParallel ();
-			//var wnd = new FighterWindow ();
-			//wnd.Run ();
+			//TestParallel ();
+			var wnd = new FighterWindow ();
+			wnd.Run ();
 			//			Task.Factory.StartNew (() =>
 			//				Tester.RunTestsTimed (
 			//					new VecTests (),
@@ -35,7 +35,6 @@
 
 		private static void TestParallel ()
 		{
-			ParSignal.Use ();
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
 			var prog = ParPerlin.Example (context);

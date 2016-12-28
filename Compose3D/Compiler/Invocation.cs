@@ -20,7 +20,7 @@
 						function.FuncParams.Length, funcParams.Length));
 			Called = function;
 			Params = funcParams;
-			Name = function.Name + (++function.instanceCount);
+			Name = function.Name + GetHashCode ().ToString ("x");
 		}
 
 		private void OutputRecursive (StringBuilder sb, HashSet<Invocation> outputted, bool outputDecls,

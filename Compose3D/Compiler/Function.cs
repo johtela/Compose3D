@@ -12,8 +12,6 @@
 		public readonly int[] FuncParams;
 		public readonly List<Invocation> Invocations;
 
-		internal int instanceCount;
-
 		public Function (string name, string decls, string code, List<Invocation> invocations,
 			params int[] funcParams)
 		{

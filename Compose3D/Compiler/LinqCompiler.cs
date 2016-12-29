@@ -108,7 +108,7 @@
 			return sb.ToString ();
 		}
 
-		protected static string ConstructFunctionName (MemberInfo member)
+		public static string ConstructFunctionName (MemberInfo member)
 		{
 			return member.DeclaringType.Name + "_" + member.Name;
 		}
@@ -187,7 +187,7 @@
 					string.Format (
 						ue.NodeType == ExpressionType.Convert ?
 							MapTypeCast (ue.Type) :
-							MapOperator (ue.Method, ue.NodeType), 
+							MapOperator (ue.Method, ue.NodeType),
 						Expr (ue.Operand)))
 				??
 				expr.Match<MethodCallExpression, string> (mc =>
@@ -207,26 +207,20 @@
 					return string.Format (MapFunction (mc.Method),
 						args.Select (a => Expr (a)).SeparateWith (", "));
                 }) ??
-				expr.Match<InvocationExpression, string> (ie => 
+				expr.Match<InvocationExpression, string> (ie =>
 				{
-					var	member = ie.Expression.Expect<MemberExpression> (ExpressionType.MemberAccess).Member;
-					var name = ConstructFunctionName (member);
-					Function fun;
-					if (_functions.TryGetValue (name, out fun))
-					{
-						name = AddInvocation (fun, ie);
-						return string.Format ("{0} ({1})", name,
-							(from i in Enumerable.Range (0, ie.Arguments.Count)
-							 where !fun.FuncParams.Contains (i)
-							 select Expr (ie.Arguments[i]))
-							.SeparateWith (", "));
-					}
-					throw new ParseException ("Undefined function: " + name);
+					var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
+					if (me != null)
+						return OutputMethodCall (ie, me.Member);
+					var pe = ie.Expression.CastExpr<ParameterExpression> (ExpressionType.Parameter);
+					if (pe != null)
+						return OutputDelegateCall (ie, pe);
+					throw new ParseException ("Delegate called must be either a member of a class, or a parameter.");
 				}) ??
                 expr.Match<MemberExpression, string> (MapMemberAccess)
                 ??
                 expr.Match<NewExpression, string> (ne =>
-					string.Format (MapConstructor (ne.Constructor), ne.Arguments.Select (a => 
+					string.Format (MapConstructor (ne.Constructor), ne.Arguments.Select (a =>
 						Expr (a)).SeparateWith (", ")))
                 ??
                 expr.Match<ConstantExpression, string> (ce => ce.Type == typeof(float) ? 
@@ -237,16 +231,52 @@
 					MapType (na.Type.GetElementType ()), na.Expressions.Count,
 					na.Expressions.Select (Expr).SeparateWith (",\n\t"))) 
 				??
-                expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})", 
-                    Expr (ce.Test), Expr (ce.IfTrue), Expr (ce.IfFalse))) 
+                expr.Match<ConditionalExpression, string> (ce => string.Format ("({0} ? {1} : {2})",
+					Expr (ce.Test), Expr (ce.IfTrue), Expr (ce.IfFalse))) 
 				?? 
-                expr.Match<ParameterExpression, string> (MapParameter) 
+                expr.Match<ParameterExpression, string> (pe => pe.Name) 
 				?? 
 				null;
             if (result == null)
                 throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
             return result;
         }
+
+		private string OutputMethodCall (InvocationExpression ie, MemberInfo member)
+		{
+			var name = ConstructFunctionName (member);
+			Function fun;
+			if (_functions.TryGetValue (name, out fun))
+			{
+				name = AddInvocation (fun, ie);
+				return string.Format ("{0} ({1})", name,
+					(from i in Enumerable.Range (0, ie.Arguments.Count)
+					 where !fun.FuncParams.Contains (i)
+					 select Expr (ie.Arguments[i]))
+					.SeparateWith (", "));
+			}
+			throw new ParseException ("Undefined function: " + name);
+		}
+
+		private string OutputDelegateCall (InvocationExpression ie, ParameterExpression pe)
+		{
+			string name;
+			if (!_funcParams.TryGetValue (pe, out name))
+				throw new ArgumentException ("No function parameter given for delegate called.");
+			if (name[0] != '#')
+			{
+				Function fun;
+				if (_functions.TryGetValue (name, out fun))
+					name = AddInvocation (fun, ie);
+				else
+					throw new ParseException ("Undefined function: " + name);
+			}
+			return string.Format ("{0} ({1})", name,
+				(from arg in ie.Arguments
+				 where arg.Type.IsSubclassOf (typeof (Delegate))
+				 select Expr (arg))
+				.SeparateWith (", "));
+		}
 
 		private string ResolveFuncParam (Expression expr)
 		{
@@ -273,13 +303,6 @@
 				return inv.Name;
 			}
 			return _invocations[index].Name;
-		}
-
-		private string MapParameter (ParameterExpression pe)
-		{
-			string result;
-			return _funcParams != null && _funcParams.TryGetValue (pe, out result) ?
-				result : pe.Name;
 		}
 
 		protected MethodCallExpression CastFromBinding (Expression expr)

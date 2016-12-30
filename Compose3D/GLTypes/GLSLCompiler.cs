@@ -56,7 +56,8 @@
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
-			CreateFunction (new GLSLCompiler (), member, expr);
+			var name = ConstructFunctionName (member);
+			CreateFunction (new GLSLCompiler (), name, expr);
 		}
 
 		private static string BuildShaderCode (GLSLCompiler builder)

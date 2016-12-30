@@ -74,9 +74,8 @@
 
 		protected abstract LinqCompiler NewCompiler ();
 
-		protected static void CreateFunction (LinqCompiler compiler, MemberInfo member, LambdaExpression expr)
+		protected static void CreateFunction (LinqCompiler compiler, string name, LambdaExpression expr)
 		{
-			var name = ConstructFunctionName (member);
 			compiler.CollectFuncParams (expr);
 			compiler.OutputFunction (expr);
 			_functions.Add (name, new Function (

@@ -28,7 +28,8 @@
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
-			CreateFunction (new CLCCompiler (null), member, expr);
+			var name = ConstructFunctionName (member);
+			CreateFunction (new CLCCompiler (null), name, expr);
 		}
 
 		private static string BuildKernelCode (string kernelName, CLCCompiler compiler)

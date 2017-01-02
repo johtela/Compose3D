@@ -1,9 +1,10 @@
 ﻿namespace Compose3D.Compiler.Ast
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
-	using Extensions;
 	using System.Text;
+	using Extensions;
 
 	public abstract class Ast
 	{
@@ -101,7 +102,7 @@
 			public readonly string FunctionName;
 			public readonly _Expression[] Parameters;
 
-			public _Call (string functionName, params _Expression[] parameters)
+			private _Call (string functionName, params _Expression[] parameters)
 			{
 				FunctionName = functionName;
 				Parameters = parameters;
@@ -120,7 +121,7 @@
 			public readonly int ItemCount;
 			public readonly _Expression[] Items;
 
-			public _NewArray (string type, int count, params _Expression[] items)
+			private _NewArray (string type, int count, params _Expression[] items)
 			{
 				ItemType = type;
 				ItemCount = count;
@@ -140,7 +141,7 @@
 			public readonly _Expression IfTrue;
 			public readonly _Expression IfFalse;
 
-			public _Conditional (_Expression condition, _Expression ifTrue, _Expression ifFalse)
+			private _Conditional (_Expression condition, _Expression ifTrue, _Expression ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -174,15 +175,20 @@
 
 			protected void EndScope (StringBuilder sb)
 			{
-				sb.AppendFormat ("{0}}}\n", Tabs ());
 				_tabLevel--;
+				sb.AppendFormat ("{0}}}\n", Tabs ());
 			}
 
-			protected void Scoped (StringBuilder sb, _Statement statement)
+			protected void EmitIntended (StringBuilder sb, _Statement statement)
 			{
-				BeginScope (sb);
-				sb.Append (statement);
-				EndScope (sb);
+				if (statement is _Block)
+					sb.Append (statement);
+				else
+				{
+					_tabLevel++;
+					sb.Append (statement);
+					_tabLevel--;
+				}
 			}
 
 			protected void EmitLine (StringBuilder sb, string formatString, params object[] parameters)
@@ -196,7 +202,7 @@
 			public readonly string Variable;
 			public readonly _Expression Value;
 
-			public _Assignment (string variable, _Expression value)
+			private _Assignment (string variable, _Expression value)
 			{
 				Variable = variable;
 				Value = value;
@@ -214,7 +220,7 @@
 			public readonly string Variable;
 			public readonly _Expression Value;
 
-			public _DeclareVar (string type, string variable, _Expression value)
+			private _DeclareVar (string type, string variable, _Expression value)
 			{
 				Type = type;
 				Variable = variable;
@@ -229,13 +235,33 @@
 			}
 		}
 
+		internal class _Block : _Statement
+		{
+			public readonly List<_Statement> Statements;
+
+			private _Block (IEnumerable<_Statement> statements)
+			{
+				Statements = new List<_Statement> (statements);
+			}
+
+			public override string ToString ()
+			{
+				var result = new StringBuilder ();
+				BeginScope (result);
+				foreach (var statement in Statements)
+					result.Append (statement);
+				EndScope (result);
+				return result.ToString ();
+			}
+		}
+
 		internal class _If : _Statement
 		{
 			public readonly _Expression Condition;
 			public readonly _Statement IfTrue;
 			public readonly _Statement IfFalse;
 
-			public _If (_Expression condition, _Statement ifTrue, _Statement ifFalse)
+			private _If (_Expression condition, _Statement ifTrue, _Statement ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -245,12 +271,12 @@
 			public override string ToString ()
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "if ({0})", Condition);
-				Scoped (result, IfTrue);
+				EmitLine (result, "if ({0})\n", Condition);
+				EmitIntended (result, IfTrue);
 				if (IfFalse != null)
 				{
 					EmitLine (result, "else");
-					Scoped (result, IfFalse);
+					EmitIntended (result, IfFalse);
 				}
 				return result.ToString ();
 			}
@@ -264,7 +290,7 @@
 			public readonly _Expression Increment;
 			public readonly _Statement Body;
 
-			public _For (string loopVariable, _Expression initialValue, _Expression condition,
+			private _For (string loopVariable, _Expression initialValue, _Expression condition,
 				_Expression increment, _Statement body)
 			{
 				LoopVariable = loopVariable;
@@ -277,9 +303,9 @@
 			public override string ToString ()
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "for ({0} = {1}; {2}; {0} = {3})", LoopVariable, InitialValue,
+				EmitLine (result, "for ({0} = {1}; {2}; {0} = {3})\n", LoopVariable, InitialValue,
 					Condition, Increment);
-				Scoped (result, Body);
+				EmitIntended (result, Body);
 				return result.ToString ();
 			}
 		}
@@ -288,14 +314,37 @@
 		{
 			public readonly _Expression Value;
 
-			public _Return (_Expression value)
+			private _Return (_Expression value)
 			{
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0}return {1};", Tabs (), Value);
+				return string.Format ("{0}return {1};\n", Tabs (), Value);
+			}
+		}
+
+		internal class _Function : Ast
+		{
+			public readonly string Name;
+			public readonly string ReturnType;
+			public readonly IEnumerable<Tuple<string, string>> Arguments;
+			public readonly _Block Body;
+
+			private _Function (string name, string returnType, IEnumerable<Tuple<string, string>> arguments,
+				_Block body)
+			{
+				Name = name;
+				ReturnType = returnType;
+				Arguments = arguments;
+				Body = body;
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0} {1} (2)\n{3}", ReturnType, Name,
+					Arguments.Select (t => t.Item1 + " " + t.Item2).SeparateWith (", "), Body);
 			}
 		}
 	}

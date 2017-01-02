@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Imaging.SignalEditors
+﻿	namespace Compose3D.Imaging.SignalEditors
 {
 	using System.Collections.Generic;
 	using System.Linq;

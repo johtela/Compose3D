@@ -18,9 +18,9 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			TestParallel ();
-			//var wnd = new FighterWindow ();
-			//wnd.Run ();
+			//TestParallel ();
+			var wnd = new FighterWindow ();
+			wnd.Run ();
 			//			Task.Factory.StartNew (() =>
 			//				Tester.RunTestsTimed (
 			//					new VecTests (),

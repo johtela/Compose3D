@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Compiler.Ast
+﻿namespace Compose3D.Compiler
 {
 	using System;
 	using System.Collections.Generic;
@@ -57,6 +57,11 @@
 		internal class _Argument : _Variable
 		{
 			public _Argument (string type, string name) : base (type, name) { }
+		}
+
+		internal class _FunctionArgument : _Argument
+		{
+			public _FunctionArgument (string name) : base ("function", name) { }
 		}
 
 		internal class _Constant : _Variable
@@ -178,10 +183,14 @@
 
 			protected _Call (_FunctionRef function, IEnumerable<_Expression> arguments)
 			{
-				if (function.Function.Arguments.Length != arguments.Count ())
-					throw new ArgumentException ("Invalid number of arguments.", nameof (arguments));
 				Function = function;
 				Arguments = arguments.ToArray ();
+				if (function.Function.Arguments.Length != Arguments.Length)
+					throw new ArgumentException ("Invalid number of arguments.", nameof (arguments));
+				for (int i = 0; i < Arguments.Length; i++)
+					if (function.Function.Arguments[i] is _FunctionArgument && !(Arguments[i] is _FunctionRef))
+						throw new ArgumentException ("Invalid function argument for higher order function.\n" +
+							"Must be a function reference.");
 			}
 
 			public override string ToString ()
@@ -493,6 +502,11 @@
 				ReturnType = returnType;
 				Arguments = arguments.ToArray ();
 				Body = body;
+			}
+
+			public bool IsHigherOrder
+			{
+				get { return Arguments.Any (a => a is _FunctionArgument); }
 			}
 
 			public override string ToString ()

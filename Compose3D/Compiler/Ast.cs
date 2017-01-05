@@ -13,15 +13,15 @@
 			return transform (this);
 		}
 
-		internal abstract class _Expression : Ast
+		internal abstract class Expression : Ast
 		{
 		}
 
-		internal class _Literal : _Expression
+		internal class Literal : Expression
 		{
 			public readonly string Value;
 
-			protected _Literal (string value)
+			protected Literal (string value)
 			{
 				Value = value;
 			}
@@ -32,12 +32,12 @@
 			}
 		}
 
-		internal class _Variable : _Expression
+		internal class Variable : Expression
 		{
 			public readonly string Type;
 			public readonly string Name;
 
-			protected _Variable (string type, string name)
+			protected Variable (string type, string name)
 			{
 				Type = type;
 				Name = name;
@@ -49,172 +49,172 @@
 			}
 		}
 
-		internal class _Field : _Variable
+		internal class Field : Variable
 		{
-			public _Field (string type, string name) : base (type, name) { }
+			public Field (string type, string name) : base (type, name) { }
 		}
 
-		internal class _Argument : _Variable
+		internal class Argument : Variable
 		{
-			public _Argument (string type, string name) : base (type, name) { }
+			public Argument (string type, string name) : base (type, name) { }
 		}
 
-		internal class _FunctionArgument : _Argument
+		internal class FunctionArgument : Argument
 		{
-			public _FunctionArgument (string name) : base ("function", name) { }
+			public FunctionArgument (string name) : base ("function", name) { }
 		}
 
-		internal class _Constant : _Variable
+		internal class Constant : Variable
 		{
-			public _Constant (string type, string name) : base (type, name) { }
+			public Constant (string type, string name) : base (type, name) { }
 		}
 
-		internal class _VariableRef : _Expression
+		internal class VariableRef : Expression
 		{
-			public readonly _Variable Variable;
+			public readonly Variable Target;
 
-			protected _VariableRef (_Variable variable)
+			protected VariableRef (Variable target)
 			{
-				Variable = variable;
+				Target = target;
 			}
 
 			public override string ToString ()
 			{
-				return Variable.Name;
+				return Target.Name;
 			}
 		}
 
-		internal class _FunctionRef : _Expression
+		internal class FunctionRef : Expression
 		{
-			public readonly _Function Function;
+			public readonly Function Target;
 
-			protected _FunctionRef (_Function function)
+			protected FunctionRef (Function target)
 			{
-				Function = function;
+				Target = target;
 			}
 
 			public override string ToString ()
 			{
-				return Function.Name;
+				return Target.Name;
 			}
 		}
 
-		internal class _FieldRef : _Expression
+		internal class FieldRef : Expression
 		{
-			public readonly _Expression Expression;
-			public readonly _Field Field;
+			public readonly Expression TargetExpr;
+			public readonly Field TargetField;
 
-			protected _FieldRef (_Expression expression, _Field field)
+			protected FieldRef (Expression expression, Field field)
 			{
-				Expression = expression;
-				Field = field;
+				TargetExpr = expression;
+				TargetField = field;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0}.{1}", Expression, Field);
+				return string.Format ("{0}.{1}", TargetExpr, TargetField);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var expr = (_Expression)transform (Expression);
-				return transform (expr == Expression ? this :
-					new _FieldRef (expr, Field));
+				var expr = (Expression)transform (TargetExpr);
+				return transform (expr == TargetExpr ? this :
+					new FieldRef (expr, TargetField));
 			}
 		}
 
-		internal class _UnaryOperation : _Expression
+		internal class UnaryOperation : Expression
 		{
 			public readonly bool Prefix;
 			public readonly string Operator;
-			public readonly _Expression Argument;
+			public readonly Expression Operand;
 
-			protected _UnaryOperation (bool prefix, string oper, _Expression argument)
+			protected UnaryOperation (bool prefix, string oper, Expression operand)
 			{
 				Prefix = prefix;
 				Operator = oper;
-				Argument = argument;
+				Operand = operand;
 			}
 
 			public override string ToString ()
 			{
-				return Prefix ? Operator + Argument : Argument + Operator;
+				return Prefix ? Operator + Operand : Operand + Operator;
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var argument = (_Expression)transform (Argument);
-				return transform (argument == Argument ?  this : 
-					new _UnaryOperation (Prefix, Operator, argument));
+				var argument = (Expression)transform (Operand);
+				return transform (argument == Operand ?  this : 
+					new UnaryOperation (Prefix, Operator, argument));
 			}
 		}
 
-		internal class _BinaryOperation : _Expression
+		internal class BinaryOperation : Expression
 		{
 			public readonly string Operator;
-			public readonly _Expression LeftArgument;
-			public readonly _Expression RightArgument;
+			public readonly Expression LeftOperand;
+			public readonly Expression RightOperand;
 
-			protected _BinaryOperation (string oper, _Expression left, _Expression right)
+			protected BinaryOperation (string oper, Expression left, Expression right)
 			{
 				Operator = oper;
-				LeftArgument = left;
-				RightArgument = right;
+				LeftOperand = left;
+				RightOperand = right;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} {1} {2}", LeftArgument, Operator, RightArgument);
+				return string.Format ("{0} {1} {2}", LeftOperand, Operator, RightOperand);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var left = (_Expression)transform (LeftArgument);
-				var right = (_Expression)transform (RightArgument);
-				return transform (left == LeftArgument && right == RightArgument ? this :
-					new _BinaryOperation (Operator, left, right));
+				var left = (Expression)transform (LeftOperand);
+				var right = (Expression)transform (RightOperand);
+				return transform (left == LeftOperand && right == RightOperand ? this :
+					new BinaryOperation (Operator, left, right));
 			}
 		}
 
-		internal class _Call : _Expression
+		internal class Call : Expression
 		{
-			public readonly _FunctionRef Function;
-			public readonly _Expression[] Arguments;
+			public readonly FunctionRef FuncRef;
+			public readonly Expression[] Arguments;
 
-			protected _Call (_FunctionRef function, IEnumerable<_Expression> arguments)
+			protected Call (FunctionRef funcref, IEnumerable<Expression> arguments)
 			{
-				Function = function;
+				FuncRef = funcref;
 				Arguments = arguments.ToArray ();
-				if (function.Function.Arguments.Length != Arguments.Length)
+				if (funcref.Target.Arguments.Length != Arguments.Length)
 					throw new ArgumentException ("Invalid number of arguments.", nameof (arguments));
 				for (int i = 0; i < Arguments.Length; i++)
-					if (function.Function.Arguments[i] is _FunctionArgument && !(Arguments[i] is _FunctionRef))
+					if (funcref.Target.Arguments[i] is FunctionArgument && !(Arguments[i] is FunctionRef))
 						throw new ArgumentException ("Invalid function argument for higher order function.\n" +
 							"Must be a function reference.");
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} ({1})", Function,
+				return string.Format ("{0} ({1})", FuncRef,
 					Arguments.Select (e => e.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var func = (_FunctionRef)transform (Function);
-				var args = Arguments.Select (a => (_Expression)transform (a));
-				return transform (func == Function && args.SequenceEqual (Arguments) ? this :
-					new _Call (func, args));
+				var func = (FunctionRef)transform (FuncRef);
+				var args = Arguments.Select (a => (Expression)transform (a));
+				return transform (func == FuncRef && args.SequenceEqual (Arguments) ? this :
+					new Call (func, args));
 			}
 		}
 
-		internal class _NewArray : _Expression
+		internal class NewArray : Expression
 		{
 			public readonly string ItemType;
 			public readonly int ItemCount;
-			public readonly _Expression[] Items;
+			public readonly Expression[] Items;
 
-			protected _NewArray (string type, int count, IEnumerable<_Expression> items)
+			protected NewArray (string type, int count, IEnumerable<Expression> items)
 			{
 				if (items.Count () != count)
 					throw new ArgumentException ("Invalid number arguments", nameof (items));
@@ -231,19 +231,19 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var items = Items.Select (i => (_Expression)transform (i));
+				var items = Items.Select (i => (Expression)transform (i));
 				return transform (items.SequenceEqual (Items) ? this :
-					new _NewArray (ItemType, ItemCount, items));
+					new NewArray (ItemType, ItemCount, items));
 			}
 		}
 
-		internal class _Conditional : _Expression
+		internal class Conditional : Expression
 		{
-			public readonly _Expression Condition;
-			public readonly _Expression IfTrue;
-			public readonly _Expression IfFalse;
+			public readonly Expression Condition;
+			public readonly Expression IfTrue;
+			public readonly Expression IfFalse;
 
-			protected _Conditional (_Expression condition, _Expression ifTrue, _Expression ifFalse)
+			protected Conditional (Expression condition, Expression ifTrue, Expression ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -257,15 +257,15 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var cond = (_Expression)transform (Condition);
-				var iftrue = (_Expression)transform (IfTrue);
-				var iffalse = (_Expression)transform (IfFalse);
+				var cond = (Expression)transform (Condition);
+				var iftrue = (Expression)transform (IfTrue);
+				var iffalse = (Expression)transform (IfFalse);
 				return transform (cond == Condition && iftrue == IfTrue && iffalse == IfFalse ? this :
-					new _Conditional (cond, iftrue, iffalse));
+					new Conditional (cond, iftrue, iffalse));
 			}
 		}
 
-		internal abstract class _Statement : Ast
+		internal abstract class Statement : Ast
 		{
 			[ThreadStatic]
 			protected static int _tabLevel;
@@ -290,9 +290,9 @@
 				sb.AppendFormat ("{0}}}\n", Tabs ());
 			}
 
-			protected void EmitIntended (StringBuilder sb, _Statement statement)
+			protected void EmitIntended (StringBuilder sb, Statement statement)
 			{
-				if (statement is _Block)
+				if (statement is Block)
 					sb.Append (statement);
 				else
 				{
@@ -308,65 +308,65 @@
 			}
 		}
 
-		internal class _Assignment : _Statement
+		internal class Assignment : Statement
 		{
-			public readonly _VariableRef Variable;
-			public readonly _Expression Value;
+			public readonly VariableRef VarRef;
+			public readonly Expression Value;
 
-			protected _Assignment (_VariableRef variable, _Expression value)
+			protected Assignment (VariableRef varRef, Expression value)
 			{
-				Variable = variable;
+				VarRef = varRef;
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0}{1} = {2};\n", Tabs (), Variable, Value);
+				return string.Format ("{0}{1} = {2};\n", Tabs (), VarRef, Value);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var vari = (_VariableRef)transform (Variable);
-				var val = (_Expression)transform (Value);
-				return transform (vari == Variable && val == Value ? this :
-					new _Assignment (vari, val));
+				var vari = (VariableRef)transform (VarRef);
+				var val = (Expression)transform (Value);
+				return transform (vari == VarRef && val == Value ? this :
+					new Assignment (vari, val));
 			}
 		}
 
-		internal class _DeclareVar : _Statement
+		internal class DeclareVar : Statement
 		{
-			public readonly _Variable Variable;
-			public readonly _Expression Value;
+			public readonly Variable Var;
+			public readonly Expression Value;
 
-			protected _DeclareVar (_Variable variable, _Expression value)
+			protected DeclareVar (Variable variable, Expression value)
 			{
-				Variable = variable;
+				Var = variable;
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
 				return Value != null ?
-					string.Format ("{0}{1} = {2};\n", Tabs (), Variable, Value) :
-					string.Format ("{0}{1};\n", Tabs (), Variable);
+					string.Format ("{0}{1} = {2};\n", Tabs (), Var, Value) :
+					string.Format ("{0}{1};\n", Tabs (), Var);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var vari = (_Variable)transform (Variable);
-				var val = (_Expression)transform (Value);
-				return transform (vari == Variable && val == Value ? this :
-					new _DeclareVar (vari, val));
+				var vari = (Variable)transform (Var);
+				var val = (Expression)transform (Value);
+				return transform (vari == Var && val == Value ? this :
+					new DeclareVar (vari, val));
 			}
 		}
 
-		internal class _Block : _Statement
+		internal class Block : Statement
 		{
-			public readonly List<_Statement> Statements;
+			public readonly List<Statement> Statements;
 
-			protected _Block (IEnumerable<_Statement> statements)
+			protected Block (IEnumerable<Statement> statements)
 			{
-				Statements = new List<_Statement> (statements);
+				Statements = new List<Statement> (statements);
 			}
 
 			public override string ToString ()
@@ -381,19 +381,19 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var stats = Statements.Select (i => (_Statement)transform (i));
+				var stats = Statements.Select (i => (Statement)transform (i));
 				return transform (stats.SequenceEqual (Statements) ? this :
-					new _Block (stats));
+					new Block (stats));
 			}
 		}
 
-		internal class _If : _Statement
+		internal class If : Statement
 		{
-			public readonly _Expression Condition;
-			public readonly _Statement IfTrue;
-			public readonly _Statement IfFalse;
+			public readonly Expression Condition;
+			public readonly Statement IfTrue;
+			public readonly Statement IfFalse;
 
-			protected _If (_Expression condition, _Statement ifTrue, _Statement ifFalse)
+			protected If (Expression condition, Statement ifTrue, Statement ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -415,26 +415,26 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var cond = (_Expression)transform (Condition);
-				var iftrue = (_Statement)transform (IfTrue);
-				var iffalse = (_Statement)transform (IfFalse);
+				var cond = (Expression)transform (Condition);
+				var iftrue = (Statement)transform (IfTrue);
+				var iffalse = (Statement)transform (IfFalse);
 				return transform (cond == Condition && iftrue == IfTrue && iffalse == IfFalse ? this :
-					new _If (cond, iftrue, iffalse));
+					new If (cond, iftrue, iffalse));
 			}
 		}
 
-		internal class _For : _Statement
+		internal class For : Statement
 		{
-			public readonly _Variable LoopVariable;
-			public readonly _Expression InitialValue;
-			public readonly _Expression Condition;
-			public readonly _Expression Increment;
-			public readonly _Statement Body;
+			public readonly Variable LoopVar;
+			public readonly Expression InitialValue;
+			public readonly Expression Condition;
+			public readonly Expression Increment;
+			public readonly Statement Body;
 
-			protected _For (_Variable loopVariable, _Expression initialValue, _Expression condition,
-				_Expression increment, _Statement body)
+			protected For (Variable loopVar, Expression initialValue, Expression condition,
+				Expression increment, Statement body)
 			{
-				LoopVariable = loopVariable;
+				LoopVar = loopVar;
 				InitialValue = initialValue;
 				Condition = condition;
 				Increment = increment;
@@ -444,30 +444,30 @@
 			public override string ToString ()
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "for ({0} = {1}; {2}; {3} = {4})\n", LoopVariable, InitialValue,
-					Condition, LoopVariable.Name, Increment);
+				EmitLine (result, "for ({0} = {1}; {2}; {3} = {4})\n", LoopVar, InitialValue,
+					Condition, LoopVar.Name, Increment);
 				EmitIntended (result, Body);
 				return result.ToString ();
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var loopvar = (_Variable)transform (LoopVariable);
-				var initval = (_Expression)transform (InitialValue);
-				var cond = (_Expression)transform (Condition);
-				var incr = (_Expression)transform (Increment);
-				var body = (_Statement)transform (Body);
-				return transform (loopvar == LoopVariable && initval == InitialValue &&
+				var loopvar = (Variable)transform (LoopVar);
+				var initval = (Expression)transform (InitialValue);
+				var cond = (Expression)transform (Condition);
+				var incr = (Expression)transform (Increment);
+				var body = (Statement)transform (Body);
+				return transform (loopvar == LoopVar && initval == InitialValue &&
 					cond == Condition && incr == Increment && body == Body ? this :
-					new _For (loopvar, initval, cond, incr, body));
+					new For (loopvar, initval, cond, incr, body));
 			}
 		}
 
-		internal class _Return : _Statement
+		internal class Return : Statement
 		{
-			public readonly _Expression Value;
+			public readonly Expression Value;
 
-			protected _Return (_Expression value)
+			protected Return (Expression value)
 			{
 				Value = value;
 			}
@@ -479,34 +479,41 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var val = (_Expression)transform (Value);
-				return transform (val == Value ? this : new _Return (val));
+				var val = (Expression)transform (Value);
+				return transform (val == Value ? this : new Return (val));
 			}
 		}
 
-		internal abstract class _Global : Ast
+		internal abstract class Global : Ast
 		{
 		}
 
-		internal class _Function : _Global
+		internal class Function : Global
 		{
 			public readonly string Name;
 			public readonly string ReturnType;
-			public readonly _Argument[] Arguments;
-			public readonly _Block Body;
+			public readonly Argument[] Arguments;
+			public readonly Block Body;
 
-			protected _Function (string name, string returnType, IEnumerable<_Argument> arguments,
-				_Block body)
+			protected Function (string name, string returnType, IEnumerable<Argument> arguments,
+				Block body)
 			{
 				Name = name;
 				ReturnType = returnType;
 				Arguments = arguments.ToArray ();
 				Body = body;
+				if (IsHigherOrder && IsExternal)
+					throw new ArgumentException ("Higher order external functions are not supported.");
+			}
+
+			public bool IsExternal
+			{
+				get { return Body == null; }
 			}
 
 			public bool IsHigherOrder
 			{
-				get { return Arguments.Any (a => a is _FunctionArgument); }
+				get { return Arguments.Any (a => a is FunctionArgument); }
 			}
 
 			public override string ToString ()
@@ -517,64 +524,69 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var args = Arguments.Select (a => (_Argument)transform (a));
-				var body = (_Block)transform (Body);
+				var args = Arguments.Select (a => (Argument)transform (a));
+				var body = (Block)transform (Body);
 				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
-					new _Function (Name, ReturnType, args, body));
+					new Function (Name, ReturnType, args, body));
 			}
 		}
 
-		internal class _Struct : _Global
+		internal class Struct : Global
 		{
 			public readonly string Name;
-			public readonly List<_Field> Fields;
+			public readonly List<Field> Fields;
 
-			protected _Struct (string name, IEnumerable<_Field> fields)
+			protected Struct (string name, IEnumerable<Field> fields)
 			{
 				Name = name;
-				Fields = new List<_Field> (fields);
+				Fields = new List<Field> (fields);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var fields = Fields.Select (f => (_Field)transform (f));
+				var fields = Fields.Select (f => (Field)transform (f));
 				return transform (fields.SequenceEqual (Fields) ? this :
-					new _Struct (Name, fields));
+					new Struct (Name, fields));
 			}
 		}
 
-		internal class _ConstantDecl : _Global
+		internal class ConstantDecl : Global
 		{
-			public readonly _Constant Constant;
-			public readonly _Expression Value;
+			public readonly Constant Const;
+			public readonly Expression Value;
 
-			protected _ConstantDecl (_Constant constant, _Expression value)
+			protected ConstantDecl (Constant constant, Expression value)
 			{
-				Constant = constant;
+				Const = constant;
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("const {0} = {1};\n", Constant, Value);
+				return string.Format ("const {0} = {1};\n", Const, Value);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var con = (_Constant)transform (Constant);
-				var val = (_Expression)transform (Value);
-				return transform (con == Constant && val == Value ? this :
-					new _ConstantDecl (con, val));
+				var con = (Constant)transform (Const);
+				var val = (Expression)transform (Value);
+				return transform (con == Const && val == Value ? this :
+					new ConstantDecl (con, val));
 			}
 		}
 
-		internal class _Program : Ast
+		internal class Program : Ast
 		{
-			public readonly List<_Global> Globals;
+			public readonly List<Global> Globals;
 
-			protected _Program (IEnumerable<_Global> globals)
+			protected Program (IEnumerable<Global> globals)
 			{
-				Globals = new List<_Global> (globals);
+				Globals = new List<Global> (globals);
+			}
+
+			public IEnumerable<Function> DefinedFunctions
+			{
+				get { return Globals.OfType<Function> (); }
 			}
 
 			public override string ToString ()
@@ -590,9 +602,9 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var globs = Globals.Select (g => (_Global)transform (g));
+				var globs = Globals.Select (g => (Global)transform (g));
 				return transform (globs.SequenceEqual (Globals) ? this :
-					new _Program (globs));
+					new Program (globs));
 			}
 		}
 	}

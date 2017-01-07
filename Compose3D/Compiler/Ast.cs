@@ -59,11 +59,6 @@
 			public Argument (string type, string name) : base (type, name) { }
 		}
 
-		internal class FunctionArgument : Argument
-		{
-			public FunctionArgument (string name) : base ("function", name) { }
-		}
-
 		internal class Constant : Variable
 		{
 			public Constant (string type, string name) : base (type, name) { }
@@ -84,11 +79,38 @@
 			}
 		}
 
-		internal class FunctionRef : Expression
+		internal class FunctionArgument : Ast
+		{
+			public readonly string Name;
+
+			public FunctionArgument (string name)
+			{
+				Name = name;
+			}
+		}
+
+		internal abstract class FunctionRef : Ast { }
+
+		internal class NamedFunctionRef : FunctionRef
 		{
 			public readonly Function Target;
 
-			protected FunctionRef (Function target)
+			internal NamedFunctionRef (Function target)
+			{
+				Target = target;
+			}
+
+			public override string ToString ()
+			{
+				return Target.Name;
+			}
+		}
+
+		internal class FunctionArgumentRef : FunctionRef
+		{
+			public readonly FunctionArgument Target;
+
+			protected FunctionArgumentRef (FunctionArgument target)
 			{
 				Target = target;
 			}
@@ -176,21 +198,18 @@
 			}
 		}
 
-		internal class Call : Expression
+		internal class FunctionCall : Expression
 		{
 			public readonly FunctionRef FuncRef;
 			public readonly Expression[] Arguments;
 
-			protected Call (FunctionRef funcref, IEnumerable<Expression> arguments)
+			internal FunctionCall (FunctionRef funcref, IEnumerable<Expression> args)
 			{
 				FuncRef = funcref;
-				Arguments = arguments.ToArray ();
-				if (funcref.Target.Arguments.Length != Arguments.Length)
-					throw new ArgumentException ("Invalid number of arguments.", nameof (arguments));
-				for (int i = 0; i < Arguments.Length; i++)
-					if (funcref.Target.Arguments[i] is FunctionArgument && !(Arguments[i] is FunctionRef))
-						throw new ArgumentException ("Invalid function argument for higher order function.\n" +
-							"Must be a function reference.");
+				Arguments = args.ToArray ();
+				var namedfunc = funcref as NamedFunctionRef;
+				if (namedfunc != null && namedfunc.Target.Arguments.Length != Arguments.Length)
+					throw new ArgumentException ("Invalid number of arguments.", nameof (args));
 			}
 
 			public override string ToString ()
@@ -204,7 +223,35 @@
 				var func = (FunctionRef)transform (FuncRef);
 				var args = Arguments.Select (a => (Expression)transform (a));
 				return transform (func == FuncRef && args.SequenceEqual (Arguments) ? this :
-					new Call (func, args));
+					new FunctionCall (func, args));
+			}
+		}
+
+		internal class HigherOrderFunctionCall : FunctionCall
+		{
+			public readonly FunctionRef[] FunctionArguments;
+
+			internal HigherOrderFunctionCall (NamedFunctionRef funcref, IEnumerable<Expression> args,
+				IEnumerable<FunctionRef> funcargs) : base (funcref, args)
+			{
+				FunctionArguments = funcargs.ToArray ();
+				if (funcref.Target.FunctionArguments.Length != FunctionArguments.Length)
+					throw new ArgumentException ("Invalid number of function arguments.", nameof (funcargs));
+			}
+
+			public NamedFunctionRef NamedFuncRef
+			{
+				get { return FuncRef as NamedFunctionRef; }
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var func = (NamedFunctionRef)transform (FuncRef);
+				var args = Arguments.Select (a => (Expression)transform (a));
+				var funcargs = FunctionArguments.Select (a => (FunctionRef)transform (a));
+				return transform (func == FuncRef && args.SequenceEqual (Arguments) && 
+					funcargs.SequenceEqual (FunctionArguments) ? this :
+					new HigherOrderFunctionCall (func, args, funcargs));
 			}
 		}
 
@@ -493,14 +540,16 @@
 			public readonly string Name;
 			public readonly string ReturnType;
 			public readonly Argument[] Arguments;
+			public readonly FunctionArgument[] FunctionArguments;
 			public readonly Block Body;
 
-			protected Function (string name, string returnType, IEnumerable<Argument> arguments,
-				Block body)
+			internal Function (string name, string returnType, IEnumerable<Argument> arguments,
+				IEnumerable<FunctionArgument> functionArguments, Block body)
 			{
 				Name = name;
 				ReturnType = returnType;
 				Arguments = arguments.ToArray ();
+				FunctionArguments = functionArguments.ToArray ();
 				Body = body;
 				if (IsHigherOrder && IsExternal)
 					throw new ArgumentException ("Higher order external functions are not supported.");
@@ -513,7 +562,7 @@
 
 			public bool IsHigherOrder
 			{
-				get { return Arguments.Any (a => a is FunctionArgument); }
+				get { return FunctionArguments.Length > 0; }
 			}
 
 			public override string ToString ()
@@ -525,9 +574,10 @@
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var args = Arguments.Select (a => (Argument)transform (a));
+				var funcargs = FunctionArguments.Select (a => (FunctionArgument)transform (a));
 				var body = (Block)transform (Body);
 				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
-					new Function (Name, ReturnType, args, body));
+					new Function (Name, ReturnType, args, funcargs, body));
 			}
 		}
 

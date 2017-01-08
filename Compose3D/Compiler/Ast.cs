@@ -89,6 +89,79 @@
 			}
 		}
 
+		internal class MacroParam : Ast
+		{
+			public readonly string Name;
+
+			public MacroParam (string name)
+			{
+				Name = name;
+			}
+		}
+
+		internal class MacroDefParam : MacroParam
+		{
+			public readonly MacroDefinition Definition;
+
+			public MacroDefParam (string name, MacroDefinition definition)
+				: base (name)
+			{
+				Definition = definition;
+			}
+		}
+
+		internal class MacroDefinition : Ast
+		{
+			public readonly MacroParam ReturnParam;
+			public readonly MacroParam[] Parameters;
+
+			public MacroDefinition (MacroParam returnParam, IEnumerable<MacroParam> parameters)
+			{
+				if (returnParam is MacroDefParam)
+					throw new ArgumentException ("Cannot return a macro from macro", nameof (returnParam));
+				ReturnParam = returnParam;
+				Parameters = parameters.ToArray ();
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0} ({1})", ReturnParam,
+					Parameters.Select (v => v.ToString ()).SeparateWith (", "));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var ret = (MacroParam)transform (ReturnParam);
+				var pars = Parameters.Select (a => (MacroParam)transform (a));
+				return transform (ret == ReturnParam && pars.SequenceEqual (Parameters) ? this :
+					new MacroDefinition (ret, pars));
+			}
+		}
+
+		internal class Macro : Ast
+		{
+			public readonly MacroDefinition Definition;
+			public readonly Block Implementation;
+
+			internal Macro (MacroDefinition definition, Block implementation)
+			{
+				Definition = definition;
+				Implementation = implementation;
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0}\n{1}", Definition, Implementation);
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var def = (MacroDefinition)transform (Definition);
+				var impl = (Block)transform (Implementation);
+				return transform (def == Definition && impl == Implementation ? this : new Macro (def, impl));
+			}
+		}
+
 		internal abstract class FunctionRef : Ast { }
 
 		internal class NamedFunctionRef : FunctionRef

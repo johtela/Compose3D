@@ -97,68 +97,84 @@
 			{
 				Name = name;
 			}
+
+			public override string ToString ()
+			{
+				return Name;
+			}
 		}
 
-		internal class MacroDefParam : MacroParam
+		internal class MacroParamRef : Expression
 		{
-			public readonly MacroDefinition Definition;
+			public readonly MacroParam Target;
 
-			public MacroDefParam (string name, MacroDefinition definition)
-				: base (name)
+			public MacroParamRef (MacroParam target)
 			{
-				Definition = definition;
+				Target = target;
 			}
 		}
 
 		internal class MacroDefinition : Ast
 		{
-			public readonly MacroParam ReturnParam;
+			public readonly MacroParam Name;
+			public readonly MacroDefinition[] MacroParameters;
 			public readonly MacroParam[] Parameters;
 
-			public MacroDefinition (MacroParam returnParam, IEnumerable<MacroParam> parameters)
+			public MacroDefinition (MacroParam name, IEnumerable<MacroDefinition> macroParams, 
+				IEnumerable<MacroParam> parameters)
 			{
-				if (returnParam is MacroDefParam)
-					throw new ArgumentException ("Cannot return a macro from macro", nameof (returnParam));
-				ReturnParam = returnParam;
+				Name = name;
+				MacroParameters = macroParams.ToArray ();
 				Parameters = parameters.ToArray ();
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} ({1})", ReturnParam,
+				return string.Format ("{0} ({1}, {2})", Name,
+					MacroParameters.Select (v => v.ToString ()).SeparateWith (", "),
 					Parameters.Select (v => v.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var ret = (MacroParam)transform (ReturnParam);
-				var pars = Parameters.Select (a => (MacroParam)transform (a));
-				return transform (ret == ReturnParam && pars.SequenceEqual (Parameters) ? this :
-					new MacroDefinition (ret, pars));
+				var ret = (MacroParam)transform (Name);
+				var mpars = MacroParameters.Select (p => (MacroDefinition)transform (p));
+				var pars = Parameters.Select (p => (MacroParam)transform (p));
+				return transform (ret == Name && mpars.SequenceEqual (MacroParameters) 
+					&& pars.SequenceEqual (Parameters) ? this :
+					new MacroDefinition (ret, mpars, pars));
+			}
+
+			public static bool AreCompatible (MacroDefinition def, MacroDefinition other)
+			{
+				return def.MacroParameters.Length == other.MacroParameters.Length &&
+					def.Parameters.Length == other.Parameters.Length &&
+					def.MacroParameters.Zip (other.MacroParameters, AreCompatible).All (Fun.Identity);
 			}
 		}
 
-		internal class Macro : Ast
+		internal class Macro : MacroDefinition
 		{
-			public readonly MacroDefinition Definition;
 			public readonly Block Implementation;
 
-			internal Macro (MacroDefinition definition, Block implementation)
+			internal Macro (MacroParam returnParam, IEnumerable<MacroDefinition> macroParams,
+				IEnumerable<MacroParam> parameters, Block implementation)
+				: base (returnParam, macroParams, parameters)
 			{
-				Definition = definition;
 				Implementation = implementation;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0}\n{1}", Definition, Implementation);
+				return base.ToString () + "\n" + Implementation;
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var def = (MacroDefinition)transform (Definition);
+				var def = (MacroDefinition)base.Transform (transform);
 				var impl = (Block)transform (Implementation);
-				return transform (def == Definition && impl == Implementation ? this : new Macro (def, impl));
+				return transform (def == this && impl == Implementation ? this :
+					new Macro (def.Name, def.MacroParameters, def.Parameters, Implementation));
 			}
 		}
 
@@ -601,6 +617,50 @@
 			{
 				var val = (Expression)transform (Value);
 				return transform (val == Value ? this : new Return (val));
+			}
+		}
+
+		internal class MacroCall : Statement
+		{
+			public readonly MacroDefinition Target;
+			public readonly Variable ReturnVar;
+			public readonly MacroDefinition[] MacroParameters;
+			public readonly Expression[] Parameters;
+
+			public MacroCall (MacroDefinition target, Variable returnVar, 
+				IEnumerable<MacroDefinition> macroParams, IEnumerable<Expression> parameters)
+			{
+				Target = target;
+				ReturnVar = returnVar;
+				MacroParameters = macroParams.ToArray ();
+				Parameters = parameters.ToArray ();
+				if (MacroParameters.Length != Target.MacroParameters.Length)
+					throw new ArgumentException ("Wrong number of macro parameters", nameof (macroParams));
+				if (Parameters.Length != Target.Parameters.Length)
+					throw new ArgumentException ("Wrong number of expression parameters", nameof (parameters));
+				if (!MacroParameters.Zip (Target.MacroParameters, MacroDefinition.AreCompatible)
+					.All (Fun.Identity))
+					throw new ArgumentException ("Macro parameters are not compatible with the definition", 
+						nameof (macroParams));
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0} = {1} ({2}, {3})", ReturnVar, Target.Name,
+					MacroParameters.Select (mp => mp.ToString ()).SeparateWith (", "),
+					Parameters.Select (p => p.ToString ()).SeparateWith (", "));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var target = (MacroDefinition)transform (Target);
+				var retVar = (Variable)transform (ReturnVar);
+				var mpars = MacroParameters.Select (p => (MacroDefinition)transform (p));
+				var pars = Parameters.Select (p => (Expression)transform (p));
+				return transform (target == Target && retVar == ReturnVar &&
+					mpars.SequenceEqual (MacroParameters)
+					&& pars.SequenceEqual (Parameters) ? this :
+					new MacroCall (target, retVar, mpars, pars));
 			}
 		}
 

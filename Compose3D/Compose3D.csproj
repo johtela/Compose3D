@@ -58,6 +58,7 @@
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\AstTransform.cs" />
     <Compile Include="Compiler\Invocation.cs" />
+    <Compile Include="Compiler\LinqParser.cs" />
     <Compile Include="Compiler\Macro.cs" />
     <Compile Include="Parallel\KernelArguments.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />

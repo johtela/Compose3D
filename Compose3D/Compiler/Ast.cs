@@ -13,15 +13,15 @@
 			return transform (this);
 		}
 
-		internal abstract class Expression : Ast
+		public abstract class Expression : Ast
 		{
 		}
 
-		internal class Literal : Expression
+		public class Literal : Expression
 		{
 			public readonly string Value;
 
-			protected Literal (string value)
+			internal Literal (string value)
 			{
 				Value = value;
 			}
@@ -32,12 +32,12 @@
 			}
 		}
 
-		internal class Variable : Expression
+		public class Variable : Expression
 		{
 			public readonly string Type;
 			public readonly string Name;
 
-			protected Variable (string type, string name)
+			internal Variable (string type, string name)
 			{
 				Type = type;
 				Name = name;
@@ -49,26 +49,26 @@
 			}
 		}
 
-		internal class Field : Variable
+		public class Field : Variable
 		{
-			public Field (string type, string name) : base (type, name) { }
+			internal Field (string type, string name) : base (type, name) { }
 		}
 
-		internal class Argument : Variable
+		public class Argument : Variable
 		{
-			public Argument (string type, string name) : base (type, name) { }
+			internal Argument (string type, string name) : base (type, name) { }
 		}
 
-		internal class Constant : Variable
+		public class Constant : Variable
 		{
-			public Constant (string type, string name) : base (type, name) { }
+			internal Constant (string type, string name) : base (type, name) { }
 		}
 
-		internal class VariableRef : Expression
+		public class VariableRef : Expression
 		{
 			public readonly Variable Target;
 
-			protected VariableRef (Variable target)
+			internal VariableRef (Variable target)
 			{
 				Target = target;
 			}
@@ -79,21 +79,11 @@
 			}
 		}
 
-		internal class FunctionArgument : Ast
+		public class MacroParam : Ast
 		{
 			public readonly string Name;
 
-			public FunctionArgument (string name)
-			{
-				Name = name;
-			}
-		}
-
-		internal class MacroParam : Ast
-		{
-			public readonly string Name;
-
-			public MacroParam (string name)
+			internal MacroParam (string name)
 			{
 				Name = name;
 			}
@@ -104,23 +94,23 @@
 			}
 		}
 
-		internal class MacroParamRef : Expression
+		public class MacroParamRef : Expression
 		{
 			public readonly MacroParam Target;
 
-			public MacroParamRef (MacroParam target)
+			internal MacroParamRef (MacroParam target)
 			{
 				Target = target;
 			}
 		}
 
-		internal class MacroDefinition : Ast
+		public class MacroDefinition : Ast
 		{
 			public readonly MacroParam Name;
 			public readonly MacroDefinition[] MacroParameters;
 			public readonly MacroParam[] Parameters;
 
-			public MacroDefinition (MacroParam name, IEnumerable<MacroDefinition> macroParams, 
+			internal MacroDefinition (MacroParam name, IEnumerable<MacroDefinition> macroParams, 
 				IEnumerable<MacroParam> parameters)
 			{
 				Name = name;
@@ -149,11 +139,11 @@
 			{
 				return def.MacroParameters.Length == other.MacroParameters.Length &&
 					def.Parameters.Length == other.Parameters.Length &&
-					def.MacroParameters.Zip (other.MacroParameters, AreCompatible).All (Fun.Identity);
+					def.MacroParameters.Zip (other.MacroParameters, AreCompatible).All (Extensions.Fun.Identity);
 			}
 		}
 
-		internal class Macro : MacroDefinition
+		public class Macro : MacroDefinition
 		{
 			public readonly Block Implementation;
 
@@ -178,44 +168,12 @@
 			}
 		}
 
-		internal abstract class FunctionRef : Ast { }
-
-		internal class NamedFunctionRef : FunctionRef
-		{
-			public readonly Function Target;
-
-			internal NamedFunctionRef (Function target)
-			{
-				Target = target;
-			}
-
-			public override string ToString ()
-			{
-				return Target.Name;
-			}
-		}
-
-		internal class FunctionArgumentRef : FunctionRef
-		{
-			public readonly FunctionArgument Target;
-
-			protected FunctionArgumentRef (FunctionArgument target)
-			{
-				Target = target;
-			}
-
-			public override string ToString ()
-			{
-				return Target.Name;
-			}
-		}
-
-		internal class FieldRef : Expression
+		public class FieldRef : Expression
 		{
 			public readonly Expression TargetExpr;
 			public readonly Field TargetField;
 
-			protected FieldRef (Expression expression, Field field)
+			internal FieldRef (Expression expression, Field field)
 			{
 				TargetExpr = expression;
 				TargetField = field;
@@ -223,7 +181,7 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0}.{1}", TargetExpr, TargetField);
+				return string.Format ("{0}.{1}", TargetExpr, TargetField.Name);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -234,39 +192,37 @@
 			}
 		}
 
-		internal class UnaryOperation : Expression
+		public class UnaryOperation : Expression
 		{
-			public readonly bool Prefix;
 			public readonly string Operator;
 			public readonly Expression Operand;
 
-			protected UnaryOperation (bool prefix, string oper, Expression operand)
+			internal UnaryOperation (string oper, Expression operand)
 			{
-				Prefix = prefix;
 				Operator = oper;
 				Operand = operand;
 			}
 
 			public override string ToString ()
 			{
-				return Prefix ? Operator + Operand : Operand + Operator;
+				return string.Format (Operator, Operand);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var argument = (Expression)transform (Operand);
 				return transform (argument == Operand ?  this : 
-					new UnaryOperation (Prefix, Operator, argument));
+					new UnaryOperation (Operator, argument));
 			}
 		}
 
-		internal class BinaryOperation : Expression
+		public class BinaryOperation : Expression
 		{
 			public readonly string Operator;
 			public readonly Expression LeftOperand;
 			public readonly Expression RightOperand;
 
-			protected BinaryOperation (string oper, Expression left, Expression right)
+			internal BinaryOperation (string oper, Expression left, Expression right)
 			{
 				Operator = oper;
 				LeftOperand = left;
@@ -275,7 +231,7 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} {1} {2}", LeftOperand, Operator, RightOperand);
+				return string.Format (Operator, LeftOperand, RightOperand);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -287,17 +243,16 @@
 			}
 		}
 
-		internal class FunctionCall : Expression
+		public class FunctionCall : Expression
 		{
-			public readonly FunctionRef FuncRef;
+			public readonly Function FuncRef;
 			public readonly Expression[] Arguments;
 
-			internal FunctionCall (FunctionRef funcref, IEnumerable<Expression> args)
+			internal FunctionCall (Function funcref, IEnumerable<Expression> args)
 			{
 				FuncRef = funcref;
 				Arguments = args.ToArray ();
-				var namedfunc = funcref as NamedFunctionRef;
-				if (namedfunc != null && namedfunc.Target.Arguments.Length != Arguments.Length)
+				if (FuncRef.Arguments.Length != Arguments.Length)
 					throw new ArgumentException ("Invalid number of arguments.", nameof (args));
 			}
 
@@ -309,48 +264,45 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var func = (FunctionRef)transform (FuncRef);
+				var func = (Function)transform (FuncRef);
 				var args = Arguments.Select (a => (Expression)transform (a));
 				return transform (func == FuncRef && args.SequenceEqual (Arguments) ? this :
 					new FunctionCall (func, args));
 			}
 		}
 
-		internal class HigherOrderFunctionCall : FunctionCall
+		public class ExternalFunctionCall : Expression
 		{
-			public readonly FunctionRef[] FunctionArguments;
+			public readonly string FormatStr;
+			public readonly Expression[] Arguments;
 
-			internal HigherOrderFunctionCall (NamedFunctionRef funcref, IEnumerable<Expression> args,
-				IEnumerable<FunctionRef> funcargs) : base (funcref, args)
+			internal ExternalFunctionCall (string formatStr, IEnumerable<Expression> args)
 			{
-				FunctionArguments = funcargs.ToArray ();
-				if (funcref.Target.FunctionArguments.Length != FunctionArguments.Length)
-					throw new ArgumentException ("Invalid number of function arguments.", nameof (funcargs));
+				FormatStr = formatStr;
+				Arguments = args.ToArray ();
 			}
 
-			public NamedFunctionRef NamedFuncRef
+			public override string ToString ()
 			{
-				get { return FuncRef as NamedFunctionRef; }
+				return string.Format (FormatStr, 
+					Arguments.Select (e => e.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var func = (NamedFunctionRef)transform (FuncRef);
 				var args = Arguments.Select (a => (Expression)transform (a));
-				var funcargs = FunctionArguments.Select (a => (FunctionRef)transform (a));
-				return transform (func == FuncRef && args.SequenceEqual (Arguments) && 
-					funcargs.SequenceEqual (FunctionArguments) ? this :
-					new HigherOrderFunctionCall (func, args, funcargs));
+				return transform (args.SequenceEqual (Arguments) ? this :
+					new ExternalFunctionCall (FormatStr, args));
 			}
 		}
 
-		internal class NewArray : Expression
+		public class NewArray : Expression
 		{
 			public readonly string ItemType;
 			public readonly int ItemCount;
 			public readonly Expression[] Items;
 
-			protected NewArray (string type, int count, IEnumerable<Expression> items)
+			internal NewArray (string type, int count, IEnumerable<Expression> items)
 			{
 				if (items.Count () != count)
 					throw new ArgumentException ("Invalid number arguments", nameof (items));
@@ -373,13 +325,13 @@
 			}
 		}
 
-		internal class Conditional : Expression
+		public class Conditional : Expression
 		{
 			public readonly Expression Condition;
 			public readonly Expression IfTrue;
 			public readonly Expression IfFalse;
 
-			protected Conditional (Expression condition, Expression ifTrue, Expression ifFalse)
+			internal Conditional (Expression condition, Expression ifTrue, Expression ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -401,7 +353,7 @@
 			}
 		}
 
-		internal abstract class Statement : Ast
+		public abstract class Statement : Ast
 		{
 			[ThreadStatic]
 			protected static int _tabLevel;
@@ -444,12 +396,12 @@
 			}
 		}
 
-		internal class Assignment : Statement
+		public class Assignment : Statement
 		{
 			public readonly VariableRef VarRef;
 			public readonly Expression Value;
 
-			protected Assignment (VariableRef varRef, Expression value)
+			internal Assignment (VariableRef varRef, Expression value)
 			{
 				VarRef = varRef;
 				Value = value;
@@ -469,38 +421,38 @@
 			}
 		}
 
-		internal class DeclareVar : Statement
+		public class DeclareVar : Statement
 		{
-			public readonly Variable Var;
+			public readonly Variable Definition;
 			public readonly Expression Value;
 
-			protected DeclareVar (Variable variable, Expression value)
+			internal DeclareVar (Variable definition, Expression value)
 			{
-				Var = variable;
+				Definition = definition;
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
 				return Value != null ?
-					string.Format ("{0}{1} = {2};\n", Tabs (), Var, Value) :
-					string.Format ("{0}{1};\n", Tabs (), Var);
+					string.Format ("{0}{1} = {2};\n", Tabs (), Definition, Value) :
+					string.Format ("{0}{1};\n", Tabs (), Definition);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var vari = (Variable)transform (Var);
+				var vari = (Variable)transform (Definition);
 				var val = (Expression)transform (Value);
-				return transform (vari == Var && val == Value ? this :
+				return transform (vari == Definition && val == Value ? this :
 					new DeclareVar (vari, val));
 			}
 		}
 
-		internal class Block : Statement
+		public class Block : Statement
 		{
 			public readonly List<Statement> Statements;
 
-			protected Block (IEnumerable<Statement> statements)
+			internal Block (IEnumerable<Statement> statements)
 			{
 				Statements = new List<Statement> (statements);
 			}
@@ -523,13 +475,13 @@
 			}
 		}
 
-		internal class If : Statement
+		public class IfElse : Statement
 		{
 			public readonly Expression Condition;
 			public readonly Statement IfTrue;
 			public readonly Statement IfFalse;
 
-			protected If (Expression condition, Statement ifTrue, Statement ifFalse)
+			internal IfElse (Expression condition, Statement ifTrue, Statement ifFalse)
 			{
 				Condition = condition;
 				IfTrue = ifTrue;
@@ -555,11 +507,11 @@
 				var iftrue = (Statement)transform (IfTrue);
 				var iffalse = (Statement)transform (IfFalse);
 				return transform (cond == Condition && iftrue == IfTrue && iffalse == IfFalse ? this :
-					new If (cond, iftrue, iffalse));
+					new IfElse (cond, iftrue, iffalse));
 			}
 		}
 
-		internal class For : Statement
+		public class ForLoop : Statement
 		{
 			public readonly Variable LoopVar;
 			public readonly Expression InitialValue;
@@ -567,7 +519,7 @@
 			public readonly Expression Increment;
 			public readonly Statement Body;
 
-			protected For (Variable loopVar, Expression initialValue, Expression condition,
+			internal ForLoop (Variable loopVar, Expression initialValue, Expression condition,
 				Expression increment, Statement body)
 			{
 				LoopVar = loopVar;
@@ -595,15 +547,15 @@
 				var body = (Statement)transform (Body);
 				return transform (loopvar == LoopVar && initval == InitialValue &&
 					cond == Condition && incr == Increment && body == Body ? this :
-					new For (loopvar, initval, cond, incr, body));
+					new ForLoop (loopvar, initval, cond, incr, body));
 			}
 		}
 
-		internal class Return : Statement
+		public class Return : Statement
 		{
 			public readonly Expression Value;
 
-			protected Return (Expression value)
+			internal Return (Expression value)
 			{
 				Value = value;
 			}
@@ -620,14 +572,14 @@
 			}
 		}
 
-		internal class MacroCall : Statement
+		public class MacroCall : Statement
 		{
 			public readonly MacroDefinition Target;
 			public readonly Variable ReturnVar;
 			public readonly MacroDefinition[] MacroParameters;
 			public readonly Expression[] Parameters;
 
-			public MacroCall (MacroDefinition target, Variable returnVar, 
+			internal MacroCall (MacroDefinition target, Variable returnVar, 
 				IEnumerable<MacroDefinition> macroParams, IEnumerable<Expression> parameters)
 			{
 				Target = target;
@@ -639,7 +591,7 @@
 				if (Parameters.Length != Target.Parameters.Length)
 					throw new ArgumentException ("Wrong number of expression parameters", nameof (parameters));
 				if (!MacroParameters.Zip (Target.MacroParameters, MacroDefinition.AreCompatible)
-					.All (Fun.Identity))
+					.All (Extensions.Fun.Identity))
 					throw new ArgumentException ("Macro parameters are not compatible with the definition", 
 						nameof (macroParams));
 			}
@@ -664,38 +616,24 @@
 			}
 		}
 
-		internal abstract class Global : Ast
+		public abstract class Global : Ast
 		{
 		}
 
-		internal class Function : Global
+		public class Function : Global
 		{
 			public readonly string Name;
 			public readonly string ReturnType;
 			public readonly Argument[] Arguments;
-			public readonly FunctionArgument[] FunctionArguments;
 			public readonly Block Body;
 
 			internal Function (string name, string returnType, IEnumerable<Argument> arguments,
-				IEnumerable<FunctionArgument> functionArguments, Block body)
+				Block body)
 			{
 				Name = name;
 				ReturnType = returnType;
 				Arguments = arguments.ToArray ();
-				FunctionArguments = functionArguments.ToArray ();
 				Body = body;
-				if (IsHigherOrder && IsExternal)
-					throw new ArgumentException ("Higher order external functions are not supported.");
-			}
-
-			public bool IsExternal
-			{
-				get { return Body == null; }
-			}
-
-			public bool IsHigherOrder
-			{
-				get { return FunctionArguments.Length > 0; }
 			}
 
 			public override string ToString ()
@@ -707,19 +645,18 @@
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var args = Arguments.Select (a => (Argument)transform (a));
-				var funcargs = FunctionArguments.Select (a => (FunctionArgument)transform (a));
 				var body = (Block)transform (Body);
 				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
-					new Function (Name, ReturnType, args, funcargs, body));
+					new Function (Name, ReturnType, args, body));
 			}
 		}
 
-		internal class Struct : Global
+		public class Structure : Global
 		{
 			public readonly string Name;
 			public readonly List<Field> Fields;
 
-			protected Struct (string name, IEnumerable<Field> fields)
+			internal Structure (string name, IEnumerable<Field> fields)
 			{
 				Name = name;
 				Fields = new List<Field> (fields);
@@ -729,40 +666,40 @@
 			{
 				var fields = Fields.Select (f => (Field)transform (f));
 				return transform (fields.SequenceEqual (Fields) ? this :
-					new Struct (Name, fields));
+					new Structure (Name, fields));
 			}
 		}
 
-		internal class ConstantDecl : Global
+		public class ConstantDecl : Global
 		{
-			public readonly Constant Const;
+			public readonly Constant Definition;
 			public readonly Expression Value;
 
-			protected ConstantDecl (Constant constant, Expression value)
+			internal ConstantDecl (Constant definition, Expression value)
 			{
-				Const = constant;
+				Definition = definition;
 				Value = value;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("const {0} = {1};\n", Const, Value);
+				return string.Format ("const {0} = {1};\n", Definition, Value);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var con = (Constant)transform (Const);
+				var con = (Constant)transform (Definition);
 				var val = (Expression)transform (Value);
-				return transform (con == Const && val == Value ? this :
+				return transform (con == Definition && val == Value ? this :
 					new ConstantDecl (con, val));
 			}
 		}
 
-		internal class Program : Ast
+		public class Program : Ast
 		{
 			public readonly List<Global> Globals;
 
-			protected Program (IEnumerable<Global> globals)
+			internal Program (IEnumerable<Global> globals)
 			{
 				Globals = new List<Global> (globals);
 			}
@@ -789,6 +726,172 @@
 				return transform (globs.SequenceEqual (Globals) ? this :
 					new Program (globs));
 			}
+		}
+
+		public static Literal Lit (string value)
+		{
+			return new Literal (value);
+		}
+
+		public static Variable Var (string type, string name)
+		{
+			return new Variable (type, name);
+		}
+
+		public static Field Fld (string type, string name)
+		{
+			return new Field (type, name);
+		}
+
+		public static Field Fld (string name)
+		{
+			return new Field (null, name);
+		}
+
+		public static Argument Arg (string type, string name)
+		{
+			return new Argument (type, name);
+		}
+
+		public static Constant Const (string type, string name)
+		{
+			return new Constant (type, name);
+		}
+
+		public static VariableRef VRef (Variable variable)
+		{
+			return new VariableRef (variable);
+		}
+
+		public static MacroParam MPar (string name)
+		{
+			return new MacroParam (name);
+		}
+
+		public static MacroParamRef MPRef (MacroParam mpar)
+		{
+			return new MacroParamRef (mpar);
+		}
+
+		public static MacroDefinition MDef (MacroParam name, 
+			IEnumerable<MacroDefinition> mdefpars, IEnumerable<MacroParam> mpars)
+		{
+			return new MacroDefinition (name, mdefpars, mpars);
+		}
+
+		public static Macro Mac (MacroParam name,
+			IEnumerable<MacroDefinition> mdefpars, IEnumerable<MacroParam> mpars,
+			Block impl)
+		{
+			return new Macro (name, mdefpars, mpars, impl);
+		}
+
+		public static FieldRef FRef (Expression expr, Field field)
+		{
+			return new FieldRef (expr, field);
+		}
+
+		public static UnaryOperation Op (string oper, Expression operand)
+		{
+			return new UnaryOperation (oper, operand);
+		}
+
+		public static BinaryOperation Op (string oper, Expression left, Expression right)
+		{
+			return new BinaryOperation (oper, left, right);
+		}
+
+		public static FunctionCall Call (Function function, IEnumerable<Expression> args)
+		{
+			return new FunctionCall (function, args);
+		}
+
+		public static ExternalFunctionCall Call (string formatStr, IEnumerable<Expression> args)
+		{
+			return new ExternalFunctionCall (formatStr, args);
+		}
+
+		public static NewArray Arr (string type, int count, IEnumerable<Expression> items)
+		{
+			return new NewArray (type, count, items);
+		}
+
+		public static Conditional Cond (Expression condition, Expression ifTrue, Expression ifFalse)
+		{
+			return new Conditional (condition, ifTrue, ifFalse);
+		}
+
+		public static Assignment Ass (VariableRef varRef, Expression value)
+		{
+			return new Assignment (varRef, value);
+		}
+
+		public static DeclareVar Decl (Variable definition, Expression value)
+		{
+			return new DeclareVar (definition, value);
+		}
+
+		public static Block Blk (IEnumerable<Statement> statements)
+		{
+			return new Block (statements);
+		}
+
+		public static Block Blk ()
+		{
+			return new Block (Enumerable.Empty<Statement> ());
+		}
+
+		public static IfElse If (Expression condition, Statement ifTrue, Statement ifFalse)
+		{
+			return new IfElse (condition, ifTrue, ifFalse);
+		}
+
+		public static IfElse If (Expression condition, Statement ifTrue)
+		{
+			return new IfElse (condition, ifTrue, null);
+		}
+
+		public static ForLoop For (Variable loopVar, Expression initialValue, Expression condition,
+			Expression increment, Statement body)
+		{
+			return new ForLoop (loopVar, initialValue, condition, increment, body);
+		}
+
+		public static Return Ret (Expression value)
+		{
+			return new Return (value);
+		}
+
+		public static MacroCall MCall (MacroDefinition target, Variable returnVar,
+			IEnumerable<MacroDefinition> macroParams, IEnumerable<Expression> parameters)
+		{
+			return new MacroCall (target, returnVar, macroParams, parameters);
+		}
+
+		public static Function Fun (string name, string returnType, IEnumerable<Argument> arguments,
+			Block body)
+		{
+			return new Function (name, returnType, arguments, body);
+		}
+
+		public static Structure Struct (string name, IEnumerable<Field> fields)
+		{
+			return new Structure (name, fields);
+		}
+
+		public static ConstantDecl DeclCon (Constant definition, Expression value)
+		{
+			return new ConstantDecl (definition, value);
+		}
+
+		public static Program Prog (IEnumerable<Global> globals)
+		{
+			return new Program (globals);
+		}
+
+		public static Program Prog ()
+		{
+			return new Program (Enumerable.Empty<Global> ());
 		}
 	}
 }

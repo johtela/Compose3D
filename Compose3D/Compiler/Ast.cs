@@ -231,7 +231,7 @@
 
 			public override string ToString ()
 			{
-				return string.Format (Operator, LeftOperand, RightOperand);
+				return string.Format ("(" + Operator + ")", LeftOperand, RightOperand);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -340,7 +340,7 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} ? {1} : {2}", Condition, IfTrue, IfFalse);
+				return string.Format ("({0} ? {1} : {2})", Condition, IfTrue, IfFalse);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -860,6 +860,11 @@
 		public static Return Ret (Expression value)
 		{
 			return new Return (value);
+		}
+
+		public static Return Ret ()
+		{
+			return new Return (Lit (""));
 		}
 
 		public static MacroCall MCall (MacroDefinition target, Variable returnVar,

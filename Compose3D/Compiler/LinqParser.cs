@@ -16,7 +16,7 @@
 		protected HashSet<Type> _typesDefined;
 		protected Stack<Ast.Block> _scopes;
 		protected Dictionary<string, Ast.Variable> _locals;
-		internal Dictionary<string, Ast.Constant> _constants;
+		internal Dictionary<string, Ast.ConstantDecl> _constants;
 		protected Type _linqType;
 		protected TypeMapping _typeMapping;
 
@@ -25,7 +25,7 @@
             _typesDefined = new HashSet<Type> ();
 			_scopes = new Stack<Ast.Block> ();
 			_locals = new Dictionary<string, Ast.Variable> ();
-			_constants = new Dictionary<string, Ast.Constant> ();
+			_constants = new Dictionary<string, Ast.ConstantDecl> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
         }
@@ -118,6 +118,16 @@
 			CodeOut (Ast.Decl (local, value));
 			_locals.Add (local.Name, local);
 			return local;
+		}
+
+		protected Ast.Variable NewIndexVar (string type, string name)
+		{
+			var i = 0;
+			string result;
+			do
+				result = string.Format ("_gen_{0}{1}", name, i++);
+			while (_locals.ContainsKey (result));
+			return Ast.Var (type, result);
 		}
 
 		protected bool DefineType (Type type)
@@ -300,6 +310,14 @@
 					.Execute (new Source (mce.Arguments[0].Traverse (_linqType)));
 		}
 
+		private Ast.ForLoop ForStatement (Ast.Variable indexVar, Ast.Expression len, Ast.Block loopBlock)
+		{
+			return Ast.For (indexVar, Ast.Lit ("0"),
+				Ast.Op (MapOperator (null, ExpressionType.LessThan), Ast.VRef (indexVar), len),
+			   Ast.Op (MapOperator (null, ExpressionType.PostIncrementAssign), Ast.VRef (indexVar)),
+			   loopBlock);
+		}
+
 		protected void IterateArray (MethodCallExpression expr)
         {
 			var array = expr.Arguments[0];
@@ -312,23 +330,23 @@
 			else if (_constants.ContainsKey (member.Name))
 			{
 				var constant = _constants[member.Name];
-				if (!constant.Type.IsArray)
+				if (!(constant.Value is Ast.NewArray))
 					throw new ParseException ("Invalid array expression. Referenced constant is not an array.");
-				var nai = constant.Value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				len = nai.Expressions.Count;
+				var na = constant.Value as Ast.NewArray;
+				len = na.Items.Length;
 			}
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = NewIndexVar ("ind");
+			var indexVar = NewIndexVar ("int", "ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
-            CodeOut ("for (int {0} = 0; {0} < {1}; {0}++)", indexVar, len);
-            CodeOut ("{");
-            _tabLevel++;
-            CodeOut ("{0} {1} = {2}[{3}];", MapType (item.Type), item.Name, 
-                Expr (array), indexVar);
+			var loopBlock = Ast.Blk ();
+			CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
+			StartScope (loopBlock);
+            CodeOut (Ast.Decl (Ast.Var (MapType (item.Type), item.Name),
+				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar))));
         }
 
 		protected void OutputForLoop (MethodCallExpression expr)
@@ -338,19 +356,23 @@
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 			var start = Expr (range.Arguments[0]);
+			var iv = Ast.Var (MapType (indexVar.Type), indexVar.Name);
+			var loopBlock = Ast.Blk ();
 			if (range.Method.DeclaringType == typeof (Enumerable))
 			{
 				var len = Expr (range.Arguments[1]);
-				CodeOut ("for (int {0} = {1}; {0} < {2}; {0}++)", indexVar, start, len);
+				CodeOut (ForStatement (iv, len, loopBlock));
 			}
 			else
 			{
 				var end = Expr (range.Arguments[1]);
 				var step = Expr (range.Arguments[2]);
-				CodeOut ("for (int {0} = {1}; {0} != {2}; {0} += {3})", indexVar, start, end, step);
+				CodeOut (Ast.For (iv, start, 
+					Ast.Op (MapOperator (null, ExpressionType.NotEqual), Ast.VRef (iv), end),
+					Ast.Op (MapOperator (null, ExpressionType.AddAssign), Ast.VRef (iv), step),
+					loopBlock));
 			}
-			CodeOut ("{");
-			_tabLevel++;
+			StartScope (loopBlock);
 		}
 
 		protected bool ForLoop (Source source)
@@ -366,7 +388,8 @@
 			if (!source.Current.Method.IsWhere (_linqType))
 				return false;
 			var predicate = source.Current.Arguments[1].ExpectLambda ().Body;
-			CodeOut ("if (!{0}) return;", Expr (predicate));
+			CodeOut (Ast.If (Ast.Op (MapOperator (null, ExpressionType.Not), Expr (predicate)),
+				Ast.Ret ()));
 			return true;
 		}
 
@@ -396,7 +419,8 @@
 
 		protected virtual void OutputReturnAssignment (MemberInfo member, Expression expr)
 		{
-			CodeOut ("{0} = {1};", member.Name, Expr (expr));
+			var memVar = Ast.Var (MapType (expr.Type), member.Name);
+			CodeOut (Ast.Ass (Ast.VRef (memVar), Expr (expr)));
 		}
 
 		protected void ConditionalReturn (Expression expr, Action<Expression> returnAction)
@@ -406,18 +430,15 @@
 				returnAction (expr);
 			else
 			{
-				CodeOut ("if ({0})", Expr (ce.Test));
-				CodeOut ("{");
-				_tabLevel++;
+				var thenBlock = Ast.Blk ();
+				var elseBlock = Ast.Blk ();
+				CodeOut (Ast.If (Expr (ce.Test), thenBlock, elseBlock));
+				StartScope (thenBlock);
 				returnAction (ce.IfTrue);
-				_tabLevel--;
-				CodeOut ("}");
-				CodeOut ("else");
-				CodeOut ("{");
-				_tabLevel++;
+				EndScope ();
+				StartScope (elseBlock);
 				ConditionalReturn (ce.IfFalse, returnAction);
-				_tabLevel--;
-				CodeOut ("}");
+				EndScope ();
 			}
 		}
 

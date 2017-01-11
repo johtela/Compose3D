@@ -73,6 +73,6 @@
     [AttributeUsage (AttributeTargets.Struct)]
     public class GLStruct : GLAttribute
     {
-        public GLStruct (string syntax) : base (syntax) { }
+        public GLStruct () : base (null) { }
     }
 }

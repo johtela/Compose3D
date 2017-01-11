@@ -62,7 +62,13 @@
 			return result;
 		}
 
-		protected abstract Ast.Expression MapMemberAccess (MemberExpression member);
+		protected virtual Ast.Expression MapMemberAccess (MemberExpression me)
+		{
+			Ast.Variable v;
+			if (_locals.TryGetValue (me.Member.Name, out v))
+				return Ast.VRef (v);
+			throw new ParseException ("Access to undefined member " + me.Member.Name);
+		}
 
 		protected abstract string MapTypeCast (Type type);
 
@@ -112,10 +118,21 @@
 			CurrentScope ().Statements.Add (statement);
 		}
 
+		protected void DeclOut (string declaration, params object[] args)
+		{
+			_program.Globals.Add (Ast.Decl (args.Length == 0 ?
+				declaration :
+				string.Format (declaration, args)));
+		}
+
+		protected void DeclOut (string declaration)
+		{
+		}
+
 		protected Ast.Variable DeclareLocal (string type, string name, Ast.Expression value)
 		{
 			var local = Ast.Var (type, name);
-			CodeOut (Ast.Decl (local, value));
+			CodeOut (Ast.DeclVar (local, value));
 			_locals.Add (local.Name, local);
 			return local;
 		}
@@ -345,7 +362,7 @@
 			var loopBlock = Ast.Blk ();
 			CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
 			StartScope (loopBlock);
-            CodeOut (Ast.Decl (Ast.Var (MapType (item.Type), item.Name),
+            CodeOut (Ast.DeclVar (Ast.Var (MapType (item.Type), item.Name),
 				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar))));
         }
 

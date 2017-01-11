@@ -60,6 +60,7 @@
     <Compile Include="Compiler\Invocation.cs" />
     <Compile Include="Compiler\LinqParser.cs" />
     <Compile Include="Compiler\Macro.cs" />
+    <Compile Include="GLTypes\GLSLParser.cs" />
     <Compile Include="Parallel\KernelArguments.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />

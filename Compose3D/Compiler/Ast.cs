@@ -662,11 +662,31 @@
 				Fields = new List<Field> (fields);
 			}
 
+			public Field FindField (string name)
+			{
+				return Fields.Find (f => f.Name == name);
+			}
+
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var fields = Fields.Select (f => (Field)transform (f));
 				return transform (fields.SequenceEqual (Fields) ? this :
 					new Structure (Name, fields));
+			}
+		}
+
+		public class Declaration : Global
+		{
+			public readonly string Text;
+
+			public Declaration (string text)
+			{
+				Text = text;
+			}
+
+			public override string ToString ()
+			{
+				return Text;
 			}
 		}
 
@@ -707,6 +727,16 @@
 			public IEnumerable<Function> DefinedFunctions
 			{
 				get { return Globals.OfType<Function> (); }
+			}
+
+			public IEnumerable<Structure> DefinedStructs
+			{
+				get { return Globals.OfType<Structure> (); }
+			}
+
+			public Structure FindStruct (string name)
+			{
+				return DefinedStructs.First (s => s.Name == name);
 			}
 
 			public override string ToString ()
@@ -806,7 +836,17 @@
 			return new FunctionCall (function, args);
 		}
 
+		public static FunctionCall Call (Function function, params Expression[] args)
+		{
+			return new FunctionCall (function, args);
+		}
+
 		public static ExternalFunctionCall Call (string formatStr, IEnumerable<Expression> args)
+		{
+			return new ExternalFunctionCall (formatStr, args);
+		}
+
+		public static ExternalFunctionCall Call (string formatStr, params Expression[] args)
 		{
 			return new ExternalFunctionCall (formatStr, args);
 		}
@@ -826,7 +866,7 @@
 			return new Assignment (varRef, value);
 		}
 
-		public static DeclareVar Decl (Variable definition, Expression value)
+		public static DeclareVar DeclVar (Variable definition, Expression value)
 		{
 			return new DeclareVar (definition, value);
 		}
@@ -882,6 +922,11 @@
 		public static Structure Struct (string name, IEnumerable<Field> fields)
 		{
 			return new Structure (name, fields);
+		}
+
+		public static Declaration Decl (string text)
+		{
+			return new Declaration (text);
 		}
 
 		public static ConstantDecl DeclCon (Constant definition, Expression value)

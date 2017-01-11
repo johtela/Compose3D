@@ -44,14 +44,14 @@
 
 	public static class LightingShaders
 	{
-		[GLStruct ("DirectionalLight")]
+		[GLStruct]
 		public struct DirectionalLight
 		{
 			public Vec3 intensity;
 			public Vec3 direction;
 		}
 
-		[GLStruct ("PointLight")]
+		[GLStruct]
 		public struct PointLight
 		{
 			public Vec3 position;
@@ -59,7 +59,7 @@
 			public float linearAttenuation, quadraticAttenuation;
 		}
 
-		[GLStruct ("SpotLight")]
+		[GLStruct]
 		public struct SpotLight
 		{
 			public PointLight pointLight;
@@ -67,7 +67,7 @@
 			public float cosSpotCutoff, spotExponent;
 		}
 
-		[GLStruct ("GlobalLight")]
+		[GLStruct]
 		public struct GlobalLight
 		{
 			public Vec3 ambientLightIntensity;
@@ -75,7 +75,7 @@
 			public float inverseGamma;
 		}
 
-		[GLStruct ("DiffuseAndSpecular")]
+		[GLStruct]
 		public struct DiffuseAndSpecular
 		{
 			public Vec3 diffuse;

@@ -16,7 +16,7 @@
 		protected HashSet<Type> _typesDefined;
 		protected Stack<Ast.Block> _scopes;
 		protected Dictionary<string, Ast.Variable> _locals;
-		internal Dictionary<string, Ast.ConstantDecl> _constants;
+		internal Dictionary<string, Ast.Constant> _constants;
 		protected Type _linqType;
 		protected TypeMapping _typeMapping;
 
@@ -25,7 +25,7 @@
             _typesDefined = new HashSet<Type> ();
 			_scopes = new Stack<Ast.Block> ();
 			_locals = new Dictionary<string, Ast.Variable> ();
-			_constants = new Dictionary<string, Ast.ConstantDecl> ();
+			_constants = new Dictionary<string, Ast.Constant> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
         }
@@ -345,13 +345,7 @@
 			if (field != null)
 				len = field.ExpectFixedArrayAttribute ().Length;
 			else if (_constants.ContainsKey (member.Name))
-			{
-				var constant = _constants[member.Name];
-				if (!(constant.Value is Ast.NewArray))
-					throw new ParseException ("Invalid array expression. Referenced constant is not an array.");
-				var na = constant.Value as Ast.NewArray;
-				len = na.Items.Length;
-			}
+				len = _constants[member.Name].ArrayLength;
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);

@@ -36,32 +36,64 @@
 		{
 			public readonly string Type;
 			public readonly string Name;
+			public readonly int ArrayLength;
 
-			internal Variable (string type, string name)
+			internal Variable (string type, string name, int arraylen)
 			{
 				Type = type;
 				Name = name;
+				ArrayLength = arraylen;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} {1}", Type, Name);
+				var arrayDecl = ArrayLength > 0 ?
+					string.Format ("[{0}]", ArrayLength) : "";
+				return string.Format ("{0} {1}{2}", Type, Name, arrayDecl);
 			}
 		}
-
+		 
 		public class Field : Variable
 		{
-			internal Field (string type, string name) : base (type, name) { }
+			internal Field (string type, string name, int arraylen) 
+				: base (type, name, arraylen) { }
 		}
 
 		public class Argument : Variable
 		{
-			internal Argument (string type, string name) : base (type, name) { }
+			internal Argument (string type, string name, int arraylen) 
+				: base (type, name, arraylen) { }
 		}
 
 		public class Constant : Variable
 		{
-			internal Constant (string type, string name) : base (type, name) { }
+			public readonly Expression Value;
+
+			internal Constant (string type, string name, int arraylen, Expression value)
+				: base (type, name, arraylen)
+			{
+				var na = value as NewArray;
+				if (arraylen > 0 && na == null)
+					throw new ArgumentException (
+						"Constant array must be initialized with the NewArray expression.");
+				if (na != null && na.Items.Length != arraylen)
+					throw new ArgumentException (
+						"Wrong number of items in array initializer", nameof (value));
+				Value = value;
+			}
+
+			public override string ToString ()
+			{
+				var decl = base.ToString ();
+				return string.Format ("const {0} = {1}", decl, Value);
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var val = (Expression)transform (Value);
+				return transform (val == Value ? this :
+					new Constant (Type, Name, ArrayLength, val));
+			}
 		}
 
 		public class VariableRef : Expression
@@ -690,31 +722,6 @@
 			}
 		}
 
-		public class ConstantDecl : Global
-		{
-			public readonly Constant Definition;
-			public readonly Expression Value;
-
-			internal ConstantDecl (Constant definition, Expression value)
-			{
-				Definition = definition;
-				Value = value;
-			}
-
-			public override string ToString ()
-			{
-				return string.Format ("const {0} = {1};\n", Definition, Value);
-			}
-
-			public override Ast Transform (Func<Ast, Ast> transform)
-			{
-				var con = (Constant)transform (Definition);
-				var val = (Expression)transform (Value);
-				return transform (con == Definition && val == Value ? this :
-					new ConstantDecl (con, val));
-			}
-		}
-
 		public class Program : Ast
 		{
 			public readonly List<Global> Globals;
@@ -765,27 +772,47 @@
 
 		public static Variable Var (string type, string name)
 		{
-			return new Variable (type, name);
+			return new Variable (type, name, 0);
+		}
+
+		public static Variable Var (string type, string name, int arraylen)
+		{
+			return new Variable (type, name, arraylen);
 		}
 
 		public static Field Fld (string type, string name)
 		{
-			return new Field (type, name);
+			return new Field (type, name, 0);
+		}
+
+		public static Field Fld (string type, string name, int arraylen)
+		{
+			return new Field (type, name, arraylen);
 		}
 
 		public static Field Fld (string name)
 		{
-			return new Field (null, name);
+			return new Field (null, name, 0);
 		}
 
 		public static Argument Arg (string type, string name)
 		{
-			return new Argument (type, name);
+			return new Argument (type, name, 0);
 		}
 
-		public static Constant Const (string type, string name)
+		public static Argument Arg (string type, string name, int arraylen)
 		{
-			return new Constant (type, name);
+			return new Argument (type, name, arraylen);
+		}
+
+		public static Constant Const (string type, string name, Expression value)
+		{
+			return new Constant (type, name, 0, value);
+		}
+
+		public static Constant Const (string type, string name, int arraylen, Expression value)
+		{
+			return new Constant (type, name, arraylen, value);
 		}
 
 		public static VariableRef VRef (Variable variable)
@@ -927,11 +954,6 @@
 		public static Declaration Decl (string text)
 		{
 			return new Declaration (text);
-		}
-
-		public static ConstantDecl DeclCon (Constant definition, Expression value)
-		{
-			return new ConstantDecl (definition, value);
 		}
 
 		public static Program Prog (IEnumerable<Global> globals)

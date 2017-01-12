@@ -10,15 +10,15 @@
 	using Compiler;
 	using Shaders;
 
-	public class GLSLParser : LinqParser
+	public class GlslParser : LinqParser
     {
-		private GLSLParser () : base (typeof (Shader), new GLTypeMapping ())
+		private GlslParser () : base (typeof (Shader), new GLTypeMapping ())
         { }
 
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
-			var parser = new GLSLParser ();
-			parser.DeclareVariables (typeof (T), "out", "");
+			var parser = new GlslParser ();
+			parser.DeclareVariables (typeof (T), "out");
 			parser.OutputShader (shader);
 			return parser.BuildShaderCode ();
 		}
@@ -32,13 +32,13 @@
 			int invocations, PrimitiveType inputPrimitive, PrimitiveType outputPrimitive,
 			Expression<Func<Shader<T[]>>> shader)
 		{
-			var parser = new GLSLParser ();
+			var parser = new GlslParser ();
 			if (invocations > 0)
 				parser.DeclOut ("layout (invocations = {0}) in;", invocations);
 			parser.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
 			parser.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
-			parser.DeclareVariables (typeof (T), "out", "");
+			parser.DeclareVariables (typeof (T), "out");
 			parser.OutputGeometryShader (shader);
 			return parser.BuildShaderCode ();
 		}
@@ -57,7 +57,7 @@
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
 			var name = ConstructFunctionName (member);
-			CreateFunction (new GLSLParser (), name, expr);
+			CreateFunction (new GlslParser (), name, expr);
 		}
 
 		private string BuildShaderCode ()
@@ -149,7 +149,7 @@
             }
         }
 
-        private void DeclareVariables (Type type, string prefix, string instanceName)
+        private void DeclareVariables (Type type, string prefix)
         {
 			if (!DefineType (type))
 				return;

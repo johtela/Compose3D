@@ -95,7 +95,10 @@
 		protected override string MapType (Type type)
 		{
 			if (type.IsGLStruct ())
+			{
 				OutputStruct (type);
+				return type.Name;
+			}
 			return base.MapType (type);
 		}
 

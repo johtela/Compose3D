@@ -18,7 +18,7 @@
 		public static string CreateShader<T> (string version, Expression<Func<Shader<T>>> shader)
 		{
 			var parser = new GlslParser ();
-			parser.DeclareVariables (typeof (T), "out");
+			parser.DeclareVaryings (typeof (T), GlslAst.VaryingKind.Out);
 			parser.OutputShader (shader);
 			return parser.BuildShaderCode ();
 		}
@@ -38,7 +38,7 @@
 			parser.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
 			parser.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
-			parser.DeclareVariables (typeof (T), "out");
+			parser.DeclareVaryings (typeof (T), GlslAst.VaryingKind.Out);
 			parser.OutputGeometryShader (shader);
 			return parser.BuildShaderCode ();
 		}
@@ -110,16 +110,14 @@
 				select Ast.Fld (MapType (field.FieldType), field.Name)));
 		}
 
-		private static string GetArrayDecl (MemberInfo member, ref Type memberType)
+		private static int GetArrayLen (MemberInfo member, ref Type memberType)
 		{
-			var arrayDecl = "";
 			if (memberType.IsArray)
 			{
-				var arrAttr = member.ExpectFixedArrayAttribute ();
-				arrayDecl = string.Format ("[{0}]", arrAttr.Length);
 				memberType = memberType.GetElementType ();
+				return member.ExpectFixedArrayAttribute ().Length;
 			}
-			return arrayDecl;
+			return 0;
 		}
 
 		private void DeclareUniforms (Type type)
@@ -128,36 +126,34 @@
 			foreach (var field in type.GetUniforms ())
 			{
 				var uniType = field.FieldType.GetGenericArguments ().Single ();
-				string arrayDecl = GetArrayDecl (field, ref uniType);
+				var arrayLen = GetArrayLen (field, ref uniType);
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
-				DeclOut ("uniform {0} {1}{2};", MapType (uniType), field.Name, arrayDecl);
+				_program.Globals.Add (GlslAst.Unif (MapType (uniType), field.Name, arrayLen));
 			}
 		}
 
-		private void DeclareVariable (MemberInfo member, Type memberType, string prefix)
+		private void DeclareVarying (MemberInfo member, Type memberType, GlslAst.VaryingKind kind)
         {
             if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
 				member.Name.StartsWith ("<>")))
             {
-				string arrayDecl = GetArrayDecl (member, ref memberType);
-				var syntax = MapType (memberType);
+				var arrayLen = GetArrayLen (member, ref memberType);
+				var type = MapType (memberType);
 				var qualifiers = member.GetQualifiers ();
-				DeclOut (string.IsNullOrEmpty (qualifiers) ?
-                    string.Format ("{0} {1} {2}{3};", prefix, syntax, member.Name, arrayDecl) :
-                    string.Format ("{0} {1} {2} {3}{4};", qualifiers, prefix, syntax, member.Name, arrayDecl));
+				_program.Globals.Add (GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen));
             }
         }
 
-        private void DeclareVariables (Type type, string prefix)
+        private void DeclareVaryings (Type type, GlslAst.VaryingKind kind)
         {
 			if (!DefineType (type))
 				return;
             if (!type.Name.StartsWith ("<>"))
 				foreach (var field in type.GetGLFields ())
-					DeclareVariable (field, field.FieldType, prefix);
+					DeclareVarying (field, field.FieldType, kind);
 			foreach (var prop in type.GetGLProperties ())
-				DeclareVariable (prop, prop.PropertyType, prefix);
+				DeclareVarying (prop, prop.PropertyType, kind);
 		}
 
 		private void DeclareConstants (Expression expr)
@@ -173,7 +169,7 @@
 					var memberType = assign.Member is FieldInfo ?
 						(assign.Member as FieldInfo).FieldType :
 						(assign.Member as PropertyInfo).PropertyType;
-					OutputConst (memberType, assign.Member.Name, assign.Expression);
+					DeclareConstant (memberType, assign.Member.Name, assign.Expression);
 				}
 			}
 			else
@@ -182,25 +178,24 @@
 				{
 					var prop = (PropertyInfo)ne.Members[i];
 					if (!prop.Name.StartsWith ("<>"))
-						OutputConst (prop.PropertyType, prop.Name, ne.Arguments[i]);
+						DeclareConstant (prop.PropertyType, prop.Name, ne.Arguments[i]);
 				}
 			}
 		}
 
-		private void OutputConst (Type constType, string name, Expression value)
+		private void DeclareConstant (Type constType, string name, Expression value)
 		{
-			_constants.Add (name, new Constant (constType, name, value));
+			Ast.Constant con;
 			if (constType.IsArray)
 			{
-				var elemType = constType.GetElementType ();
-				var elemGLType = MapType (elemType);
+				var elemType = MapType (constType.GetElementType ());
 				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				CodeOut ("const {0} {1}[{2}] = {0}[] (\n\t{3});",
-					elemGLType, name, nai.Expressions.Count,
-					nai.Expressions.Select (Expr).SeparateWith (",\n\t"));
+				con = Ast.Const (elemType, name, nai.Expressions.Count, Expr (value));
 			}
 			else
-				CodeOut ("const {0} {1} = {2};", MapType (constType), name, Expr (value));
+				con = Ast.Const (MapType (constType), name, Expr (value));
+			CodeOut (GlslAst.DeclConst (con));
+			_constants.Add (name, con);
 		}
 
 		protected override void OutputFromBinding (ParameterExpression par, MethodCallExpression node)
@@ -209,13 +204,13 @@
 				return;
 			var type = node.Method.GetGenericArguments () [0];
 			if (node.Method.Name == "Inputs")
-				DeclareVariables (type, "in", par.Name);
+				DeclareVaryings (type, GlslAst.VaryingKind.In);
 			else if (node.Method.Name == "Uniforms")
 				DeclareUniforms (type);
 			else if (node.Method.Name == "Constants")
-				DeclareConstants (node.Arguments [0]);
+				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToShader")
-				CodeOut ("{0} {1} = {2};", MapType (type), par.Name, Expr (node.Arguments [0]));
+				DeclareLocal (MapType (type), par.Name, Expr (node.Arguments[0]));
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
@@ -227,10 +222,17 @@
 			{
 				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
 				foreach (MemberAssignment assign in mie.Bindings)
-					CodeOut ("{0} = {1};", assign.Member.Name, Expr (assign.Expression));
-				CodeOut ("EmitVertex ();");
+					CodeOut (Ast.Ass (Ast.VRef (_program.Globals.OfType<GlslAst.Varying> ().First (v => 
+						v.Definition.Name == assign.Member.Name).Definition), Expr (assign.Expression)));
+				CodeOut (Ast.CallS (Ast.Call ("EmitVertex")));
 			}
-			CodeOut ("EndPrimitive ();");
+			CodeOut (Ast.CallS (Ast.Call ("EndPrimitive")));
+		}
+
+		private void StartMain ()
+		{
+			_function = Ast.Fun ("main", "void", Enumerable.Empty<Ast.Argument> (), Ast.Blk ());
+			StartScope (_function.Body);
 		}
 
 		private void OutputShader (LambdaExpression expr)
@@ -238,7 +240,7 @@
 			StartMain ();
 			var retExpr = ParseLinqExpression (expr.Body);
             ConditionalReturn (retExpr, Return);
-			EndFunction ();
+			EndScope ();
         }
 
 		private void OutputGeometryShader (LambdaExpression expr)
@@ -246,7 +248,7 @@
 			StartMain ();
 			var retExpr = ParseLinqExpression (expr.Body);
 			ConditionalReturn (retExpr, ReturnArrayOfVertices);
-			EndFunction ();
+			EndScope ();
 		}
 	}
 }

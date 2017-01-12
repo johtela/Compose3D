@@ -583,6 +583,28 @@
 			}
 		}
 
+		public class CallStatement : Statement
+		{
+			public readonly ExternalFunctionCall ExternalCall;
+
+			public CallStatement (ExternalFunctionCall call)
+			{
+				ExternalCall = call;
+			}
+
+			public override string ToString ()
+			{
+				return ExternalCall.ToString () + ";";
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var call = (ExternalFunctionCall)transform (ExternalCall);
+				return transform (call == ExternalCall ? this :
+					new CallStatement (call));
+			}
+		}
+
 		public class Return : Statement
 		{
 			public readonly Expression Value;
@@ -922,6 +944,11 @@
 			Expression increment, Statement body)
 		{
 			return new ForLoop (loopVar, initialValue, condition, increment, body);
+		}
+
+		public static CallStatement CallS (ExternalFunctionCall call)
+		{
+			return new CallStatement (call);
 		}
 
 		public static Return Ret (Expression value)

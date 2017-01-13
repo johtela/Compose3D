@@ -129,7 +129,9 @@
 				var arrayLen = GetArrayLen (field, ref uniType);
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
-				_program.Globals.Add (GlslAst.Unif (MapType (uniType), field.Name, arrayLen));
+				var unif = GlslAst.Unif (MapType (uniType), field.Name, arrayLen);
+				_program.Globals.Add (unif);
+				_globals.Add (field.Name, unif.Definition);
 			}
 		}
 
@@ -141,7 +143,9 @@
 				var arrayLen = GetArrayLen (member, ref memberType);
 				var type = MapType (memberType);
 				var qualifiers = member.GetQualifiers ();
-				_program.Globals.Add (GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen));
+				var vary = GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen);
+				_program.Globals.Add (vary);
+				_globals.Add (member.Name, vary.Definition);
             }
         }
 

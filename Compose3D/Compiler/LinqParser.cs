@@ -16,7 +16,8 @@
 		protected HashSet<Type> _typesDefined;
 		protected Stack<Ast.Block> _scopes;
 		protected Dictionary<string, Ast.Variable> _locals;
-		internal Dictionary<string, Ast.Constant> _constants;
+		protected Dictionary<string, Ast.Constant> _constants;
+		protected Dictionary<string, Ast.Variable> _globals;
 		protected Type _linqType;
 		protected TypeMapping _typeMapping;
 
@@ -26,6 +27,7 @@
 			_scopes = new Stack<Ast.Block> ();
 			_locals = new Dictionary<string, Ast.Variable> ();
 			_constants = new Dictionary<string, Ast.Constant> ();
+			_globals = new Dictionary<string, Ast.Variable> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
         }
@@ -66,6 +68,8 @@
 		{
 			Ast.Variable v;
 			if (_locals.TryGetValue (me.Member.Name, out v))
+				return Ast.VRef (v);
+			if (_globals.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
 			throw new ParseException ("Access to undefined member " + me.Member.Name);
 		}

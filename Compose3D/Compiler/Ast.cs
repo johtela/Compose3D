@@ -90,7 +90,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var val = (Expression)transform (Value);
+				var val = (Expression)Value.Transform (transform);
 				return transform (val == Value ? this :
 					new Constant (Type, Name, ArrayLength, val));
 			}
@@ -159,9 +159,9 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var ret = (MacroParam)transform (Name);
-				var mpars = MacroParameters.Select (p => (MacroDefinition)transform (p));
-				var pars = Parameters.Select (p => (MacroParam)transform (p));
+				var ret = (MacroParam)Name.Transform (transform);
+				var mpars = MacroParameters.Select (p => (MacroDefinition)p.Transform (transform));
+				var pars = Parameters.Select (p => (MacroParam)p.Transform (transform));
 				return transform (ret == Name && mpars.SequenceEqual (MacroParameters) 
 					&& pars.SequenceEqual (Parameters) ? this :
 					new MacroDefinition (ret, mpars, pars));
@@ -194,7 +194,7 @@
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var def = (MacroDefinition)base.Transform (transform);
-				var impl = (Block)transform (Implementation);
+				var impl = (Block)Implementation.Transform (transform);
 				return transform (def == this && impl == Implementation ? this :
 					new Macro (def.Name, def.MacroParameters, def.Parameters, Implementation));
 			}
@@ -218,7 +218,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var expr = (Expression)transform (TargetExpr);
+				var expr = (Expression)TargetExpr.Transform (transform);
 				return transform (expr == TargetExpr ? this :
 					new FieldRef (expr, TargetField));
 			}
@@ -242,7 +242,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var argument = (Expression)transform (Operand);
+				var argument = (Expression)Operand.Transform (transform);
 				return transform (argument == Operand ?  this : 
 					new UnaryOperation (Operator, argument));
 			}
@@ -268,8 +268,8 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var left = (Expression)transform (LeftOperand);
-				var right = (Expression)transform (RightOperand);
+				var left = (Expression)LeftOperand.Transform (transform);
+				var right = (Expression)RightOperand.Transform (transform);
 				return transform (left == LeftOperand && right == RightOperand ? this :
 					new BinaryOperation (Operator, left, right));
 			}
@@ -290,14 +290,14 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} ({1})", FuncRef,
+				return string.Format ("{0} ({1})", FuncRef.Name,
 					Arguments.Select (e => e.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var func = (Function)transform (FuncRef);
-				var args = Arguments.Select (a => (Expression)transform (a));
+				var func = (Function)FuncRef.Transform (transform);
+				var args = Arguments.Select (a => (Expression)a.Transform (transform));
 				return transform (func == FuncRef && args.SequenceEqual (Arguments) ? this :
 					new FunctionCall (func, args));
 			}
@@ -322,7 +322,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var args = Arguments.Select (a => (Expression)transform (a));
+				var args = Arguments.Select (a => (Expression)a.Transform (transform));
 				return transform (args.SequenceEqual (Arguments) ? this :
 					new ExternalFunctionCall (FormatStr, args));
 			}
@@ -351,7 +351,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var items = Items.Select (i => (Expression)transform (i));
+				var items = Items.Select (i => (Expression)i.Transform (transform));
 				return transform (items.SequenceEqual (Items) ? this :
 					new NewArray (ItemType, ItemCount, items));
 			}
@@ -377,9 +377,9 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var cond = (Expression)transform (Condition);
-				var iftrue = (Expression)transform (IfTrue);
-				var iffalse = (Expression)transform (IfFalse);
+				var cond = (Expression)Condition.Transform (transform);
+				var iftrue = (Expression)IfTrue.Transform (transform);
+				var iffalse = (Expression)IfFalse.Transform (transform);
 				return transform (cond == Condition && iftrue == IfTrue && iffalse == IfFalse ? this :
 					new Conditional (cond, iftrue, iffalse));
 			}
@@ -446,8 +446,8 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var vari = (VariableRef)transform (VarRef);
-				var val = (Expression)transform (Value);
+				var vari = (VariableRef)VarRef.Transform (transform);
+				var val = (Expression)Value.Transform (transform);
 				return transform (vari == VarRef && val == Value ? this :
 					new Assignment (vari, val));
 			}
@@ -473,8 +473,8 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var vari = (Variable)transform (Definition);
-				var val = (Expression)transform (Value);
+				var vari = (Variable)Definition.Transform (transform);
+				var val = (Expression)Value.Transform (transform);
 				return transform (vari == Definition && val == Value ? this :
 					new DeclareVar (vari, val));
 			}
@@ -501,7 +501,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var stats = Statements.Select (i => (Statement)transform (i));
+				var stats = Statements.Select (s => (Statement)s.Transform (transform));
 				return transform (stats.SequenceEqual (Statements) ? this :
 					new Block (stats));
 			}
@@ -535,9 +535,9 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var cond = (Expression)transform (Condition);
-				var iftrue = (Statement)transform (IfTrue);
-				var iffalse = (Statement)transform (IfFalse);
+				var cond = (Expression)Condition.Transform (transform);
+				var iftrue = (Statement)IfTrue.Transform (transform);
+				var iffalse = (Statement)IfFalse.Transform (transform);
 				return transform (cond == Condition && iftrue == IfTrue && iffalse == IfFalse ? this :
 					new IfElse (cond, iftrue, iffalse));
 			}
@@ -572,11 +572,11 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var loopvar = (Variable)transform (LoopVar);
-				var initval = (Expression)transform (InitialValue);
-				var cond = (Expression)transform (Condition);
-				var incr = (Expression)transform (Increment);
-				var body = (Statement)transform (Body);
+				var loopvar = (Variable)LoopVar.Transform (transform);
+				var initval = (Expression)InitialValue.Transform (transform);
+				var cond = (Expression)Condition.Transform (transform);
+				var incr = (Expression)Increment.Transform (transform);
+				var body = (Statement)Body.Transform (transform);
 				return transform (loopvar == LoopVar && initval == InitialValue &&
 					cond == Condition && incr == Increment && body == Body ? this :
 					new ForLoop (loopvar, initval, cond, incr, body));
@@ -594,12 +594,12 @@
 
 			public override string ToString ()
 			{
-				return ExternalCall.ToString () + ";";
+				return string.Format ("{0}{1};\n", Tabs(), ExternalCall);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var call = (ExternalFunctionCall)transform (ExternalCall);
+				var call = (ExternalFunctionCall)ExternalCall.Transform (transform);
 				return transform (call == ExternalCall ? this :
 					new CallStatement (call));
 			}
@@ -621,7 +621,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var val = (Expression)transform (Value);
+				var val = (Expression)Value.Transform (transform);
 				return transform (val == Value ? this : new Return (val));
 			}
 		}
@@ -659,10 +659,10 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var target = (MacroDefinition)transform (Target);
-				var retVar = (Variable)transform (ReturnVar);
-				var mpars = MacroParameters.Select (p => (MacroDefinition)transform (p));
-				var pars = Parameters.Select (p => (Expression)transform (p));
+				var target = (MacroDefinition)Target.Transform (transform);
+				var retVar = (Variable)ReturnVar.Transform (transform);
+				var mpars = MacroParameters.Select (p => (MacroDefinition)p.Transform (transform));
+				var pars = Parameters.Select (p => (Expression)p.Transform (transform));
 				return transform (target == Target && retVar == ReturnVar &&
 					mpars.SequenceEqual (MacroParameters)
 					&& pars.SequenceEqual (Parameters) ? this :
@@ -698,8 +698,8 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var args = Arguments.Select (a => (Argument)transform (a));
-				var body = (Block)transform (Body);
+				var args = Arguments.Select (a => (Argument)a.Transform (transform));
+				var body = (Block)Body.Transform (transform);
 				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
 					new Function (Name, ReturnType, args, body));
 			}
@@ -723,7 +723,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var fields = Fields.Select (f => (Field)transform (f));
+				var fields = Fields.Select (f => (Field)f.Transform (transform));
 				return transform (fields.SequenceEqual (Fields) ? this :
 					new Structure (Name, fields));
 			}
@@ -781,7 +781,7 @@
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var globs = Globals.Select (g => (Global)transform (g));
+				var globs = Globals.Select (g => (Global)g.Transform (transform));
 				return transform (globs.SequenceEqual (Globals) ? this :
 					new Program (globs));
 			}

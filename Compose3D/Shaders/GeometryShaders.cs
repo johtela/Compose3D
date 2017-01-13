@@ -2,6 +2,7 @@
 {
 	using GLTypes;
 	using Maths;
+	using Compiler;
 	using OpenTK.Graphics.OpenGL4;
 
 	[GLType ("gl_PerVertex")]
@@ -12,6 +13,7 @@
 		[Builtin]
 		public float gl_PointSize;
 		[Builtin]
+		[FixedArray (0)]
 		public float[] gl_ClipDistance;
 	}
 	
@@ -24,6 +26,7 @@
 	public class Primitive
 	{
 		[Builtin]
+		[FixedArray (0)]
 		public PerVertexIn[] gl_in;
 		[Builtin]
 		public int gl_PrimitiveIDIn;

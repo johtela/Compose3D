@@ -33,6 +33,7 @@
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var parser = new GlslParser ();
+			parser._program = Ast.Prog ();
 			if (invocations > 0)
 				parser.DeclOut ("layout (invocations = {0}) in;", invocations);
 			parser.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
@@ -63,6 +64,7 @@
 		private string BuildShaderCode ()
 		{
 			AstTransform.IncludeCalledFunctions (_function, _program);
+			_program.Globals.Add (_function);
 			return "#version 400 core\nprecision highp float;\n" + _program.ToString ();
 		}
 
@@ -83,11 +85,13 @@
 			var syntax = me.Member.GetGLSyntax ();
 			if (syntax != null)
 				return Ast.Call (syntax, Expr (me.Expression));
-			var structType = me.Expression.Type;
-			if (_typesDefined.Contains (structType) && !me.Type.IsUniformType ())
+			if (me.Member.IsBuiltin ())
+				return Ast.VRef (Ast.Var (MapType (me.Type), me.Member.Name));
+			var declType = me.Expression.Type;
+			if (declType.IsGLStruct () && _typesDefined.Contains (declType))
 			{
 				var field = _program != null ?
-					_program.FindStruct (structType.Name).FindField (me.Member.Name) :
+					_program.FindStruct (declType.Name).FindField (me.Member.Name) :
 					Ast.Fld (me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
@@ -142,19 +146,19 @@
 
 		private void DeclareVarying (MemberInfo member, Type memberType, GlslAst.VaryingKind kind)
         {
-            if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true) ||
-				member.Name.StartsWith ("<>")))
+            if (!member.Name.StartsWith ("<>"))
             {
 				var arrayLen = GetArrayLen (member, ref memberType);
 				var type = MapType (memberType);
 				var qualifiers = member.GetQualifiers ();
 				var vary = GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen);
-				_program.Globals.Add (vary);
+				if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true)))
+					_program.Globals.Add (vary);
 				_globals.Add (member.Name, vary.Definition);
-            }
-        }
+			}
+		}
 
-        private void DeclareVaryings (Type type, GlslAst.VaryingKind kind)
+		private void DeclareVaryings (Type type, GlslAst.VaryingKind kind)
         {
 			if (!DefineType (type))
 				return;
@@ -231,11 +235,10 @@
 			{
 				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
 				foreach (MemberAssignment assign in mie.Bindings)
-					CodeOut (Ast.Ass (Ast.VRef (_program.Globals.OfType<GlslAst.Varying> ().First (v => 
-						v.Definition.Name == assign.Member.Name).Definition), Expr (assign.Expression)));
-				CodeOut (Ast.CallS (Ast.Call ("EmitVertex")));
+					CodeOut (Ast.Ass (Ast.VRef (_globals [assign.Member.Name]), Expr (assign.Expression)));
+				CodeOut (Ast.CallS (Ast.Call ("EmitVertex ()")));
 			}
-			CodeOut (Ast.CallS (Ast.Call ("EndPrimitive")));
+			CodeOut (Ast.CallS (Ast.Call ("EndPrimitive ()")));
 		}
 
 		private void StartMain ()
@@ -250,7 +253,7 @@
 			var retExpr = ParseLinqExpression (expr.Body);
             ConditionalReturn (retExpr, Return);
 			EndScope ();
-        }
+		}
 
 		private void OutputGeometryShader (LambdaExpression expr)
 		{

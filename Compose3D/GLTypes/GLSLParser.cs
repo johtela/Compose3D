@@ -77,14 +77,18 @@
 
 		protected override Ast.Expression MapMemberAccess (MemberExpression me)
 		{
+			var glfield = me.Member.GetAttribute<GLFieldAttribute> ();
+			if (glfield != null)
+				return Ast.FRef (Expr (me.Expression), Ast.Fld (glfield.Name));
 			var syntax = me.Member.GetGLSyntax ();
 			if (syntax != null)
 				return Ast.Call (syntax, Expr (me.Expression));
 			var structType = me.Expression.Type;
-			if (_typesDefined.Contains (structType))
+			if (_typesDefined.Contains (structType) && !me.Type.IsUniformType ())
 			{
-				var structDef = _program.FindStruct (structType.Name);
-				var field = structDef.FindField (me.Member.GetGLFieldName ());
+				var field = _program != null ?
+					_program.FindStruct (structType.Name).FindField (me.Member.Name) :
+					Ast.Fld (me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
 			return base.MapMemberAccess (me);
@@ -130,7 +134,8 @@
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
 				var unif = GlslAst.Unif (MapType (uniType), field.Name, arrayLen);
-				_program.Globals.Add (unif);
+				if (_program != null)
+					_program.Globals.Add (unif);
 				_globals.Add (field.Name, unif.Definition);
 			}
 		}

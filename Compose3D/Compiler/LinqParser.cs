@@ -71,6 +71,9 @@
 				return Ast.VRef (v);
 			if (_globals.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
+			Ast.Constant c;
+			if (_constants.TryGetValue (me.Member.Name, out c))
+				return Ast.VRef (c);
 			throw new ParseException ("Access to undefined member " + me.Member.Name);
 		}
 
@@ -360,8 +363,8 @@
 			var loopBlock = Ast.Blk ();
 			CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
 			StartScope (loopBlock);
-            CodeOut (Ast.DeclVar (Ast.Var (MapType (item.Type), item.Name),
-				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar))));
+			DeclareLocal (MapType (item.Type), item.Name,
+				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar)));
         }
 
 		protected void OutputForLoop (MethodCallExpression expr)
@@ -372,6 +375,7 @@
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 			var start = Expr (range.Arguments[0]);
 			var iv = Ast.Var (MapType (indexVar.Type), indexVar.Name);
+			_locals.Add (indexVar.Name, iv);
 			var loopBlock = Ast.Blk ();
 			if (range.Method.DeclaringType == typeof (Enumerable))
 			{

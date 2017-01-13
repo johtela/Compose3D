@@ -70,8 +70,12 @@
             { ExpressionType.OrElse, "{0} || {1}" },
             { ExpressionType.Not, "!{0}" },
             { ExpressionType.ArrayIndex, "{0}[{1}]" },
-            { ExpressionType.ArrayLength, "{0}.length ()" }
-        };
+			{ ExpressionType.ArrayLength, "{0}.length ()" },
+			{ ExpressionType.PostDecrementAssign, "{0}--" },
+			{ ExpressionType.PostIncrementAssign, "{0}++" },
+			{ ExpressionType.AddAssign, "{0} += {1}" },
+			{ ExpressionType.SubtractAssign, "{0} -= {1}" }
+		};
  
         public override string Type (Type type)
         {

@@ -150,10 +150,14 @@
 		public static IEnumerable<FieldInfo> GetUniforms (this Type type)
         {
 			return from field in type.GetFields (_bindingFlags)
-			       where field.FieldType.IsGenericType &&
-			           field.FieldType.GetGenericTypeDefinition () == typeof (Uniform<>)
+			       where field.FieldType.IsUniformType ()
 			       select field;
         }
+
+		public static bool IsUniformType (this Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition () == typeof (Uniform<>);
+		}
 
 		/// <summary>
 		/// Subroutine that constructs <see cref="GLStructField"/> objects for each item

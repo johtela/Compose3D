@@ -64,7 +64,7 @@
 		private string BuildShaderCode ()
 		{
 			AstTransform.IncludeCalledFunctions (_function, _program);
-			_program.Globals.Add (_function);
+			_program.Functions.Add (_function);
 			return "#version 400 core\nprecision highp float;\n" + _program.ToString ();
 		}
 

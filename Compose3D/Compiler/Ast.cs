@@ -674,37 +674,6 @@
 		{
 		}
 
-		public class Function : Global
-		{
-			public readonly string Name;
-			public readonly string ReturnType;
-			public readonly Argument[] Arguments;
-			public readonly Block Body;
-
-			internal Function (string name, string returnType, IEnumerable<Argument> arguments,
-				Block body)
-			{
-				Name = name;
-				ReturnType = returnType;
-				Arguments = arguments.ToArray ();
-				Body = body;
-			}
-
-			public override string ToString ()
-			{
-				return string.Format ("{0} {1} ({2})\n{3}", ReturnType, Name,
-					Arguments.Select (v => v.ToString ()).SeparateWith (", "), Body);
-			}
-
-			public override Ast Transform (Func<Ast, Ast> transform)
-			{
-				var args = Arguments.Select (a => (Argument)a.Transform (transform));
-				var body = (Block)Body.Transform (transform);
-				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
-					new Function (Name, ReturnType, args, body));
-			}
-		}
-
 		public class Structure : Global
 		{
 			public readonly string Name;
@@ -744,18 +713,46 @@
 			}
 		}
 
+		public class Function : Ast
+		{
+			public readonly string Name;
+			public readonly string ReturnType;
+			public readonly Argument[] Arguments;
+			public readonly Block Body;
+
+			internal Function (string name, string returnType, IEnumerable<Argument> arguments,
+				Block body)
+			{
+				Name = name;
+				ReturnType = returnType;
+				Arguments = arguments.ToArray ();
+				Body = body;
+			}
+
+			public override string ToString ()
+			{
+				return string.Format ("{0} {1} ({2})\n{3}", ReturnType, Name,
+					Arguments.Select (v => v.ToString ()).SeparateWith (", "), Body);
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var args = Arguments.Select (a => (Argument)a.Transform (transform));
+				var body = (Block)Body.Transform (transform);
+				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
+					new Function (Name, ReturnType, args, body));
+			}
+		}
+
 		public class Program : Ast
 		{
 			public readonly List<Global> Globals;
+			public readonly List<Function> Functions;
 
-			internal Program (IEnumerable<Global> globals)
+			internal Program (IEnumerable<Global> globals, IEnumerable<Function> functions)
 			{
 				Globals = new List<Global> (globals);
-			}
-
-			public IEnumerable<Function> DefinedFunctions
-			{
-				get { return Globals.OfType<Function> (); }
+				Functions = new List<Function> (functions);
 			}
 
 			public IEnumerable<Structure> DefinedStructs
@@ -776,14 +773,21 @@
 					result.Append (glob);
 					result.AppendLine ();
 				}
+				result.AppendLine ();
+				foreach (var func in Functions)
+				{
+					result.Append (func);
+					result.AppendLine ();
+				}
 				return result.ToString ();
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var globs = Globals.Select (g => (Global)g.Transform (transform));
-				return transform (globs.SequenceEqual (Globals) ? this :
-					new Program (globs));
+				var funcs = Functions.Select (f => (Function)f.Transform (transform));
+				return transform (globs.SequenceEqual (Globals) && funcs.SequenceEqual (Functions) ? 
+					this : new Program (globs, funcs));
 			}
 		}
 
@@ -983,14 +987,14 @@
 			return new Declaration (text);
 		}
 
-		public static Program Prog (IEnumerable<Global> globals)
+		public static Program Prog (IEnumerable<Global> globals, IEnumerable<Function> functions)
 		{
-			return new Program (globals);
+			return new Program (globals, functions);
 		}
 
 		public static Program Prog ()
 		{
-			return new Program (Enumerable.Empty<Global> ());
+			return new Program (Enumerable.Empty<Global> (), Enumerable.Empty<Function> ());
 		}
 	}
 }

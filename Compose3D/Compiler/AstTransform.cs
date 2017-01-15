@@ -13,10 +13,10 @@
 				if (node is Ast.FunctionCall)
 				{
 					var func = (node as Ast.FunctionCall).FuncRef;
-					if (!program.DefinedFunctions.Contains (func))
+					if (!program.Functions.Contains (func))
 					{
 						IncludeCalledFunctions (func, program);
-						program.Globals.Add (func);
+						program.Functions.Add (func);
 					}
 				}
 				return node;

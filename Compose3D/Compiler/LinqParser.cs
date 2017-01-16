@@ -10,7 +10,8 @@
 
 	public abstract class LinqParser
     {
-		internal static Dictionary<string, Ast.Function> _functions = new Dictionary<string, Ast.Function> ();
+		internal static Dictionary<string, CompiledFunction> _functions = 
+			new Dictionary<string, CompiledFunction> ();
 		protected Ast.Program _program;
 		protected Ast.Function _function;
 		protected HashSet<Type> _typesDefined;
@@ -30,6 +31,7 @@
 			_globals = new Dictionary<string, Ast.Variable> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
+			_program = Ast.Prog ();
         }
 
 		protected virtual string MapType (Type type)
@@ -84,7 +86,9 @@
 		protected static void CreateFunction (LinqParser parser, string name, LambdaExpression expr)
 		{
 			parser.Function (name, expr);
-			_functions.Add (name, parser._function);
+			parser._program.Functions.Add (parser._function);
+			_functions.Add (name, new CompiledFunction (parser._program, parser._function, 
+				parser._typesDefined));
 		}
 
 		public static string ConstructFunctionName (MemberInfo member)
@@ -127,13 +131,9 @@
 
 		protected void DeclOut (string declaration, params object[] args)
 		{
-			_program.Globals.Add (Ast.Decl (args.Length == 0 ?
+			_program.AddGlobal (Ast.Decl (args.Length == 0 ?
 				declaration :
 				string.Format (declaration, args)));
-		}
-
-		protected void DeclOut (string declaration)
-		{
 		}
 
 		protected Ast.Variable DeclareLocal (string type, string name, Ast.Expression value)
@@ -233,9 +233,21 @@
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
 			var name = ConstructFunctionName (member);
-			Ast.Function fun;
+			CompiledFunction fun;
 			if (_functions.TryGetValue (name, out fun))
-				return Ast.Call (fun, ie.Arguments.Select (Expr));
+			{
+				if (!_program.Functions.Contains (fun.Function))
+				{
+					_typesDefined.UnionWith (fun.TypesDefined);
+					foreach (var glob in fun.Program.Globals)
+						if (!_program.GlobalDictionary.ContainsKey (glob.Name))
+							_program.AddGlobal (glob);
+					foreach (var func in fun.Program.Functions)
+						if (!_program.Functions.Contains (func))
+							_program.Functions.Add (func);
+				}
+				return Ast.Call (fun.Function, ie.Arguments.Select (Expr));
+			}
 			throw new ParseException ("Undefined function: " + name);
 		}
 

@@ -6,23 +6,6 @@
 
 	internal static class AstTransform
 	{
-		internal static Ast.Function IncludeCalledFunctions (Ast.Function function, Ast.Program program)
-		{
-			return (Ast.Function)function.Transform (node =>
-			{
-				if (node is Ast.FunctionCall)
-				{
-					var func = (node as Ast.FunctionCall).FuncRef;
-					if (!program.Functions.Contains (func))
-					{
-						IncludeCalledFunctions (func, program);
-						program.Functions.Add (func);
-					}
-				}
-				return node;
-			});
-		}
-
 		internal static Ast.Function InstantiateAllMacros (Ast.Function function)
 		{
 			while (true)

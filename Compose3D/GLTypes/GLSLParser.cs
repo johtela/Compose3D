@@ -33,7 +33,6 @@
 			Expression<Func<Shader<T[]>>> shader)
 		{
 			var parser = new GlslParser ();
-			parser._program = Ast.Prog ();
 			if (invocations > 0)
 				parser.DeclOut ("layout (invocations = {0}) in;", invocations);
 			parser.DeclOut ("layout ({0}) in;", inputPrimitive.MapInputGSPrimitive ());
@@ -63,7 +62,6 @@
 
 		private string BuildShaderCode ()
 		{
-			AstTransform.IncludeCalledFunctions (_function, _program);
 			_program.Functions.Add (_function);
 			return "#version 400 core\nprecision highp float;\n" + _program.ToString ();
 		}
@@ -90,9 +88,7 @@
 			var declType = me.Expression.Type;
 			if (declType.IsGLStruct () && _typesDefined.Contains (declType))
 			{
-				var field = _program != null ?
-					_program.FindStruct (declType.Name).FindField (me.Member.Name) :
-					Ast.Fld (me.Member.Name);
+				var field = _program.FindStruct (declType.Name).FindField (me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
 			return base.MapMemberAccess (me);
@@ -106,14 +102,17 @@
 		protected override string MapType (Type type)
 		{
 			if (type.IsGLStruct ())
+			{
 				DefineStruct (type);
+				return type.Name;
+			}
 			return base.MapType (type);
 		}
 
 		private void DefineStruct (Type structType)
 		{
 			if (!DefineType (structType)) return;
-			_program.Globals.Add (Ast.Struct (structType.Name,
+			_program.AddGlobal (GlslAst.Struct (structType.Name,
 				from field in structType.GetGLFields ()
 				select Ast.Fld (MapType (field.FieldType), field.Name)));
 		}
@@ -138,8 +137,7 @@
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
 				var unif = GlslAst.Unif (MapType (uniType), field.Name, arrayLen);
-				if (_program != null)
-					_program.Globals.Add (unif);
+				_program.AddGlobal (unif);
 				_globals.Add (field.Name, unif.Definition);
 			}
 		}
@@ -153,7 +151,7 @@
 				var qualifiers = member.GetQualifiers ();
 				var vary = GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen);
 				if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true)))
-					_program.Globals.Add (vary);
+					_program.AddGlobal (vary);
 				_globals.Add (member.Name, vary.Definition);
 			}
 		}

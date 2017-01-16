@@ -5,6 +5,7 @@
 	using System.IO;
 	using System.Linq.Expressions;
 	using Shaders;
+	using Extensions;
 
 	public class GLShader
 	{
@@ -32,8 +33,9 @@
 
 		public static GLShader Create<T> (ShaderType type, Expression<Func<Shader<T>>> func)
 		{
-			var source = GLSLCompiler.CreateShader (func);
+			var source = GlslParser.CreateShader (func);
 			Console.WriteLine(source);
+			Console.WriteLine ("--------------------------------------------------------------------------------");
 			return new GLShader (type, source);
 		}
 

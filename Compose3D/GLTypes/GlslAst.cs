@@ -1,6 +1,9 @@
 ﻿namespace Compose3D.GLTypes
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Extensions;
 	using Compiler;
 
 	public class GlslAst
@@ -10,6 +13,7 @@
 			public readonly Variable Definition;
 
 			internal Uniform (string type, string name, int arraylen)
+				: base (name)
 			{
 				Definition = new Ast.Variable (type, name, arraylen);
 			}
@@ -30,6 +34,7 @@
 
 			internal Varying (VaryingKind kind, string qualifiers, string type, string name, 
 				int arraylen)
+				: base (name)
 			{
 				Kind = kind;
 				Qualifiers = qualifiers;
@@ -40,8 +45,20 @@
 			{
 				var kindDecl = Kind == VaryingKind.In ? "in" : "out";
 				return string.IsNullOrEmpty (Qualifiers) ?
-					string.Format ("{0} {1} {2};", Qualifiers, kindDecl, Definition) :
-					string.Format ("{0} {1};", kindDecl, Definition);
+					string.Format ("{0} {1};", kindDecl, Definition) :
+					string.Format ("{0} {1} {2};", Qualifiers, kindDecl, Definition);
+			}
+		}
+
+		public class Structure : Ast.Structure
+		{
+			public Structure (string name, IEnumerable<Field> fields)
+				: base (name,fields) { }
+
+			public override string ToString ()
+			{
+				return string.Format ("struct {0}\n{{\n{1}\n}};", Name,
+					Fields.Select (f => string.Format ("    {0};", f)).SeparateWith ("\n"));
 			}
 		}
 
@@ -76,6 +93,11 @@
 			string name, int arraylen)
 		{
 			return new Varying (kind, qualifiers, type, name, arraylen);
+		}
+
+		public static Structure Struct (string name, IEnumerable<Ast.Field> fields)
+		{
+			return new Structure (name, fields);
 		}
 
 		public static DeclareConstant DeclConst (Ast.Constant definition)

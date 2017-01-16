@@ -672,16 +672,21 @@
 
 		public abstract class Global : Ast
 		{
+			public readonly string Name;
+
+			internal Global (string name)
+			{
+				Name = name;
+			}
 		}
 
 		public class Structure : Global
 		{
-			public readonly string Name;
 			public readonly List<Field> Fields;
 
 			internal Structure (string name, IEnumerable<Field> fields)
+				: base (name)
 			{
-				Name = name;
 				Fields = new List<Field> (fields);
 			}
 
@@ -703,6 +708,7 @@
 			public readonly string Text;
 
 			public Declaration (string text)
+				: base (text)
 			{
 				Text = text;
 			}
@@ -746,13 +752,32 @@
 
 		public class Program : Ast
 		{
-			public readonly List<Global> Globals;
+			private List<Global> _globals;
+			private Dictionary<string, Global> _globalDict;
+
 			public readonly List<Function> Functions;
 
 			internal Program (IEnumerable<Global> globals, IEnumerable<Function> functions)
 			{
-				Globals = new List<Global> (globals);
+				_globals = new List<Global> (globals);
+				_globalDict = globals.ToDictionary (g => g.Name);
 				Functions = new List<Function> (functions);
+			}
+
+			public void AddGlobal (Global global)
+			{
+				_globals.Add (global);
+				_globalDict.Add (global.Name, global);
+			}
+
+			public IReadOnlyList<Global> Globals
+			{
+				get { return _globals; }
+			}
+
+			public IReadOnlyDictionary<string, Global> GlobalDictionary
+			{
+				get { return _globalDict; }
 			}
 
 			public IEnumerable<Structure> DefinedStructs
@@ -975,11 +1000,6 @@
 			Block body)
 		{
 			return new Function (name, returnType, arguments, body);
-		}
-
-		public static Structure Struct (string name, IEnumerable<Field> fields)
-		{
-			return new Structure (name, fields);
 		}
 
 		public static Declaration Decl (string text)

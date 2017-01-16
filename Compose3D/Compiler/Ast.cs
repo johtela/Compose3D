@@ -346,7 +346,7 @@
 			public override string ToString ()
 			{
 				return string.Format ("{0}[{1}] ( {2} )", ItemType, ItemCount,
-					Items.Select (e => e.ToString ()).SeparateWith (", "));
+					Items.Select (e => e.ToString ()).SeparateWith (",\n\t"));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)

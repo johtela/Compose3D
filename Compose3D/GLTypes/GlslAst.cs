@@ -73,7 +73,7 @@
 
 			public override string ToString ()
 			{
-				return Definition.ToString () + ";";
+				return Tabs () + Definition.ToString () + ";\n";
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)

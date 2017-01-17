@@ -243,6 +243,7 @@
 
 		private string OutputMethodCall (InvocationExpression ie, MemberInfo member)
 		{
+			var foo = (member as FieldInfo).GetValue (null);
 			var name = ConstructFunctionName (member);
 			Function fun;
 			if (_functions.TryGetValue (name, out fun))

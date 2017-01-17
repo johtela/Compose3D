@@ -10,8 +10,8 @@
 
 	public abstract class LinqParser
     {
-		internal static Dictionary<string, CompiledFunction> _functions = 
-			new Dictionary<string, CompiledFunction> ();
+		internal static Dictionary<MemberInfo, CompiledFunction> _functions = 
+			new Dictionary<MemberInfo, CompiledFunction> ();
 		protected Ast.Program _program;
 		protected Ast.Function _function;
 		protected HashSet<Type> _typesDefined;
@@ -85,15 +85,15 @@
 
 		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
 
-		protected static void CreateFunction (LinqParser parser, string name, LambdaExpression expr)
+		protected static void CreateFunction (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
-			parser.Function (name, expr);
+			parser.Function (ConstructFunctionName (member), expr);
 			parser._program.Functions.Add (parser._function);
-			_functions.Add (name, new CompiledFunction (parser._program, parser._function, 
+			_functions.Add (member, new CompiledFunction (parser._program, parser._function, 
 				parser._typesDefined));
 		}
 
-		public static string ConstructFunctionName (MemberInfo member)
+		protected static string ConstructFunctionName (MemberInfo member)
 		{
 			return member.DeclaringType.Name + "_" + member.Name;
 		}
@@ -243,9 +243,8 @@
 			var foo = member is FieldInfo ?
 				(member as FieldInfo).GetValue (null) :
 				(member as PropertyInfo).GetValue (null);
-			var name = ConstructFunctionName (member);
 			CompiledFunction fun;
-			if (_functions.TryGetValue (name, out fun))
+			if (_functions.TryGetValue (member, out fun))
 			{
 				if (!_program.Functions.Contains (fun.Function))
 				{
@@ -259,7 +258,7 @@
 				}
 				return Ast.Call (fun.Function, ie.Arguments.Select (Expr));
 			}
-			throw new ParseException ("Undefined function: " + name);
+			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
 		}
 
 		protected MethodCallExpression CastFromBinding (Expression expr)

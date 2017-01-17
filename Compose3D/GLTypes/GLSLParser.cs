@@ -56,8 +56,7 @@
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
 		{
-			var name = ConstructFunctionName (member);
-			CreateFunction (new GlslParser (), name, expr);
+			CreateFunction (new GlslParser (), member, expr);
 		}
 
 		private string BuildShaderCode ()
@@ -84,7 +83,9 @@
 			if (syntax != null)
 				return Ast.Call (syntax, Expr (me.Expression));
 			if (me.Member.IsBuiltin ())
-				return Ast.VRef (Ast.Var (MapType (me.Type), me.Member.Name));
+				return me.Expression.Type.IsGLType () ?
+					Ast.FRef (Expr (me.Expression), Ast.Fld (me.Member.Name)) :
+					(Ast.Expression)Ast.VRef (Ast.Fld (me.Member.Name));
 			var declType = me.Expression.Type;
 			if (declType.IsGLStruct () && _typesDefined.Contains (declType))
 			{

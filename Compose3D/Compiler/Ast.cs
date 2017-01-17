@@ -564,8 +564,8 @@
 			public override string ToString ()
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "for ({0} = {1}; {2}; {3} = {4})\n", LoopVar, InitialValue,
-					Condition, LoopVar.Name, Increment);
+				EmitLine (result, "for ({0} = {1}; {2}; {3})\n", LoopVar, InitialValue,
+					Condition, Increment);
 				EmitIntended (result, Body);
 				return result.ToString ();
 			}
@@ -752,32 +752,14 @@
 
 		public class Program : Ast
 		{
-			private List<Global> _globals;
-			private Dictionary<string, Global> _globalDict;
+			public readonly List<Global> Globals;
 
 			public readonly List<Function> Functions;
 
 			internal Program (IEnumerable<Global> globals, IEnumerable<Function> functions)
 			{
-				_globals = new List<Global> (globals);
-				_globalDict = globals.ToDictionary (g => g.Name);
+				Globals = new List<Global> (globals);
 				Functions = new List<Function> (functions);
-			}
-
-			public void AddGlobal (Global global)
-			{
-				_globals.Add (global);
-				_globalDict.Add (global.Name, global);
-			}
-
-			public IReadOnlyList<Global> Globals
-			{
-				get { return _globals; }
-			}
-
-			public IReadOnlyDictionary<string, Global> GlobalDictionary
-			{
-				get { return _globalDict; }
 			}
 
 			public IEnumerable<Structure> DefinedStructs

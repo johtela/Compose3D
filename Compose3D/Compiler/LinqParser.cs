@@ -16,9 +16,10 @@
 		protected Ast.Function _function;
 		protected HashSet<Type> _typesDefined;
 		protected Stack<Ast.Block> _scopes;
-		protected Dictionary<string, Ast.Variable> _locals;
+		protected Dictionary<string, Ast.Variable> _localVars;
 		protected Dictionary<string, Ast.Constant> _constants;
-		protected Dictionary<string, Ast.Variable> _globals;
+		protected Dictionary<string, Ast.Variable> _globalVars;
+		protected Dictionary<string, Ast.Global> _globals;
 		protected Type _linqType;
 		protected TypeMapping _typeMapping;
 
@@ -26,9 +27,10 @@
         {
             _typesDefined = new HashSet<Type> ();
 			_scopes = new Stack<Ast.Block> ();
-			_locals = new Dictionary<string, Ast.Variable> ();
+			_localVars = new Dictionary<string, Ast.Variable> ();
 			_constants = new Dictionary<string, Ast.Constant> ();
-			_globals = new Dictionary<string, Ast.Variable> ();
+			_globalVars = new Dictionary<string, Ast.Variable> ();
+			_globals = new Dictionary<string, Ast.Global> ();
 			_linqType = linqType;
 			_typeMapping = typeMapping;
 			_program = Ast.Prog ();
@@ -69,9 +71,9 @@
 		protected virtual Ast.Expression MapMemberAccess (MemberExpression me)
 		{
 			Ast.Variable v;
-			if (_locals.TryGetValue (me.Member.Name, out v))
+			if (_localVars.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
-			if (_globals.TryGetValue (me.Member.Name, out v))
+			if (_globalVars.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
 			Ast.Constant c;
 			if (_constants.TryGetValue (me.Member.Name, out c))
@@ -103,7 +105,7 @@
 			var scope = Ast.Blk ();
 			_function = Ast.Fun (name, MapType (expr.ReturnType), args, scope);
 			foreach (var arg in args)
-				_locals.Add (arg.Name, arg);
+				_localVars.Add (arg.Name, arg);
 			StartScope (scope);
 			FunctionBody (expr.Body);
 			EndScope ();
@@ -129,9 +131,15 @@
 			CurrentScope ().Statements.Add (statement);
 		}
 
+		protected void AddGlobal (Ast.Global global)
+		{
+			_program.Globals.Add (global);
+			_globals.Add (global.Name, global);
+		}
+
 		protected void DeclOut (string declaration, params object[] args)
 		{
-			_program.AddGlobal (Ast.Decl (args.Length == 0 ?
+			AddGlobal (Ast.Decl (args.Length == 0 ?
 				declaration :
 				string.Format (declaration, args)));
 		}
@@ -140,7 +148,7 @@
 		{
 			var local = Ast.Var (type, name);
 			CodeOut (Ast.DeclVar (local, value));
-			_locals.Add (local.Name, local);
+			_localVars.Add (local.Name, local);
 			return local;
 		}
 
@@ -150,7 +158,7 @@
 			string result;
 			do
 				result = string.Format ("_gen_{0}{1}", name, i++);
-			while (_locals.ContainsKey (result));
+			while (_localVars.ContainsKey (result));
 			return Ast.Var (type, result);
 		}
 
@@ -219,7 +227,7 @@
                 expr.Match<ParameterExpression, Ast.Expression> (pe =>
 				{
 					Ast.Variable local;
-					if (!_locals.TryGetValue (pe.Name, out local))
+					if (!_localVars.TryGetValue (pe.Name, out local))
 						throw new ParseException ("Reference to undefined local variable: " + pe.Name);
 					return Ast.VRef (local);
 				}) 
@@ -243,8 +251,8 @@
 				{
 					_typesDefined.UnionWith (fun.TypesDefined);
 					foreach (var glob in fun.Program.Globals)
-						if (!_program.GlobalDictionary.ContainsKey (glob.Name))
-							_program.AddGlobal (glob);
+						if (!_globals.ContainsKey (glob.Name))
+							AddGlobal (glob);
 					foreach (var func in fun.Program.Functions)
 						if (!_program.Functions.Contains (func))
 							_program.Functions.Add (func);
@@ -390,7 +398,7 @@
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 			var start = Expr (range.Arguments[0]);
 			var iv = Ast.Var (MapType (indexVar.Type), indexVar.Name);
-			_locals.Add (indexVar.Name, iv);
+			_localVars.Add (indexVar.Name, iv);
 			var loopBlock = Ast.Blk ();
 			if (range.Method.DeclaringType == typeof (Enumerable))
 			{

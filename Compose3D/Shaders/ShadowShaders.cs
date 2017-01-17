@@ -197,10 +197,5 @@
 						csmPCFiltering (!u.csmShadowMap, texCoords, mapIndex, bias) //: 1f
 				)
 				.Evaluate ());
-
-		/// <summary>
-		/// This function needs to be called once for static field initialization of this class.
-		/// </summary>
-		public static void Use () { }
 	}
 }

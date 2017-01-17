@@ -197,11 +197,5 @@
 				)
 				.Evaluate ()
 			);
-		
-		/// <summary>
-		/// Use this module. This function needs to be called once for static field initialization of
-		/// this class.
-		/// </summary>
-		public static void Use () { }
 	}
 }

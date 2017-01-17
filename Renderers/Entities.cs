@@ -213,9 +213,6 @@
 
 		private static GLShader FragmentShader ()
 		{
-			LightingShaders.Use ();
-			FragmentShaders.Use ();
-			
 			return GLShader.Create
 			(
 				ShaderType.FragmentShader, () =>

@@ -192,7 +192,6 @@
 
 		private static GLShader VertexShader ()
 		{
-			LightingShaders.Use ();
 			return GLShader.Create (ShaderType.VertexShader, () =>
 				from v in Shader.Inputs<TerrainVertex> ()
 				from u in Shader.Uniforms<Terrain> ()
@@ -212,9 +211,6 @@
 
 		private static GLShader FragmentShader ()
 		{
-			LightingShaders.Use ();
-			FragmentShaders.Use ();
-			ShadowShaders.Use ();
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<TerrainFragment> ()
 				from u in Shader.Uniforms<Terrain> ()

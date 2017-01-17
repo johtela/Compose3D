@@ -64,8 +64,6 @@
 
 	public static class FragmentShaders
 	{
-		public static void Use () { }
-		
 		public static GLShader WhiteOutput<F> ()
 			where F : Fragment
 		{

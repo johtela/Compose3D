@@ -112,7 +112,7 @@
 		private void DefineStruct (Type structType)
 		{
 			if (!DefineType (structType)) return;
-			_program.AddGlobal (GlslAst.Struct (structType.Name,
+			AddGlobal (GlslAst.Struct (structType.Name,
 				from field in structType.GetGLFields ()
 				select Ast.Fld (MapType (field.FieldType), field.Name)));
 		}
@@ -137,8 +137,8 @@
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
 				var unif = GlslAst.Unif (MapType (uniType), field.Name, arrayLen);
-				_program.AddGlobal (unif);
-				_globals.Add (field.Name, unif.Definition);
+				AddGlobal (unif);
+				_globalVars.Add (field.Name, unif.Definition);
 			}
 		}
 
@@ -151,8 +151,8 @@
 				var qualifiers = member.GetQualifiers ();
 				var vary = GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen);
 				if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true)))
-					_program.AddGlobal (vary);
-				_globals.Add (member.Name, vary.Definition);
+					AddGlobal (vary);
+				_globalVars.Add (member.Name, vary.Definition);
 			}
 		}
 
@@ -233,7 +233,7 @@
 			{
 				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
 				foreach (MemberAssignment assign in mie.Bindings)
-					CodeOut (Ast.Ass (Ast.VRef (_globals [assign.Member.Name]), Expr (assign.Expression)));
+					CodeOut (Ast.Ass (Ast.VRef (_globalVars [assign.Member.Name]), Expr (assign.Expression)));
 				CodeOut (Ast.CallS (Ast.Call ("EmitVertex ()")));
 			}
 			CodeOut (Ast.CallS (Ast.Call ("EndPrimitive ()")));

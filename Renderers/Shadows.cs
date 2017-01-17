@@ -138,7 +138,6 @@
 
 		public static GLShader GeometryShaderCascaded ()
 		{
-			ShadowShaders.Use ();
 			return GLShader.CreateGeometryShader<PerVertexOut> (3, 
 				CascadedShadowUniforms.MapCount, PrimitiveType.Triangles, 
 				PrimitiveType.TriangleStrip, () =>

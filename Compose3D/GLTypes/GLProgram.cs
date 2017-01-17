@@ -26,7 +26,6 @@
 			var log = GL.GetProgramInfoLog (_glProgram);
 			if (log.ToUpper ().Contains ("ERROR:"))
 				throw new GLError (string.Format ("Program linking error:\n{0}", log));
-            GC.Collect ();
         }
 
 		private int CreateVertexArray<V> (VBO<V> vertices) where V : struct

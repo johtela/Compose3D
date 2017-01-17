@@ -232,6 +232,9 @@
 
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
+			var foo = member is FieldInfo ?
+				(member as FieldInfo).GetValue (null) :
+				(member as PropertyInfo).GetValue (null);
 			var name = ConstructFunctionName (member);
 			CompiledFunction fun;
 			if (_functions.TryGetValue (name, out fun))

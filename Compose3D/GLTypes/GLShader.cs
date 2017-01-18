@@ -53,12 +53,12 @@
 			return new GLShader (ShaderType.GeometryShader, source);
 		}
 
-		//public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive, 
-		//	PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
-		//	where V : PerVertexOut, new()
-		//{
-		//	return CreateGeometryShader<V> (vertexCount, 0, inputPrimitive, outputPrimitive, func);
-		//}
+		public static GLShader CreateGeometryShader<V> (int vertexCount, PrimitiveType inputPrimitive,
+			PrimitiveType outputPrimitive, Expression<Func<Shader<V[]>>> func)
+			where V : PerVertexOut, new()
+		{
+			return CreateGeometryShader<V> (vertexCount, 0, inputPrimitive, outputPrimitive, func);
+		}
 
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
 		{

@@ -45,6 +45,8 @@
 						throw new InvalidOperationException ("Macro expression parameter not in scope.");
 					return call.Parameters[i];
 				}
+				if (node is Ast.MacroResultVar && node == macro.Result)
+					return call.ResultVar;
 				return node;
 			});
 		}

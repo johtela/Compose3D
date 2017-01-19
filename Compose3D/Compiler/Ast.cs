@@ -145,15 +145,13 @@
 
 		public class MacroDefinition : Ast
 		{
-			public readonly MacroParam Name;
 			public readonly MacroDefinition[] MacroParameters;
 			public readonly MacroParam[] Parameters;
 			public readonly MacroResultVar Result;
 
-			internal MacroDefinition (MacroParam name, IEnumerable<MacroDefinition> macroParams, 
+			internal MacroDefinition (IEnumerable<MacroDefinition> macroParams, 
 				IEnumerable<MacroParam> parameters, MacroResultVar result)
 			{
-				Name = name;
 				MacroParameters = macroParams.ToArray ();
 				Parameters = parameters.ToArray ();
 				Result = result;
@@ -161,20 +159,19 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} = {1} ({2}, {2})", Result, Name, 
+				return string.Format ("{0} ({1}, {2})", Result, 
 					MacroParameters.Select (v => v.ToString ()).SeparateWith (", "),
 					Parameters.Select (v => v.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var name = (MacroParam)Name.Transform (transform);
 				var mpars = MacroParameters.Select (p => (MacroDefinition)p.Transform (transform));
 				var pars = Parameters.Select (p => (MacroParam)p.Transform (transform));
 				var res = (MacroResultVar)Result.Transform (transform);
-				return transform (name == Name && mpars.SequenceEqual (MacroParameters) 
+				return transform (mpars.SequenceEqual (MacroParameters) 
 					&& pars.SequenceEqual (Parameters) && res == Result ? this :
-					new MacroDefinition (name, mpars, pars, res));
+					new MacroDefinition (mpars, pars, res));
 			}
 
 			public static bool AreCompatible (MacroDefinition def, MacroDefinition other)
@@ -189,9 +186,9 @@
 		{
 			public readonly Block Implementation;
 
-			internal Macro (MacroParam returnParam, IEnumerable<MacroDefinition> macroParams,
+			internal Macro (IEnumerable<MacroDefinition> macroParams,
 				IEnumerable<MacroParam> parameters, MacroResultVar result, Block implementation)
-				: base (returnParam, macroParams, parameters, result)
+				: base (macroParams, parameters, result)
 			{
 				Implementation = implementation;
 			}
@@ -206,7 +203,7 @@
 				var def = (MacroDefinition)base.Transform (transform);
 				var impl = (Block)Implementation.Transform (transform);
 				return transform (def == this && impl == Implementation ? this :
-					new Macro (def.Name, def.MacroParameters, def.Parameters, def.Result, Implementation));
+					new Macro (def.MacroParameters, def.Parameters, def.Result, Implementation));
 			}
 		}
 
@@ -664,7 +661,7 @@
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} = {1} ({2}, {3})", ResultVar, Target.Name,
+				return string.Format ("{0} = {1} ({2}, {3})", ResultVar, Target.Result.Name,
 					MacroParameters.Select (mp => mp.ToString ()).SeparateWith (", "),
 					Parameters.Select (p => p.ToString ()).SeparateWith (", "));
 			}
@@ -875,18 +872,16 @@
 			return new MacroParamRef (mpar);
 		}
 
-		public static MacroDefinition MDef (MacroParam name, 
-			IEnumerable<MacroDefinition> mdefpars, IEnumerable<MacroParam> mpars,
-			MacroResultVar result)
+		public static MacroDefinition MDef (IEnumerable<MacroDefinition> mdefpars, 
+			IEnumerable<MacroParam> mpars, MacroResultVar result)
 		{
-			return new MacroDefinition (name, mdefpars, mpars, result);
+			return new MacroDefinition (mdefpars, mpars, result);
 		}
 
-		public static Macro Mac (MacroParam name,
-			IEnumerable<MacroDefinition> mdefpars, IEnumerable<MacroParam> mpars,
-			MacroResultVar result, Block impl)
+		public static Macro Mac (IEnumerable<MacroDefinition> mdefpars, 
+			IEnumerable<MacroParam> mpars, MacroResultVar result, Block impl)
 		{
-			return new Macro (name, mdefpars, mpars, result, impl);
+			return new Macro (mdefpars, mpars, result, impl);
 		}
 
 		public static FieldRef FRef (Expression expr, Field field)

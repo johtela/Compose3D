@@ -12,6 +12,8 @@
     {
 		internal static Dictionary<MemberInfo, CompiledFunction> _functions = 
 			new Dictionary<MemberInfo, CompiledFunction> ();
+		internal static Dictionary<MemberInfo, Ast.Macro> _macros =
+			new Dictionary<MemberInfo, Ast.Macro> ();
 		protected Ast.Program _program;
 		protected Ast.Function _function;
 		protected HashSet<Type> _typesDefined;
@@ -91,6 +93,16 @@
 			parser._program.Functions.Add (parser._function);
 			_functions.Add (member, new CompiledFunction (parser._program, parser._function, 
 				parser._typesDefined));
+		}
+
+		protected void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
+		{
+			var definition = expr.Type.GetMacroDefinition (parser.MapType);
+		}
+
+		public Ast.Macro GetMacroDefinition (LambdaExpression expr)
+		{
+			return null;
 		}
 
 		protected static string ConstructFunctionName (MemberInfo member)

@@ -1,6 +1,8 @@
 ﻿namespace Compose3D.Compiler
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 	using Extensions;
 
 	public delegate TRes Macro<T1, TRes> (T1 arg1);
@@ -14,6 +16,20 @@
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition ().In (
 				typeof (Macro<,>), typeof (Macro<,,>), typeof (Macro<,,,>), typeof (Macro<,,,,>));
+		}
+
+		public static Ast.MacroDefinition GetMacroDefinition (this Type type, Func<Type, string> mapType)
+		{
+			if (!type.IsMacroType ())
+				throw new ArgumentException ("Given type is not a macro type.", nameof (type));
+			var gtypes = type.GetGenericArguments ();
+			var argLen = gtypes.Length - 1;
+			var res = Ast.MRes (mapType (gtypes[argLen]));
+			var pars = from t in gtypes.Take (argLen)
+					   select t.IsMacroType () ?
+							Ast.MDPar (GetMacroDefinition (t, mapType)) :
+							Ast.MPar (mapType (t));
+			return Ast.MDef (pars, res);
 		}
 	}
 }

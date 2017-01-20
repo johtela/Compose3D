@@ -23,7 +23,7 @@
 			var macro = call.Target as Ast.Macro;
 			if (macro == null)
 				throw new InvalidOperationException ("Trying to instantiate macro definition.");
-			if (!call.MacroParameters.All (mp => mp is Ast.Macro))
+			if (call.Parameters.Any (mp => mp.GetType () ==  typeof (Ast.MacroDefinition)))
 				throw new InvalidOperationException ("Uninstantiated macro parameter in macro call.");
 			return (Ast.Block)macro.Implementation.Transform (node =>
 			{
@@ -32,15 +32,15 @@
 					if (node is Ast.Macro)
 						return node;
 					var macroDef = node as Ast.MacroDefinition;
-					var i = call.MacroParameters.IndexOf (macroDef);
+					var i = macro.GetMacroDefParamIndex (macroDef);
 					if (i < 0)
 						throw new InvalidOperationException ("Macro reference not in scope.");
-					return call.MacroParameters[i];
+					return call.Parameters[i];
 				}
 				if (node is Ast.MacroParamRef)
 				{
 					var mp = node as Ast.MacroParamRef;
-					var i = call.Parameters.IndexOf (mp);
+					var i = macro.GetParamRefIndex (mp);
 					if (i < 0)
 						throw new InvalidOperationException ("Macro expression parameter not in scope.");
 					return call.Parameters[i];

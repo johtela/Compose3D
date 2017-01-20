@@ -113,16 +113,43 @@
 
 		public class MacroParam : Ast
 		{
-			public readonly string Name;
+			public readonly string Type;
 
-			internal MacroParam (string name)
+			internal MacroParam (string type)
 			{
-				Name = name;
+				Type = type;
 			}
 
 			public override string ToString ()
 			{
-				return Name;
+				return Type;
+			}
+
+			public bool IsMacroDefinition
+			{
+				get { return this is MacroDefParam; }
+			}
+		}
+
+		public class MacroDefParam : MacroParam
+		{
+			public readonly MacroDefinition Definition;
+
+			public MacroDefParam (MacroDefinition definition)
+				: base (definition.ToString ())
+			{
+				Definition = definition;
+			}
+
+			public override string ToString ()
+			{
+				return Definition.ToString ();
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var def = (MacroDefinition)Definition.Transform (transform);
+				return transform (def == Definition ? this : new MacroDefParam (def));
 			}
 		}
 
@@ -132,53 +159,59 @@
 
 			internal MacroParamRef (MacroParam target)
 			{
+				if (target is MacroDefParam)
+					throw new ArgumentException ("Cannot use macro definition as expression.");
 				Target = target;
 			}
 		}
 
 		public class MacroResultVar : Variable
 		{
-			public MacroResultVar (string type, string name, int arrayLen)
-				: base (type, name, arrayLen)
+			public MacroResultVar (string type)
+				: base (type, "macro", 0)
 			{ }
 		}
 
 		public class MacroDefinition : Ast
 		{
-			public readonly MacroDefinition[] MacroParameters;
 			public readonly MacroParam[] Parameters;
 			public readonly MacroResultVar Result;
 
-			internal MacroDefinition (IEnumerable<MacroDefinition> macroParams, 
-				IEnumerable<MacroParam> parameters, MacroResultVar result)
+			internal MacroDefinition (IEnumerable<MacroParam> parameters, 
+				MacroResultVar result)
 			{
-				MacroParameters = macroParams.ToArray ();
 				Parameters = parameters.ToArray ();
 				Result = result;
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} ({1}, {2})", Result, 
-					MacroParameters.Select (v => v.ToString ()).SeparateWith (", "),
+				return string.Format ("{0} ({1})", Result, 
 					Parameters.Select (v => v.ToString ()).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
-				var mpars = MacroParameters.Select (p => (MacroDefinition)p.Transform (transform));
 				var pars = Parameters.Select (p => (MacroParam)p.Transform (transform));
 				var res = (MacroResultVar)Result.Transform (transform);
-				return transform (mpars.SequenceEqual (MacroParameters) 
-					&& pars.SequenceEqual (Parameters) && res == Result ? this :
-					new MacroDefinition (mpars, pars, res));
+				return transform (pars.SequenceEqual (Parameters) && res == Result ? this :
+					new MacroDefinition (pars, res));
+			}
+
+			public int GetMacroDefParamIndex (MacroDefinition def)
+			{
+				return Parameters.FirstIndex (p =>
+					p.IsMacroDefinition && (p as Ast.MacroDefParam).Definition == def);
+			}
+
+			public int GetParamRefIndex (MacroParamRef pref)
+			{
+				return Parameters.IndexOf (pref.Target);
 			}
 
 			public static bool AreCompatible (MacroDefinition def, MacroDefinition other)
 			{
-				return def.MacroParameters.Length == other.MacroParameters.Length &&
-					def.Parameters.Length == other.Parameters.Length &&
-					def.MacroParameters.Zip (other.MacroParameters, AreCompatible).All (Extensions.Fun.Identity);
+				return def.ToString () == other.ToString ();
 			}
 		}
 
@@ -186,9 +219,8 @@
 		{
 			public readonly Block Implementation;
 
-			internal Macro (IEnumerable<MacroDefinition> macroParams,
-				IEnumerable<MacroParam> parameters, MacroResultVar result, Block implementation)
-				: base (macroParams, parameters, result)
+			internal Macro (IEnumerable<MacroParam> parameters, MacroResultVar result, 
+				Block implementation) : base (parameters, result)
 			{
 				Implementation = implementation;
 			}
@@ -203,7 +235,7 @@
 				var def = (MacroDefinition)base.Transform (transform);
 				var impl = (Block)Implementation.Transform (transform);
 				return transform (def == this && impl == Implementation ? this :
-					new Macro (def.MacroParameters, def.Parameters, def.Result, Implementation));
+					new Macro (def.Parameters, def.Result, Implementation));
 			}
 		}
 
@@ -637,32 +669,31 @@
 		{
 			public readonly MacroDefinition Target;
 			public readonly Variable ResultVar;
-			public readonly MacroDefinition[] MacroParameters;
-			public readonly Expression[] Parameters;
+			public readonly Ast[] Parameters;
 
 			internal MacroCall (MacroDefinition target, Variable resultVar, 
-				IEnumerable<MacroDefinition> macroParams, IEnumerable<Expression> parameters)
+				IEnumerable<Ast> parameters)
 			{
 				Target = target;
 				ResultVar = resultVar;
 				if (resultVar.Type != target.Result.Type)
 					throw new ArgumentException ("Incompatible result variable type", nameof (resultVar));
-				MacroParameters = macroParams.ToArray ();
-				Parameters = parameters.ToArray ();
-				if (MacroParameters.Length != Target.MacroParameters.Length)
-					throw new ArgumentException ("Wrong number of macro parameters", nameof (macroParams));
 				if (Parameters.Length != Target.Parameters.Length)
-					throw new ArgumentException ("Wrong number of expression parameters", nameof (parameters));
-				if (!MacroParameters.Zip (Target.MacroParameters, MacroDefinition.AreCompatible)
-					.All (Extensions.Fun.Identity))
-					throw new ArgumentException ("Macro parameters are not compatible with the definition", 
-						nameof (macroParams));
+					throw new ArgumentException ("Wrong number of parameters", nameof (parameters));
+				Parameters = parameters.ToArray ();
+				for (int i = 0; i < Parameters.Length; i++)
+				{
+					var par = Target.Parameters[i];
+					if (par is MacroDefParam && !(Parameters[i] is MacroDefinition))
+						throw new ArgumentException ("Macro parameter expected in position " + i);
+					if (!(par is MacroDefParam) && !(Parameters[i] is Expression))
+						throw new ArgumentException ("Expression expected in position " + i);
+				}
 			}
 
 			public override string ToString ()
 			{
-				return string.Format ("{0} = {1} ({2}, {3})", ResultVar, Target.Result.Name,
-					MacroParameters.Select (mp => mp.ToString ()).SeparateWith (", "),
+				return string.Format ("{0} = {1} ({2})", ResultVar, Target.Result.Name,
 					Parameters.Select (p => p.ToString ()).SeparateWith (", "));
 			}
 
@@ -670,12 +701,9 @@
 			{
 				var target = (MacroDefinition)Target.Transform (transform);
 				var retVar = (Variable)ResultVar.Transform (transform);
-				var mpars = MacroParameters.Select (p => (MacroDefinition)p.Transform (transform));
-				var pars = Parameters.Select (p => (Expression)p.Transform (transform));
+				var pars = Parameters.Select (p => p.Transform (transform));
 				return transform (target == Target && retVar == ResultVar &&
-					mpars.SequenceEqual (MacroParameters)
-					&& pars.SequenceEqual (Parameters) ? this :
-					new MacroCall (target, retVar, mpars, pars));
+					pars.SequenceEqual (Parameters) ? this : new MacroCall (target, retVar, pars));
 			}
 		}
 
@@ -862,9 +890,19 @@
 			return new VariableRef (variable);
 		}
 
-		public static MacroParam MPar (string name)
+		public static MacroParam MPar (string type)
 		{
-			return new MacroParam (name);
+			return new MacroParam (type);
+		}
+
+		public static MacroParam MDPar (MacroDefinition definition)
+		{
+			return new MacroDefParam (definition);
+		}
+
+		public static MacroResultVar MRes (string type)
+		{
+			return new MacroResultVar (type);
 		}
 
 		public static MacroParamRef MPRef (MacroParam mpar)
@@ -872,16 +910,16 @@
 			return new MacroParamRef (mpar);
 		}
 
-		public static MacroDefinition MDef (IEnumerable<MacroDefinition> mdefpars, 
-			IEnumerable<MacroParam> mpars, MacroResultVar result)
+		public static MacroDefinition MDef (IEnumerable<MacroParam> mpars, 
+			MacroResultVar result)
 		{
-			return new MacroDefinition (mdefpars, mpars, result);
+			return new MacroDefinition (mpars, result);
 		}
 
-		public static Macro Mac (IEnumerable<MacroDefinition> mdefpars, 
-			IEnumerable<MacroParam> mpars, MacroResultVar result, Block impl)
+		public static Macro Mac (IEnumerable<MacroParam> mpars, MacroResultVar result, 
+			Block impl)
 		{
-			return new Macro (mdefpars, mpars, result, impl);
+			return new Macro (mpars, result, impl);
 		}
 
 		public static FieldRef FRef (Expression expr, Field field)
@@ -981,9 +1019,9 @@
 		}
 
 		public static MacroCall MCall (MacroDefinition target, Variable returnVar,
-			IEnumerable<MacroDefinition> macroParams, IEnumerable<Expression> parameters)
+			IEnumerable<Expression> parameters)
 		{
-			return new MacroCall (target, returnVar, macroParams, parameters);
+			return new MacroCall (target, returnVar, parameters);
 		}
 
 		public static Function Fun (string name, string returnType, IEnumerable<Argument> arguments,

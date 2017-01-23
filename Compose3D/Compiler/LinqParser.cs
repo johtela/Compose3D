@@ -14,11 +14,10 @@
 			new Dictionary<MemberInfo, CompiledFunction> ();
 		internal static Dictionary<MemberInfo, Ast.Macro> _macros =
 			new Dictionary<MemberInfo, Ast.Macro> ();
+		protected HashSet<Type> _typesDefined;
 		protected Ast.Program _program;
 		protected Ast.Function _function;
-		protected HashSet<Type> _typesDefined;
-		protected Stack<Ast.Block> _scopes;
-		protected Dictionary<string, Ast.Variable> _localVars;
+		protected Scope _currentScope;
 		protected Dictionary<string, Ast.Constant> _constants;
 		protected Dictionary<string, Ast.Variable> _globalVars;
 		protected Dictionary<string, Ast.Global> _globals;
@@ -28,8 +27,6 @@
 		protected LinqParser (Type linqType, TypeMapping typeMapping)
         {
             _typesDefined = new HashSet<Type> ();
-			_scopes = new Stack<Ast.Block> ();
-			_localVars = new Dictionary<string, Ast.Variable> ();
 			_constants = new Dictionary<string, Ast.Constant> ();
 			_globalVars = new Dictionary<string, Ast.Variable> ();
 			_globals = new Dictionary<string, Ast.Global> ();
@@ -72,8 +69,8 @@
 
 		protected virtual Ast.Expression MapMemberAccess (MemberExpression me)
 		{
-			Ast.Variable v;
-			if (_localVars.TryGetValue (me.Member.Name, out v))
+			Ast.Variable v = _currentScope.FindLocalVar (me.Member.Name);
+			if (v != null)
 				return Ast.VRef (v);
 			if (_globalVars.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
@@ -97,12 +94,18 @@
 
 		protected void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
-			var definition = expr.Type.GetMacroDefinition (parser.MapType);
 		}
 
-		public Ast.Macro GetMacroDefinition (LambdaExpression expr)
+		public Ast.Macro Macro (LambdaExpression expr)
 		{
-			return null;
+			var def = expr.Type.GetMacroDefinition (MapType);
+			var parameters = expr.Parameters.Zip (def.Parameters, (p, mp) =>
+				new KeyValuePair<ParameterExpression, Ast.MacroParam> (p, mp));
+			var block = Ast.Blk ();
+			MacroScope.Begin (_currentScope, block, parameters);
+			//FunctionBody (expr.Body);
+			EndScope ();
+			return Ast.Mac (def.Parameters, def.Result, block);
 		}
 
 		protected static string ConstructFunctionName (MemberInfo member)
@@ -114,33 +117,23 @@
 		{
 			var args = (from p in expr.Parameters
 						select Ast.Arg (MapType (p.Type), p.Name)).ToArray ();
-			var scope = Ast.Blk ();
-			_function = Ast.Fun (name, MapType (expr.ReturnType), args, scope);
+			var block = Ast.Blk ();
+			_function = Ast.Fun (name, MapType (expr.ReturnType), args, block);
+			BeginScope (block);
 			foreach (var arg in args)
-				_localVars.Add (arg.Name, arg);
-			StartScope (scope);
+				_currentScope.AddLocal (arg.Name, arg);
 			FunctionBody (expr.Body);
 			EndScope ();
 		}
 
-		protected Ast.Block CurrentScope ()
+		protected void BeginScope (Ast.Block block)
 		{
-			return _scopes.Peek ();
-		}
-
-		protected void StartScope (Ast.Block block)
-		{
-			_scopes.Push (block);
+			_currentScope = Scope.Begin (_currentScope, block);
 		}
 
 		protected void EndScope ()
 		{
-			_scopes.Pop ();
-		}
-
-		protected void CodeOut (Ast.Statement statement)
-		{
-			CurrentScope ().Statements.Add (statement);
+			_currentScope = _currentScope.End ();
 		}
 
 		protected void AddGlobal (Ast.Global global)
@@ -154,24 +147,6 @@
 			AddGlobal (Ast.Decl (args.Length == 0 ?
 				declaration :
 				string.Format (declaration, args)));
-		}
-
-		protected Ast.Variable DeclareLocal (string type, string name, Ast.Expression value)
-		{
-			var local = Ast.Var (type, name);
-			CodeOut (Ast.DeclVar (local, value));
-			_localVars.Add (local.Name, local);
-			return local;
-		}
-
-		protected Ast.Variable NewIndexVar (string type, string name)
-		{
-			var i = 0;
-			string result;
-			do
-				result = string.Format ("_gen_{0}{1}", name, i++);
-			while (_localVars.ContainsKey (result));
-			return Ast.Var (type, result);
 		}
 
 		protected bool DefineType (Type type)
@@ -238,8 +213,8 @@
 				?? 
                 expr.Match<ParameterExpression, Ast.Expression> (pe =>
 				{
-					Ast.Variable local;
-					if (!_localVars.TryGetValue (pe.Name, out local))
+					var local = _currentScope.FindLocalVar (pe.Name);
+					if (local == null)
 						throw new ParseException ("Reference to undefined local variable: " + pe.Name);
 					return Ast.VRef (local);
 				}) 
@@ -318,7 +293,7 @@
 					var type = MapType (prop.PropertyType);
 					var expr = ne.Arguments[i];
 					if (prop.Name != expr.ToString ())
-						DeclareLocal (type, prop.Name, Expr (RemoveAggregates (expr)));
+						_currentScope.DeclareLocal (type, prop.Name, Expr (RemoveAggregates (expr)));
 				}
             }
             return true;
@@ -336,12 +311,12 @@
             var aggrFun = expr.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
-			var al = DeclareLocal (MapType (accum.Type), accum.Name, Expr (expr.Arguments[1]));
+			var al = _currentScope.DeclareLocal (MapType (accum.Type), accum.Name, Expr (expr.Arguments[1]));
 			var se = expr.Arguments[0].GetSelect (_linqType);
 			if (se != null)
 			{
 				ParseFor (se);
-				DeclareLocal (MapType (iterVar.Type), iterVar.Name,
+				_currentScope.DeclareLocal (MapType (iterVar.Type), iterVar.Name,
 					Expr (se.Arguments[1].ExpectLambda ().Body));
 			}
 			else
@@ -352,7 +327,7 @@
 				else
 					IterateArray (expr);
 			}
-			CodeOut (Ast.Ass (Ast.VRef (al), Expr (aggrFun.Body)));
+			_currentScope.CodeOut (Ast.Ass (Ast.VRef (al), Expr (aggrFun.Body)));
 			EndScope ();
             return accum;
         }
@@ -390,14 +365,14 @@
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = NewIndexVar ("int", "ind");
+			var indexVar = _currentScope.NewIndexVar ("int", "ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var loopBlock = Ast.Blk ();
-			CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
-			StartScope (loopBlock);
-			DeclareLocal (MapType (item.Type), item.Name,
+			_currentScope.CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
+			BeginScope (loopBlock);
+			_currentScope.DeclareLocal (MapType (item.Type), item.Name,
 				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar)));
         }
 
@@ -409,23 +384,23 @@
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 			var start = Expr (range.Arguments[0]);
 			var iv = Ast.Var (MapType (indexVar.Type), indexVar.Name);
-			_localVars.Add (indexVar.Name, iv);
+			_currentScope.AddLocal (indexVar.Name, iv);
 			var loopBlock = Ast.Blk ();
 			if (range.Method.DeclaringType == typeof (Enumerable))
 			{
 				var len = Expr (range.Arguments[1]);
-				CodeOut (ForStatement (iv, len, loopBlock));
+				_currentScope.CodeOut (ForStatement (iv, len, loopBlock));
 			}
 			else
 			{
 				var end = Expr (range.Arguments[1]);
 				var step = Expr (range.Arguments[2]);
-				CodeOut (Ast.For (iv, start, 
+				_currentScope.CodeOut (Ast.For (iv, start, 
 					Ast.Op (MapOperator (null, ExpressionType.NotEqual), Ast.VRef (iv), end),
 					Ast.Op (MapOperator (null, ExpressionType.AddAssign), Ast.VRef (iv), step),
 					loopBlock));
 			}
-			StartScope (loopBlock);
+			BeginScope (loopBlock);
 		}
 
 		protected bool ForLoop (Source source)
@@ -441,7 +416,8 @@
 			if (!source.Current.Method.IsWhere (_linqType))
 				return false;
 			var predicate = source.Current.Arguments[1].ExpectLambda ().Body;
-			CodeOut (Ast.If (Ast.Op (MapOperator (null, ExpressionType.Not), Expr (predicate)),
+			_currentScope.CodeOut (Ast.If (
+				Ast.Op (MapOperator (null, ExpressionType.Not), Expr (predicate)),
 				Ast.Ret ()));
 			return true;
 		}
@@ -473,7 +449,7 @@
 		protected virtual void OutputReturnAssignment (MemberInfo member, Expression expr)
 		{
 			var memVar = Ast.Var (MapType (expr.Type), member.Name);
-			CodeOut (Ast.Ass (Ast.VRef (memVar), Expr (expr)));
+			_currentScope.CodeOut (Ast.Ass (Ast.VRef (memVar), Expr (expr)));
 		}
 
 		protected void ConditionalReturn (Expression expr, Action<Expression> returnAction)
@@ -485,11 +461,11 @@
 			{
 				var thenBlock = Ast.Blk ();
 				var elseBlock = Ast.Blk ();
-				CodeOut (Ast.If (Expr (ce.Test), thenBlock, elseBlock));
-				StartScope (thenBlock);
+				_currentScope.CodeOut (Ast.If (Expr (ce.Test), thenBlock, elseBlock));
+				BeginScope (thenBlock);
 				returnAction (ce.IfTrue);
 				EndScope ();
-				StartScope (elseBlock);
+				BeginScope (elseBlock);
 				ConditionalReturn (ce.IfFalse, returnAction);
 				EndScope ();
 			}
@@ -516,7 +492,7 @@
 		protected void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-			CodeOut (Ast.Ret (Expr (RemoveAggregates (
+			_currentScope.CodeOut (Ast.Ret (Expr (RemoveAggregates (
 				node != null && node.Method.IsEvaluate (_linqType) ? 
 					ParseLinqExpression (node.Arguments [0]) : 
 					expr))));

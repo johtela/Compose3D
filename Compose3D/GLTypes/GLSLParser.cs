@@ -206,7 +206,7 @@
 			}
 			else
 				con = Ast.Const (MapType (constType), name, Expr (value));
-			CodeOut (GlslAst.DeclConst (con));
+			_currentScope.CodeOut (GlslAst.DeclConst (con));
 			_constants.Add (name, con);
 		}
 
@@ -222,7 +222,7 @@
 			else if (node.Method.Name == "Constants")
 				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToShader")
-				DeclareLocal (MapType (type), par.Name, Expr (node.Arguments[0]));
+				_currentScope.DeclareLocal (MapType (type), par.Name, Expr (node.Arguments[0]));
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
@@ -234,16 +234,17 @@
 			{
 				var mie = subExpr.Expect<MemberInitExpression> (ExpressionType.MemberInit);
 				foreach (MemberAssignment assign in mie.Bindings)
-					CodeOut (Ast.Ass (Ast.VRef (_globalVars [assign.Member.Name]), Expr (assign.Expression)));
-				CodeOut (Ast.CallS (Ast.Call ("EmitVertex ()")));
+					_currentScope.CodeOut (Ast.Ass (
+						Ast.VRef (_globalVars [assign.Member.Name]), Expr (assign.Expression)));
+				_currentScope.CodeOut (Ast.CallS (Ast.Call ("EmitVertex ()")));
 			}
-			CodeOut (Ast.CallS (Ast.Call ("EndPrimitive ()")));
+			_currentScope.CodeOut (Ast.CallS (Ast.Call ("EndPrimitive ()")));
 		}
 
 		private void StartMain ()
 		{
 			_function = Ast.Fun ("main", "void", Enumerable.Empty<Ast.Argument> (), Ast.Blk ());
-			StartScope (_function.Body);
+			BeginScope (_function.Body);
 		}
 
 		private void OutputShader (LambdaExpression expr)

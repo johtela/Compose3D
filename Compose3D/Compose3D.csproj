@@ -61,6 +61,7 @@
     <Compile Include="Compiler\Invocation.cs" />
     <Compile Include="Compiler\LinqParser.cs" />
     <Compile Include="Compiler\Macro.cs" />
+    <Compile Include="Compiler\Scopes.cs" />
     <Compile Include="GLTypes\GlslAst.cs" />
     <Compile Include="GLTypes\GlslParser.cs" />
     <Compile Include="Parallel\KernelArguments.cs" />

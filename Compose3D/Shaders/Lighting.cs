@@ -90,8 +90,8 @@
 			}
 		}
 
-		public static readonly Macro<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
-			GLShader.Macro 
+		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
+			GLShader.Function
 			(
 				() => LightDiffuseIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 normal) =>

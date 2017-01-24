@@ -513,7 +513,7 @@
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var vari = (Variable)Definition.Transform (transform);
-				var val = (Expression)Value.Transform (transform);
+				var val = Value != null ? (Expression)Value.Transform (transform) : null;
 				return transform (vari == Definition && val == Value ? this :
 					new DeclareVar (vari, val));
 			}
@@ -1019,7 +1019,7 @@
 		}
 
 		public static MacroCall MCall (MacroDefinition target, Variable returnVar,
-			IEnumerable<Expression> parameters)
+			IEnumerable<Ast> parameters)
 		{
 			return new MacroCall (target, returnVar, parameters);
 		}

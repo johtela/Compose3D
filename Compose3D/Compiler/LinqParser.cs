@@ -190,13 +190,8 @@
 				{
 					var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
 					if (me != null)
-						return me.Type.IsMacroType () ?
-							MacroCall (ie, me.Member) :
-							FunctionCall (ie, me.Member);
-					//var pe = ie.Expression.CastExpr<ParameterExpression> (ExpressionType.Parameter);
-					//if (pe != null)
-					//	return OutputDelegateCall (ie, pe);
-					throw new ParseException ("Delegate called must be either a member of a class, or a parameter.");
+						return FunctionCall (ie, me.Member);
+					throw new ParseException ("Function call is allowed only for static members.");
 				}) ??
                 expr.Match<MemberExpression, Ast.Expression> (MapMemberAccess)
                 ??
@@ -233,15 +228,6 @@
                 throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
             return result;
         }
-
-		private Ast.FunctionCall MacroCall (InvocationExpression ie, MemberInfo member)
-		{
-			InitializeStaticMember (member);
-			Ast.Macro macro;
-			if (_macros.TryGetValue (member, out macro))
-				return Ast.MCall (macro, ie.Arguments.Select (Expr));
-			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
-		}
 
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
@@ -322,6 +308,56 @@
             return true;
         }
 
+		protected Expression ExtractMacros (Expression expr)
+		{
+			return expr.ReplaceSubExpression<InvocationExpression> (ExpressionType.Invoke, ExtractMacro);
+		}
+
+		protected Expression ExtractMacro (InvocationExpression ie)
+		{
+			Ast.MacroDefinition macro = null;
+			var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
+			if (me != null)
+			{
+				Ast.Macro mac;
+				if (!(me.Type.IsMacroType () && _macros.TryGetValue (me.Member, out mac)))
+					return ie;
+				macro = mac;
+			}
+			else
+			{
+				var pe = ie.Expression.CastExpr<ParameterExpression> (ExpressionType.Parameter);
+				if (pe == null || !pe.Type.IsMacroType ())
+					return ie;
+				macro = MacroDefParam (pe).Definition;
+			}
+			var res = _currentScope.GenUniqueVar (macro.Result.Type, "res");
+			_currentScope.DeclareLocal (res, null);
+			_currentScope.CodeOut (Ast.MCall (macro, res, ie.Arguments.Select (MacroParam)));
+			return Expression.Parameter (ie.Type, res.Name);
+		}
+
+		private Ast.MacroDefParam MacroDefParam (ParameterExpression pe)
+		{
+			if (!(_currentScope is MacroScope))
+				throw new ParseException ("Macro parameter referenced outside macro scope.");
+			var mpar = (_currentScope as MacroScope).FindMacroParam (pe);
+			if (mpar == null)
+				throw new ParseException ("Macro parameter not in scope. " +
+					"You can only refer to the parameters of the enclosing macro.");
+			return (Ast.MacroDefParam)mpar;
+		}
+
+		protected Ast MacroParam (Expression expr)
+		{
+			if (expr is LambdaExpression)
+				return Macro (expr as LambdaExpression);
+			if (expr is ParameterExpression)
+				return Ast.MPRef (MacroDefParam (expr as ParameterExpression));
+			else
+				return Expr (expr);
+		}
+
 		protected Expression RemoveAggregates (Expression expr)
 		{
 			return expr.ReplaceSubExpression<MethodCallExpression> (ExpressionType.Call, Aggregate);
@@ -388,7 +424,7 @@
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = _currentScope.NewIndexVar ("int", "ind");
+			var indexVar = _currentScope.GenUniqueVar ("int", "ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];

@@ -29,19 +29,23 @@
 
 		public Ast.Variable DeclareLocal (string type, string name, Ast.Expression value)
 		{
-			var local = Ast.Var (type, name);
+			return DeclareLocal (Ast.Var (type, name), value);
+		}
+
+		public Ast.Variable DeclareLocal (Ast.Variable local, Ast.Expression value)
+		{
 			CodeOut (Ast.DeclVar (local, value));
 			LocalVars.Add (local.Name, local);
 			return local;
 		}
 
-		public Ast.Variable NewIndexVar (string type, string name)
+		public Ast.Variable GenUniqueVar (string type, string name)
 		{
 			var i = 0;
 			string result;
 			do
 				result = string.Format ("_gen_{0}{1}", name, i++);
-			while (LocalVars.ContainsKey (result));
+			while (FindLocalVar (result) != null);
 			return Ast.Var (type, result);
 		}
 

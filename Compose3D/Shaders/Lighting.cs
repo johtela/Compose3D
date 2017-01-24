@@ -7,6 +7,7 @@
 	using Textures;
 	using SceneGraph;
 	using Extensions;
+	using Compiler;
 
 	public class LightingUniforms : Uniforms
 	{
@@ -89,8 +90,8 @@
 			}
 		}
 
-		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
-			GLShader.Function 
+		public static readonly Macro<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
+			GLShader.Macro 
 			(
 				() => LightDiffuseIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 normal) =>

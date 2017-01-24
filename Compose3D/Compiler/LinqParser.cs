@@ -92,18 +92,19 @@
 				parser._typesDefined));
 		}
 
-		protected void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
+		protected static void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
+			_macros.Add (member, parser.Macro (expr));
 		}
 
-		public Ast.Macro Macro (LambdaExpression expr)
+		protected Ast.Macro Macro (LambdaExpression expr)
 		{
 			var def = expr.Type.GetMacroDefinition (MapType);
 			var parameters = expr.Parameters.Zip (def.Parameters, (p, mp) =>
 				new KeyValuePair<ParameterExpression, Ast.MacroParam> (p, mp));
 			var block = Ast.Blk ();
-			MacroScope.Begin (_currentScope, block, parameters);
-			//FunctionBody (expr.Body);
+			_currentScope = MacroScope.Begin (_currentScope, block, parameters);
+			MacroBody (def, expr.Body);
 			EndScope ();
 			return Ast.Mac (def.Parameters, def.Result, block);
 		}
@@ -188,8 +189,10 @@
 				expr.Match<InvocationExpression, Ast.Expression> (ie =>
 				{
 					var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
-					if (me != null && !me.Type.IsMacroType ())
-						return FunctionCall (ie, me.Member);
+					if (me != null)
+						return me.Type.IsMacroType () ?
+							MacroCall (ie, me.Member) :
+							FunctionCall (ie, me.Member);
 					//var pe = ie.Expression.CastExpr<ParameterExpression> (ExpressionType.Parameter);
 					//if (pe != null)
 					//	return OutputDelegateCall (ie, pe);
@@ -214,9 +217,15 @@
                 expr.Match<ParameterExpression, Ast.Expression> (pe =>
 				{
 					var local = _currentScope.FindLocalVar (pe.Name);
-					if (local == null)
-						throw new ParseException ("Reference to undefined local variable: " + pe.Name);
-					return Ast.VRef (local);
+					if (local != null)
+						return Ast.VRef (local);
+					if (_currentScope is MacroScope)
+					{
+						var mpar = (_currentScope as MacroScope).FindMacroParam (pe);
+						if (mpar != null)
+							return Ast.MPRef (mpar);
+					}
+					throw new ParseException ("Reference to undefined local variable: " + pe.Name);
 				}) 
 				?? 
 				null;
@@ -225,11 +234,18 @@
             return result;
         }
 
+		private Ast.FunctionCall MacroCall (InvocationExpression ie, MemberInfo member)
+		{
+			InitializeStaticMember (member);
+			Ast.Macro macro;
+			if (_macros.TryGetValue (member, out macro))
+				return Ast.MCall (macro, ie.Arguments.Select (Expr));
+			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
+		}
+
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
-			var foo = member is FieldInfo ?
-				(member as FieldInfo).GetValue (null) :
-				(member as PropertyInfo).GetValue (null);
+			InitializeStaticMember (member);
 			CompiledFunction fun;
 			if (_functions.TryGetValue (member, out fun))
 			{
@@ -246,6 +262,13 @@
 				return Ast.Call (fun.Function, ie.Arguments.Select (Expr));
 			}
 			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
+		}
+
+		private static void InitializeStaticMember (MemberInfo member)
+		{
+			var foo = member is FieldInfo ?
+				(member as FieldInfo).GetValue (null) :
+				(member as PropertyInfo).GetValue (null);
 		}
 
 		protected MethodCallExpression CastFromBinding (Expression expr)
@@ -497,5 +520,15 @@
 					ParseLinqExpression (node.Arguments [0]) : 
 					expr))));
 		}
-	} 
+
+		protected void MacroBody (Ast.MacroDefinition definition, Expression expr)
+		{
+			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
+			_currentScope.CodeOut (Ast.Ass (Ast.VRef (definition.Result), 
+				Expr (RemoveAggregates (
+					node != null && node.Method.IsEvaluate (_linqType) ?
+						ParseLinqExpression (node.Arguments[0]) :
+						expr))));
+		}
+	}
 }

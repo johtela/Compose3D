@@ -59,6 +59,11 @@
 			CreateFunction (new GlslParser (), member, expr);
 		}
 
+		public static void CreateMacro (MemberInfo member, LambdaExpression macro)
+		{
+			CreateMacro (new GlslParser (), member, macro);
+		}
+
 		private string BuildShaderCode ()
 		{
 			_program.Functions.Add (_function);

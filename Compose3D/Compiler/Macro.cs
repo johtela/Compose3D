@@ -1,7 +1,10 @@
 ﻿namespace Compose3D.Compiler
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
+	using System.Linq.Expressions;
+	using System.Reflection;
 	using Extensions;
 
 	public delegate TRes Macro<TRes> ();
@@ -14,6 +17,70 @@
 
 	public static class Macro
 	{
+		private static Dictionary<MemberInfo, Ast.Macro> _macros =
+			new Dictionary<MemberInfo, Ast.Macro> ();
+		private static int _lastUniqInd;
+
+		internal static void Add (MemberInfo member, Ast.Macro macro)
+		{
+			_macros.Add (member, macro);
+		}
+
+		internal static Ast.Macro Get (MemberInfo member)
+		{
+			Ast.Macro result;
+			return _macros.TryGetValue (member, out result) ? result : null;
+		}
+
+		public static Macro<TRes> Create<TRes> (Expression<Func<Macro<TRes>>> member,
+			Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<TRes> (() => default (TRes));
+		}
+
+		public static Macro<T1, TRes> Create<T1, TRes> (
+			Expression<Func<Macro<T1, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, TRes> ((a1) => default (TRes));
+		}
+
+		public static Macro<T1, T2, TRes> Create<T1, T2, TRes> (
+			Expression<Func<Macro<T1, T2, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, T2, TRes> ((a1, a2) => default (TRes));
+		}
+
+		public static Macro<T1, T2, T3, TRes> Create<T1, T2, T3, TRes> (
+			Expression<Func<Macro<T1, T2, T3, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, T2, T3, TRes> ((a1, a2, a3) => default (TRes));
+		}
+
+		public static Macro<T1, T2, T3, T4, TRes> Create<T1, T2, T3, T4, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, T2, T3, T4, TRes> ((a1, a2, a3, a4) => default (TRes));
+		}
+
+		public static Macro<T1, T2, T3, T4, T5, TRes> Create<T1, T2, T3, T4, T5, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, T5, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, T2, T3, T4, T5, TRes> ((a1, a2, a3, a4, a5) => default (TRes));
+		}
+
+		public static Macro<T1, T2, T3, T4, T5, T6, TRes> Create<T1, T2, T3, T4, T5, T6, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, T5, T6, TRes>>> member, Ast.Macro macro)
+		{
+			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			return new Macro<T1, T2, T3, T4, T5, T6, TRes> ((a1, a2, a3, a4, a5, a6) => default (TRes));
+		}
+
 		public static bool IsMacroType (this Type type)
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition ().In (
@@ -33,6 +100,11 @@
 							Ast.MDPar (GetMacroDefinition (t, mapType)) :
 							Ast.MPar (mapType (t));
 			return Ast.MDef (pars, res);
+		}
+
+		public static Ast.Variable GenUniqueVar (string type, string name)
+		{
+			return Ast.Var (type, string.Format ("_gen_{0}{1}", name, _lastUniqInd++));
 		}
 
 		internal static Ast.Function InstantiateAllMacros (Ast.Function function)

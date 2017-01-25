@@ -10,10 +10,6 @@
 
 	public abstract class LinqParser
     {
-		internal static Dictionary<MemberInfo, CompiledFunction> _functions = 
-			new Dictionary<MemberInfo, CompiledFunction> ();
-		internal static Dictionary<MemberInfo, Ast.Macro> _macros =
-			new Dictionary<MemberInfo, Ast.Macro> ();
 		protected HashSet<Type> _typesDefined;
 		protected Ast.Program _program;
 		protected Ast.Function _function;
@@ -88,13 +84,13 @@
 		{
 			parser.Function (ConstructFunctionName (member), expr);
 			parser._program.Functions.Add (Macro.InstantiateAllMacros (parser._function));
-			_functions.Add (member, new CompiledFunction (parser._program, parser._function, 
+			CompiledFunction.Add (member, new CompiledFunction (parser._program, parser._function, 
 				parser._typesDefined));
 		}
 
 		protected static void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
-			_macros.Add (member, parser.ParseMacro (expr));
+			Macro.Add (member, parser.ParseMacro (expr));
 		}
 
 		protected Ast.Macro ParseMacro (LambdaExpression expr)
@@ -232,8 +228,8 @@
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
 			InitializeStaticMember (member);
-			CompiledFunction fun;
-			if (_functions.TryGetValue (member, out fun))
+			var fun = CompiledFunction.Get (member);
+			if (fun != null)
 			{
 				if (!_program.Functions.Contains (fun.Function))
 				{
@@ -314,10 +310,8 @@
 			var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
 			if (me != null)
 			{
-				Ast.Macro mac;
-				if (!(me.Type.IsMacroType () && _macros.TryGetValue (me.Member, out mac)))
+				if (!me.Type.IsMacroType () || (macro = Macro.Get (me.Member)) == null)
 					return ie;
-				macro = mac;
 			}
 			else
 			{
@@ -326,7 +320,7 @@
 					return ie;
 				macro = MacroDefParam (pe).Definition;
 			}
-			var res = _currentScope.GenUniqueVar (macro.Result.Type, "res");
+			var res = Macro.GenUniqueVar (macro.Result.Type, "res");
 			_currentScope.DeclareLocal (res, null);
 			_currentScope.CodeOut (Ast.MCall (macro, res, ie.Arguments.Select (MacroParam)));
 			return Expression.Parameter (ie.Type, res.Name);
@@ -421,7 +415,7 @@
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = _currentScope.GenUniqueVar ("int", "ind");
+			var indexVar = Macro.GenUniqueVar ("int", "ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];

@@ -2,15 +2,12 @@
 {
 	using System.Collections.Generic;
 	using System.Linq.Expressions;
-	using Extensions;
 
 	public class Scope 
 	{
 		public readonly Scope Parent;
 		public readonly Ast.Block Block;
 		public readonly Dictionary<string, Ast.Variable> LocalVars;
-
-		private static int LastUniqInd;
 
 		protected Scope (Scope parent, Ast.Block block)
 		{
@@ -39,11 +36,6 @@
 			CodeOut (Ast.DeclVar (local, value));
 			LocalVars.Add (local.Name, local);
 			return local;
-		}
-
-		public Ast.Variable GenUniqueVar (string type, string name)
-		{
-			return Ast.Var (type, string.Format ("_gen_{0}{1}", name, LastUniqInd++));
 		}
 
 		public Ast.Variable FindLocalVar (string name)

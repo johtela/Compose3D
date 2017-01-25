@@ -10,6 +10,8 @@
 		public readonly Ast.Block Block;
 		public readonly Dictionary<string, Ast.Variable> LocalVars;
 
+		private static int LastUniqInd;
+
 		protected Scope (Scope parent, Ast.Block block)
 		{
 			Parent = parent;
@@ -41,12 +43,7 @@
 
 		public Ast.Variable GenUniqueVar (string type, string name)
 		{
-			var i = 0;
-			string result;
-			do
-				result = string.Format ("_gen_{0}{1}", name, i++);
-			while (FindLocalVar (result) != null);
-			return Ast.Var (type, result);
+			return Ast.Var (type, string.Format ("_gen_{0}{1}", name, LastUniqInd++));
 		}
 
 		public Ast.Variable FindLocalVar (string name)
@@ -56,6 +53,15 @@
 				return result;
 			else if (Parent != null)
 				return Parent.FindLocalVar (name);
+			return null;
+		}
+
+		public MacroScope GetSurroundingMacroScope ()
+		{
+			if (this is MacroScope)
+				return this as MacroScope;
+			if (Parent != null)
+				return Parent.GetSurroundingMacroScope ();
 			return null;
 		}
 

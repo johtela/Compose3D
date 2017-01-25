@@ -109,6 +109,12 @@
 			{
 				return Target.Name;
 			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var target = (Variable)Target.Transform (transform);
+				return transform (target == Target ? this : new VariableRef (target));
+			}
 		}
 
 		public class MacroParam : Ast
@@ -678,9 +684,9 @@
 				ResultVar = resultVar;
 				if (resultVar.Type != target.Result.Type)
 					throw new ArgumentException ("Incompatible result variable type", nameof (resultVar));
+				Parameters = parameters.ToArray ();
 				if (Parameters.Length != Target.Parameters.Length)
 					throw new ArgumentException ("Wrong number of parameters", nameof (parameters));
-				Parameters = parameters.ToArray ();
 				for (int i = 0; i < Parameters.Length; i++)
 				{
 					var par = Target.Parameters[i];

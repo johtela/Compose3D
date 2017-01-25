@@ -56,7 +56,6 @@
     <Compile Include="CLTypes\CLContext.cs" />
     <Compile Include="CLTypes\GLError.cs" />
     <Compile Include="Compiler\Ast.cs" />
-    <Compile Include="Compiler\AstTransform.cs" />
     <Compile Include="Compiler\CompiledFunction.cs" />
     <Compile Include="Compiler\Invocation.cs" />
     <Compile Include="Compiler\LinqParser.cs" />

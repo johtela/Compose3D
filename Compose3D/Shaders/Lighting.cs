@@ -90,8 +90,8 @@
 			}
 		}
 
-		public static readonly Func<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
-			GLShader.Function
+		public static readonly Macro<Vec3, Vec3, Vec3, Vec3> LightDiffuseIntensity =
+			GLShader.Macro
 			(
 				() => LightDiffuseIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 normal) =>
@@ -99,8 +99,8 @@
 			);
 
 
-		public static readonly Func<Vec3, Vec3, Vec3, Vec3, float, Vec3> LightSpecularIntensity =
-			GLShader.Function 
+		public static readonly Macro<Vec3, Vec3, Vec3, Vec3, float, Vec3> LightSpecularIntensity =
+			GLShader.Macro 
 			(
 				() => LightSpecularIntensity,
 				(Vec3 lightDir, Vec3 intensity, Vec3 position, Vec3 normal, float shininess) =>
@@ -114,8 +114,8 @@
 				.Evaluate ()
 			);
 
-		public static readonly Func<DirectionalLight, Vec3, Vec3, float, DiffuseAndSpecular> DirLightIntensity =
-			GLShader.Function
+		public static readonly Macro<DirectionalLight, Vec3, Vec3, float, DiffuseAndSpecular> DirLightIntensity =
+			GLShader.Macro
 			(
 				() => DirLightIntensity,
 				(DirectionalLight dirLight, Vec3 position, Vec3 normal, float shininess) =>
@@ -128,8 +128,8 @@
 		/// Calculate attenuation of a point light given the light source and distance
 		/// to the vertex.
 		/// </summary>
-		public static readonly Func<PointLight, float, float> Attenuation = 
-			GLShader.Function 
+		public static readonly Macro<PointLight, float, float> Attenuation = 
+			GLShader.Macro
 			(
 				() => Attenuation, 
 				(PointLight pointLight, float distance) => 

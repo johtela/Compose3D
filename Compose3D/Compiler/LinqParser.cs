@@ -87,17 +87,17 @@
 		protected static void CreateFunction (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
 			parser.Function (ConstructFunctionName (member), expr);
-			parser._program.Functions.Add (parser._function);
+			parser._program.Functions.Add (Macro.InstantiateAllMacros (parser._function));
 			_functions.Add (member, new CompiledFunction (parser._program, parser._function, 
 				parser._typesDefined));
 		}
 
 		protected static void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
-			_macros.Add (member, parser.Macro (expr));
+			_macros.Add (member, parser.ParseMacro (expr));
 		}
 
-		protected Ast.Macro Macro (LambdaExpression expr)
+		protected Ast.Macro ParseMacro (LambdaExpression expr)
 		{
 			var def = expr.Type.GetMacroDefinition (MapType);
 			var parameters = expr.Parameters.Zip (def.Parameters, (p, mp) =>
@@ -302,16 +302,11 @@
 					var type = MapType (prop.PropertyType);
 					var expr = ne.Arguments[i];
 					if (prop.Name != expr.ToString ())
-						_currentScope.DeclareLocal (type, prop.Name, Expr (RemoveAggregates (expr)));
+						_currentScope.DeclareLocal (type, prop.Name, Expr (ExtractMacros (expr)));
 				}
             }
             return true;
         }
-
-		protected Expression ExtractMacros (Expression expr)
-		{
-			return expr.ReplaceSubExpression<InvocationExpression> (ExpressionType.Invoke, ExtractMacro);
-		}
 
 		protected Expression ExtractMacro (InvocationExpression ie)
 		{
@@ -339,9 +334,10 @@
 
 		private Ast.MacroDefParam MacroDefParam (ParameterExpression pe)
 		{
-			if (!(_currentScope is MacroScope))
+			var mscope = _currentScope.GetSurroundingMacroScope ();
+			if (mscope == null)
 				throw new ParseException ("Macro parameter referenced outside macro scope.");
-			var mpar = (_currentScope as MacroScope).FindMacroParam (pe);
+			var mpar = mscope.FindMacroParam (pe);
 			if (mpar == null)
 				throw new ParseException ("Macro parameter not in scope. " +
 					"You can only refer to the parameters of the enclosing macro.");
@@ -351,19 +347,20 @@
 		protected Ast MacroParam (Expression expr)
 		{
 			if (expr is LambdaExpression)
-				return Macro (expr as LambdaExpression);
-			if (expr is ParameterExpression)
+				return ParseMacro (expr as LambdaExpression);
+			if (expr is ParameterExpression && expr.Type.IsMacroType ())
 				return Ast.MPRef (MacroDefParam (expr as ParameterExpression));
 			else
 				return Expr (expr);
 		}
 
-		protected Expression RemoveAggregates (Expression expr)
+		protected Expression ExtractMacros (Expression expr)
 		{
-			return expr.ReplaceSubExpression<MethodCallExpression> (ExpressionType.Call, Aggregate);
+			expr = expr.ReplaceSubExpression<MethodCallExpression> (ExpressionType.Call, Aggregate);
+			return expr.ReplaceSubExpression<InvocationExpression> (ExpressionType.Invoke, ExtractMacro);
 		}
 
-        protected Expression Aggregate (MethodCallExpression expr)
+		protected Expression Aggregate (MethodCallExpression expr)
         {
             if (!expr.Method.IsAggregate ())
                 return expr;
@@ -483,7 +480,7 @@
 
         protected void Return (Expression expr)
         {
-			expr = RemoveAggregates (expr);
+			expr = ExtractMacros (expr);
             var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
             if (ne == null)
             {
@@ -551,7 +548,7 @@
 		protected void FunctionBody (Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-			_currentScope.CodeOut (Ast.Ret (Expr (RemoveAggregates (
+			_currentScope.CodeOut (Ast.Ret (Expr (ExtractMacros (
 				node != null && node.Method.IsEvaluate (_linqType) ? 
 					ParseLinqExpression (node.Arguments [0]) : 
 					expr))));
@@ -561,7 +558,7 @@
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
 			_currentScope.CodeOut (Ast.Ass (Ast.VRef (definition.Result), 
-				Expr (RemoveAggregates (
+				Expr (ExtractMacros (
 					node != null && node.Method.IsEvaluate (_linqType) ?
 						ParseLinqExpression (node.Arguments[0]) :
 						expr))));

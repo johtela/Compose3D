@@ -19,7 +19,7 @@
 		{
 			var parser = new GlslParser ();
 			parser.DeclareVaryings (typeof (T), GlslAst.VaryingKind.Out);
-			parser.OutputShader (shader);
+			parser.ParseShader (shader);
 			return parser.BuildShaderCode ();
 		}
 
@@ -39,7 +39,7 @@
 			parser.DeclOut ("layout ({0}, max_vertices = {1}) out;", 
 				outputPrimitive.MapOutputGSPrimitive (), vertexCount);
 			parser.DeclareVaryings (typeof (T), GlslAst.VaryingKind.Out);
-			parser.OutputGeometryShader (shader);
+			parser.ParseGeometryShader (shader);
 			return parser.BuildShaderCode ();
 		}
 
@@ -66,7 +66,7 @@
 
 		private string BuildShaderCode ()
 		{
-			_program.Functions.Add (_function);
+			_program.Functions.Add (Macro.InstantiateAllMacros (_function));
 			return "#version 400 core\nprecision highp float;\n" + _program.ToString ();
 		}
 
@@ -252,7 +252,7 @@
 			BeginScope (_function.Body);
 		}
 
-		private void OutputShader (LambdaExpression expr)
+		private void ParseShader (LambdaExpression expr)
         {
 			StartMain ();
 			var retExpr = ParseLinqExpression (expr.Body);
@@ -260,7 +260,7 @@
 			EndScope ();
 		}
 
-		private void OutputGeometryShader (LambdaExpression expr)
+		private void ParseGeometryShader (LambdaExpression expr)
 		{
 			StartMain ();
 			var retExpr = ParseLinqExpression (expr.Body);

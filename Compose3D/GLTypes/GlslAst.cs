@@ -55,10 +55,18 @@
 			public Structure (string name, IEnumerable<Field> fields)
 				: base (name,fields) { }
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return string.Format ("struct {0}\n{{\n{1}\n}};", Name,
-					Fields.Select (f => string.Format ("    {0};", f)).SeparateWith ("\n"));
+					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))
+					.SeparateWith ("\n"));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var fields = Fields.Select (f => (Field)f.Transform (transform));
+				return transform (fields.SequenceEqual (Fields) ? this :
+					new Structure (Name, fields));
 			}
 		}
 

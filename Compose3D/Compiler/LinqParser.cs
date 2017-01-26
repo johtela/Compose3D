@@ -31,7 +31,7 @@
 			_program = Ast.Prog ();
         }
 
-		protected virtual string MapType (Type type)
+		protected internal virtual string MapType (Type type)
 		{
 			var result = _typeMapping.Type (type);
 			if (result == null)

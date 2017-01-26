@@ -105,7 +105,7 @@
 			return string.Format ("{0} ({{0}})", MapType (type));
 		}
 
-		protected override string MapType (Type type)
+		protected internal override string MapType (Type type)
 		{
 			if (type.IsGLStruct ())
 			{

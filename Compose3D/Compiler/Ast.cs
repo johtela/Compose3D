@@ -13,6 +13,8 @@
 			return transform (this);
 		}
 
+		public abstract string Output (LinqParser parser);
+
 		public abstract class Expression : Ast
 		{
 		}
@@ -26,7 +28,7 @@
 				Value = value;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return Value;
 			}
@@ -34,34 +36,34 @@
 
 		public class Variable : Expression
 		{
-			public readonly string Type;
+			public readonly Type Type;
 			public readonly string Name;
 			public readonly int ArrayLength;
 
-			internal Variable (string type, string name, int arraylen)
+			internal Variable (Type type, string name, int arraylen)
 			{
 				Type = type;
 				Name = name;
 				ArrayLength = arraylen;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				var arrayDecl = ArrayLength > 0 ?
 					string.Format ("[{0}]", ArrayLength) : "";
-				return string.Format ("{0} {1}{2}", Type, Name, arrayDecl);
+				return string.Format ("{0} {1}{2}", parser.MapType (Type), Name, arrayDecl);
 			}
 		}
 		 
 		public class Field : Variable
 		{
-			internal Field (string type, string name, int arraylen) 
+			internal Field (Type type, string name, int arraylen) 
 				: base (type, name, arraylen) { }
 		}
 
 		public class Argument : Variable
 		{
-			internal Argument (string type, string name, int arraylen) 
+			internal Argument (Type type, string name, int arraylen) 
 				: base (type, name, arraylen) { }
 		}
 
@@ -69,7 +71,7 @@
 		{
 			public readonly Expression Value;
 
-			internal Constant (string type, string name, int arraylen, Expression value)
+			internal Constant (Type type, string name, int arraylen, Expression value)
 				: base (type, name, arraylen)
 			{
 				var na = value as NewArray;
@@ -82,10 +84,10 @@
 				Value = value;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				var decl = base.ToString ();
-				return string.Format ("const {0} = {1}", decl, Value);
+				var decl = base.Output (parser);
+				return string.Format ("const {0} = {1}", decl, Value.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -105,7 +107,7 @@
 				Target = target;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return Target.Name;
 			}
@@ -119,16 +121,16 @@
 
 		public class MacroParam : Ast
 		{
-			public readonly string Type;
+			public readonly Type Type;
 
-			internal MacroParam (string type)
+			internal MacroParam (Type type)
 			{
 				Type = type;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return Type;
+				return parser.MapType (Type);
 			}
 
 			public bool IsMacroDefinition
@@ -142,14 +144,14 @@
 			public readonly MacroDefinition Definition;
 
 			public MacroDefParam (MacroDefinition definition)
-				: base (definition.ToString ())
+				: base (null)
 			{
 				Definition = definition;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return Definition.ToString ();
+				return Definition.Output (parser);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -169,11 +171,16 @@
 					throw new ArgumentException ("Cannot use macro definition as expression.");
 				Target = target;
 			}
+
+			public override string Output (LinqParser parser)
+			{
+				return Target.Output (parser);
+			}
 		}
 
 		public class MacroResultVar : Variable
 		{
-			public MacroResultVar (string type)
+			public MacroResultVar (Type type)
 				: base (type, "macro", 0)
 			{ }
 		}
@@ -190,10 +197,10 @@
 				Result = result;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return string.Format ("{0} ({1})", Result, 
-					Parameters.Select (v => v.ToString ()).SeparateWith (", "));
+					Parameters.Select (v => v.Output (parser)).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -231,9 +238,9 @@
 				Implementation = implementation;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return base.ToString () + "\n" + Implementation;
+				return base.Output (parser) + "\n" + Implementation.Output (parser);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -256,9 +263,9 @@
 				TargetField = field;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0}.{1}", TargetExpr, TargetField.Name);
+				return string.Format ("{0}.{1}", TargetExpr.Output (parser), TargetField.Name);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -280,9 +287,9 @@
 				Operand = operand;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format (Operator, Operand);
+				return string.Format (Operator, Operand.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -306,9 +313,10 @@
 				RightOperand = right;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("(" + Operator + ")", LeftOperand, RightOperand);
+				return string.Format ("(" + Operator + ")", 
+					LeftOperand.Output (parser), RightOperand.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -333,10 +341,10 @@
 					throw new ArgumentException ("Invalid number of arguments.", nameof (args));
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return string.Format ("{0} ({1})", FuncRef.Name,
-					Arguments.Select (e => e.ToString ()).SeparateWith (", "));
+					Arguments.Select (e => e.Output (parser)).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -359,10 +367,10 @@
 				Arguments = args.ToArray ();
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return string.Format (FormatStr, 
-					Arguments.Select (e => e.ToString ()).SeparateWith (", "));
+					Arguments.Select (e => e.Output (parser)).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -388,10 +396,10 @@
 				Items = items.ToArray ();
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return string.Format ("{0}[{1}] ( {2} )", ItemType, ItemCount,
-					Items.Select (e => e.ToString ()).SeparateWith (",\n\t"));
+					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -415,9 +423,10 @@
 				IfFalse = ifFalse;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("({0} ? {1} : {2})", Condition, IfTrue, IfFalse);
+				return string.Format ("({0} ? {1} : {2})", Condition.Output (parser), 
+					IfTrue.Output (parser), IfFalse.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -455,14 +464,14 @@
 				sb.AppendFormat ("{0}}}\n", Tabs ());
 			}
 
-			protected void EmitIntended (StringBuilder sb, Statement statement)
+			protected void EmitIntended (StringBuilder sb, Statement statement, LinqParser parser)
 			{
 				if (statement is Block)
 					sb.Append (statement);
 				else
 				{
 					_tabLevel++;
-					sb.Append (statement);
+					sb.Append (statement.Output (parser));
 					_tabLevel--;
 				}
 			}
@@ -484,9 +493,10 @@
 				Value = value;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0}{1} = {2};\n", Tabs (), VarRef, Value);
+				return string.Format ("{0}{1} = {2};\n", Tabs (), VarRef.Output (parser), 
+					Value.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -509,11 +519,12 @@
 				Value = value;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
+				var def = Definition.Output (parser);
 				return Value != null ?
-					string.Format ("{0}{1} = {2};\n", Tabs (), Definition, Value) :
-					string.Format ("{0}{1};\n", Tabs (), Definition);
+					string.Format ("{0}{1} = {2};\n", Tabs (), def, Value.Output (parser)) :
+					string.Format ("{0}{1};\n", Tabs (), def);
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -534,12 +545,12 @@
 				Statements = new List<Statement> (statements);
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				var result = new StringBuilder ();
 				BeginScope (result);
 				foreach (var statement in Statements)
-					result.Append (statement);
+					result.Append (statement.Output (parser));
 				EndScope (result);
 				return result.ToString ();
 			}
@@ -565,15 +576,15 @@
 				IfFalse = ifFalse;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "if ({0})\n", Condition);
-				EmitIntended (result, IfTrue);
+				EmitLine (result, "if ({0})\n", Condition.Output (parser));
+				EmitIntended (result, IfTrue, parser);
 				if (IfFalse != null)
 				{
 					EmitLine (result, "else");
-					EmitIntended (result, IfFalse);
+					EmitIntended (result, IfFalse, parser);
 				}
 				return result.ToString ();
 			}
@@ -606,12 +617,12 @@
 				Body = body;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "for ({0} = {1}; {2}; {3})\n", LoopVar, InitialValue,
-					Condition, Increment);
-				EmitIntended (result, Body);
+				EmitLine (result, "for ({0} = {1}; {2}; {3})\n", LoopVar.Output (parser), 
+					InitialValue.Output (parser), Condition.Output (parser), Increment.Output (parser));
+				EmitIntended (result, Body, parser);
 				return result.ToString ();
 			}
 
@@ -637,9 +648,9 @@
 				ExternalCall = call;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0}{1};\n", Tabs(), ExternalCall);
+				return string.Format ("{0}{1};\n", Tabs(), ExternalCall.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -659,9 +670,9 @@
 				Value = value;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0}return {1};\n", Tabs (), Value);
+				return string.Format ("{0}return {1};\n", Tabs (), Value.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -697,10 +708,11 @@
 				}
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0} = {1} ({2})", ResultVar, Target.Result.Name,
-					Parameters.Select (p => p.ToString ()).SeparateWith (", "));
+				return string.Format ("{0} = {1} ({2})", 
+					ResultVar.Output (parser), Target.Result.Name,
+					Parameters.Select (p => p.Output (parser)).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -723,7 +735,7 @@
 			}
 		}
 
-		public class Structure : Global
+		public abstract class Structure : Global
 		{
 			public readonly List<Field> Fields;
 
@@ -737,13 +749,6 @@
 			{
 				return Fields.Find (f => f.Name == name);
 			}
-
-			public override Ast Transform (Func<Ast, Ast> transform)
-			{
-				var fields = Fields.Select (f => (Field)f.Transform (transform));
-				return transform (fields.SequenceEqual (Fields) ? this :
-					new Structure (Name, fields));
-			}
 		}
 
 		public class Declaration : Global
@@ -756,7 +761,7 @@
 				Text = text;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				return Text;
 			}
@@ -765,11 +770,11 @@
 		public class Function : Ast
 		{
 			public readonly string Name;
-			public readonly string ReturnType;
+			public readonly Type ReturnType;
 			public readonly Argument[] Arguments;
 			public readonly Block Body;
 
-			internal Function (string name, string returnType, IEnumerable<Argument> arguments,
+			internal Function (string name, Type returnType, IEnumerable<Argument> arguments,
 				Block body)
 			{
 				Name = name;
@@ -778,10 +783,11 @@
 				Body = body;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0} {1} ({2})\n{3}", ReturnType, Name,
-					Arguments.Select (v => v.ToString ()).SeparateWith (", "), Body);
+				return string.Format ("{0} {1} ({2})\n{3}", parser.MapType (ReturnType), Name,
+					Arguments.Select (v => v.Output (parser)).SeparateWith (", "), 
+					Body.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)

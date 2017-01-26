@@ -35,49 +35,49 @@
 		public static Macro<TRes> Create<TRes> (Expression<Func<Macro<TRes>>> member,
 			Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<TRes> (() => default (TRes));
 		}
 
 		public static Macro<T1, TRes> Create<T1, TRes> (
 			Expression<Func<Macro<T1, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, TRes> ((a1) => default (TRes));
 		}
 
 		public static Macro<T1, T2, TRes> Create<T1, T2, TRes> (
 			Expression<Func<Macro<T1, T2, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, T2, TRes> ((a1, a2) => default (TRes));
 		}
 
 		public static Macro<T1, T2, T3, TRes> Create<T1, T2, T3, TRes> (
 			Expression<Func<Macro<T1, T2, T3, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, T2, T3, TRes> ((a1, a2, a3) => default (TRes));
 		}
 
 		public static Macro<T1, T2, T3, T4, TRes> Create<T1, T2, T3, T4, TRes> (
 			Expression<Func<Macro<T1, T2, T3, T4, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, T2, T3, T4, TRes> ((a1, a2, a3, a4) => default (TRes));
 		}
 
 		public static Macro<T1, T2, T3, T4, T5, TRes> Create<T1, T2, T3, T4, T5, TRes> (
 			Expression<Func<Macro<T1, T2, T3, T4, T5, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, T2, T3, T4, T5, TRes> ((a1, a2, a3, a4, a5) => default (TRes));
 		}
 
 		public static Macro<T1, T2, T3, T4, T5, T6, TRes> Create<T1, T2, T3, T4, T5, T6, TRes> (
 			Expression<Func<Macro<T1, T2, T3, T4, T5, T6, TRes>>> member, Ast.Macro macro)
 		{
-			_macros.Add ((member.Body as MemberExpression).Member, macro);
+			Add ((member.Body as MemberExpression).Member, macro);
 			return new Macro<T1, T2, T3, T4, T5, T6, TRes> ((a1, a2, a3, a4, a5, a6) => default (TRes));
 		}
 

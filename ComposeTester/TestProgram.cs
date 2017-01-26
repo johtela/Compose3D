@@ -10,6 +10,7 @@
 	using OpenTK.Input;
 	using Compose3D.CLTypes;
 	using Compose3D.Parallel;
+	using Compose3D.Compiler;
 
 	public class TestProgram
 	{
@@ -18,9 +19,10 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
+			Foo ();
 			//TestParallel ();
-			var wnd = new FighterWindow ();
-			wnd.Run ();
+			//var wnd = new FighterWindow ();
+			//wnd.Run ();
 			//			Task.Factory.StartNew (() =>
 			//				Tester.RunTestsTimed (
 			//					new VecTests (),
@@ -42,6 +44,8 @@
 
 		private static void Foo ()
 		{
+			var for1 = Aggregate<int>.For;
+			var for2 = Aggregate<float>.For;
 		}
 	}
 }

@@ -383,11 +383,11 @@
 
 		public class NewArray : Expression
 		{
-			public readonly string ItemType;
+			public readonly Type ItemType;
 			public readonly int ItemCount;
 			public readonly Expression[] Items;
 
-			internal NewArray (string type, int count, IEnumerable<Expression> items)
+			internal NewArray (Type type, int count, IEnumerable<Expression> items)
 			{
 				if (items.Count () != count)
 					throw new ArgumentException ("Invalid number arguments", nameof (items));
@@ -398,7 +398,7 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0}[{1}] ( {2} )", ItemType, ItemCount,
+				return string.Format ("{0}[{1}] ( {2} )", parser.MapType (ItemType), ItemCount,
 					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
 			}
 
@@ -467,7 +467,7 @@
 			protected void EmitIntended (StringBuilder sb, Statement statement, LinqParser parser)
 			{
 				if (statement is Block)
-					sb.Append (statement);
+					sb.Append (statement.Output (parser));
 				else
 				{
 					_tabLevel++;
@@ -785,7 +785,8 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{0} {1} ({2})\n{3}", parser.MapType (ReturnType), Name,
+				var retType = ReturnType == null ? "void" : parser.MapType (ReturnType);
+				return string.Format ("{0} {1} ({2})\n{3}", retType, Name,
 					Arguments.Select (v => v.Output (parser)).SeparateWith (", "), 
 					Body.Output (parser));
 			}
@@ -821,21 +822,21 @@
 				return DefinedStructs.First (s => s.Name == name);
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				var result = new StringBuilder ();
-				foreach (var glob in Globals)
-				{
-					result.Append (glob);
-					result.AppendLine ();
-				}
-				result.AppendLine ();
+				var functions = new StringBuilder ();
 				foreach (var func in Functions)
 				{
-					result.Append (func);
-					result.AppendLine ();
+					functions.Append (func.Output (parser));
+					functions.AppendLine ();
 				}
-				return result.ToString ();
+				var globals = new StringBuilder ();
+				foreach (var glob in Globals)
+				{
+					globals.Append (glob.Output (parser));
+					globals.AppendLine ();
+				}
+				return globals.ToString () + "\n" + functions.ToString ();
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -852,22 +853,22 @@
 			return new Literal (value);
 		}
 
-		public static Variable Var (string type, string name)
+		public static Variable Var (Type type, string name)
 		{
 			return new Variable (type, name, 0);
 		}
 
-		public static Variable Var (string type, string name, int arraylen)
+		public static Variable Var (Type type, string name, int arraylen)
 		{
 			return new Variable (type, name, arraylen);
 		}
 
-		public static Field Fld (string type, string name)
+		public static Field Fld (Type type, string name)
 		{
 			return new Field (type, name, 0);
 		}
 
-		public static Field Fld (string type, string name, int arraylen)
+		public static Field Fld (Type type, string name, int arraylen)
 		{
 			return new Field (type, name, arraylen);
 		}
@@ -877,22 +878,22 @@
 			return new Field (null, name, 0);
 		}
 
-		public static Argument Arg (string type, string name)
+		public static Argument Arg (Type type, string name)
 		{
 			return new Argument (type, name, 0);
 		}
 
-		public static Argument Arg (string type, string name, int arraylen)
+		public static Argument Arg (Type type, string name, int arraylen)
 		{
 			return new Argument (type, name, arraylen);
 		}
 
-		public static Constant Const (string type, string name, Expression value)
+		public static Constant Const (Type type, string name, Expression value)
 		{
 			return new Constant (type, name, 0, value);
 		}
 
-		public static Constant Const (string type, string name, int arraylen, Expression value)
+		public static Constant Const (Type type, string name, int arraylen, Expression value)
 		{
 			return new Constant (type, name, arraylen, value);
 		}
@@ -902,7 +903,7 @@
 			return new VariableRef (variable);
 		}
 
-		public static MacroParam MPar (string type)
+		public static MacroParam MPar (Type type)
 		{
 			return new MacroParam (type);
 		}
@@ -912,7 +913,7 @@
 			return new MacroDefParam (definition);
 		}
 
-		public static MacroResultVar MRes (string type)
+		public static MacroResultVar MRes (Type type)
 		{
 			return new MacroResultVar (type);
 		}
@@ -969,7 +970,7 @@
 			return new ExternalFunctionCall (formatStr, args);
 		}
 
-		public static NewArray Arr (string type, int count, IEnumerable<Expression> items)
+		public static NewArray Arr (Type type, int count, IEnumerable<Expression> items)
 		{
 			return new NewArray (type, count, items);
 		}
@@ -1036,7 +1037,7 @@
 			return new MacroCall (target, returnVar, parameters);
 		}
 
-		public static Function Fun (string name, string returnType, IEnumerable<Argument> arguments,
+		public static Function Fun (string name, Type returnType, IEnumerable<Argument> arguments,
 			Block body)
 		{
 			return new Function (name, returnType, arguments, body);

@@ -67,7 +67,7 @@
 		private string BuildShaderCode ()
 		{
 			_program.Functions.Add (Macro.InstantiateAllMacros (_function));
-			return "#version 400 core\nprecision highp float;\n" + _program.ToString ();
+			return "#version 400 core\nprecision highp float;\n" + _program.Output (this);
 		}
 
 		private static int GetGLSLVersion ()
@@ -92,9 +92,9 @@
 					Ast.FRef (Expr (me.Expression), Ast.Fld (me.Member.Name)) :
 					(Ast.Expression)Ast.VRef (Ast.Fld (me.Member.Name));
 			var declType = me.Expression.Type;
-			if (declType.IsGLStruct () && _typesDefined.Contains (declType))
+			if (declType.IsGLStruct ())
 			{
-				var field = _program.FindStruct (declType.Name).FindField (me.Member.Name);
+				var field = Ast.Fld (me.Type, me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
 			return base.MapMemberAccess (me);
@@ -120,7 +120,7 @@
 			if (!DefineType (structType)) return;
 			AddGlobal (GlslAst.Struct (structType.Name,
 				from field in structType.GetGLFields ()
-				select Ast.Fld (MapType (field.FieldType), field.Name)));
+				select Ast.Fld (field.FieldType, field.Name)));
 		}
 
 		private static int GetArrayLen (MemberInfo member, ref Type memberType)
@@ -142,7 +142,7 @@
 				var arrayLen = GetArrayLen (field, ref uniType);
 				if (uniType.GetGLAttribute () is GLStruct)
 					DefineStruct (uniType);
-				var unif = GlslAst.Unif (MapType (uniType), field.Name, arrayLen);
+				var unif = GlslAst.Unif (uniType, field.Name, arrayLen);
 				AddGlobal (unif);
 				_globalVars.Add (field.Name, unif.Definition);
 			}
@@ -153,9 +153,8 @@
             if (!member.Name.StartsWith ("<>"))
             {
 				var arrayLen = GetArrayLen (member, ref memberType);
-				var type = MapType (memberType);
 				var qualifiers = member.GetQualifiers ();
-				var vary = GlslAst.Vary (kind, qualifiers, type, member.Name, arrayLen);
+				var vary = GlslAst.Vary (kind, qualifiers, memberType, member.Name, arrayLen);
 				if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true)))
 					AddGlobal (vary);
 				_globalVars.Add (member.Name, vary.Definition);
@@ -205,12 +204,11 @@
 			Ast.Constant con;
 			if (constType.IsArray)
 			{
-				var elemType = MapType (constType.GetElementType ());
 				var nai = value.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);
-				con = Ast.Const (elemType, name, nai.Expressions.Count, Expr (value));
+				con = Ast.Const (constType.GetElementType (), name, nai.Expressions.Count, Expr (value));
 			}
 			else
-				con = Ast.Const (MapType (constType), name, Expr (value));
+				con = Ast.Const (constType, name, Expr (value));
 			_currentScope.CodeOut (GlslAst.DeclConst (con));
 			_constants.Add (name, con);
 		}
@@ -227,7 +225,7 @@
 			else if (node.Method.Name == "Constants")
 				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToShader")
-				_currentScope.DeclareLocal (MapType (type), par.Name, Expr (node.Arguments[0]));
+				_currentScope.DeclareLocal (type, par.Name, Expr (node.Arguments[0]));
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
@@ -248,7 +246,7 @@
 
 		private void StartMain ()
 		{
-			_function = Ast.Fun ("main", "void", Enumerable.Empty<Ast.Argument> (), Ast.Blk ());
+			_function = Ast.Fun ("main", null, Enumerable.Empty<Ast.Argument> (), Ast.Blk ());
 			BeginScope (_function.Body);
 		}
 

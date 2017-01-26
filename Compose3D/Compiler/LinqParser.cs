@@ -95,7 +95,7 @@
 
 		protected Ast.Macro ParseMacro (LambdaExpression expr)
 		{
-			var def = expr.Type.GetMacroDefinition (MapType);
+			var def = expr.Type.GetMacroDefinition ();
 			var parameters = expr.Parameters.Zip (def.Parameters, (p, mp) =>
 				new KeyValuePair<ParameterExpression, Ast.MacroParam> (p, mp));
 			var block = Ast.Blk ();
@@ -113,9 +113,9 @@
 		protected void Function (string name, LambdaExpression expr)
 		{
 			var args = (from p in expr.Parameters
-						select Ast.Arg (MapType (p.Type), p.Name)).ToArray ();
+						select Ast.Arg (p.Type, p.Name)).ToArray ();
 			var block = Ast.Blk ();
-			_function = Ast.Fun (name, MapType (expr.ReturnType), args, block);
+			_function = Ast.Fun (name, expr.ReturnType, args, block);
 			BeginScope (block);
 			foreach (var arg in args)
 				_currentScope.AddLocal (arg.Name, arg);
@@ -173,7 +173,7 @@
 					{
 						if (mc.Arguments[0].Type == typeof (Maths.Coord))
 							return Ast.FRef (Expr (mc.Object),
-								Ast.Fld (mc.Arguments.Select (a => Expr (a).ToString ()).SeparateWith ("")));
+								Ast.Fld (mc.Arguments.Select (a => Expr (a).Output (this)).SeparateWith ("")));
 						var syntax = _typeMapping.Indexer (mc.Method);
 						return syntax == null || mc.Arguments.Count != 1 ? 
 							null :
@@ -199,7 +199,7 @@
 						ce.Type == typeof (float) ?  "{0:0.0############}f" : "{0}", ce.Value))) 
 				?? 
 				expr.Match<NewArrayExpression, Ast.Expression> (na => 
-					Ast.Arr (MapType (na.Type.GetElementType ()), na.Expressions.Count,
+					Ast.Arr (na.Type.GetElementType (), na.Expressions.Count,
 						na.Expressions.Select (Expr))) 
 				??
                 expr.Match<ConditionalExpression, Ast.Expression> (ce => 
@@ -295,10 +295,9 @@
                 var prop = (PropertyInfo)ne.Members[i];
 				if (!(prop.Name.StartsWith ("<>") || ne.Arguments[i] is ParameterExpression))
 				{
-					var type = MapType (prop.PropertyType);
 					var expr = ne.Arguments[i];
 					if (prop.Name != expr.ToString ())
-						_currentScope.DeclareLocal (type, prop.Name, Expr (ExtractMacros (expr)));
+						_currentScope.DeclareLocal (prop.PropertyType, prop.Name, Expr (ExtractMacros (expr)));
 				}
             }
             return true;
@@ -361,12 +360,12 @@
             var aggrFun = expr.Arguments[2].Expect<LambdaExpression> (ExpressionType.Lambda);
             var accum = aggrFun.Parameters[0];
             var iterVar = aggrFun.Parameters[1];
-			var al = _currentScope.DeclareLocal (MapType (accum.Type), accum.Name, Expr (expr.Arguments[1]));
+			var al = _currentScope.DeclareLocal (accum.Type, accum.Name, Expr (expr.Arguments[1]));
 			var se = expr.Arguments[0].GetSelect (_linqType);
 			if (se != null)
 			{
 				ParseFor (se);
-				_currentScope.DeclareLocal (MapType (iterVar.Type), iterVar.Name,
+				_currentScope.DeclareLocal (iterVar.Type, iterVar.Name,
 					Expr (se.Arguments[1].ExpectLambda ().Body));
 			}
 			else
@@ -415,14 +414,14 @@
 			else
 				throw new ParseException ("Invalid array expression. " +
 					"Expected uniform field reference or constant array. Encountered: " + array);
-			var indexVar = Macro.GenUniqueVar ("int", "ind");
+			var indexVar = Macro.GenUniqueVar (typeof (int), "ind");
 			var item = expr.Method.IsSelect (_linqType) ?
 				expr.GetSelectLambda ().Parameters[0] :
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var loopBlock = Ast.Blk ();
 			_currentScope.CodeOut (ForStatement (indexVar, Ast.Lit (len.ToString ()), loopBlock));
 			BeginScope (loopBlock);
-			_currentScope.DeclareLocal (MapType (item.Type), item.Name,
+			_currentScope.DeclareLocal (item.Type, item.Name,
 				Ast.Op (MapOperator (null, ExpressionType.ArrayIndex), Expr (array), Ast.VRef (indexVar)));
         }
 
@@ -433,7 +432,7 @@
 				expr.Arguments[2].ExpectLambda ().Parameters[1];
 			var range = expr.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 			var start = Expr (range.Arguments[0]);
-			var iv = Ast.Var (MapType (indexVar.Type), indexVar.Name);
+			var iv = Ast.Var (indexVar.Type, indexVar.Name);
 			_currentScope.AddLocal (indexVar.Name, iv);
 			var loopBlock = Ast.Blk ();
 			if (range.Method.DeclaringType == typeof (Enumerable))
@@ -498,7 +497,7 @@
 
 		protected virtual void OutputReturnAssignment (MemberInfo member, Expression expr)
 		{
-			var memVar = Ast.Var (MapType (expr.Type), member.Name);
+			var memVar = Ast.Var (expr.Type, member.Name);
 			_currentScope.CodeOut (Ast.Ass (Ast.VRef (memVar), Expr (expr)));
 		}
 

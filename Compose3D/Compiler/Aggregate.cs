@@ -12,7 +12,7 @@
 			Macro.Create<int, int, int, Macro<int, T, T>, T>
 			(
 				() => For,
-				Ast.Mac (Enumerable.Empty<Ast.MacroParam> (), Ast.MRes (typeof (T).Name), Ast.Blk ())
+				Ast.Mac (Enumerable.Empty<Ast.MacroParam> (), Ast.MRes (typeof (T)), Ast.Blk ())
 			);
 	}
 }

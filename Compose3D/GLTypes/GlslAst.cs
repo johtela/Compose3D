@@ -12,15 +12,15 @@
 		{
 			public readonly Variable Definition;
 
-			internal Uniform (string type, string name, int arraylen)
+			internal Uniform (Type type, string name, int arraylen)
 				: base (name)
 			{
 				Definition = new Ast.Variable (type, name, arraylen);
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return string.Format ("uniform {0};", Definition);
+				return string.Format ("uniform {0};", Definition.Output (parser));
 			}
 		}
 
@@ -32,21 +32,20 @@
 			public readonly string Qualifiers;
 			public readonly Variable Definition;
 
-			internal Varying (VaryingKind kind, string qualifiers, string type, string name, 
-				int arraylen)
-				: base (name)
+			internal Varying (VaryingKind kind, string qualifiers, Type type, string name, 
+				int arraylen) : base (name)
 			{
 				Kind = kind;
 				Qualifiers = qualifiers;
 				Definition = new Ast.Variable (type, name, arraylen);
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
 				var kindDecl = Kind == VaryingKind.In ? "in" : "out";
 				return string.IsNullOrEmpty (Qualifiers) ?
-					string.Format ("{0} {1};", kindDecl, Definition) :
-					string.Format ("{0} {1} {2};", Qualifiers, kindDecl, Definition);
+					string.Format ("{0} {1};", kindDecl, Definition.Output (parser)) :
+					string.Format ("{0} {1} {2};", Qualifiers, kindDecl, Definition.Output (parser));
 			}
 		}
 
@@ -66,7 +65,7 @@
 			{
 				var fields = Fields.Select (f => (Field)f.Transform (transform));
 				return transform (fields.SequenceEqual (Fields) ? this :
-					new Structure (Name, fields));
+					new GlslAst.Structure (Name, fields));
 			}
 		}
 
@@ -79,9 +78,9 @@
 				Definition = definition;
 			}
 
-			public override string ToString ()
+			public override string Output (LinqParser parser)
 			{
-				return Tabs () + Definition.ToString () + ";\n";
+				return Tabs () + Definition.Output (parser) + ";\n";
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -92,12 +91,12 @@
 			}
 		}
 
-		public static Uniform Unif (string type, string name, int arraylen)
+		public static Uniform Unif (Type type, string name, int arraylen)
 		{
 			return new Uniform (type, name, arraylen);
 		}
 
-		public static Varying Vary (VaryingKind kind, string qualifiers, string type, 
+		public static Varying Vary (VaryingKind kind, string qualifiers, Type type, 
 			string name, int arraylen)
 		{
 			return new Varying (kind, qualifiers, type, name, arraylen);

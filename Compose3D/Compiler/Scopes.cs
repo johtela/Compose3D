@@ -1,5 +1,6 @@
 ﻿namespace Compose3D.Compiler
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq.Expressions;
 
@@ -26,7 +27,7 @@
 			LocalVars.Add (name, variable);
 		}
 
-		public Ast.Variable DeclareLocal (string type, string name, Ast.Expression value)
+		public Ast.Variable DeclareLocal (Type type, string name, Ast.Expression value)
 		{
 			return DeclareLocal (Ast.Var (type, name), value);
 		}

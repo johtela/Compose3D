@@ -88,21 +88,21 @@
 				typeof (Macro<,,,,>), typeof (Macro<,,,,,>), typeof (Macro<,,,,,,>));
 		}
 
-		public static Ast.MacroDefinition GetMacroDefinition (this Type type, Func<Type, string> mapType)
+		public static Ast.MacroDefinition GetMacroDefinition (this Type type)
 		{
 			if (!type.IsMacroType ())
 				throw new ArgumentException ("Given type is not a macro type.", nameof (type));
 			var gtypes = type.GetGenericArguments ();
 			var argLen = gtypes.Length - 1;
-			var res = Ast.MRes (mapType (gtypes[argLen]));
+			var res = Ast.MRes (gtypes[argLen]);
 			var pars = from t in gtypes.Take (argLen)
 					   select t.IsMacroType () ?
-							Ast.MDPar (GetMacroDefinition (t, mapType)) :
-							Ast.MPar (mapType (t));
+							Ast.MDPar (GetMacroDefinition (t)) :
+							Ast.MPar (t);
 			return Ast.MDef (pars, res);
 		}
 
-		public static Ast.Variable GenUniqueVar (string type, string name)
+		public static Ast.Variable GenUniqueVar (Type type, string name)
 		{
 			return Ast.Var (type, string.Format ("_gen_{0}{1}", name, _lastUniqInd++));
 		}

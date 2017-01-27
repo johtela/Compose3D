@@ -40,11 +40,5 @@
 			var context = CLContext.CreateContextForDevices (device);
 			var prog = ParPerlin.Example (context);
 		}
-
-		private static void Foo ()
-		{
-			var for1 = Aggregate<int>.For;
-			var for2 = Aggregate<float>.For;
-		}
 	}
 }

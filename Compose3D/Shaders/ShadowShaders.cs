@@ -1,7 +1,6 @@
 ﻿namespace Compose3D.Shaders
 {
 	using System;
-	using System.Linq;
 	using Compiler;
 	using Maths;
 	using GLTypes;
@@ -68,11 +67,14 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					select (from point in con.kernel
-							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
-							select shadowMap.Texture (sampleCoords).X)
-							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / 9f
-				)
+					let result = Aggregate<float>.For (0, con.kernel.Length, 0f,
+						(int i, float sum) =>
+							(from point in con.kernel[i].ToShader ()
+							 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
+							 let depth = shadowMap.Texture (sampleCoords).X
+							 select sum + (currentDepth < depth ? 1f : 0.1f))
+						.Evaluate ())
+					select result / 9f)
 				.Evaluate ());
 
 		public static readonly Func<Vec3, float, float, bool> Between =
@@ -140,40 +142,24 @@
 					{
 						kernel = new Vec2[]
 						{
-							//new Vec2 (0.3734659f, -0.8273796f),
-							//new Vec2 (0.1914345f, -0.3285008f),
-							//new Vec2 (-0.2934556f, -0.4006544f),
-							//new Vec2 (0.6397942f, -0.2687152f),
-							//new Vec2 (-0.02465286f, -0.7721488f),
-							//new Vec2 (-0.5982372f, -0.7205318f),
-							//new Vec2 (0.508617f, 0.2272395f),
-							//new Vec2 (0.1029184f, 0.3121677f),
-							//new Vec2 (-0.2912557f, 0.7276647f),
-							//new Vec2 (-0.3520437f, 0.2009868f),
-							//new Vec2 (0.5757321f, 0.636853f),
-							//new Vec2 (0.1266643f, 0.743752f),
-							//new Vec2 (-0.7601562f, 0.2416886f),
-							//new Vec2 (0.9183863f, 0.1334105f),
-							//new Vec2 (-0.7794592f, -0.2526905f)
-
 						   new Vec2 (0.95581f, -0.18159f), new Vec2 (0.50147f, -0.35807f), new Vec2 (0.69607f, 0.35559f),
 						   new Vec2 (-0.0036825f, -0.59150f),  new Vec2 (0.15930f, 0.089750f), new Vec2 (-0.65031f, 0.058189f),
 						   new Vec2 (0.11915f, 0.78449f),  new Vec2 (-0.34296f, 0.51575f), new Vec2 (-0.60380f, -0.41527f)
-
-							//new Vec2 (-1f, -1f), new Vec2 (-1f, 0f), new Vec2 (-1f, 1f),
-							//new Vec2 (0f, -1f), new Vec2 (0f, 0f), new Vec2 (0f, 1f),
-							//new Vec2 (1f, -1f), new Vec2 (1f, 0f), new Vec2 (1f, 1f),
 						}
 					})
 					let closestDepth = shadowMap.Texture (new Vec3 (texCoords.X, texCoords.Y, mapIndex)).X
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					select (from point in con.kernel
-							let sampleCoords = texCoords[Coord.x, Coord.y] + (point * 2f * texelSize)
-							select shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X)
-							.Aggregate (0f, (sum, depth) => sum + (currentDepth < depth ? 1f : 0.1f)) / con.kernel.Length
-				)
+					let result = Aggregate<float>.For (0, con.kernel.Length, 0f,
+						(int i, float sum) =>
+							(from point in con.kernel[i].ToShader ()
+							 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * 2f * texelSize)
+							 let depth = shadowMap.Texture (new Vec3 (sampleCoords.X, sampleCoords.Y, mapIndex)).X
+							 select sum + (currentDepth < depth ? 1f : 0.1f))
+						 .Evaluate ()
+					)
+					select result / con.kernel.Length)
 				.Evaluate ());
 
 		public static readonly Func<Vec4, float, float> CascadedShadowMapFactor =
@@ -181,11 +167,7 @@
 				(Vec4 posInViewSpace, float bias) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-						//let mapIndex = Enumerable.Range (0, (!u.viewLightMatrices).Length)
-						//	.Aggregate (-1, (int best, int i) => best < 0 &&
-						//		Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-						//		i : best)
-					let mapIndex = Aggregate<int>.For (0, (!u.viewLightMatrices).Length, 1, -1,
+					let mapIndex = Aggregate<int>.For (0, (!u.viewLightMatrices).Length, -1,
 						(int i, int best) => best < 0 &&
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)

@@ -228,14 +228,15 @@
 					samplerNo == 2 ? FragmentShaders.TextureColor ((!u.samplers)[2], f.fragTexturePos - new Vec2 (20f)) :
 					samplerNo == 3 ? FragmentShaders.TextureColor ((!u.samplers)[3], f.fragTexturePos - new Vec2 (30f)) :
 					f.fragDiffuse
-					let dirLight = LightingShaders.DirLightIntensity (!l.directionalLight, f.fragPosition, 
-						f.fragNormal, f.fragShininess)
-				let totalLight = 
-					(from pl in !u.pointLights
-					 select LightingShaders.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess))
-					.Aggregate (dirLight, 
-						(total, pointLight) => new LightingShaders.DiffuseAndSpecular (
-							total.diffuse + pointLight.diffuse, total.specular + pointLight.specular))
+				let dirLight = LightingShaders.DirLightIntensity (!l.directionalLight, f.fragPosition, 
+					f.fragNormal, f.fragShininess)
+				let totalLight = Aggregate<LightingShaders.DiffuseAndSpecular>.For (0, (!u.pointLights).Length, dirLight,
+					(i, total) =>
+						(from pl in (!u.pointLights)[i].ToShader ()
+						let plint = LightingShaders.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess)
+						select new LightingShaders.DiffuseAndSpecular (plint.diffuse + total.diffuse,
+							plint.specular + total.specular))
+						.Evaluate ())
 				let envLight = (!u.diffuseMap).Texture (f.fragNormal)[Coord.x, Coord.y, Coord.z]
 				let ambient = envLight * (!l.globalLighting).ambientLightIntensity
 				let reflectDiffuse = f.fragReflectivity == 0f ? fragDiffuse :

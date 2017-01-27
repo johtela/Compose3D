@@ -181,8 +181,12 @@
 				(Vec4 posInViewSpace, float bias) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					let mapIndex = Enumerable.Range (0, (!u.viewLightMatrices).Length)
-						.Aggregate (-1, (int best, int i) => best < 0 &&
+						//let mapIndex = Enumerable.Range (0, (!u.viewLightMatrices).Length)
+						//	.Aggregate (-1, (int best, int i) => best < 0 &&
+						//		Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
+						//		i : best)
+					let mapIndex = Aggregate<int>.For (0, (!u.viewLightMatrices).Length, 1, -1,
+						(int i, int best) => best < 0 &&
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)
 					let posInLightSpace = (!u.viewLightMatrices)[mapIndex] * posInViewSpace

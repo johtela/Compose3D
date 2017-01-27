@@ -309,6 +309,7 @@
 			var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
 			if (me != null)
 			{
+				InitializeStaticMember (me.Member);
 				if (!me.Type.IsMacroType () || (macro = Macro.Get (me.Member)) == null)
 					return ie;
 			}

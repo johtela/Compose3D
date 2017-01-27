@@ -165,7 +165,8 @@
 			GLShader.Function
 				(
 				() => GlobalLightIntensity,
-				(GlobalLight globalLighting, Vec3 ambientLight, Vec3 diffuseLight, Vec3 specularLight, Vec3 diffuseColor, Vec3 specularColor) =>
+				(GlobalLight globalLighting, Vec3 ambientLight, Vec3 diffuseLight, Vec3 specularLight, 
+					Vec3 diffuseColor, Vec3 specularColor) =>
 				(
 					from gamma in new Vec3 (globalLighting.inverseGamma).ToShader ()
 					let maxInten = globalLighting.maxintensity

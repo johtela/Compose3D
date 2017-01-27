@@ -242,14 +242,6 @@
 			{
 				return base.Output (parser) + "\n" + Implementation.Output (parser);
 			}
-
-			public override Ast Transform (Func<Ast, Ast> transform)
-			{
-				var def = (MacroDefinition)base.Transform (transform);
-				var impl = (Block)Implementation.Transform (transform);
-				return transform (def == this && impl == Implementation ? this :
-					new Macro (def.Parameters, def.Result, Implementation));
-			}
 		}
 
 		public class FieldRef : Expression
@@ -620,7 +612,7 @@
 			public override string Output (LinqParser parser)
 			{
 				var result = new StringBuilder ();
-				EmitLine (result, "for ({0} = {1}; {2}; {3})\n", LoopVar.Output (parser), 
+				EmitLine (result, "for ({0} = {1}; {2}; {3})", LoopVar.Output (parser), 
 					InitialValue.Output (parser), Condition.Output (parser), Increment.Output (parser));
 				EmitIntended (result, Body, parser);
 				return result.ToString ();
@@ -995,6 +987,11 @@
 			return new Block (statements);
 		}
 
+		public static Block Blk (params Statement[] statements)
+		{
+			return new Block (statements);
+		}
+
 		public static Block Blk ()
 		{
 			return new Block (Enumerable.Empty<Statement> ());
@@ -1033,6 +1030,12 @@
 
 		public static MacroCall MCall (MacroDefinition target, Variable returnVar,
 			IEnumerable<Ast> parameters)
+		{
+			return new MacroCall (target, returnVar, parameters);
+		}
+
+		public static MacroCall MCall (MacroDefinition target, Variable returnVar,
+			params Ast[] parameters)
 		{
 			return new MacroCall (target, returnVar, parameters);
 		}

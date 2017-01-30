@@ -67,7 +67,7 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let result = Aggregate<float>.For (0, con.kernel.Length, 0f,
+					let result = Control<float>.For (0, con.kernel.Length, 0f,
 						(int i, float sum) =>
 							(from point in con.kernel[i].ToShader ()
 							 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * texelSize)
@@ -151,7 +151,7 @@
 					let currentDepth = texCoords.Z - bias
 					let mapSize = shadowMap.Size (0)
 					let texelSize = new Vec2 (1f / mapSize.X, 1f / mapSize.Y)
-					let result = Aggregate<float>.For (0, con.kernel.Length, 0f,
+					let result = Control<float>.For (0, con.kernel.Length, 0f,
 						(int i, float sum) =>
 							(from point in con.kernel[i].ToShader ()
 							 let sampleCoords = texCoords[Coord.x, Coord.y] + (point * 2f * texelSize)
@@ -167,7 +167,7 @@
 				(Vec4 posInViewSpace, float bias) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					let mapIndex = Aggregate<int>.For (0, (!u.viewLightMatrices).Length, -1,
+					let mapIndex = Control<int>.For (0, (!u.viewLightMatrices).Length, -1,
 						(int i, int best) => best < 0 &&
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 							i : best)

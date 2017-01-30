@@ -230,7 +230,7 @@
 					f.fragDiffuse
 				let dirLight = LightingShaders.DirLightIntensity (!l.directionalLight, f.fragPosition, 
 					f.fragNormal, f.fragShininess)
-				let totalLight = Aggregate<LightingShaders.DiffuseAndSpecular>.For (0, (!u.pointLights).Length, dirLight,
+				let totalLight = Control<LightingShaders.DiffuseAndSpecular>.For (0, (!u.pointLights).Length, dirLight,
 					(i, total) =>
 						(from pl in (!u.pointLights)[i].ToShader ()
 						let plint = LightingShaders.PointLightIntensity (pl, f.fragPosition, f.fragNormal, f.fragShininess)

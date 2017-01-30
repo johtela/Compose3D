@@ -39,6 +39,15 @@
 			return new CLProgram (context, name, source, args);
 		}
 
+		public static CLProgram Create<T> (CLContext context, string name,
+			Expression<Func<Kernel<KernelResult<T>>>> func)
+		{
+			var args = new KernelArguments ();
+			var source = CLCCompiler.CreateKernel (name, func, args);
+			Console.WriteLine (source);
+			return new CLProgram (context, name, source, args);
+		}
+
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
 		{
 			CLCCompiler.CreateFunction ((member.Body as MemberExpression).Member, func);

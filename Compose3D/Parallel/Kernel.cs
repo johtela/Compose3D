@@ -7,6 +7,11 @@
 
 	public delegate T Kernel<T> ();
 
+	public abstract class KernelArg { }
+	public class Value<T> : KernelArg { }
+	public class Buffer<T> : KernelArg { }
+	public class Image<T> : KernelArg { }
+
 	public class KernelResult<T> : Params<int, T> { }
 
 	public static class Kernel

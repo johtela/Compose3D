@@ -66,6 +66,7 @@
     <Compile Include="Compiler\Scopes.cs" />
     <Compile Include="GLTypes\GlslAst.cs" />
     <Compile Include="GLTypes\GlslParser.cs" />
+    <Compile Include="Parallel\KernelArgs.cs" />
     <Compile Include="Parallel\KernelArguments.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />

@@ -366,29 +366,33 @@
 
         protected void Return (Expression expr)
         {
-			expr = ExtractMacros (expr);
-            var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
-            if (ne == null)
-            {
-                var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
-                if (mie == null)
-                    throw new ParseException (
+			OutputReturn (ExtractMacros (expr));
+        }
+
+		protected virtual void OutputReturn (Expression expr)
+		{
+			var ne = expr.CastExpr<NewExpression> (ExpressionType.New);
+			if (ne == null)
+			{
+				var mie = expr.CastExpr<MemberInitExpression> (ExpressionType.MemberInit);
+				if (mie == null)
+					throw new ParseException (
 						"The select clause must be a 'new' expression. Currently it is: " + expr);
 				foreach (MemberAssignment assign in mie.Bindings)
 					OutputReturnAssignment (assign.Member, assign.Expression);
-            }
-            else
-            {
-                for (int i = 0; i < ne.Members.Count; i++)
-                {
-                    var prop = (PropertyInfo)ne.Members[i];
+			}
+			else
+			{
+				for (int i = 0; i < ne.Members.Count; i++)
+				{
+					var prop = (PropertyInfo)ne.Members[i];
 					if (!prop.Name.StartsWith ("<>"))
 						OutputReturnAssignment (prop, ne.Arguments[i]);
-                }
-            }
-        }
+				}
+			}
+		}
 
-		protected virtual void OutputReturnAssignment (MemberInfo member, Expression expr)
+		protected void OutputReturnAssignment (MemberInfo member, Expression expr)
 		{
 			var memVar = Ast.Var (expr.Type, member.Name);
 			_currentScope.CodeOut (Ast.Ass (Ast.VRef (memVar), Expr (expr)));

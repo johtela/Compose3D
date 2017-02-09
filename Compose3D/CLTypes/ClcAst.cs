@@ -18,7 +18,7 @@
 			public readonly KernelArgumentAccess Access;
 			public readonly KernelArgumentMemory Memory;
 
-			public KernelArgument (Type type, string name, KernelArgumentKind kind,
+			internal KernelArgument (Type type, string name, KernelArgumentKind kind,
 				KernelArgumentAccess access, KernelArgumentMemory memory)
 				: base (type, name, 0)
 			{
@@ -60,7 +60,7 @@
 
 		public class Kernel : Ast.Function
 		{
-			public Kernel (string name, IEnumerable<KernelArgument> arguments, Block body)
+			internal Kernel (string name, IEnumerable<KernelArgument> arguments, Block body)
 				: base (name, null, arguments, body) { }
 
 			public override string Output (LinqParser parser)
@@ -71,16 +71,50 @@
 			}
 		}
 
+		public class DeclareConstant : Ast.Global
+		{
+			public readonly Constant Definition;
+
+			internal DeclareConstant (Constant definition)
+				: base (definition.Name)
+			{
+				Definition = definition;
+			}
+
+			public override string Output (LinqParser parser)
+			{
+				return "constant " + Definition.Output (parser) + ";\n";
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var def = (Constant)transform (Definition);
+				return transform (def == Definition ? this :
+					new DeclareConstant (def));
+			}
+		}
+
 		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind,
 			KernelArgumentAccess access, KernelArgumentMemory memory)
 		{
 			return new KernelArgument (type, name, kind, access, memory);
 		}
 
+		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind)
+		{
+			return new KernelArgument (type, name, kind, KernelArgumentAccess.ReadWrite, 
+				KernelArgumentMemory.Default);
+		}
+
 		public static Kernel Kern (string name, IEnumerable<KernelArgument> arguments,
 			Ast.Block body)
 		{
 			return new Kernel (name, arguments, body);
+		}
+
+		public static DeclareConstant DeclConst (Ast.Constant definition)
+		{
+			return new DeclareConstant (definition);
 		}
 	}
 }

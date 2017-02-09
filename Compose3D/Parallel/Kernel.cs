@@ -25,20 +25,6 @@
 		}
 
 		[LiftMethod]
-		public static Kernel<T> Argument<T> ()
-			where T : struct
-		{
-			return () => default (T);
-		}
-
-		[LiftMethod]
-		public static Kernel<T[]> Buffer<T> ()
-			where T : struct
-		{
-			return () => new T[0];
-		}
-
-		[LiftMethod]
 		public static Kernel<T> Constants<T> (T constants)
 		{
 			return () => constants;

@@ -83,13 +83,9 @@
 
 		public static CLProgram Example (CLContext context)
 		{
-			return CLProgram.Create (context, nameof (Example), () =>
-				from buffer in Kernel.Buffer<float> ()
-				let i = Kernel.GetGlobalId (0)
-				select new KernelResult<float>
-				{
-					{ i, Noise (new Vec3 (buffer[i])) }
-				}
+			return CLProgram.Create (context, nameof (Example), (Buffer<float> buffer) =>
+				from i in Kernel.GetGlobalId (0).ToKernel ()
+				select new KernelResult<float> { { i, Noise (new Vec3 ((!buffer)[i])) } }
 			);
 		}
 	}

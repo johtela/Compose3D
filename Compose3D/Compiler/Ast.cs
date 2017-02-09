@@ -119,6 +119,30 @@
 			}
 		}
 
+		public class ArrayRef : VariableRef
+		{
+			public readonly Expression Index;
+
+			internal ArrayRef (Variable target, Expression index)
+				: base (target)
+			{
+				Index = index;
+			}
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("{0}[{1}]", Target.Name, Index.Output (parser));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var vref = (VariableRef)base.Transform (transform);
+				var ind = (Expression)Index.Transform (transform);
+				return transform (vref == this && ind == Index ? 
+					this : new ArrayRef (vref.Target, ind));
+			}
+		}
+
 		public class MacroParam : Ast
 		{
 			public readonly Type Type;
@@ -893,6 +917,11 @@
 		public static VariableRef VRef (Variable variable)
 		{
 			return new VariableRef (variable);
+		}
+
+		public static ArrayRef ARef (Variable variable, Expression index)
+		{
+			return new ArrayRef (variable, index);
 		}
 
 		public static MacroParam MPar (Type type)

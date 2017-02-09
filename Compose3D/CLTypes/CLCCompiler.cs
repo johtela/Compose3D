@@ -18,8 +18,8 @@
 			_arguments = arguments;
 		}
 
-		public static string CreateKernel<T> (string name, 
-			Expression<Func<Kernel<T>>> kernel, KernelArguments arguments)
+		public static string CreateKernel (string name,
+			LambdaExpression kernel, KernelArguments arguments)
 		{
 			var compiler = new CLCCompiler (arguments);
 			compiler.OutputKernel (kernel);

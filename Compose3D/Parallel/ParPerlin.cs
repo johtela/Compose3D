@@ -86,9 +86,9 @@
 			return CLProgram.Create (context, nameof (Example), () =>
 				from buffer in Kernel.Buffer<float> ()
 				let i = Kernel.GetGlobalId (0)
-				select new
+				select new KernelResult<float>
 				{
-					result = new KernelResult<float> { { i, Noise (new Vec3 (buffer[i])) } }
+					{ i, Noise (new Vec3 (buffer[i])) }
 				}
 			);
 		}

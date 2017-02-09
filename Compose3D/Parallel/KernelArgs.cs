@@ -29,5 +29,6 @@
 
 	public class Image<T> : KernelArg { }
 
-	public class KernelResult<T> : Params<int, T> { }
+	public class KernelResult<T> : Params<int, T> 
+		where T : struct { }
 }

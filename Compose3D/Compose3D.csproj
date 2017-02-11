@@ -57,6 +57,7 @@
     <Compile Include="CLTypes\ClcParser.cs" />
     <Compile Include="CLTypes\CLContext.cs" />
     <Compile Include="CLTypes\CLError.cs" />
+    <Compile Include="CLTypes\CLKernel.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\CompiledFunction.cs" />
     <Compile Include="Compiler\Control.cs" />
@@ -67,7 +68,6 @@
     <Compile Include="GLTypes\GlslAst.cs" />
     <Compile Include="GLTypes\GlslParser.cs" />
     <Compile Include="Parallel\KernelArgs.cs" />
-    <Compile Include="Parallel\KernelArguments.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="CLTypes\CLTypeHelpers.cs" />

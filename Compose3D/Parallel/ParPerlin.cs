@@ -7,7 +7,7 @@
 	public static class ParPerlin
 	{
 		private static readonly Func<int, int> Permutation =
-			CLProgram.Function (() => Permutation,
+			CLKernel.Function (() => Permutation,
 			(int index) =>
 				(from con in Kernel.Constants (new
 				{
@@ -30,11 +30,11 @@
 				select con.perm[index & 0xff]).Evaluate ());
 
 		private static readonly Func<Vec3, Vec3> Fade =
-			CLProgram.Function (() => Fade,
+			CLKernel.Function (() => Fade,
 				(Vec3 t) => t * t * t * (t * (t * 6f - new Vec3 (15f)) + new Vec3 (10f))	);
 
 		private static readonly Func<int, float, float, float, float> Gradient =
-			CLProgram.Function (() => Gradient,
+			CLKernel.Function (() => Gradient,
 				(int hash, float x, float y, float z) =>
 					(from h in (hash & 15).ToKernel ()
 					 let u = h < 8 ? x : y
@@ -42,7 +42,7 @@
 					 select ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v)).Evaluate ());
 
 		public static readonly Func<Vec3, float> Noise =
-			CLProgram.Function (() => Noise,
+			CLKernel.Function (() => Noise,
 				(Vec3 vec) =>
 					(from cube in vec.Floor ().ToKernel ()
 					 let pt = vec - cube
@@ -81,9 +81,9 @@
 					)
 				.Evaluate ());
 
-		public static CLProgram Example (CLContext context)
+		public static CLKernel<Buffer<float>, float> Example ()
 		{
-			return CLProgram.Create (context, nameof (Example), (Buffer<float> buffer) =>
+			return CLKernel.Create (nameof (Example), (Buffer<float> buffer) =>
 				from i in Kernel.GetGlobalId (0).ToKernel ()
 				select new KernelResult<float> { { i, Noise (new Vec3 ((!buffer)[i])) } }
 			);

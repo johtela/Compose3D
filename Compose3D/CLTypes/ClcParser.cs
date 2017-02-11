@@ -13,14 +13,17 @@
 		private ClcParser () : base (typeof (Kernel), new CLTypeMapping ())
 		{ }
 
-		public static string CreateKernel (string name, LambdaExpression kernel)
+		public static string CompileKernels (params CLKernel[] kernels)
 		{
 			var parser = new ClcParser ();
-			parser._function = ClcAst.Kern (name, 
-				kernel.Parameters.Select (KernelArgument).Append (KernelResult (kernel.Type)),
-				Ast.Blk ());
-			parser.OutputKernel (kernel);
-			return parser.BuildKernelCode (name);
+			foreach (var kernel in kernels)
+			{
+				parser._function = ClcAst.Kern (kernel._name,
+					kernel._expr.Parameters.Select (KernelArgument).Append (KernelResult (kernel._expr.Type)),
+					Ast.Blk ());
+				parser.OutputKernel (kernel._expr);
+			}
+			return parser.BuildKernelCode ();
 		}
 
 		private static ClcAst.KernelArgument KernelArgument (ParameterExpression par)
@@ -45,7 +48,7 @@
 			CreateFunction (new ClcParser (), member, expr);
 		}
 
-		private string BuildKernelCode (string kernelName)
+		private string BuildKernelCode ()
 		{
 			_program.Functions.Add (Macro.InstantiateAllMacros (_function));
 			return _program.Output (this);

@@ -87,7 +87,7 @@
 			public override string Output (LinqParser parser)
 			{
 				var decl = base.Output (parser);
-				return string.Format ("const {0} = {1}", decl, Value.Output (parser));
+				return string.Format ("{0} = {1}", decl, Value.Output (parser));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -397,7 +397,7 @@
 			}
 		}
 
-		public class NewArray : Expression
+		public abstract class NewArray : Expression
 		{
 			public readonly Type ItemType;
 			public readonly int ItemCount;
@@ -410,19 +410,6 @@
 				ItemType = type;
 				ItemCount = count;
 				Items = items.ToArray ();
-			}
-
-			public override string Output (LinqParser parser)
-			{
-				return string.Format ("{0}[{1}] ( {2} )", parser.MapType (ItemType), ItemCount,
-					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
-			}
-
-			public override Ast Transform (Func<Ast, Ast> transform)
-			{
-				var items = Items.Select (i => (Expression)i.Transform (transform));
-				return transform (items.SequenceEqual (Items) ? this :
-					new NewArray (ItemType, ItemCount, items));
 			}
 		}
 
@@ -989,11 +976,6 @@
 		public static ExternalFunctionCall Call (string formatStr, params Expression[] args)
 		{
 			return new ExternalFunctionCall (formatStr, args);
-		}
-
-		public static NewArray Arr (Type type, int count, IEnumerable<Expression> items)
-		{
-			return new NewArray (type, count, items);
 		}
 
 		public static Conditional Cond (Expression condition, Expression ifTrue, Expression ifFalse)

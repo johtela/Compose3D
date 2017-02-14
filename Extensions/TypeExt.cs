@@ -13,5 +13,13 @@
 			var attrs = mi.GetCustomAttributes (typeof (T), true);
 			return attrs == null || attrs.Length == 0 ? null : attrs.Cast<T> ().Single ();
 		}
+
+		public static Type GetGenericArgument (this Type type, params int[] argIndices)
+		{
+			var result = type;
+			for (int i = 0; i < argIndices.Length; i++)
+				result = result.GetGenericArguments ()[argIndices[i]];
+			return result;
+		}
 	}
 }

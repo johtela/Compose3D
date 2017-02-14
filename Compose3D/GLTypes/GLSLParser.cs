@@ -1,14 +1,15 @@
 ﻿namespace Compose3D.GLTypes
 {
-    using OpenTK.Graphics.OpenGL4;
-    using System;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Text.RegularExpressions;
+	using OpenTK.Graphics.OpenGL4;
+	using System;
+	using System.Linq;
+	using System.Linq.Expressions;
+	using System.Reflection;
+	using System.Text.RegularExpressions;
 	using Extensions;
 	using Compiler;
 	using Shaders;
+	using System.Collections.Generic;
 
 	public class GlslParser : LinqParser
     {
@@ -228,6 +229,11 @@
 				_currentScope.DeclareLocal (type, par.Name, Expr (node.Arguments[0]));
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
+		}
+
+		protected override Ast.NewArray ArrayConstant (Type type, int count, IEnumerable<Ast.Expression> items)
+		{
+			return GlslAst.Arr (type, count, items);
 		}
 
 		private void ReturnArrayOfVertices (Expression expr)

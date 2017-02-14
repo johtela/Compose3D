@@ -10,7 +10,7 @@
 	{
 		public enum KernelArgumentKind { Value, Buffer, Image }
 		public enum KernelArgumentAccess { ReadWrite, Read, Write }
-		public enum KernelArgumentMemory { Default, Global, Local }
+		public enum KernelArgumentMemory { Global, Local }
 
 		public class KernelArgument : Ast.Argument
 		{
@@ -71,6 +71,25 @@
 			}
 		}
 
+		public class ClcNewArray : Ast.NewArray
+		{
+			internal ClcNewArray (Type type, int count, IEnumerable<Expression> items)
+				: base (type, count, items) { }
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("{{ {0} }}", 
+					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var items = Items.Select (i => (Expression)i.Transform (transform));
+				return transform (items.SequenceEqual (Items) ? this :
+					new ClcNewArray (ItemType, ItemCount, items));
+			}
+		}
+
 		public class DeclareConstant : Ast.Global
 		{
 			public readonly Constant Definition;
@@ -103,13 +122,18 @@
 		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind)
 		{
 			return new KernelArgument (type, name, kind, KernelArgumentAccess.ReadWrite, 
-				KernelArgumentMemory.Default);
+				KernelArgumentMemory.Global);
 		}
 
 		public static Kernel Kern (string name, IEnumerable<KernelArgument> arguments,
 			Ast.Block body)
 		{
 			return new Kernel (name, arguments, body);
+		}
+
+		public static ClcNewArray Arr (Type type, int count, IEnumerable<Ast.Expression> items)
+		{
+			return new ClcNewArray (type, count, items);
 		}
 
 		public static DeclareConstant DeclConst (Ast.Constant definition)

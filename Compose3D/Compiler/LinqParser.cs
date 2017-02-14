@@ -80,6 +80,8 @@
 
 		protected abstract void OutputFromBinding (ParameterExpression par, MethodCallExpression node);
 
+		protected abstract Ast.NewArray ArrayConstant (Type type, int count, IEnumerable<Ast.Expression> items);
+
 		protected static void CreateFunction (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
 			parser.Function (ConstructFunctionName (member), expr);
@@ -199,7 +201,7 @@
 						ce.Type == typeof (float) ?  "{0:0.0############}f" : "{0}", ce.Value))) 
 				?? 
 				expr.Match<NewArrayExpression, Ast.Expression> (na => 
-					Ast.Arr (na.Type.GetElementType (), na.Expressions.Count,
+					ArrayConstant (na.Type.GetElementType (), na.Expressions.Count,
 						na.Expressions.Select (Expr))) 
 				??
                 expr.Match<ConditionalExpression, Ast.Expression> (ce => 

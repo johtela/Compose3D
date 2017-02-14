@@ -1,6 +1,7 @@
 ﻿namespace Compose3D.CLTypes
 {
     using System;
+	using System.Collections.Generic;
     using System.Linq;
 	using System.Linq.Expressions;
     using System.Reflection;
@@ -18,28 +19,35 @@
 			var parser = new ClcParser ();
 			foreach (var kernel in kernels)
 			{
+				var body = Ast.Blk ();
+				parser.BeginScope (body);
 				parser._function = ClcAst.Kern (kernel._name,
-					kernel._expr.Parameters.Select (KernelArgument).Append (KernelResult (kernel._expr.Type)),
-					Ast.Blk ());
+					kernel._expr.Parameters.Select (parser.KernelArgument)
+						.Append (KernelResult (kernel._expr.ReturnType)),
+					body);
 				parser.OutputKernel (kernel._expr);
 			}
 			return parser.BuildKernelCode ();
 		}
 
-		private static ClcAst.KernelArgument KernelArgument (ParameterExpression par)
+		private ClcAst.KernelArgument KernelArgument (ParameterExpression par)
 		{
 			var typeDef = par.Type.GetGenericTypeDefinition ();
 			var elemType = par.Type.GetGenericArguments ()[0];
-			if (typeDef == typeof (Value<>))
-				return ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Value);
-			if (typeDef == typeof (Buffer<>))
-				return ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Buffer);
-			throw new ArgumentException ("Invalid argument type");
+			var result = typeDef == typeof (Value<>) ? 
+					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Value) :
+				typeDef == typeof (Buffer<>) ?
+					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Buffer) :
+					null;
+			if (result == null)
+				throw new ArgumentException ("Invalid argument type");
+			_currentScope.AddLocal (par.Name, result);
+			return result;
 		}
 
 		private static ClcAst.KernelArgument KernelResult (Type type)
 		{
-			var elemType = type.GetGenericArguments ()[0];
+			var elemType = type.GetGenericArgument (0, 0);
 			return ClcAst.KArg (elemType, "result", ClcAst.KernelArgumentKind.Buffer); 
 		}
 
@@ -147,6 +155,11 @@
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}
 
+		protected override Ast.NewArray ArrayConstant (Type type, int count, IEnumerable<Ast.Expression> items)
+		{
+			return ClcAst.Arr (type, count, items);
+		}
+
 		protected override void OutputReturn (Expression expr)
 		{
 			var lie = expr.Expect<ListInitExpression> (ExpressionType.ListInit);
@@ -161,7 +174,6 @@
 
 		private void OutputKernel (LambdaExpression expr)
 		{
-			BeginScope (_function.Body);
 			var retExpr = ParseLinqExpression (expr.Body);
 			ConditionalReturn (retExpr, Return);
 			EndScope ();

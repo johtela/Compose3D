@@ -69,6 +69,25 @@
 			}
 		}
 
+		public class GlslNewArray : Ast.NewArray
+		{
+			internal GlslNewArray (Type type, int count, IEnumerable<Expression> items)
+				: base (type, count, items) { }
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("{0}[{1}] ( {2} )", parser.MapType (ItemType), ItemCount,
+					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var items = Items.Select (i => (Expression)i.Transform (transform));
+				return transform (items.SequenceEqual (Items) ? this :
+					new GlslNewArray (ItemType, ItemCount, items));
+			}
+		}
+
 		public class DeclareConstant : Ast.Statement
 		{
 			public readonly Constant Definition;
@@ -80,7 +99,7 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return Tabs () + Definition.Output (parser) + ";\n";
+				return Tabs () + "const " + Definition.Output (parser) + ";\n";
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
@@ -105,6 +124,11 @@
 		public static Structure Struct (string name, IEnumerable<Ast.Field> fields)
 		{
 			return new Structure (name, fields);
+		}
+
+		public static GlslNewArray Arr (Type type, int count, IEnumerable<Ast.Expression> items)
+		{
+			return new GlslNewArray (type, count, items);
 		}
 
 		public static DeclareConstant DeclConst (Ast.Constant definition)

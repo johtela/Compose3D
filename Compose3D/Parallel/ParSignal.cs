@@ -10,23 +10,17 @@
 
 	public static class ParSignal
 	{
-		//public static Macro<T, uint> FloatToUintGrayscale<T> (this Macro<T, float> signal)
-		//{
-		//return CLProgram.Function (() => FloatToUintGrayscale (signal),
-		//	(T sample) => (from x in signal (sample).ToKernel ()
-		//				   let c = (uint)(x.Clamp (0f, 1f) * 255f)
-		//				   select c << 24 | c << 16 | c << 8 | 255)
-		//				.Evaluate ());
-		//}
+		public static readonly Macro<Macro<float>, uint> FloatToUintGrayscale =
+			CLKernel.Macro (() => FloatToUintGrayscale,
+				(Macro<float> signal) =>
+					(from x in signal ().ToKernel ()
+					 let c = (uint)(x.Clamp (0f, 1f) * 255f)
+					 select c << 24 | c << 16 | c << 8 | 255)
+				.Evaluate ());
 
-		public static readonly Macro<Macro<int>, int> FooTest =
-			GLShader.Macro (() => FooTest,
-				(Macro<int> func) => func ());
+		public static readonly Func<Vec2i, uint> PerlinBuffer =
+			CLKernel.Function (() => PerlinBuffer,
+				(Vec2i coord) => FloatToUintGrayscale (() => ParPerlin.Noise (new Vec3 (coord.X, coord.Y, 0f))));
 
-		public static void Foo ()
-		{
-			Macro<int> bar = () => 42;
-			FooTest (() => 42);
-		}
 	}
 }

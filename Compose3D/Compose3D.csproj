@@ -59,9 +59,8 @@
     <Compile Include="CLTypes\CLError.cs" />
     <Compile Include="CLTypes\CLKernel.cs" />
     <Compile Include="Compiler\Ast.cs" />
-    <Compile Include="Compiler\CompiledFunction.cs" />
+    <Compile Include="Compiler\Function.cs" />
     <Compile Include="Compiler\Control.cs" />
-    <Compile Include="Compiler\Invocation.cs" />
     <Compile Include="Compiler\LinqParser.cs" />
     <Compile Include="Compiler\Macro.cs" />
     <Compile Include="Compiler\Scopes.cs" />
@@ -72,7 +71,6 @@
     <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="CLTypes\CLTypeHelpers.cs" />
     <Compile Include="Compiler\TypeMapping.cs" />
-    <Compile Include="Compiler\LinqCompiler.cs" />
     <Compile Include="DataStructures\Aabb.cs" />
     <Compile Include="DataStructures\BoundingBoxTree.cs" />
     <Compile Include="DataStructures\IBoundingTree.cs" />
@@ -129,8 +127,6 @@
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GLTypes\GLShader.cs" />
-    <Compile Include="Compiler\Constant.cs" />
-    <Compile Include="Compiler\Function.cs" />
     <Compile Include="Geometry\Quadrilateral.cs" />
     <Compile Include="Geometry\Vertex.cs" />
     <Compile Include="Geometry\ReverseIndices.cs" />

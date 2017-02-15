@@ -2,44 +2,34 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Text;
+	using System.Reflection;
 
-	internal class Function : IEquatable<Function>
+	internal class Function
 	{
-		public readonly string Name;
-		public readonly string Declarations;
-		public readonly string Code;
-		public readonly int[] FuncParams;
-		public readonly List<Invocation> Invocations;
+		public readonly Ast.Program Program;
+		public readonly Ast.Function AstFunction;
+		public readonly HashSet<Type> TypesDefined;
 
-		public Function (string name, string decls, string code, List<Invocation> invocations,
-			params int[] funcParams)
+		private static Dictionary<MemberInfo, Function> _functions =
+			new Dictionary<MemberInfo, Function> ();
+
+		public Function (Ast.Program program, Ast.Function function,
+			HashSet<Type> typesDefined)
 		{
-			Name = name;
-			Declarations = decls;
-			Code = code;
-			FuncParams = funcParams;
-			Invocations = invocations;
+			Program = program;
+			AstFunction = function;
+			TypesDefined = typesDefined;
 		}
 
-		public override bool Equals (object obj)
+		public static void Add (MemberInfo member, Function function)
 		{
-			var other = obj as Function;
-			return other != null && Equals (other);
+			_functions.Add (member, function);
 		}
 
-		public override int GetHashCode ()
+		public static Function Get (MemberInfo member)
 		{
-			return Name.GetHashCode ();
+			Function result;
+			return _functions.TryGetValue (member, out result) ? result : null;
 		}
-
-		#region IEquatable implementation
-
-		public bool Equals (Function other)
-		{
-			return Name.Equals (other.Name);
-		}
-
-		#endregion
 	}
 }

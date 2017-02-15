@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq.Expressions;
 	using Cloo;
+	using Compiler;
 	using Parallel;
 
 	public class CLKernel
@@ -111,6 +112,62 @@
 		{
 			ClcParser.CreateFunction ((member.Body as MemberExpression).Member, func);
 			return func.Compile ();
+		}
+
+		public static Macro<TRes> Macro<TRes> (
+			Expression<Func<Macro<TRes>>> member,
+			Expression<Macro<TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, TRes> Macro<T1, TRes> (
+			Expression<Func<Macro<T1, TRes>>> member,
+			Expression<Macro<T1, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, T2, TRes> Macro<T1, T2, TRes> (
+			Expression<Func<Macro<T1, T2, TRes>>> member,
+			Expression<Macro<T1, T2, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, T2, T3, TRes> Macro<T1, T2, T3, TRes> (
+			Expression<Func<Macro<T1, T2, T3, TRes>>> member,
+			Expression<Macro<T1, T2, T3, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, T2, T3, T4, TRes> Macro<T1, T2, T3, T4, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, TRes>>> member,
+			Expression<Macro<T1, T2, T3, T4, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, T2, T3, T4, T5, TRes> Macro<T1, T2, T3, T4, T5, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, T5, TRes>>> member,
+			Expression<Macro<T1, T2, T3, T4, T5, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
+		}
+
+		public static Macro<T1, T2, T3, T4, T5, T6, TRes> Macro<T1, T2, T3, T4, T5, T6, TRes> (
+			Expression<Func<Macro<T1, T2, T3, T4, T5, T6, TRes>>> member,
+			Expression<Macro<T1, T2, T3, T4, T5, T6, TRes>> macro)
+		{
+			ClcParser.CreateMacro ((member.Body as MemberExpression).Member, macro);
+			return macro.Compile ();
 		}
 	}
 

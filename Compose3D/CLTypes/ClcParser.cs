@@ -56,6 +56,11 @@
 			CreateFunction (new ClcParser (), member, expr);
 		}
 
+		public static void CreateMacro (MemberInfo member, LambdaExpression macro)
+		{
+			CreateMacro (new ClcParser (), member, macro);
+		}
+
 		private string BuildKernelCode ()
 		{
 			_program.Functions.Add (Macro.InstantiateAllMacros (_function));

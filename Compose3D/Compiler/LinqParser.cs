@@ -86,7 +86,7 @@
 		{
 			parser.Function (ConstructFunctionName (member), expr);
 			parser._program.Functions.Add (Macro.InstantiateAllMacros (parser._function));
-			CompiledFunction.Add (member, new CompiledFunction (parser._program, parser._function, 
+			Compiler.Function.Add (member, new Function (parser._program, parser._function, 
 				parser._typesDefined));
 		}
 
@@ -230,10 +230,10 @@
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
 			InitializeStaticMember (member);
-			var fun = CompiledFunction.Get (member);
+			var fun = Compiler.Function.Get (member);
 			if (fun != null)
 			{
-				if (!_program.Functions.Contains (fun.Function))
+				if (!_program.Functions.Contains (fun.AstFunction))
 				{
 					_typesDefined.UnionWith (fun.TypesDefined);
 					foreach (var glob in fun.Program.Globals)
@@ -243,7 +243,7 @@
 						if (!_program.Functions.Contains (func))
 							_program.Functions.Add (func);
 				}
-				return Ast.Call (fun.Function, ie.Arguments.Select (Expr));
+				return Ast.Call (fun.AstFunction, ie.Arguments.Select (Expr));
 			}
 			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
 		}

@@ -109,7 +109,6 @@
     </Compile>
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
-    <Compile Include="CLTypes\CLCCompiler.cs" />
     <Compile Include="Parallel\Kernel.cs" />
     <Compile Include="Parallel\ParPerlin.cs" />
     <Compile Include="Parallel\ParSignal.cs" />
@@ -258,7 +257,6 @@
     <Compile Include="Geometry\VertexManipulator.cs" />
     <Compile Include="Shaders\Shader.cs" />
     <Compile Include="Compiler\ParsingHelpers.cs" />
-    <Compile Include="GLTypes\GLSLCompiler.cs" />
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />
     <Compile Include="Geometry\VertexFilter.cs" />

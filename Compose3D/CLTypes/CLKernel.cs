@@ -18,6 +18,12 @@
 			_expr = expr;
 		}
 
+		protected void CheckIsInitialized ()
+		{
+			if (_comKernel == null)
+				throw new InvalidOperationException ("Kernel is not compiled.");
+		}
+
 		public static CLKernel<TRes> Create<TRes> (string name,
 			Expression<Func<Kernel<KernelResult<TRes>>>> func)
 			where TRes : struct
@@ -177,7 +183,15 @@
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
 
-
+		public void Execute (CLCommandQueue queue, Buffer<TRes> result, params long[] workSizes)
+		{
+			CheckIsInitialized ();
+			result.Initialize (this, 0);
+			var cq = queue._comQueue;
+			cq.Execute (_comKernel, null, workSizes, null, null);
+			cq.ReadFromBuffer (result._comBuffer, ref result._data, true, null);
+			cq.Finish ();
+		}
 	}
 
 	public class CLKernel<T1, TRes> : CLKernel

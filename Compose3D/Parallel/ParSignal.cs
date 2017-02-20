@@ -22,5 +22,15 @@
 			CLKernel.Function (() => PerlinBuffer,
 				(Vec2i coord) => FloatToUintGrayscale (() => ParPerlin.Noise (new Vec3 (coord.X, coord.Y, 0f))));
 
+		public static CLKernel<uint> Example ()
+		{
+			return CLKernel.Create (nameof (Example), () =>
+				from x in Kernel.GetGlobalId (0).ToKernel ()
+				let y = Kernel.GetGlobalId (1)
+				let color = PerlinBuffer (new Vec2i (x, y))
+				let i = Kernel.GetGlobalSize (0) * x + y
+				select new KernelResult<uint> { { i, color } }
+			);
+		}
 	}
 }

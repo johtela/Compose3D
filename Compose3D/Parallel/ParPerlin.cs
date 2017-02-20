@@ -80,13 +80,5 @@
 						 faded.Z)
 					)
 				.Evaluate ());
-
-		public static CLKernel<Buffer<float>, float> Example ()
-		{
-			return CLKernel.Create (nameof (Example), (Buffer<float> buffer) =>
-				from i in Kernel.GetGlobalId (0).ToKernel ()
-				select new KernelResult<float> { { i, Noise (new Vec3 ((!buffer)[i])) } }
-			);
-		}
 	}
 }

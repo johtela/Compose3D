@@ -31,6 +31,11 @@
             _comContext = context;
         }
 
+		public IEnumerable<ComputeDevice> Devices
+		{
+			get { return _comContext.Devices; }
+		}
+
         public static ICollection<ComputeDevice> Cpus
 		{
 			get	{ return _cpus.AsReadOnly (); }

@@ -14,10 +14,11 @@
             { boolT, "bool" },
             { floatT, "float" },
 			{ doubleT, "double " },
-			{ intT, "int" }
+			{ intT, "int" },
+			{ uintT, "uint" }
         };
 
-        private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ()
+		private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ()
         {
             { GetMethod (mathT, "Abs", floatT), "abs ({0})" },
             { GetMethod (mathT, "Abs", intT), "abs ({0})" },

@@ -36,6 +36,12 @@
 			return 0;
 		}
 
+		[CLFunction ("get_global_size ({0})")]
+		public static int GetGlobalSize (int dimension)
+		{
+			return 0;
+		}
+
 		public static Kernel<U> Select<T, U> (this Kernel<T> kernel, Func<T, U> select)
 		{
 			return kernel.Bind (a => select (a).ToKernel ());

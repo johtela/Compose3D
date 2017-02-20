@@ -69,6 +69,14 @@
 					Arguments.Select (v => v.Output (parser)).SeparateWith (", "),
 					Body.Output (parser));
 			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var args = Arguments.Select (a => (KernelArgument)a.Transform (transform));
+				var body = (Block)Body.Transform (transform);
+				return transform (args.SequenceEqual (Arguments) && body == Body ? this :
+					new Kernel (Name, args, body));
+			}
 		}
 
 		public class ClcNewArray : Ast.NewArray

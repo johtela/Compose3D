@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="CLTypes\CLAttributes.cs" />
     <Compile Include="CLTypes\ClcAst.cs" />
+    <Compile Include="CLTypes\CLCommandQueue.cs" />
     <Compile Include="CLTypes\ClcParser.cs" />
     <Compile Include="CLTypes\CLContext.cs" />
     <Compile Include="CLTypes\CLError.cs" />

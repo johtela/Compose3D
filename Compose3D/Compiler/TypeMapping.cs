@@ -11,6 +11,7 @@
 		protected static Type floatT = typeof (float);
 		protected static Type doubleT = typeof (double);
 		protected static Type intT = typeof (int);
+		protected static Type uintT = typeof (uint);
 		protected static Type mathT = typeof (Math);
 
         protected static MethodInfo GetMethod (Type type, string name, params Type[] args)

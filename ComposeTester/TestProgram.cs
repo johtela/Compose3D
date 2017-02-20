@@ -38,7 +38,7 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var kern = ParPerlin.Example ();
+			var kern = ParSignal.Example ();
 			var prog = new CLProgram (context, kern);
 		}
 	}

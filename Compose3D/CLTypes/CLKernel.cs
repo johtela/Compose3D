@@ -176,6 +176,8 @@
 	{
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
+
+
 	}
 
 	public class CLKernel<T1, TRes> : CLKernel

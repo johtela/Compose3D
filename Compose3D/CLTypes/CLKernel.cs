@@ -24,15 +24,24 @@
 				throw new InvalidOperationException ("Kernel is not compiled.");
 		}
 
+		protected void ExecuteSynchronously<TRes> (CLCommandQueue queue, Buffer<TRes> result, long[] workSizes)
+			where TRes : struct
+		{
+			var cq = queue._comQueue;
+			cq.Execute (_comKernel, null, workSizes, null, null);
+			cq.ReadFromBuffer (result._comBuffer, ref result._data, true, null);
+			cq.Finish ();
+		}
+
 		public static CLKernel<TRes> Create<TRes> (string name,
-			Expression<Func<Kernel<KernelResult<TRes>>>> func)
+			Expression<Func<Kernel<BufferResult<TRes>>>> func)
 			where TRes : struct
 		{
 			return new CLKernel<TRes> (name, func);
 		}
 
 		public static CLKernel<T1, TRes> Create<T1, TRes> (string name,
-			Expression<Func<T1, Kernel<KernelResult<TRes>>>> func)
+			Expression<Func<T1, Kernel<BufferResult<TRes>>>> func)
 			where TRes : struct
 			where T1 : KernelArg
 		{
@@ -40,7 +49,7 @@
 		}
 
 		public static CLKernel<T1, T2, TRes> Create<T1, T2, TRes> (string name, 
-			Expression<Func<T1, Kernel<KernelResult<TRes>>>> func)
+			Expression<Func<T1, Kernel<BufferResult<TRes>>>> func)
 			where TRes : struct
 			where T1 : KernelArg
 			where T2 : KernelArg
@@ -49,7 +58,7 @@
 		}
 
 		public static CLKernel<T1, T2, T3, TRes> Create<T1, T2, T3, TRes> (string name, 
-			Expression<Func<T1, T2, T3, Kernel<KernelResult<TRes>>>> func)
+			Expression<Func<T1, T2, T3, Kernel<BufferResult<TRes>>>> func)
 			where TRes : struct
 			where T1 : KernelArg
 			where T2 : KernelArg
@@ -59,7 +68,7 @@
 		}
 
 		public static CLKernel<T1, T2, T3, T4, TRes> Create<T1, T2, T3, T4, TRes> (string name, 
-			Expression<Func<T1, T2, T3, T4, Kernel<KernelResult<TRes>>>> func)
+			Expression<Func<T1, T2, T3, T4, Kernel<BufferResult<TRes>>>> func)
 			where TRes : struct
 			where T1 : KernelArg
 			where T2 : KernelArg
@@ -186,11 +195,8 @@
 		public void Execute (CLCommandQueue queue, Buffer<TRes> result, params long[] workSizes)
 		{
 			CheckIsInitialized ();
-			result.Initialize (this, 0);
-			var cq = queue._comQueue;
-			cq.Execute (_comKernel, null, workSizes, null, null);
-			cq.ReadFromBuffer (result._comBuffer, ref result._data, true, null);
-			cq.Finish ();
+			result.PushToCLKernel (this, 0);
+			ExecuteSynchronously (queue, result, workSizes);
 		}
 	}
 
@@ -200,6 +206,15 @@
 	{
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, Buffer<TRes> result, 
+			params long[] workSizes)
+		{
+			CheckIsInitialized ();
+			arg1.PushToCLKernel (this, 0);
+			result.PushToCLKernel (this, 1);
+			ExecuteSynchronously (queue, result, workSizes);
+		}
 	}
 
 	public class CLKernel<T1, T2, TRes> : CLKernel
@@ -209,6 +224,16 @@
 	{
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, Buffer<TRes> result, 
+			params long[] workSizes)
+		{
+			CheckIsInitialized ();
+			arg1.PushToCLKernel (this, 0);
+			arg2.PushToCLKernel (this, 1);
+			result.PushToCLKernel (this, 2);
+			ExecuteSynchronously (queue, result, workSizes);
+		}
 	}
 
 	public class CLKernel<T1, T2, T3, TRes> : CLKernel
@@ -219,6 +244,17 @@
 	{
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, Buffer<TRes> result,
+			params long[] workSizes)
+		{
+			CheckIsInitialized ();
+			arg1.PushToCLKernel (this, 0);
+			arg2.PushToCLKernel (this, 1);
+			arg3.PushToCLKernel (this, 2);
+			result.PushToCLKernel (this, 3);
+			ExecuteSynchronously (queue, result, workSizes);
+		}
 	}
 
 	public class CLKernel<T1, T2, T3, T4, TRes> : CLKernel
@@ -230,5 +266,17 @@
 	{
 		internal CLKernel (string name, LambdaExpression expr)
 			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, 
+			Buffer<TRes> result, params long[] workSizes)
+		{
+			CheckIsInitialized ();
+			arg1.PushToCLKernel (this, 0);
+			arg2.PushToCLKernel (this, 1);
+			arg3.PushToCLKernel (this, 2);
+			arg4.PushToCLKernel (this, 3);
+			result.PushToCLKernel (this, 4);
+			ExecuteSynchronously (queue, result, workSizes);
+		}
 	}
 }

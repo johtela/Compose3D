@@ -37,7 +37,8 @@
 			var result = typeDef == typeof (Value<>) ? 
 					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Value) :
 				typeDef == typeof (Buffer<>) ?
-					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Buffer) :
+					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Buffer, 
+						ClcAst.KernelArgumentMemory.Global) :
 					null;
 			if (result == null)
 				throw new ArgumentException ("Invalid argument type");
@@ -48,7 +49,8 @@
 		private static ClcAst.KernelArgument KernelResult (Type type)
 		{
 			var elemType = type.GetGenericArgument (0, 0);
-			return ClcAst.KArg (elemType, "result", ClcAst.KernelArgumentKind.Buffer); 
+			return ClcAst.KArg (elemType, "result", ClcAst.KernelArgumentKind.Buffer, 
+				ClcAst.KernelArgumentMemory.Global); 
 		}
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)

@@ -10,7 +10,7 @@
 	{
 		public enum KernelArgumentKind { Value, Buffer, Image }
 		public enum KernelArgumentAccess { ReadWrite, Read, Write }
-		public enum KernelArgumentMemory { Global, Local }
+		public enum KernelArgumentMemory { Default, Global, Local }
 
 		public class KernelArgument : Ast.Argument
 		{
@@ -19,7 +19,7 @@
 			public readonly KernelArgumentMemory Memory;
 
 			internal KernelArgument (Type type, string name, KernelArgumentKind kind,
-				KernelArgumentAccess access, KernelArgumentMemory memory)
+				KernelArgumentMemory memory, KernelArgumentAccess access)
 				: base (type, name, 0)
 			{
 				Kind = kind;
@@ -122,15 +122,21 @@
 		}
 
 		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind,
-			KernelArgumentAccess access, KernelArgumentMemory memory)
+			KernelArgumentMemory memory, KernelArgumentAccess access)
 		{
-			return new KernelArgument (type, name, kind, access, memory);
+			return new KernelArgument (type, name, kind, memory, access);
+		}
+
+		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind,
+			KernelArgumentMemory memory)
+		{
+			return new KernelArgument (type, name, kind, memory, KernelArgumentAccess.ReadWrite);
 		}
 
 		public static KernelArgument KArg (Type type, string name, KernelArgumentKind kind)
 		{
-			return new KernelArgument (type, name, kind, KernelArgumentAccess.ReadWrite, 
-				KernelArgumentMemory.Global);
+			return new KernelArgument (type, name, kind, KernelArgumentMemory.Default, 
+				KernelArgumentAccess.ReadWrite);
 		}
 
 		public static Kernel Kern (string name, IEnumerable<KernelArgument> arguments,

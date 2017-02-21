@@ -20,7 +20,7 @@
 		static void Main (string[] args)
 		{
 			//TestParallel ();
-			var wnd = new FighterWindow ();
+			var wnd = new MaterialWindow ();
 			wnd.Run ();
 			//			Task.Factory.StartNew (() =>
 			//				Tester.RunTestsTimed (
@@ -38,7 +38,7 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var kern = ParSignal.Example ();
+			var kern = ParSignal.Example;
 			var prog = new CLProgram (context, kern);
 		}
 	}

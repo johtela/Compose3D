@@ -10,6 +10,8 @@
 	public abstract class KernelArg
 	{
 		public abstract void PushToCLKernel (CLKernel clKernel, int index);
+
+		public virtual void ReadResult (CLCommandQueue queue) { }
 	}
 
 	public class Value<T> : KernelArg
@@ -62,6 +64,12 @@
 			clKernel._comKernel.SetMemoryArgument (index, _comBuffer);
 		}
 
+		public override void ReadResult (CLCommandQueue queue)
+		{
+			if ((_flags | ComputeMemoryFlags.ReadOnly) == 0)
+				queue._comQueue.ReadFromBuffer (_comBuffer, ref _data, false, null);
+		}
+
 		[CLUnaryOperator ("{0}")]
 		public static T[] operator ! (Buffer<T> buffer)
 		{
@@ -87,13 +95,13 @@
 	{
 		private Assign () {	}
 
-		public Assign Buffer<T> (Buffer<T> buffer, int index, T value)
+		public static Assign Buffer<T> (Buffer<T> buffer, int index, T value)
 			where T : struct
 		{
 			return new Assign ();
 		}
 
-		public Assign Image<T, V> (Image<T> image, V coord, T value)
+		public static Assign Image<T, V> (Image<T> image, V coord, T value)
 			where T : struct
 			where V : struct, IVec<V, int>
 		{

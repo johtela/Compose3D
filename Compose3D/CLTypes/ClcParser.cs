@@ -22,9 +22,7 @@
 				var body = Ast.Blk ();
 				parser.BeginScope (body);
 				parser._function = ClcAst.Kern (kernel._name,
-					kernel._expr.Parameters.Select (parser.KernelArgument)
-						.Append (KernelResult (kernel._expr.ReturnType)),
-					body);
+					kernel._expr.Parameters.Select (parser.KernelArgument), body);
 				parser.OutputKernel (kernel._expr);
 			}
 			return parser.BuildKernelCode ();
@@ -44,13 +42,6 @@
 				throw new ArgumentException ("Invalid argument type");
 			_currentScope.AddLocal (par.Name, result);
 			return result;
-		}
-
-		private static ClcAst.KernelArgument KernelResult (Type type)
-		{
-			var elemType = type.GetGenericArgument (0, 0);
-			return ClcAst.KArg (elemType, "result", ClcAst.KernelArgumentKind.Buffer, 
-				ClcAst.KernelArgumentMemory.Global); 
 		}
 
 		public static void CreateFunction (MemberInfo member, LambdaExpression expr)
@@ -170,12 +161,18 @@
 		protected override void OutputReturn (Expression expr)
 		{
 			var lie = expr.Expect<ListInitExpression> (ExpressionType.ListInit);
-			var bufType = lie.Type.GetGenericArguments ()[0];
 			var res = _function.Arguments.Last ();
 			foreach (var init in lie.Initializers)
 			{
-				var args = init.Arguments;
-				_currentScope.CodeOut (Ast.Ass (Ast.ARef (res, Expr (args[0])), Expr (args[1])));
+				var assign = init.Arguments[0] as MethodCallExpression;
+				var args = assign.Arguments;
+				if (assign.Method.Name == "Buffer")
+				{
+					var buf = _currentScope.FindLocalVar ((args[0] as ParameterExpression).Name);
+					_currentScope.CodeOut (Ast.Ass (Ast.ARef (buf, Expr (args[1])), Expr (args[2])));
+				}
+				else
+					throw new ParseException ("Invalid assign method.");
 			}
 		}
 

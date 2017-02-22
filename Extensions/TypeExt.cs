@@ -14,6 +14,11 @@
 			return attrs == null || attrs.Length == 0 ? null : attrs.Cast<T> ().Single ();
 		}
 
+		public static bool IsInstanceOfGenericType (this object obj, Type type)
+		{
+			return obj.GetType ().GetGenericTypeDefinition () == type;
+		}
+
 		public static Type GetGenericArgument (this Type type, params int[] argIndices)
 		{
 			var result = type;

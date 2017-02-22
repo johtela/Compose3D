@@ -1,11 +1,8 @@
 ﻿namespace Compose3D.CLTypes
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Linq;
 	using System.Linq.Expressions;
 	using Cloo;
-	using Extensions;
 	using Compiler;
 	using Parallel;
 
@@ -27,13 +24,15 @@
 				throw new InvalidOperationException ("Kernel is not compiled.");
 		}
 
-		protected void ExecuteSynchronously (CLCommandQueue queue, IEnumerable<KernelArg> args, 
-			long[] workSizes)
+		protected void ExecuteSynchronously (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
 		{
+			CheckIsInitialized ();
+			for (int i = 0; i < args.Length; i++)
+				args[i].PushToCLKernel (this, i);
 			var cq = queue._comQueue;
 			cq.Execute (_comKernel, null, workSizes, null, null);
-			foreach (var arg in args)
-				arg.ReadResult (queue);
+			for (int i = 0; i < args.Length; i++)
+				args[i].ReadResult (queue);
 			cq.Finish ();
 		}
 
@@ -187,8 +186,6 @@
 
 		public void Execute (CLCommandQueue queue, T1 arg1,	params long[] workSizes)
 		{
-			CheckIsInitialized ();
-			arg1.PushToCLKernel (this, 0);
 			ExecuteSynchronously (queue, new KernelArg[] { arg1 }, workSizes);
 		}
 	}
@@ -202,9 +199,6 @@
 
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, params long[] workSizes)
 		{
-			CheckIsInitialized ();
-			arg1.PushToCLKernel (this, 0);
-			arg2.PushToCLKernel (this, 1);
 			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2 }, workSizes);
 		}
 	}
@@ -220,10 +214,6 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, 
 			params long[] workSizes)
 		{
-			CheckIsInitialized ();
-			arg1.PushToCLKernel (this, 0);
-			arg2.PushToCLKernel (this, 1);
-			arg3.PushToCLKernel (this, 2);
 			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3 }, workSizes);
 		}
 	}
@@ -240,11 +230,6 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, 
 			params long[] workSizes)
 		{
-			CheckIsInitialized ();
-			arg1.PushToCLKernel (this, 0);
-			arg2.PushToCLKernel (this, 1);
-			arg3.PushToCLKernel (this, 2);
-			arg4.PushToCLKernel (this, 3);
 			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
 		}
 	}

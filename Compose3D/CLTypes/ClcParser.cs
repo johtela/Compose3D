@@ -164,12 +164,13 @@
 			var res = _function.Arguments.Last ();
 			foreach (var init in lie.Initializers)
 			{
-				var assign = init.Arguments[0] as MethodCallExpression;
+				var assign = init.Arguments[0].Expect<MethodCallExpression> (ExpressionType.Call);
 				var args = assign.Arguments;
 				if (assign.Method.Name == "Buffer")
 				{
-					var buf = _currentScope.FindLocalVar ((args[0] as ParameterExpression).Name);
-					_currentScope.CodeOut (Ast.Ass (Ast.ARef (buf, Expr (args[1])), Expr (args[2])));
+					var buf = args[0].Expect<ParameterExpression> (ExpressionType.Parameter);
+					var bufVar = _currentScope.FindLocalVar (buf.Name);
+					_currentScope.CodeOut (Ast.Ass (Ast.ARef (bufVar, Expr (args[1])), Expr (args[2])));
 				}
 				else
 					throw new ParseException ("Invalid assign method.");

@@ -88,8 +88,7 @@
 			_normalMap = new Texture (TextureTarget.Texture2D);
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
-			_sceneGraph.Root.Add (_camera, _mesh, 
-				infoWindow, textureWindow);
+			_sceneGraph.Root.Add (_camera, _mesh, infoWindow, textureWindow);
 		}
 
 		private void SetupRendering ()

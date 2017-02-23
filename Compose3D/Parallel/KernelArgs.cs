@@ -1,11 +1,10 @@
 ﻿namespace Compose3D.Parallel
 {
+	using System;
 	using System.Collections.Generic;
 	using CLTypes;
 	using Maths;
-	using Extensions;
 	using Cloo;
-	using System;
 
 	public abstract class KernelArg
 	{
@@ -133,13 +132,4 @@
 			return GetEnumerator ();
 		}
 	}
-
-	public class BufferResult<TRes> : Params<int, TRes>
-		where TRes : struct
-	{ }
-
-	public class ImageResult<TVec, TRes> : Params<TVec, TRes>
-		where TVec: struct, IVec<TVec, int>
-		where TRes : struct
-	{ }
 }

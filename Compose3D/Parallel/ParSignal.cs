@@ -2,38 +2,64 @@
 {
 	using System;
 	using System.Linq;
-	using System.Linq.Expressions;
 	using Compiler;
 	using CLTypes;
-	using GLTypes;
 	using Maths;
+
+	[CLStruct]
+	public struct PerlinArgs
+	{
+		public Vec2 Scale;
+	}
 
 	public static class ParSignal
 	{
-		public static readonly Macro<Macro<float>, uint> FloatToUintGrayscale =
-			CLKernel.Macro (() => FloatToUintGrayscale,
-				(Macro<float> signal) =>
-					(from x in signal ().ToKernel ()
-					 let c = (uint)(x.Clamp (0f, 1f) * 255f)
-					 select c << 24 | c << 16 | c << 8 | 255)
-				.Evaluate ());
+		public static readonly Func<float, uint> FloatToUintGrayscale =
+			CLKernel.Function (() => FloatToUintGrayscale,
+				(float signal) => Kernel.Evaluate
+				(
+					from c in ((uint)(signal.Clamp (0f, 1f) * 255f)).ToKernel ()
+					select c << 24 | c << 16 | c << 8 | 255
+				)
+			);
 
-		public static readonly Func<Vec2i, Vec2i, uint> PerlinBuffer =
-			CLKernel.Function (() => PerlinBuffer,
-				(Vec2i coord, Vec2i size) => 
-				FloatToUintGrayscale (() => 
-					ParPerlin.Noise (new Vec3 (coord.X, coord.Y, 0f) / new Vec3 (size.X, size.Y, 0f))));
+		public static readonly Func<Vec2, PerlinArgs, float> Perlin =
+			CLKernel.Function (() => Perlin,
+				(Vec2 pos, PerlinArgs args) => Kernel.Evaluate 
+				(
+					from scaled in (pos * args.Scale).ToKernel ()
+					select ParPerlin.Noise (new Vec3 (scaled, 0f))
+				)
+			);
 
-		public static CLKernel<Value<Vec2i>, Buffer<uint>> Example =
+		public static readonly Func<Vec2i, Vec2> Pos2DToNormalRange =
+			CLKernel.Function (() => Pos2DToNormalRange,
+				(Vec2i size) => Kernel.Evaluate
+				(
+					from x in Kernel.GetGlobalId (0).ToKernel ()
+					let y = Kernel.GetGlobalId (1)
+					select new Vec2 (x / Kernel.GetGlobalSize (0), y / Kernel.GetGlobalSize (1))
+				)
+			);
+
+		public static readonly Func<int> Pos2DToIndex =
+			CLKernel.Function (() => Pos2DToIndex,
+				() => Kernel.Evaluate
+				(
+					from x in Kernel.GetGlobalId (0).ToKernel ()
+					let y = Kernel.GetGlobalId (1)
+					select Kernel.GetGlobalSize (0) * x + y
+				)
+			);
+
+		public static CLKernel<Value<Vec2i>, Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 
-				(Value<Vec2i> size, Buffer<uint> result) =>
-				from x in Kernel.GetGlobalId (0).ToKernel ()
-				let y = Kernel.GetGlobalId (1)
-				let color = PerlinBuffer (new Vec2i (x, y), !size)
-				let i = Kernel.GetGlobalSize (0) * x + y
+				(Value<Vec2i> size, Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
+				from pos in Pos2DToNormalRange (!size).ToKernel ()
+				let perlin = Perlin (pos, !perlinArgs)
 				select new KernelResult
 				{
-					Assign.Buffer (result, i, color)
+					Assign.Buffer (result, Pos2DToIndex (), FloatToUintGrayscale (perlin))
 				}
 			);
 	}

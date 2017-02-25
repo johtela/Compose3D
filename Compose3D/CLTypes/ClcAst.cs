@@ -79,6 +79,26 @@
 			}
 		}
 
+		public class Structure : Ast.Structure
+		{
+			public Structure (string name, IEnumerable<Field> fields)
+				: base (name, fields) { }
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("typedef struct tag_{0}\n{{\n{1}\n}} {0};", Name,
+					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))
+					.SeparateWith ("\n"));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var fields = Fields.Select (f => (Field)f.Transform (transform));
+				return transform (fields.SequenceEqual (Fields) ? this :
+					new ClcAst.Structure (Name, fields));
+			}
+		}
+
 		public class ClcNewArray : Ast.NewArray
 		{
 			internal ClcNewArray (Type type, int count, IEnumerable<Expression> items)
@@ -143,6 +163,11 @@
 			Ast.Block body)
 		{
 			return new Kernel (name, arguments, body);
+		}
+
+		public static Structure Struct (string name, IEnumerable<Ast.Field> fields)
+		{
+			return new Structure (name, fields);
 		}
 
 		public static ClcNewArray Arr (Type type, int count, IEnumerable<Ast.Expression> items)

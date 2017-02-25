@@ -56,6 +56,6 @@
     [AttributeUsage (AttributeTargets.Struct)]
     public class CLStruct : CLAttribute
     {
-        public CLStruct (string syntax) : base (syntax) { }
+        public CLStruct () : base (null) { }
     }
 }

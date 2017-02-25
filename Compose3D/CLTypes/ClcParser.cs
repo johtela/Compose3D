@@ -82,24 +82,23 @@
 			return string.Format ("({0}){{0}}", MapType (type));
 		}
 
-		//protected override string MapType (Type type)
-		//{
-		//	if (type.IsGLStruct ())
-		//		OutputStruct (type);
-		//	return base.MapType (type);
-		//}
+		protected internal override string MapType (Type type)
+		{
+			if (type.IsCLStruct ())
+			{
+				DefineStruct (type);
+				return type.Name;
+			}
+			return base.MapType (type);
+		}
 
-		//private void OutputStruct (Type structType)
-		//{
-		//	if (!DefineType (structType)) return;
-		//	foreach (var field in structType.GetGLFields ())
-		//		if (field.FieldType.IsGLStruct ())
-		//			OutputStruct (field.FieldType);
-		//	DeclOut ("struct {0}\n{{", structType.Name);
-		//	foreach (var field in structType.GetGLFields ())
-		//		DeclareVariable (field, field.FieldType, "    ");
-		//	DeclOut ("};");
-		//}
+		private void DefineStruct (Type structType)
+		{
+			if (!DefineType (structType)) return;
+			AddGlobal (ClcAst.Struct (structType.Name,
+				from field in structType.GetCLFields ()
+				select Ast.Fld (field.FieldType, field.Name)));
+		}
 
 		private void DeclareConstants (Expression expr)
 		{

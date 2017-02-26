@@ -32,8 +32,8 @@
 				)
 			);
 
-		public static readonly Func<Vec2> Pos2DToNormalRange =
-			CLKernel.Function (() => Pos2DToNormalRange,
+		public static readonly Func<Vec2> Pos2DToZeroOne =
+			CLKernel.Function (() => Pos2DToZeroOne,
 				() => Kernel.Evaluate
 				(
 					from x in ((float)Kernel.GetGlobalId (0)).ToKernel ()
@@ -59,7 +59,7 @@
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 
 				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
-				from pos in Pos2DToNormalRange ().ToKernel ()
+				from pos in Pos2DToZeroOne ().ToKernel ()
 				let perlin = NormalRangeToZeroOne (Perlin (pos, !perlinArgs))
 				select new KernelResult
 				{

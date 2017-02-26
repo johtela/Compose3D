@@ -76,7 +76,7 @@
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs ()
 			{
-				Scale = new Vec2 (10f, 10f)
+				Scale = new Vec2 (5f)
 			};
 			ParSignal.Example.Execute (queue, KernelArg.Value (perlinArgs),
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);

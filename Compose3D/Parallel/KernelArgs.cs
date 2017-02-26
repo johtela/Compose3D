@@ -11,6 +11,18 @@
 		public abstract void PushToCLKernel (CLKernel clKernel, int index);
 
 		public virtual void ReadResult (CLCommandQueue queue) { }
+
+		public static Value<T> Value<T> (T data)
+			where T : struct
+		{
+			return new Value<T> (data); 
+		}
+
+		public static Buffer<T> Buffer<T> (T[] data, ComputeMemoryFlags flags)
+			where T : struct
+		{
+			return new Buffer<T> (data, flags);
+		}
 	}
 
 	public class Value<T> : KernelArg
@@ -65,7 +77,7 @@
 
 		public override void ReadResult (CLCommandQueue queue)
 		{
-			if ((_flags | ComputeMemoryFlags.ReadOnly) == 0)
+			if ((_flags & ComputeMemoryFlags.ReadOnly) == 0)
 				queue._comQueue.ReadFromBuffer (_comBuffer, ref _data, false, null);
 		}
 

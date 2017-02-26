@@ -1,5 +1,6 @@
 ﻿namespace ComposeTester
 {
+	using System.Linq;
 	using Extensions;
 	using Compose3D.Maths;
 	using Compose3D.Imaging;
@@ -15,6 +16,8 @@
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
+	using Cloo;
+	using Compose3D.CLTypes;
 	using Compose3D.Parallel;
 
 	public class MaterialWindow : GameWindow
@@ -63,6 +66,24 @@
 				_signalTexture, size, _updater, normal, signal);
 		}
 
+		private void CreateSignalTexture ()
+		{
+			var device = CLContext.Gpus.First ();
+			var context = CLContext.CreateContextForDevices (device);
+			var prog = new CLProgram (context, ParSignal.Example);
+			var queue = new CLCommandQueue (context);
+			var size = new Vec2i (256);
+			var buffer = new uint[size.X * size.Y];
+			var perlinArgs = new PerlinArgs ()
+			{
+				Scale = new Vec2 (10f, 10f)
+			};
+			ParSignal.Example.Execute (queue, KernelArg.Value (perlinArgs),
+				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
+				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
+		}
+
 		private void CreateSceneGraph ()
 		{
 			_sceneGraph = new SceneGraph ();
@@ -79,8 +100,9 @@
 			rect.UpdateTangents (BeginMode.Triangles);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
-			var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
-				new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
+			CreateSignalTexture ();
+			//var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
+			//	new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 
@@ -88,7 +110,7 @@
 			_normalMap = new Texture (TextureTarget.Texture2D);
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
-			_sceneGraph.Root.Add (_camera, _mesh, infoWindow, textureWindow);
+			_sceneGraph.Root.Add (_camera, _mesh, /* infoWindow, */ textureWindow);
 		}
 
 		private void SetupRendering ()
@@ -96,7 +118,7 @@
 			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture)
 				.MapInput ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
-				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
+				//.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
 				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 

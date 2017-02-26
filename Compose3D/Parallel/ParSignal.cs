@@ -32,12 +32,12 @@
 				)
 			);
 
-		public static readonly Func<Vec2i, Vec2> Pos2DToNormalRange =
+		public static readonly Func<Vec2> Pos2DToNormalRange =
 			CLKernel.Function (() => Pos2DToNormalRange,
-				(Vec2i size) => Kernel.Evaluate
+				() => Kernel.Evaluate
 				(
-					from x in Kernel.GetGlobalId (0).ToKernel ()
-					let y = Kernel.GetGlobalId (1)
+					from x in ((float)Kernel.GetGlobalId (0)).ToKernel ()
+					let y = (float)Kernel.GetGlobalId (1)
 					select new Vec2 (x / Kernel.GetGlobalSize (0), y / Kernel.GetGlobalSize (1))
 				)
 			);
@@ -52,11 +52,15 @@
 				)
 			);
 
-		public static CLKernel<Value<Vec2i>, Value<PerlinArgs>, Buffer<uint>> Example =
+		public static readonly Func<float, float> NormalRangeToZeroOne =
+			CLKernel.Function (() => NormalRangeToZeroOne,
+				(float value) => value * 0.5f + 0.5f);
+
+		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 
-				(Value<Vec2i> size, Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
-				from pos in Pos2DToNormalRange (!size).ToKernel ()
-				let perlin = Perlin (pos, !perlinArgs)
+				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
+				from pos in Pos2DToNormalRange ().ToKernel ()
+				let perlin = NormalRangeToZeroOne (Perlin (pos, !perlinArgs))
 				select new KernelResult
 				{
 					Assign.Buffer (result, Pos2DToIndex (), FloatToUintGrayscale (perlin))

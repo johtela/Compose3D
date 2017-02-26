@@ -475,7 +475,7 @@
 		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("floor ({0})")]
-		[CLFunction ("floor ({0})")]
+		[CLFunction ("convert_int3_rtn ({0})")]
 		public static U Floor<V, U> (this V vec)
 			where V : struct, IVec<V, float>
 			where U : struct, IVec<U, int>
@@ -732,7 +732,7 @@
 		}
 
 		[GLFunction ("mod ({0})")]
-		[CLFunction ("mod ({0})")]
+		[CLFunction ("fmod ({0})")]
 		public static V Mod<V> (this V vec, float modulo)
 			where V : struct, IVec<V, float>
 		{
@@ -740,7 +740,7 @@
 		}
 
 		[GLFunction ("mod ({0})")]
-		[CLFunction ("mod ({0})")]
+		[CLFunction ("fmod ({0})")]
 		public static V Mod<V> (this V vec, V modulo)
 			where V : struct, IVec<V, float>
 		{

@@ -86,7 +86,7 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("typedef struct tag_{0}\n{{\n{1}\n}} {0};", Name,
+				return string.Format ("typedef struct __attribute__ ((packed)) tag_{0}\n{{\n{1}\n}} {0};", Name,
 					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))
 					.SeparateWith ("\n"));
 			}

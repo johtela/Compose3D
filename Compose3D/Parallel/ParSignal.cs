@@ -1,15 +1,16 @@
 ﻿namespace Compose3D.Parallel
 {
 	using System;
-	using System.Linq;
-	using Compiler;
+	using System.Runtime.InteropServices;
 	using CLTypes;
 	using Maths;
 
 	[CLStruct]
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct PerlinArgs
 	{
 		public Vec2 Scale;
+		public int Periodic;
 	}
 
 	public static class ParSignal
@@ -25,10 +26,12 @@
 
 		public static readonly Func<Vec2, PerlinArgs, float> Perlin =
 			CLKernel.Function (() => Perlin,
-				(Vec2 pos, PerlinArgs args) => Kernel.Evaluate 
+				(Vec2 pos, PerlinArgs args) => Kernel.Evaluate
 				(
 					from scaled in (pos * args.Scale).ToKernel ()
-					select ParPerlin.Noise (new Vec3 (scaled, 0f))
+					select args.Periodic == 0 ?
+						ParPerlin.Noise (new Vec3 (scaled, 0f)) :
+						ParPerlin.PeriodicNoise (new Vec3 (scaled, 0f), new Vec3 (args.Scale, 256f))
 				)
 			);
 

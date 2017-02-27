@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Runtime.InteropServices;
+	using Compiler;
 	using CLTypes;
 	using Maths;
 
@@ -58,6 +59,12 @@
 		public static readonly Func<float, float> NormalRangeToZeroOne =
 			CLKernel.Function (() => NormalRangeToZeroOne,
 				(float value) => value * 0.5f + 0.5f);
+
+		public static readonly Macro<Macro<float, float>, float, float, float> Dfdx =
+			CLKernel.Macro (() => Dfdx,
+				(Macro<float, float> signal, float x, float dx) =>
+					(signal (x + dx) - signal (x)) / dx
+			);
 
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 

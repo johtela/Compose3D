@@ -95,8 +95,8 @@
 					from cube in vec.Floor ().ToKernel ()
 					let pt = vec - cube
 					let faded = Fade (pt)
-					let iv = cube.Mod (period).Floor<Vec3, Vec3i> ()
-					let jv = (cube + new Vec3 (1f)).Mod (period).Floor<Vec3, Vec3i> ()
+					let iv = cube.Mod (period).Floor ().ToVeci ()
+					let jv = (cube + new Vec3 (1f)).Mod (period).Floor ().ToVeci ()
 					let A = Permutation (iv.X)
 					let AA = Permutation (A + iv.Y)
 					let AB = Permutation (A + jv.Y)

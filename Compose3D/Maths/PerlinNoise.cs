@@ -115,8 +115,8 @@
 			var cube = vec.Floor ();
 			var pt = vec - cube;
 			var faded = Fade (pt);
-			var iv = cube.Mod (period).Floor<Vec3, Vec3i> ();
-			var jv = (cube + new Vec3 (1f)).Mod (period).Floor<Vec3, Vec3i> ();
+			var iv = cube.Mod (period).Floor ().ToVeci ();
+			var jv = (cube + new Vec3 (1f)).Mod (period).Floor ().ToVeci ();
 			int A = Permutation (iv.X),
 				AA = Permutation (A + iv.Y),
 				AB = Permutation (A + jv.Y),

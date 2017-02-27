@@ -472,18 +472,6 @@
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
-		/// </summary>
-		[GLFunction ("floor ({0})")]
-		[CLFunction ("convert_int3_rtn ({0})")]
-		public static U Floor<V, U> (this V vec)
-			where V : struct, IVec<V, float>
-			where U : struct, IVec<U, int>
-		{
-			return vec.Map<V, U, float, int> (x => (int)GLMath.Floor (x));
-		}
-
-		/// <summary>
 		/// Applies the <see cref="GLMath.Ceiling(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("ceil ({0})")]

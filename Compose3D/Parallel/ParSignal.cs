@@ -14,6 +14,12 @@
 		public int Periodic;
 	}
 
+	public struct Vec2ToArray
+	{
+		public Vec2 Vec;
+		public float[] Array;
+	}
+
 	public static class ParSignal
 	{
 		public static readonly Func<float, uint> FloatToUintGrayscale =
@@ -64,6 +70,16 @@
 			CLKernel.Macro (() => Dfdx,
 				(Macro<float, float> signal, float x, float dx) =>
 					(signal (x + dx) - signal (x)) / dx
+			);
+
+		public static readonly Func<Vec2, int, float, Vec2> SetVec2Component =
+			CLKernel.Function (() => SetVec2Component,
+				(Vec2 vec, int index, float value) => Kernel.Evaluate
+				(
+					from ta in new Vec2ToArray { Vec = vec }.ToKernel ()
+					let res = Array<float>.Change (ta.Array, index, value)
+					select ta.Vec
+				)
 			);
 
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =

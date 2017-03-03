@@ -59,6 +59,7 @@
     <Compile Include="CLTypes\CLContext.cs" />
     <Compile Include="CLTypes\CLError.cs" />
     <Compile Include="CLTypes\CLKernel.cs" />
+    <Compile Include="Compiler\Array.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\Function.cs" />
     <Compile Include="Compiler\Control.cs" />

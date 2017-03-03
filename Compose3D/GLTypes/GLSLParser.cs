@@ -236,6 +236,12 @@
 			return GlslAst.Arr (type, count, items);
 		}
 
+		protected override Ast.InitStruct InitStructure (Type type,
+			IEnumerable<Tuple<Ast.VariableRef, Ast.Expression>> initFields)
+		{
+			return GlslAst.InitS (type, initFields);
+		}
+
 		private void ReturnArrayOfVertices (Expression expr)
 		{
 			var nai = expr.Expect<NewArrayExpression> (ExpressionType.NewArrayInit);

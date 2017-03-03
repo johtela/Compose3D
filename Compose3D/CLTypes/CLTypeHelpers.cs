@@ -45,11 +45,20 @@
         }
 
 		/// <summary>
+		/// Check whether a type contains the [CLUnion] attribute and thus is 
+		/// outputted to GLSL.
+		/// </summary>
+		public static bool IsCLUnion (this Type type)
+		{
+			return type.IsDefined (typeof (CLUnion), true);
+		}
+
+		/// <summary>
 		/// Enumerate all the fields of a struct type that are used in GLSL. This
 		/// includes all the public instance fields and excludes private and
 		/// static ones.
 		/// </summary>
-        public static IEnumerable<FieldInfo> GetCLFields (this Type type)
+		public static IEnumerable<FieldInfo> GetCLFields (this Type type)
         {
             return type.GetFields (_bindingFlags);
         }

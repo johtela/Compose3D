@@ -14,6 +14,8 @@
 		public int Periodic;
 	}
 
+	[CLUnion]
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct Vec2ToArray
 	{
 		public Vec2 Vec;
@@ -28,6 +30,17 @@
 				(
 					from c in ((uint)(signal.Clamp (0f, 1f) * 255f)).ToKernel ()
 					select c << 24 | c << 16 | c << 8 | 255
+				)
+			);
+
+		public static readonly Func<Vec3, uint> Vec3ToUintColor =
+			CLKernel.Function (() => Vec3ToUintColor,
+				(Vec3 vec) => Kernel.Evaluate
+				(
+					from h in 255f.ToKernel ()
+					select (uint)(vec.X.Clamp (0f, 1f) * h) << 24 |
+						(uint)(vec.Y.Clamp (0f, 1f) * h) << 16 |
+						(uint)(vec.Z.Clamp (0f, 1f) * h) << 8 | 255
 				)
 			);
 
@@ -52,6 +65,10 @@
 				)
 			);
 
+		public static readonly Func<Vec2> Dv =
+			CLKernel.Function (() => Dv,
+				() => new Vec2 (1f / Kernel.GetGlobalSize (0), 1f / Kernel.GetGlobalSize (1)));
+
 		public static readonly Func<int> Pos2DToIndex =
 			CLKernel.Function (() => Pos2DToIndex,
 				() => Kernel.Evaluate
@@ -72,8 +89,8 @@
 					(signal (x + dx) - signal (x)) / dx
 			);
 
-		public static readonly Func<Vec2, int, float, Vec2> SetVec2Component =
-			CLKernel.Function (() => SetVec2Component,
+		public static readonly Func<Vec2, int, float, Vec2> Vec2With =
+			CLKernel.Function (() => Vec2With,
 				(Vec2 vec, int index, float value) => Kernel.Evaluate
 				(
 					from ta in new Vec2ToArray { Vec = vec }.ToKernel ()
@@ -81,6 +98,20 @@
 					select ta.Vec
 				)
 			);
+
+		//public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
+		//	CLKernel.Macro (() => Dfdv2,
+		//		(Macro<Vec2, float> signal, Vec2 dv, Vec2 vec) => Kernel.Evaluate
+		//		(
+		//			from value in signal (vec).ToKernel ()
+		//			let dva = new Vec2ToArray () { Vec = dv }.Array
+		//			let result = Control<Vec2>.For (0, 2, new Vec2 (0f),
+		//				(int i, Vec2 v) =>
+		//					Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dva[i])))
+		//			)
+		//			select result / dv
+		//		) 
+		//	);
 
 		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
 			CLKernel.Macro (() => Dfdv2,
@@ -90,17 +121,29 @@
 					select new Vec2 (
 						signal (v + new Vec2 (dv.X, 0f)) - value,
 						signal (v + new Vec2 (0f, dv.Y)) - value) / dv
-				) 
+				)
+			);
+
+		public static readonly Macro<Macro<Vec2, float>, float, Vec2, Vec3> NormalMap =
+			CLKernel.Macro (() => NormalMap,
+				(Macro<Vec2, float> signal, float strength, Vec2 vec) => Kernel.Evaluate
+				(
+					from dv in Dv ().ToKernel ()
+					let v = Dfdv2 (signal, dv, vec)
+					let scale = dv * strength
+					let n = new Vec3 (v * scale, 1f).Normalized
+					select n * 0.5f + new Vec3 (0.5f)
+				)
 			);
 
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 
 				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
 				from pos in Pos2DToZeroOne ().ToKernel ()
-				let perlin = NormalRangeToZeroOne (Perlin (pos, !perlinArgs))
+				let col = NormalMap (v => Perlin (v, !perlinArgs), 1f, pos)
 				select new KernelResult
 				{
-					Assign.Buffer (result, Pos2DToIndex (), FloatToUintGrayscale (perlin))
+					Assign.Buffer (result, Pos2DToIndex (), Vec3ToUintColor (col))
 				}
 			);
 	}

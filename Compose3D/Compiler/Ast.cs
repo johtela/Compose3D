@@ -413,6 +413,18 @@
 			}
 		}
 
+		public abstract class InitStruct : Expression
+		{
+			public readonly Type StructType;
+			public readonly Tuple<VariableRef, Expression>[] InitFields;
+
+			internal InitStruct (Type structType, IEnumerable<Tuple<VariableRef, Expression>> initFields)
+			{
+				StructType = structType;
+				InitFields = initFields.ToArray ();
+			}
+		}
+
 		public class Conditional : Expression
 		{
 			public readonly Expression Condition;

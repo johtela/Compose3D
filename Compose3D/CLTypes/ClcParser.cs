@@ -69,9 +69,11 @@
 			if (syntax != null)
 				return Ast.Call (syntax, Expr (me.Expression));
 			var declType = me.Expression.Type;
-			if (declType.IsCLStruct ())
+			if (declType.IsCLStruct ()  || declType.IsCLUnion ())
 			{
-				var field = Ast.Fld (me.Type, me.Member.Name);
+				MapType (declType);
+				var astruct = (Ast.Structure)_globals[declType.Name];
+				var field = astruct.Fields.Find (f => f.Name == me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
 			return base.MapMemberAccess (me);
@@ -84,7 +86,7 @@
 
 		protected internal override string MapType (Type type)
 		{
-			if (type.IsCLStruct ())
+			if (type.IsCLStruct () || type.IsCLUnion ())
 			{
 				DefineStruct (type);
 				return type.Name;
@@ -155,6 +157,12 @@
 		protected override Ast.NewArray ArrayConstant (Type type, int count, IEnumerable<Ast.Expression> items)
 		{
 			return ClcAst.Arr (type, count, items);
+		}
+
+		protected override Ast.InitStruct InitStructure (Type type,
+			IEnumerable<Tuple<Ast.VariableRef, Ast.Expression>> initFields)
+		{
+			return ClcAst.InitS (type, initFields);
 		}
 
 		protected override void OutputReturn (Expression expr)

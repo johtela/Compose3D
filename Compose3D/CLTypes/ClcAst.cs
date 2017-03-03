@@ -81,12 +81,16 @@
 
 		public class Structure : Ast.Structure
 		{
-			public Structure (string name, IEnumerable<Field> fields)
+			public readonly bool IsUnion;
+
+			public Structure (string name, IEnumerable<Field> fields, bool isUnion)
 				: base (name, fields) { }
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("typedef struct __attribute__ ((packed)) tag_{0}\n{{\n{1}\n}} {0};", Name,
+				return string.Format ("typedef {0} __attribute__ ((packed)) tag_{1}\n{{\n{2}\n}} {1};", 
+					IsUnion ? "union" : "struct",
+					Name,
 					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))
 					.SeparateWith ("\n"));
 			}
@@ -95,7 +99,7 @@
 			{
 				var fields = Fields.Select (f => (Field)f.Transform (transform));
 				return transform (fields.SequenceEqual (Fields) ? this :
-					new ClcAst.Structure (Name, fields));
+					new ClcAst.Structure (Name, fields, IsUnion));
 			}
 		}
 
@@ -115,6 +119,28 @@
 				var items = Items.Select (i => (Expression)i.Transform (transform));
 				return transform (items.SequenceEqual (Items) ? this :
 					new ClcNewArray (ItemType, ItemCount, items));
+			}
+		}
+
+		public class ClcInitStruct : Ast.InitStruct
+		{
+			internal ClcInitStruct (Type structType, IEnumerable<Tuple<VariableRef, Expression>> initFields)
+				: base (structType, initFields) { }
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("{{ {0} }}", InitFields.Select (t => 
+					string.Format ("{0} = {1}", t.Item1.Output (parser), t.Item2.Output (parser))
+					.SeparateWith (",\n\t")));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var ifs = InitFields.Select (t => Tuple.Create (
+					(VariableRef)t.Item2.Transform (transform),  
+					(Expression)t.Item2.Transform (transform)));
+				return transform (ifs.SequenceEqual (InitFields) ? this :
+					new ClcInitStruct (StructType, ifs));
 			}
 		}
 
@@ -167,12 +193,23 @@
 
 		public static Structure Struct (string name, IEnumerable<Ast.Field> fields)
 		{
-			return new Structure (name, fields);
+			return new Structure (name, fields, false);
+		}
+
+		public static Structure Union (string name, IEnumerable<Ast.Field> fields)
+		{
+			return new Structure (name, fields, true);
 		}
 
 		public static ClcNewArray Arr (Type type, int count, IEnumerable<Ast.Expression> items)
 		{
 			return new ClcNewArray (type, count, items);
+		}
+
+		public static ClcInitStruct InitS (Type structType, 
+			IEnumerable<Tuple<Ast.VariableRef, Ast.Expression>> initFields)
+		{
+			return new ClcInitStruct (structType, initFields);
 		}
 
 		public static DeclareConstant DeclConst (Ast.Constant definition)

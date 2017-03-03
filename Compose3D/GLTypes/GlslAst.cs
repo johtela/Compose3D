@@ -88,6 +88,27 @@
 			}
 		}
 
+		public class GlslInitStruct : Ast.InitStruct
+		{
+			internal GlslInitStruct (Type structType, IEnumerable<Tuple<VariableRef, Expression>> initFields)
+				: base (structType, initFields) { }
+
+			public override string Output (LinqParser parser)
+			{
+				return string.Format ("{0} ({1})", InitFields.Select (t => t.Item2.Output (parser))
+					.SeparateWith (", "));
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var ifs = InitFields.Select (t => Tuple.Create (
+					(VariableRef)t.Item2.Transform (transform),
+					(Expression)t.Item2.Transform (transform)));
+				return transform (ifs.SequenceEqual (InitFields) ? this :
+					new GlslInitStruct (StructType, ifs));
+			}
+		}
+
 		public class DeclareConstant : Ast.Statement
 		{
 			public readonly Constant Definition;
@@ -129,6 +150,12 @@
 		public static GlslNewArray Arr (Type type, int count, IEnumerable<Ast.Expression> items)
 		{
 			return new GlslNewArray (type, count, items);
+		}
+
+		public static GlslInitStruct InitS (Type structType,
+			IEnumerable<Tuple<Ast.VariableRef, Ast.Expression>> initFields)
+		{
+			return new GlslInitStruct (structType, initFields);
 		}
 
 		public static DeclareConstant DeclConst (Ast.Constant definition)

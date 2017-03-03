@@ -82,6 +82,9 @@
 
 		protected abstract Ast.NewArray ArrayConstant (Type type, int count, IEnumerable<Ast.Expression> items);
 
+		protected abstract Ast.InitStruct InitStructure (Type type, 
+			IEnumerable<Tuple<Ast.VariableRef, Ast.Expression>> initFields);
+
 		protected static void CreateFunction (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
 			parser.Function (ConstructFunctionName (member), expr);
@@ -177,13 +180,13 @@
 							return Ast.FRef (Expr (mc.Object),
 								Ast.Fld (mc.Arguments.Select (a => Expr (a).Output (this)).SeparateWith ("")));
 						var syntax = _typeMapping.Indexer (mc.Method);
-						return syntax == null || mc.Arguments.Count != 1 ? 
+						return syntax == null || mc.Arguments.Count != 1 ?
 							null :
 							Ast.Op (syntax, Expr (mc.Object), Expr (mc.Arguments[0]));
 					}
 					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
 					return Ast.Call (MapFunction (mc.Method), args.Select (Expr));
-                }) ??
+				}) ??
 				expr.Match<InvocationExpression, Ast.Expression> (ie =>
 				{
 					var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
@@ -191,10 +194,11 @@
 						return FunctionCall (ie, me.Member);
 					throw new ParseException ("Function call is allowed only for static members.");
 				}) ??
-                expr.Match<MemberExpression, Ast.Expression> (MapMemberAccess)
-                ??
-                expr.Match<NewExpression, Ast.Expression> (ne =>
-					Ast.Call (MapConstructor (ne.Constructor), ne.Arguments.Select (Expr)))
+				expr.Match<MemberExpression, Ast.Expression> (MapMemberAccess)
+				??
+				expr.Match<NewExpression, Ast.Expression> (ne =>
+					ne.Constructor == null ? null :
+						Ast.Call (MapConstructor (ne.Constructor), ne.Arguments.Select (Expr)))
                 ??
                 expr.Match<ConstantExpression, Ast.Expression> (ce => 
 					Ast.Lit (string.Format (CultureInfo.InvariantCulture, 
@@ -221,6 +225,16 @@
 					throw new ParseException ("Reference to undefined local variable: " + pe.Name);
 				}) 
 				?? 
+				expr.Match<MemberInitExpression, Ast.Expression> (mi =>
+				{
+					MapType (mi.Type);
+					var astruct = (Ast.Structure)_globals[mi.Type.Name];
+					var fieldInits = from b in mi.Bindings.Cast<MemberAssignment> ()
+									 let field = astruct.Fields.Find (f => f.Name == b.Member.Name)
+									 select Tuple.Create (Ast.VRef (field), Expr (b.Expression));
+					return InitStructure (mi.Type, fieldInits);
+				})
+				??
 				null;
             if (result == null)
                 throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
@@ -335,8 +349,10 @@
 				throw new ParseException ("Macro parameter referenced outside macro scope.");
 			var mpar = mscope.FindMacroParam (pe);
 			if (mpar == null)
-				throw new ParseException ("Macro parameter not in scope. " +
-					"You can only refer to the parameters of the enclosing macro.");
+				throw new ParseException (string.Format (
+					"Macro parameter '{0}' not in scope.\n" +
+					"You can only refer to the parameters of the enclosing macro.",
+					pe.Name));
 			return (Ast.MacroDefParam)mpar;
 		}
 
@@ -345,7 +361,7 @@
 			if (expr is LambdaExpression)
 				return ParseMacro (expr as LambdaExpression);
 			if (expr is ParameterExpression && expr.Type.IsMacroType ())
-				return Ast.MPRef (MacroDefParam (expr as ParameterExpression));
+				return MacroDefParam (expr as ParameterExpression);
 			else
 				return Expr (expr);
 		}

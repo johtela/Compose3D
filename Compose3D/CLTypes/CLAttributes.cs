@@ -58,4 +58,10 @@
     {
         public CLStruct () : base (null) { }
     }
+
+	[AttributeUsage (AttributeTargets.Struct)]
+	public class CLUnion : CLAttribute
+	{
+		public CLUnion () : base (null) { }
+	}
 }

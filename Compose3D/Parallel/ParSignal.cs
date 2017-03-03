@@ -62,8 +62,19 @@
 
 		public static readonly Macro<Macro<float, float>, float, float, float> Dfdx =
 			CLKernel.Macro (() => Dfdx,
-				(Macro<float, float> signal, float x, float dx) =>
+				(Macro<float, float> signal, float dx, float x) =>
 					(signal (x + dx) - signal (x)) / dx
+			);
+
+		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
+			CLKernel.Macro (() => Dfdv2,
+				(Macro<Vec2, float> signal, Vec2 dv, Vec2 v) => Kernel.Evaluate
+				(
+					from value in signal (v).ToKernel ()
+					select new Vec2 (
+						signal (v + new Vec2 (dv.X, 0f)) - value,
+						signal (v + new Vec2 (0f, dv.Y)) - value) / dv
+				) 
 			);
 
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =

@@ -114,7 +114,7 @@
 			public override string Output (LinqParser parser)
 			{
 				return string.Format ("{{ {0} }}", 
-					Items.Select (e => e.Output (parser)).SeparateWith (",\n\t"));
+					Items.Select (e => e.Output (parser)).SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)

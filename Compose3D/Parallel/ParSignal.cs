@@ -99,30 +99,30 @@
 				)
 			);
 
-		//public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
-		//	CLKernel.Macro (() => Dfdv2,
-		//		(Macro<Vec2, float> signal, Vec2 dv, Vec2 vec) => Kernel.Evaluate
-		//		(
-		//			from value in signal (vec).ToKernel ()
-		//			let dva = new Vec2ToArray () { Vec = dv }.Array
-		//			let result = Control<Vec2>.For (0, 2, new Vec2 (0f),
-		//				(int i, Vec2 v) =>
-		//					Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dva[i])))
-		//			)
-		//			select result / dv
-		//		) 
-		//	);
-
 		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
 			CLKernel.Macro (() => Dfdv2,
-				(Macro<Vec2, float> signal, Vec2 dv, Vec2 v) => Kernel.Evaluate
+				(Macro<Vec2, float> signal, Vec2 dv, Vec2 vec) => Kernel.Evaluate
 				(
-					from value in signal (v).ToKernel ()
-					select new Vec2 (
-						signal (v + new Vec2 (dv.X, 0f)) - value,
-						signal (v + new Vec2 (0f, dv.Y)) - value) / dv
+					from value in signal (vec).ToKernel ()
+					let dva = new Vec2ToArray () { Vec = dv }.Array
+					let result = Control<Vec2>.For (0, 2, new Vec2 (0f),
+						(int i, Vec2 v) =>
+							Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dva[i])))
+					)
+					select result / dv
 				)
 			);
+
+		//public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
+		//	CLKernel.Macro (() => Dfdv2,
+		//		(Macro<Vec2, float> signal, Vec2 dv, Vec2 v) => Kernel.Evaluate
+		//		(
+		//			from value in signal (v).ToKernel ()
+		//			select new Vec2 (
+		//				signal (v + new Vec2 (dv.X, 0f)) - value,
+		//				signal (v + new Vec2 (0f, dv.Y)) - value) / dv
+		//		)
+		//	);
 
 		public static readonly Macro<Macro<Vec2, float>, float, Vec2, Vec3> NormalMap =
 			CLKernel.Macro (() => NormalMap,
@@ -140,7 +140,7 @@
 			CLKernel.Create (nameof (Example), 
 				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
 				from pos in Pos2DToZeroOne ().ToKernel ()
-				let col = NormalMap (v => Perlin (v, !perlinArgs), 1f, pos)
+				let col = NormalMap (v => Perlin (v, !perlinArgs), 10f, pos)
 				select new KernelResult
 				{
 					Assign.Buffer (result, Pos2DToIndex (), Vec3ToUintColor (col))

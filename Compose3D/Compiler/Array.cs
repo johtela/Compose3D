@@ -4,7 +4,7 @@
 	{
 		private static Ast.Macro ChangeMacro ()
 		{
-			var def = typeof (Macro<T[], int, T, T[]>).GetMacroDefinition ();
+			var def = Macro.GetMacroDefinition (typeof (Macro<T[], int, T, T[]>));
 			var arr = Ast.MPRef (def.Parameters[0]);
 			var ind = Ast.MPRef (def.Parameters[1]);
 			var val = Ast.MPRef (def.Parameters[2]);

@@ -95,12 +95,13 @@
 
 		protected static void CreateMacro (LinqParser parser, MemberInfo member, LambdaExpression expr)
 		{
-			Macro.Add (member, parser.ParseMacro (expr));
+			var macro = parser.ParseMacro (expr);
+			Macro.Add (member, new Macro (macro, parser._program, parser._typesDefined));
 		}
 
 		protected Ast.Macro ParseMacro (LambdaExpression expr)
 		{
-			var def = expr.Type.GetMacroDefinition ();
+			var def = Macro.GetMacroDefinition (expr.Type);
 			var parameters = expr.Parameters.Zip (def.Parameters, (p, mp) =>
 				new KeyValuePair<ParameterExpression, Ast.MacroParam> (p, mp));
 			var block = Ast.Blk ();
@@ -241,6 +242,19 @@
             return result;
         }
 
+		private void AddExternalReferences (Ast.Program program, HashSet<Type> typesDefined)
+		{
+			if (typesDefined == null || program == null)
+				return;
+			_typesDefined.UnionWith (typesDefined);
+			foreach (var glob in program.Globals)
+				if (!_globals.ContainsKey (glob.Name))
+					AddGlobal (glob);
+			foreach (var func in program.Functions)
+				if (!_program.Functions.Contains (func))
+					_program.Functions.Add (func);
+		}
+
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
 			InitializeStaticMember (member);
@@ -248,15 +262,7 @@
 			if (fun != null)
 			{
 				if (!_program.Functions.Contains (fun.AstFunction))
-				{
-					_typesDefined.UnionWith (fun.TypesDefined);
-					foreach (var glob in fun.Program.Globals)
-						if (!_globals.ContainsKey (glob.Name))
-							AddGlobal (glob);
-					foreach (var func in fun.Program.Functions)
-						if (!_program.Functions.Contains (func))
-							_program.Functions.Add (func);
-				}
+					AddExternalReferences (fun.Program, fun.TypesDefined);
 				return Ast.Call (fun.AstFunction, ie.Arguments.Select (Expr));
 			}
 			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
@@ -326,15 +332,18 @@
 			if (me != null)
 			{
 				InitializeStaticMember (me.Member);
-				if (!me.Type.IsMacroType () || (macro = Macro.Get (me.Member)) == null)
+				var mac = Macro.Get (me.Member);
+				if (!Macro.IsMacroType (me.Type) || mac == null)
 					return ie;
+				AddExternalReferences (mac.Program, mac.TypesDefined);
+				macro = mac.AstMacro;
 			}
 			else
 			{
 				var pe = ie.Expression.CastExpr<ParameterExpression> (ExpressionType.Parameter);
-				if (pe == null || !pe.Type.IsMacroType ())
+				if (pe == null || !Macro.IsMacroType (pe.Type))
 					return ie;
-				macro = MacroDefParam (pe).Definition;
+				macro = MacroDefParam (pe);
 			}
 			var res = Macro.GenUniqueVar (macro.Result.Type, "res");
 			_currentScope.DeclareLocal (res, null);
@@ -342,25 +351,24 @@
 			return Expression.Parameter (ie.Type, res.Name);
 		}
 
-		private Ast.MacroDefParam MacroDefParam (ParameterExpression pe)
+		private Ast.MacroDefinition MacroDefParam (ParameterExpression pe)
 		{
 			var mscope = _currentScope.GetSurroundingMacroScope ();
-			if (mscope == null)
-				throw new ParseException ("Macro parameter referenced outside macro scope.");
-			var mpar = mscope.FindMacroParam (pe);
-			if (mpar == null)
-				throw new ParseException (string.Format (
-					"Macro parameter '{0}' not in scope.\n" +
-					"You can only refer to the parameters of the enclosing macro.",
-					pe.Name));
-			return (Ast.MacroDefParam)mpar;
+			while (mscope != null)
+			{
+				var mpar = mscope.FindMacroParam (pe);
+				if (mpar != null)
+					return ((Ast.MacroDefParam)mpar).Definition;
+				mscope = mscope.Parent.GetSurroundingMacroScope ();
+			}
+			throw new ParseException (string.Format ("Macro parameter '{0}' not in scope.", pe.Name));
 		}
 
 		protected Ast MacroParam (Expression expr)
 		{
 			if (expr is LambdaExpression)
 				return ParseMacro (expr as LambdaExpression);
-			if (expr is ParameterExpression && expr.Type.IsMacroType ())
+			if (expr is ParameterExpression && Macro.IsMacroType (expr.Type))
 				return MacroDefParam (expr as ParameterExpression);
 			else
 				return Expr (expr);

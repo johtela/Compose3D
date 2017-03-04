@@ -266,6 +266,14 @@
 			{
 				return base.Output (parser) + "\n" + Implementation.Output (parser);
 			}
+
+			//public override Ast Transform (Func<Ast, Ast> transform)
+			//{
+			//	var def = (MacroDefinition)base.Transform (transform);
+			//	var impl = (Block)Implementation.Transform (transform);
+			//	return def == this && impl == Implementation ? this :
+			//		new Macro (def.Parameters, def.Result, impl);
+			//}
 		}
 
 		public class FieldRef : Expression

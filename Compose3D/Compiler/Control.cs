@@ -4,7 +4,7 @@
 	{
 		private static Ast.Macro ForStepMacro ()
 		{
-			var def = typeof (Macro<int, int, int, T, Macro<int, T, T>, T>).GetMacroDefinition ();
+			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, int, T, Macro<int, T, T>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
 			var init = Ast.MPRef (def.Parameters[0]);
 			var cond = Ast.Op ("{0} != {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1]));
@@ -18,7 +18,7 @@
 
 		private static Ast.Macro ForMacro ()
 		{
-			var def = typeof (Macro<int, int, T, Macro<int, T, T>, T>).GetMacroDefinition ();
+			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
 			var init = Ast.MPRef (def.Parameters[0]);
 			var cond = Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1]));
@@ -32,7 +32,7 @@
 
 		private static Ast.Macro IfMacro ()
 		{
-			var def = typeof (Macro<bool, Macro<T>, Macro<T>, T>).GetMacroDefinition ();
+			var def = Macro.GetMacroDefinition (typeof (Macro<bool, Macro<T>, Macro<T>, T>));
 			var cond = Ast.MPRef (def.Parameters[0]);
 			var thenm = (def.Parameters[1] as Ast.MacroDefParam).Definition;
 			var elsem = (def.Parameters[2] as Ast.MacroDefParam).Definition;

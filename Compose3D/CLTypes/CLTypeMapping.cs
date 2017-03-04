@@ -108,7 +108,7 @@
 
 		public override string Indexer (MethodInfo method)
 		{
-			return null;
+			return string.Format ("(({0}*)&{{0}})[{{1}}]", Type (method.ReturnType));
 		}
 	}
 }

@@ -52,7 +52,7 @@
 		public class Structure : Ast.Structure
 		{
 			public Structure (string name, IEnumerable<Field> fields)
-				: base (name,fields) { }
+				: base (name, fields) { }
 
 			public override string Output (LinqParser parser)
 			{

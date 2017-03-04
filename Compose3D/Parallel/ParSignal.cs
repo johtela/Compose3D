@@ -14,14 +14,6 @@
 		public int Periodic;
 	}
 
-	[CLUnion]
-	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct Vec2ToArray
-	{
-		public Vec2 Vec;
-		public float[] Array;
-	}
-
 	public static class ParSignal
 	{
 		public static readonly Func<float, uint> FloatToUintGrayscale =
@@ -91,23 +83,18 @@
 
 		public static readonly Func<Vec2, int, float, Vec2> Vec2With =
 			CLKernel.Function (() => Vec2With,
-				(Vec2 vec, int index, float value) => Kernel.Evaluate
-				(
-					from ta in new Vec2ToArray { Vec = vec }.ToKernel ()
-					let res = Array<float>.Change (ta.Array, index, value)
-					select ta.Vec
-				)
-			);
+				(Vec2 vec, int index, float value) => 
+					index == 0 ? new Vec2 (value, vec.Y) :
+						new Vec2 (vec.X, value));
 
 		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> Dfdv2 =
 			CLKernel.Macro (() => Dfdv2,
 				(Macro<Vec2, float> signal, Vec2 dv, Vec2 vec) => Kernel.Evaluate
 				(
 					from value in signal (vec).ToKernel ()
-					let dva = new Vec2ToArray () { Vec = dv }.Array
 					let result = Control<Vec2>.For (0, 2, new Vec2 (0f),
 						(int i, Vec2 v) =>
-							Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dva[i])))
+							Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dv[i])) - value)
 					)
 					select result / dv
 				)
@@ -140,7 +127,8 @@
 			CLKernel.Create (nameof (Example), 
 				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
 				from pos in Pos2DToZeroOne ().ToKernel ()
-				let col = NormalMap (v => Perlin (v, !perlinArgs), 10f, pos)
+				let col = NormalMap (v => Perlin (v, !perlinArgs), 1f, pos)
+				//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
 				select new KernelResult
 				{
 					Assign.Buffer (result, Pos2DToIndex (), Vec3ToUintColor (col))

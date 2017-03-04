@@ -121,17 +121,8 @@
 			if (!DefineType (structType)) return;
 			AddGlobal (GlslAst.Struct (structType.Name,
 				from field in structType.GetGLFields ()
-				select Ast.Fld (field.FieldType, field.Name)));
-		}
-
-		private static int GetArrayLen (MemberInfo member, ref Type memberType)
-		{
-			if (memberType.IsArray)
-			{
-				memberType = memberType.GetElementType ();
-				return member.ExpectFixedArrayAttribute ().Length;
-			}
-			return 0;
+				let fi = GetArrayLen (field, field.FieldType)
+				select Ast.Fld (fi.Item1, field.Name, fi.Item2)));
 		}
 
 		private void DeclareUniforms (Type type)
@@ -139,11 +130,10 @@
 			if (!DefineType (type)) return;
 			foreach (var field in type.GetUniforms ())
 			{
-				var uniType = field.FieldType.GetGenericArguments ().Single ();
-				var arrayLen = GetArrayLen (field, ref uniType);
-				if (uniType.GetGLAttribute () is GLStruct)
-					DefineStruct (uniType);
-				var unif = GlslAst.Unif (uniType, field.Name, arrayLen);
+				var ai = GetArrayLen (field, field.FieldType.GetGenericArguments ().Single ());
+				if (ai.Item1.GetGLAttribute () is GLStruct)
+					DefineStruct (ai.Item1);
+				var unif = GlslAst.Unif (ai.Item1, field.Name, ai.Item2);
 				AddGlobal (unif);
 				_globalVars.Add (field.Name, unif.Definition);
 			}
@@ -153,9 +143,9 @@
         {
             if (!member.Name.StartsWith ("<>"))
             {
-				var arrayLen = GetArrayLen (member, ref memberType);
+				var ai = GetArrayLen (member, memberType);
 				var qualifiers = member.GetQualifiers ();
-				var vary = GlslAst.Vary (kind, qualifiers, memberType, member.Name, arrayLen);
+				var vary = GlslAst.Vary (kind, qualifiers, ai.Item1, member.Name, ai.Item2);
 				if (!(member.IsBuiltin () || member.IsDefined (typeof (OmitInGlslAttribute), true)))
 					AddGlobal (vary);
 				_globalVars.Add (member.Name, vary.Definition);

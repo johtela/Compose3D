@@ -88,18 +88,22 @@
 		{
 			if (type.IsCLStruct () || type.IsCLUnion ())
 			{
-				DefineStruct (type);
+				DefineStruct (type, type.IsCLUnion ());
 				return type.Name;
 			}
 			return base.MapType (type);
 		}
 
-		private void DefineStruct (Type structType)
+		private void DefineStruct (Type structType, bool isUnion)
 		{
 			if (!DefineType (structType)) return;
-			AddGlobal (ClcAst.Struct (structType.Name,
-				from field in structType.GetCLFields ()
-				select Ast.Fld (field.FieldType, field.Name)));
+			var name = structType.Name;
+			var fields = from field in structType.GetCLFields ()
+						 let fi = GetArrayLen (field, field.FieldType)
+						 select Ast.Fld (fi.Item1, field.Name, fi.Item2);
+			AddGlobal (isUnion ?
+				ClcAst.Union (name, fields) :
+				ClcAst.Struct (name, fields));
 		}
 
 		private void DeclareConstants (Expression expr)

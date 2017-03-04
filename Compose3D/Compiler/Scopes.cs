@@ -49,12 +49,19 @@
 			return null;
 		}
 
-		public MacroScope GetSurroundingMacroScope ()
+		public Ast.MacroParam FindMacroParam (ParameterExpression parameter)
 		{
-			if (this is MacroScope)
-				return this as MacroScope;
-			if (Parent != null)
-				return Parent.GetSurroundingMacroScope ();
+			var mscope = this;
+			while (mscope != null)
+			{
+				if (mscope is MacroScope)
+				{
+					Ast.MacroParam result;
+					if ((mscope as MacroScope).MacroParams.TryGetValue (parameter, out result))
+						return result;
+				}
+				mscope = mscope.Parent;
+			}
 			return null;
 		}
 
@@ -86,12 +93,6 @@
 			IEnumerable<KeyValuePair<ParameterExpression, Ast.MacroParam>> macroParams)
 		{
 			return new MacroScope (parent, block, macroParams);
-		}
-
-		public Ast.MacroParam FindMacroParam (ParameterExpression parameter)
-		{
-			Ast.MacroParam result;
-			return MacroParams.TryGetValue (parameter, out result) ? result : null;
 		}
 	}
 }

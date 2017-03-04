@@ -217,12 +217,9 @@
 					var local = _currentScope.FindLocalVar (pe.Name);
 					if (local != null)
 						return Ast.VRef (local);
-					if (_currentScope is MacroScope)
-					{
-						var mpar = (_currentScope as MacroScope).FindMacroParam (pe);
-						if (mpar != null)
-							return Ast.MPRef (mpar);
-					}
+					var mpar = _currentScope.FindMacroParam (pe);
+					if (mpar != null)
+						return Ast.MPRef (mpar);
 					throw new ParseException ("Reference to undefined local variable: " + pe.Name);
 				}) 
 				?? 
@@ -273,6 +270,13 @@
 			var foo = member is FieldInfo ?
 				(member as FieldInfo).GetValue (null) :
 				(member as PropertyInfo).GetValue (null);
+		}
+
+		protected static Tuple<Type, int> GetArrayLen (MemberInfo member, Type memberType)
+		{
+			return memberType.IsArray ?
+				Tuple.Create (memberType.GetElementType (), member.ExpectFixedArrayAttribute ().Length) :
+				Tuple.Create (memberType, 0);
 		}
 
 		protected MethodCallExpression CastFromBinding (Expression expr)
@@ -353,15 +357,10 @@
 
 		private Ast.MacroDefinition MacroDefParam (ParameterExpression pe)
 		{
-			var mscope = _currentScope.GetSurroundingMacroScope ();
-			while (mscope != null)
-			{
-				var mpar = mscope.FindMacroParam (pe);
-				if (mpar != null)
-					return ((Ast.MacroDefParam)mpar).Definition;
-				mscope = mscope.Parent.GetSurroundingMacroScope ();
-			}
-			throw new ParseException (string.Format ("Macro parameter '{0}' not in scope.", pe.Name));
+			var mpar = _currentScope.FindMacroParam (pe);
+			if (mpar == null)
+				throw new ParseException (string.Format ("Macro parameter '{0}' not in scope.", pe.Name));
+			return ((Ast.MacroDefParam)mpar).Definition;
 		}
 
 		protected Ast MacroParam (Expression expr)

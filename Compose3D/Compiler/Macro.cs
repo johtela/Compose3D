@@ -97,7 +97,7 @@
 		public static bool IsMacroType (Type type)
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition ().In (
-				typeof (Macro<>), typeof (Macro<,>), typeof (Macro<,,>), typeof (Macro<,,,>), 
+				typeof (Macro<>), typeof (Macro<,>), typeof (Macro<,,>), typeof (Macro<,,,>),
 				typeof (Macro<,,,,>), typeof (Macro<,,,,,>), typeof (Macro<,,,,,,>));
 		}
 
@@ -132,35 +132,42 @@
 			}
 		}
 
-		internal static Ast.Block InstantiateMacro (Ast.MacroCall call)
+		private static Ast.Block InstantiateMacro (Ast.MacroCall call)
 		{
 			var macro = call.Target as Ast.Macro;
 			if (macro == null)
 				throw new InvalidOperationException ("Trying to instantiate macro definition.");
 			if (call.Parameters.Any (mp => mp.GetType () == typeof (Ast.MacroDefinition)))
 				throw new InvalidOperationException ("Uninstantiated macro parameter in macro call.");
-			return (Ast.Block)macro.Implementation.Transform (node =>
+			return (Ast.Block)macro.Implementation.Transform (node => ReplaceMacroParams (call, node));
+		}
+
+		private static Ast ReplaceMacroParams (Ast.MacroCall call, Ast node)
+		{
+			var macro = call.Target;
+			if (node is Ast.MacroDefinition)
 			{
-				if (node is Ast.MacroDefinition)
+				if (node is Ast.Macro)
 				{
-					if (node is Ast.Macro)
-						return node;
-					var macroDef = node as Ast.MacroDefinition;
-					var i = macro.GetMacroDefParamIndex (macroDef);
-					if (i >= 0)
-						return call.Parameters[i];
+					var innerMacro = node as Ast.Macro;
+					return Ast.Mac (innerMacro.Parameters, innerMacro.Result,
+						(Ast.Block)innerMacro.Implementation.Transform (n => ReplaceMacroParams (call, n)));
 				}
-				if (node is Ast.MacroParamRef)
-				{
-					var mp = node as Ast.MacroParamRef;
-					var i = macro.GetParamRefIndex (mp);
-					if (i >= 0)
-						return call.Parameters[i];
-				}
-				if (node is Ast.MacroResultVar && node == macro.Result)
-					return call.ResultVar;
-				return node;
-			});
+				var macroDef = node as Ast.MacroDefinition;
+				var i = macro.GetMacroDefParamIndex (macroDef);
+				if (i >= 0)
+					return call.Parameters[i];
+			}
+			if (node is Ast.MacroParamRef)
+			{
+				var mp = node as Ast.MacroParamRef;
+				var i = macro.GetParamRefIndex (mp);
+				if (i >= 0)
+					return call.Parameters[i];
+			}
+			if (node is Ast.MacroResultVar && node == macro.Result)
+				return call.ResultVar;
+			return node;
 		}
 	}
 }

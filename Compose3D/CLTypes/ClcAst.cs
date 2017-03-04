@@ -84,11 +84,14 @@
 			public readonly bool IsUnion;
 
 			public Structure (string name, IEnumerable<Field> fields, bool isUnion)
-				: base (name, fields) { }
+				: base (name, fields)
+			{
+				IsUnion = isUnion;
+			}
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("typedef {0} __attribute__ ((packed)) tag_{1}\n{{\n{2}\n}} {1};", 
+				return string.Format ("typedef {0} __attribute__ ((packed)) tag_{1}\n{{\n{2}\n}} {1};\n", 
 					IsUnion ? "union" : "struct",
 					Name,
 					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))
@@ -129,15 +132,15 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("{{ {0} }}", InitFields.Select (t => 
-					string.Format ("{0} = {1}", t.Item1.Output (parser), t.Item2.Output (parser))
-					.SeparateWith (",\n\t")));
+				return "{" + InitFields.Select (t => 
+					string.Format (".{0} = {1}", t.Item1.Output (parser), t.Item2.Output (parser)))
+					.SeparateWith (",\n\t") + "}";
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)
 			{
 				var ifs = InitFields.Select (t => Tuple.Create (
-					(VariableRef)t.Item2.Transform (transform),  
+					(VariableRef)t.Item1.Transform (transform),  
 					(Expression)t.Item2.Transform (transform)));
 				return transform (ifs.SequenceEqual (InitFields) ? this :
 					new ClcInitStruct (StructType, ifs));

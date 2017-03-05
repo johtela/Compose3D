@@ -254,7 +254,7 @@
 
 		private Ast.FunctionCall FunctionCall (InvocationExpression ie, MemberInfo member)
 		{
-			InitializeStaticMember (member);
+			InitializeFunction (member);
 			var fun = Compiler.Function.Get (member);
 			if (fun != null)
 			{
@@ -263,6 +263,18 @@
 				return Ast.Call (fun.AstFunction, ie.Arguments.Select (Expr));
 			}
 			throw new ParseException ("Undefined function: " + ConstructFunctionName (member));
+		}
+
+		private static void InitializeFunction (MemberInfo member)
+		{
+			if (!Compiler.Function.IsDefined (member))
+				InitializeStaticMember (member);
+		}
+
+		private static void InitializeMacro (MemberInfo member)
+		{
+			if (!Macro.IsDefined (member))
+				InitializeStaticMember (member);
 		}
 
 		private static void InitializeStaticMember (MemberInfo member)
@@ -344,7 +356,7 @@
 			var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
 			if (me != null)
 			{
-				InitializeStaticMember (me.Member);
+				InitializeMacro (me.Member);
 				var mac = Macro.Get (me.Member);
 				if (!Macro.IsMacroType (me.Type) || mac == null)
 					return ie;

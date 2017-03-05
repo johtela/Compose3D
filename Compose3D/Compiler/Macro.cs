@@ -45,6 +45,11 @@
 			return _macros.TryGetValue (member, out result) ? result : null;
 		}
 
+		internal static bool IsDefined (MemberInfo member)
+		{
+			return _macros.ContainsKey (member);
+		}
+
 		public static Macro<TRes> Create<TRes> (Expression<Func<Macro<TRes>>> member,
 			Ast.Macro macro)
 		{

@@ -31,5 +31,10 @@
 			Function result;
 			return _functions.TryGetValue (member, out result) ? result : null;
 		}
+
+		public static bool IsDefined (MemberInfo member)
+		{
+			return _functions.ContainsKey (member);
+		}
 	}
 }

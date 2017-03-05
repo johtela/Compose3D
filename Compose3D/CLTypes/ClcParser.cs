@@ -153,7 +153,7 @@
 			if (node.Method.Name == "Constants")
 				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToKernel")
-				_currentScope.DeclareLocal (type, par.Name, Expr (ExtractMacros (node.Arguments[0])));
+				OutputMacroExpandedLocalVar (type, par.Name, node.Arguments[0]);
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}

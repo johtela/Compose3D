@@ -323,13 +323,22 @@
 				{
 					var expr = ne.Arguments[i];
 					if (prop.Name != expr.ToString ())
-						_currentScope.DeclareLocal (prop.PropertyType, prop.Name, Expr (ExtractMacros (expr)));
+						OutputMacroExpandedLocalVar (prop.PropertyType, prop.Name, expr);
 				}
             }
             return true;
         }
 
-		protected Expression ExtractMacro (InvocationExpression ie)
+		protected void OutputMacroExpandedLocalVar (Type type, string name, Expression expr)
+		{
+			var local = Ast.Var (type, name);
+			var expanded = ExtractMacros (expr, local);
+			if (_currentScope.FindLocalVar (local.Name) == null)
+				_currentScope.DeclareLocal (local, Expr (expanded));
+		}
+
+		protected Expression ExtractMacro (InvocationExpression ie, Expression rootExpression,
+			Ast.Variable resultVar)
 		{
 			Ast.MacroDefinition macro = null;
 			var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
@@ -349,10 +358,11 @@
 					return ie;
 				macro = MacroDefParam (pe);
 			}
-			var res = Macro.GenUniqueVar (macro.Result.Type, "res");
-			_currentScope.DeclareLocal (res, null);
-			_currentScope.CodeOut (Ast.MCall (macro, res, ie.Arguments.Select (MacroParam)));
-			return Expression.Parameter (ie.Type, res.Name);
+			if (ie != rootExpression || resultVar == null)
+				resultVar = Macro.GenUniqueVar (macro.Result.Type, "res");
+			_currentScope.DeclareLocal (resultVar, null);
+			_currentScope.CodeOut (Ast.MCall (macro, resultVar, ie.Arguments.Select (MacroParam)));
+			return Expression.Parameter (ie.Type, resultVar.Name);
 		}
 
 		private Ast.MacroDefinition MacroDefParam (ParameterExpression pe)
@@ -373,9 +383,10 @@
 				return Expr (expr);
 		}
 
-		protected Expression ExtractMacros (Expression expr)
+		protected Expression ExtractMacros (Expression expr, Ast.Variable returnVar)
 		{
-			return expr.ReplaceSubExpression<InvocationExpression> (ExpressionType.Invoke, ExtractMacro);
+			return expr.ReplaceSubExpression<InvocationExpression> (ExpressionType.Invoke, 
+				e => ExtractMacro (e, expr, returnVar));
 		}
 
 		protected bool Where (Source source)
@@ -391,7 +402,7 @@
 
         protected void Return (Expression expr)
         {
-			OutputReturn (ExtractMacros (expr));
+			OutputReturn (ExtractMacros (expr, null));
         }
 
 		protected virtual void OutputReturn (Expression expr)
@@ -466,7 +477,7 @@
 			_currentScope.CodeOut (Ast.Ret (Expr (ExtractMacros (
 				node != null && node.Method.IsEvaluate (_linqType) ? 
 					ParseLinqExpression (node.Arguments [0]) : 
-					expr))));
+					expr, null))));
 		}
 
 		protected void MacroBody (Ast.MacroDefinition definition, Expression expr)
@@ -476,7 +487,7 @@
 				Expr (ExtractMacros (
 					node != null && node.Method.IsEvaluate (_linqType) ?
 						ParseLinqExpression (node.Arguments[0]) :
-						expr))));
+						expr, null))));
 		}
 	}
 }

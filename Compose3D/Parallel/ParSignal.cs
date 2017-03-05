@@ -47,8 +47,8 @@
 				)
 			);
 
-		public static readonly Func<Vec2> Pos2DToZeroOne =
-			CLKernel.Function (() => Pos2DToZeroOne,
+		public static readonly Func<Vec2> Pos2DTo0_1 =
+			CLKernel.Function (() => Pos2DTo0_1,
 				() => Kernel.Evaluate
 				(
 					from x in ((float)Kernel.GetGlobalId (0)).ToKernel ()
@@ -71,8 +71,8 @@
 				)
 			);
 
-		public static readonly Func<float, float> NormalRangeToZeroOne =
-			CLKernel.Function (() => NormalRangeToZeroOne,
+		public static readonly Func<float, float> NormalRangeTo0_1 =
+			CLKernel.Function (() => NormalRangeTo0_1,
 				(float value) => value * 0.5f + 0.5f);
 
 		public static readonly Macro<Macro<float, float>, float, float, float> Dfdx =
@@ -126,7 +126,7 @@
 		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> Example =
 			CLKernel.Create (nameof (Example), 
 				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
-				from pos in Pos2DToZeroOne ().ToKernel ()
+				from pos in Pos2DTo0_1 ().ToKernel ()
 				let col = NormalMap (v => Perlin (v, !perlinArgs), 1f, pos)
 				//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
 				select new KernelResult

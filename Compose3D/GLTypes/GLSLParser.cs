@@ -95,7 +95,9 @@
 			var declType = me.Expression.Type;
 			if (declType.IsGLStruct ())
 			{
-				var field = Ast.Fld (me.Type, me.Member.Name);
+				MapType (declType);
+				var astruct = (Ast.Structure)_globals[declType.Name];
+				var field = astruct.Fields.Find (f => f.Name == me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
 			return base.MapMemberAccess (me);
@@ -216,7 +218,7 @@
 			else if (node.Method.Name == "Constants")
 				DeclareConstants (node.Arguments[0]);
 			else if (node.Method.Name == "ToShader")
-				_currentScope.DeclareLocal (type, par.Name, Expr (ExtractMacros (node.Arguments[0])));
+				OutputMacroExpandedLocalVar (type, par.Name, node.Arguments[0]);
 			else
 				throw new ArgumentException ("Unsupported lift method.", node.Method.ToString ());
 		}

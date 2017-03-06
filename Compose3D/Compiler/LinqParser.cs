@@ -392,7 +392,7 @@
 			if (expr is ParameterExpression && Macro.IsMacroType (expr.Type))
 				return MacroDefParam (expr as ParameterExpression);
 			else
-				return Expr (expr);
+				return Expr (ExtractMacros (expr, null));
 		}
 
 		protected Expression ExtractMacros (Expression expr, Ast.Variable returnVar)

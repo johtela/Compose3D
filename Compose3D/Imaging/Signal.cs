@@ -145,7 +145,7 @@
 		{
 			if (blendFactor < 0f || blendFactor > 1f)
 				throw new ArgumentException ("Blend factor must be in range [0, 1]");
-			return signal.Combine (other, (x, y) => GLMath.Mix (x, y, blendFactor));
+			return signal.Combine (other, (x, y) => FMath.Mix (x, y, blendFactor));
 		}
 
 		public static Signal<T, V> Blend<T, V> (this Signal<T, V> signal, Signal<T, V> other,
@@ -160,7 +160,7 @@
 		public static Signal<T, float> Mask<T> (this Signal<T, float> signal, Signal<T, float> other,
 			Signal<T, float> mask)
 		{
-			return signal.Combine (other, mask, (x, y, m) => GLMath.Mix (x, y, m));
+			return signal.Combine (other, mask, (x, y, m) => FMath.Mix (x, y, m));
 		}
 
 		public static Signal<T, V> Mask<T, V> (this Signal<T, V> signal, Signal<T, V> other,
@@ -307,7 +307,7 @@
 		{
 			var i = 1;
 			return EnumerableExt.Generate<Vec2> (() => 
-				new Vec2 (GLMath.HaltonSequenceItem (2, i), GLMath.HaltonSequenceItem (3, i++)));
+				new Vec2 (FMath.HaltonSequenceItem (2, i), FMath.HaltonSequenceItem (3, i++)));
 		}
 
 		public static IEnumerable<V> Jitter<V> (this IEnumerable<V> controlPoints, float maxDelta)

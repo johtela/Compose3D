@@ -184,7 +184,7 @@
 			(
 				() => FogVisibility,
 				(float distance, float maxDistance, float gradient) =>
-				GLMath.Abs (distance / maxDistance).Pow (gradient).Clamp (0f, 1f)
+				FMath.Abs (distance / maxDistance).Pow (gradient).Clamp (0f, 1f)
 			);
 		
 		public static readonly Func<SamplerCube, Vec3, Vec3, Vec3> ReflectedColor =

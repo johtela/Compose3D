@@ -86,23 +86,23 @@
 				BA = Permutation (B) + Z, 
 				BB = Permutation (B + 1) + Z;
 
-			return GLMath.Mix (
-				GLMath.Mix (
-					GLMath.Mix ( 
+			return FMath.Mix (
+				FMath.Mix (
+					FMath.Mix ( 
 						Gradient (Permutation (AA), pt.X, pt.Y, pt.Z), 
 						Gradient (Permutation (BA), pt.X - 1f, pt.Y, pt.Z),
 						faded.X),
-					GLMath.Mix ( 
+					FMath.Mix ( 
 						Gradient (Permutation (AB), pt.X, pt.Y - 1f, pt.Z), 
 						Gradient (Permutation (BB), pt.X - 1f, pt.Y - 1f, pt.Z),
 						faded.X),
 					faded.Y),
-				GLMath.Mix (
-					GLMath.Mix ( 
+				FMath.Mix (
+					FMath.Mix ( 
 						Gradient (Permutation (AA + 1), pt.X, pt.Y, pt.Z - 1f), 
 						Gradient (Permutation (BA + 1), pt.X - 1f, pt.Y, pt.Z - 1f),
 						faded.X),
-					GLMath.Mix ( 
+					FMath.Mix ( 
 						Gradient (Permutation (AB + 1), pt.X, pt.Y - 1f, pt.Z - 1f), 
 						Gradient (Permutation (BB + 1), pt.X - 1f, pt.Y - 1f, pt.Z - 1f),
 						faded.X),
@@ -124,23 +124,23 @@
 				BA = Permutation (B + iv.Y),
 				BB = Permutation (B + jv.Y);
 
-			return GLMath.Mix (
-				GLMath.Mix (
-					GLMath.Mix (
+			return FMath.Mix (
+				FMath.Mix (
+					FMath.Mix (
 						Gradient (Permutation (AA + iv.Z), pt.X, pt.Y, pt.Z),
 						Gradient (Permutation (BA + iv.Z), pt.X - 1f, pt.Y, pt.Z),
 						faded.X),
-					GLMath.Mix (
+					FMath.Mix (
 						Gradient (Permutation (AB + iv.Z), pt.X, pt.Y - 1f, pt.Z),
 						Gradient (Permutation (BB + iv.Z), pt.X - 1f, pt.Y - 1f, pt.Z),
 						faded.X),
 					faded.Y),
-				GLMath.Mix (
-					GLMath.Mix (
+				FMath.Mix (
+					FMath.Mix (
 						Gradient (Permutation (AA + jv.Z), pt.X, pt.Y, pt.Z - 1f),
 						Gradient (Permutation (BA + jv.Z), pt.X - 1f, pt.Y, pt.Z - 1f),
 						faded.X),
-					GLMath.Mix (
+					FMath.Mix (
 						Gradient (Permutation (AB + jv.Z), pt.X, pt.Y - 1f, pt.Z - 1f),
 						Gradient (Permutation (BB + jv.Z), pt.X - 1f, pt.Y - 1f, pt.Z - 1f),
 						faded.X),

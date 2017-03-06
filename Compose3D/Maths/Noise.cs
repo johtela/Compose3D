@@ -42,10 +42,10 @@
 			var fracVec = vec.Fraction ();
 
 			var vs = _nexts.Map (next => Smooth (intVec + next) * amplitude);
-			var i1 = GLMath.CosMix (vs[0], vs[1], fracVec.X);
-			var i2 = GLMath.CosMix (vs[2], vs[3], fracVec.X);
+			var i1 = FMath.CosMix (vs[0], vs[1], fracVec.X);
+			var i2 = FMath.CosMix (vs[2], vs[3], fracVec.X);
 
-			return GLMath.CosMix (i1, i2, fracVec.Y);
+			return FMath.CosMix (i1, i2, fracVec.Y);
 		}
 
 		public static float Noise2D (Vec2 vec, float frequency, float amplitude, int octaves, 

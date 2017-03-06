@@ -114,7 +114,7 @@
 				(
 					from currentDepth in texCoords.Z.ToShader ()
 					let moments = shadowMap.Texture (texCoords[Coord.x, Coord.y])[Coord.x, Coord.y]
-					let p = GLMath.Step (currentDepth, moments.X)
+					let p = FMath.Step (currentDepth, moments.X)
 					let variance = Math.Max (moments.Y - (moments.X * moments.X), 0.0000001f)
 					let d = currentDepth - moments.X
 					let pmax = LinearStep (variance / (variance + d * d), 0f, 1f)

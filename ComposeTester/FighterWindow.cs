@@ -174,7 +174,7 @@
 			_fighter.Offset = new Vec3 (0f,
 				Math.Max (_terrainScene.Height (_fighter.Offset) + 20f, _fighter.Offset.Y), x - 5000f);
 			var angle = x * 0.03f;
-			_fighter.Orientation = new Vec3 (0f, 0f, GLMath.Cos (angle));
+			_fighter.Orientation = new Vec3 (0f, 0f, FMath.Cos (angle));
 			_camera.Position = _fighter.Offset + LookVec ();
 			_camera.Target = _fighter.Offset;
 		}

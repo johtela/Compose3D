@@ -128,7 +128,7 @@
 		{
 			var vec1 = vertices[prev].position - vertices[current].position;
 			var vec2 = vertices[next].position - vertices[current].position;
-			var result = GLMath.Atan2 (vec2.Y, vec2.X) - GLMath.Atan2 (vec1.Y, vec1.X);
+			var result = FMath.Atan2 (vec2.Y, vec2.X) - FMath.Atan2 (vec1.Y, vec1.X);
 			return result < 0 ? MathHelper.TwoPi + result : result;
 		}
 

@@ -215,7 +215,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Maths\Mat.cs" />
-    <Compile Include="Maths\GLMath.cs" />
+    <Compile Include="Maths\FMath.cs" />
     <Compile Include="Maths\Vec.cs" />
     <Compile Include="Maths\Vec4i.cs">
       <DependentUpon>Vec4i.tt</DependentUpon>

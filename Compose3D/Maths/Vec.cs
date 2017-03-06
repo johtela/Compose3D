@@ -416,7 +416,7 @@
 		/// </summary>
 		public static float XRotation (this Vec3 vec)
 		{
-			return GLMath.Atan2 (-vec.Y, vec.Z);
+			return FMath.Atan2 (-vec.Y, vec.Z);
 		}
 
 		/// <summary>
@@ -424,7 +424,7 @@
 		/// </summary>
 		public static float YRotation (this Vec3 vec)
 		{
-			return GLMath.Atan2 (vec.X, vec.Z);
+			return FMath.Atan2 (vec.X, vec.Z);
 		}
 
 		/// <summary>
@@ -435,7 +435,7 @@
 		public static V Radians<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Radians);
+			return vec.Map<V, float> (FMath.Radians);
 		}
 
 		/// <summary>
@@ -446,7 +446,7 @@
 		public static V Degrees<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Degrees);
+			return vec.Map<V, float> (FMath.Degrees);
 		}
 
 		/// <summary>
@@ -461,47 +461,47 @@
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Floor(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Floor(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("floor ({0})")]
 		[CLFunction ("floor ({0})")]
 		public static V Floor<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Floor);
+			return vec.Map<V, float> (FMath.Floor);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Ceiling(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Ceiling(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("ceil ({0})")]
 		[CLFunction ("ceil ({0})")]
 		public static V Ceiling<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Ceiling);
+			return vec.Map<V, float> (FMath.Ceiling);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Truncate(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Truncate(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("trunc ({0})")]
 		[CLFunction ("trunc ({0})")]
 		public static V Truncate<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Truncate);
+			return vec.Map<V, float> (FMath.Truncate);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Fraction(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Fraction(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
 		[CLFunction ("fract ({0})")]
 		public static V Fraction<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Fraction);
+			return vec.Map<V, float> (FMath.Fraction);
 		}
 
 		/// <summary>
@@ -549,29 +549,29 @@
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Clamp(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Clamp(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
 		[CLFunction ("clamp ({0})")]
 		public static V Clamp<V> (this V vec, float min, float max)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (a => GLMath.Clamp (a, min, max));
+			return vec.Map<V, float> (a => FMath.Clamp (a, min, max));
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Clamp(int, int, int)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Clamp(int, int, int)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
 		[CLFunction ("clamp ({0})")]
 		public static V Clamp<V> (this V vec, int min, int max)
 			where V : struct, IVec<V, int>
 		{
-			return vec.Map<V, int> (a => GLMath.Clamp (a, min, max));
+			return vec.Map<V, int> (a => FMath.Clamp (a, min, max));
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Clamp(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Clamp(float, float, float)"/> function to the vector componentwise.
 		/// The minimum and maximum values are also given as vectors.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
@@ -579,11 +579,11 @@
 		public static V Clamp<V> (this V vec, V min, V max)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map3<V, float> (min, max, GLMath.Clamp);
+			return vec.Map3<V, float> (min, max, FMath.Clamp);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Clamp(int, int, int)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Clamp(int, int, int)"/> function to the vector componentwise.
 		/// The minimum and maximum values are also given as vectors.
 		/// </summary>
 		[GLFunction ("clamp ({0})")]
@@ -591,11 +591,11 @@
 		public static V Clampi<V> (this V vec, V min, V max)
 			where V : struct, IVec<V, int>
 		{
-			return vec.Map3<V, int> (min, max, GLMath.Clamp);
+			return vec.Map3<V, int> (min, max, FMath.Clamp);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Mix(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Mix(float, float, float)"/> function to the vector componentwise.
 		/// The interPos parameter is also given as vector.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
@@ -603,33 +603,33 @@
 		public static V Mix<V> (this V vec, V other, V interPos)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map3<V, float> (other, interPos, GLMath.Mix);
+			return vec.Map3<V, float> (other, interPos, FMath.Mix);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Mix(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Mix(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("mix ({0})")]
 		[CLFunction ("mix ({0})")]
 		public static V Mix<V> (this V vec, V other, float interPos)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map2<V, float> (other, (x, y) => GLMath.Mix (x, y, interPos));
+			return vec.Map2<V, float> (other, (x, y) => FMath.Mix (x, y, interPos));
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Step(float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Step(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("step ({0})")]
 		[CLFunction ("step ({0})")]
 		public static V Step<V> (float edge, V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (a => GLMath.Step (edge, a));
+			return vec.Map<V, float> (a => FMath.Step (edge, a));
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Step(float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Step(float, float)"/> function to the vector componentwise.
 		/// The edge values are also given as vector.
 		/// </summary>
 		[GLFunction ("step ({0})")]
@@ -637,22 +637,22 @@
 		public static V Step<V> (V edge, V vec)
 			where V : struct, IVec<V, float>
 		{
-			return edge.Map2<V, float> (vec, GLMath.Step);
+			return edge.Map2<V, float> (vec, FMath.Step);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.SmoothStep(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.SmoothStep(float, float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
 		[CLFunction ("smoothstep ({0})")]
 		public static V SmoothStep<V> (float edgeLower, float edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (a => GLMath.SmoothStep (edgeLower, edgeUpper, a));
+			return vec.Map<V, float> (a => FMath.SmoothStep (edgeLower, edgeUpper, a));
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.SmoothStep(float, float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.SmoothStep(float, float, float)"/> function to the vector componentwise.
 		/// The edge values are also given as vector.
 		/// </summary>
 		[GLFunction ("smoothstep ({0})")]
@@ -660,11 +660,11 @@
 		public static V SmoothStep<V> (V edgeLower, V edgeUpper, V vec)
 			where V : struct, IVec<V, float>
 		{
-			return edgeLower.Map3<V, float> (edgeUpper, vec, GLMath.SmoothStep);
+			return edgeLower.Map3<V, float> (edgeUpper, vec, FMath.SmoothStep);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Pow(float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Pow(float, float)"/> function to the vector componentwise.
 		/// The exp values are also given as vector.
 		/// </summary>
 		[GLFunction ("pow ({0})")]
@@ -672,51 +672,51 @@
 		public static V Pow<V> (this V vec, V exp)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map2<V, float> (exp, GLMath.Pow);
+			return vec.Map2<V, float> (exp, FMath.Pow);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Exp(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Exp(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("exp ({0})")]
 		[CLFunction ("exp ({0})")]
 		public static V Exp<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Exp);
+			return vec.Map<V, float> (FMath.Exp);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Log(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Log(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("log ({0})")]
 		[CLFunction ("log ({0})")]
 		public static V Log<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Log);
+			return vec.Map<V, float> (FMath.Log);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Sqrt(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Sqrt(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("sqrt ({0})")]
 		[CLFunction ("sqrt ({0})")]
 		public static V Sqrt<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.Sqrt);
+			return vec.Map<V, float> (FMath.Sqrt);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.InverseSqrt(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.InverseSqrt(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("inversesqrt ({0})")]
 		[CLFunction ("inversesqrt ({0})")]
 		public static V InverseSqrt<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
-			return vec.Map<V, float> (GLMath.InverseSqrt);
+			return vec.Map<V, float> (FMath.InverseSqrt);
 		}
 
 		[GLFunction ("mod ({0})")]
@@ -754,80 +754,80 @@
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Sin(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Sin(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("sin ({0})")]
 		[CLFunction ("sin ({0})")]
 		public static V Sin<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
-			return angles.Map<V, float> (GLMath.Sin);
+			return angles.Map<V, float> (FMath.Sin);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Cos(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Cos(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("cos ({0})")]
 		[CLFunction ("cos ({0})")]
 		public static V Cos<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
-			return angles.Map<V, float> (GLMath.Cos);
+			return angles.Map<V, float> (FMath.Cos);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Tan(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Tan(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("tan ({0})")]
 		[CLFunction ("tan ({0})")]
 		public static V Tan<V> (this V angles)
 			where V : struct, IVec<V, float>
 		{
-			return angles.Map<V, float> (GLMath.Tan);
+			return angles.Map<V, float> (FMath.Tan);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Asin(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Asin(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("asin ({0})")]
 		[CLFunction ("asin ({0})")]
 		public static V Asin<V> (this V x)
 			where V : struct, IVec<V, float>
 		{
-			return x.Map<V, float> (GLMath.Asin);
+			return x.Map<V, float> (FMath.Asin);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Acos(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Acos(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("acos ({0})")]
 		[CLFunction ("acos ({0})")]
 		public static V Acos<V> (this V x)
 			where V : struct, IVec<V, float>
 		{
-			return x.Map<V, float> (GLMath.Acos);
+			return x.Map<V, float> (FMath.Acos);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Atan(float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Atan(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("atan ({0})")]
 		[CLFunction ("atan ({0})")]
 		public static V Atan<V> (this V y_over_x)
 			where V : struct, IVec<V, float>
 		{
-			return y_over_x.Map<V, float> (GLMath.Atan);
+			return y_over_x.Map<V, float> (FMath.Atan);
 		}
 
 		/// <summary>
-		/// Applies the <see cref="GLMath.Atan2(float, float)"/> function to the vector componentwise.
+		/// Applies the <see cref="FMath.Atan2(float, float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("atan ({0})")]
 		[CLFunction ("atan ({0})")]
 		public static V Atan2<V> (this V y, V x)
 			where V : struct, IVec<V, float>
 		{
-			return y.Map2<V, float> (x, GLMath.Atan2);
+			return y.Map2<V, float> (x, FMath.Atan2);
 		}
 
 		/// <summary>

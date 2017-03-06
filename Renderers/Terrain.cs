@@ -219,9 +219,9 @@
 				let rockColor = FragmentShaders.TextureColor (!u.rockSampler, f.fragTexturePos)
 				let grassColor = FragmentShaders.TextureColor (!u.grassSampler, f.fragTexturePos)
 				let sandColor = FragmentShaders.TextureColor (!u.sandSampler, f.fragTexturePos)
-				let sandBlend = GLMath.SmoothStep (2f, 4f, f.height)
+				let sandBlend = FMath.SmoothStep (2f, 4f, f.height)
 				let flatColor = grassColor.Mix (sandColor, sandBlend) 
-				let rockBlend = GLMath.SmoothStep (0.8f, 0.9f, f.slope)
+				let rockBlend = FMath.SmoothStep (0.8f, 0.9f, f.slope)
 				let terrainColor = rockColor.Mix (flatColor, rockBlend)
 				let diffuseLight = LightingShaders.LightDiffuseIntensity (
 					(!l.directionalLight).direction,

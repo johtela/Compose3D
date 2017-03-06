@@ -182,8 +182,8 @@
 			return GLShader.Create (ShaderType.FragmentShader, () =>
 				from f in Shader.Inputs<Fragment> ()
 				let depth = f.gl_FragCoord.Z
-				let dx = GLMath.dFdx (depth)
-				let dy = GLMath.dFdy (depth)
+				let dx = FMath.dFdx (depth)
+				let dy = FMath.dFdy (depth)
 				let moment2 = depth * depth + 0.25f * (dx * dx + dy * dy)
 				select new
 				{

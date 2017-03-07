@@ -27,8 +27,8 @@
 		protected void ExecuteSynchronously (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
 		{
 			CheckIsInitialized ();
-			for (int i = 0; i < args.Length; i++)
-				args[i].PushToCLKernel (this, i);
+			for (int i = 0, index = 0; i < args.Length; i++)
+				index = args[i].PushToCLKernel (this, index);
 			var cq = queue._comQueue;
 			cq.Execute (_comKernel, null, workSizes, null, null);
 			for (int i = 0; i < args.Length; i++)

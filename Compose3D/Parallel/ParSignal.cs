@@ -6,12 +6,10 @@
 	using CLTypes;
 	using Maths;
 
-	[CLStruct]
-	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct PerlinArgs
+	public class PerlinArgs : ArgGroup
 	{
-		public Vec2 Scale;
-		public int Periodic;
+		public Value<Vec2> Scale;
+		public Value<int> Periodic;
 	}
 
 	public static class ParSignal
@@ -40,16 +38,16 @@
 				)
 			);
 
-		public static readonly Func<Vec2, PerlinArgs, float> 
+		public static readonly Func<Vec2, int, Vec2, float> 
 			Perlin = CLKernel.Function 
 			(
 				() => Perlin,
-				(pos, args) => Kernel.Evaluate
+				(scale, periodic, pos) => Kernel.Evaluate
 				(
-					from scaled in (pos * args.Scale).ToKernel ()
-					select args.Periodic == 0 ?
+					from scaled in (pos * scale).ToKernel ()
+					select periodic == 0 ?
 						ParPerlin.Noise (new Vec3 (scaled, 0f)) :
-						ParPerlin.PeriodicNoise (new Vec3 (scaled, 0f), new Vec3 (args.Scale, 256f))
+						ParPerlin.PeriodicNoise (new Vec3 (scaled, 0f), new Vec3 (scale, 256f))
 				)
 			);
 
@@ -162,13 +160,13 @@
 				)
 			);
 
-		public static CLKernel<Value<PerlinArgs>, Buffer<uint>> 
+		public static CLKernel<PerlinArgs, Buffer<uint>> 
 			Example = CLKernel.Create 
 			(
 				nameof (Example), 
-				(Value<PerlinArgs> perlinArgs, Buffer<uint> result) =>
+				(PerlinArgs perlinArgs, Buffer<uint> result) =>
 					from pos in Pos2DTo0_1 ().ToKernel ()
-					let col = NormalMap (v => Perlin (v, !perlinArgs), 1f, pos)
+					let col = NormalMap (v => Perlin (!perlinArgs.Scale, !perlinArgs.Periodic, v), 1f, pos)
 					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
 					select new KernelResult
 					{

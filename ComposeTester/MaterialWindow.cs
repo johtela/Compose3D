@@ -76,10 +76,10 @@
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs ()
 			{
-				Scale = new Vec2 (5f),
-				Periodic = 1
+				Scale = KernelArg.Value (new Vec2 (5f)),
+				Periodic = KernelArg.Value (1)
 			};
-			ParSignal.Example.Execute (queue, KernelArg.Value (perlinArgs),
+			ParSignal.Example.Execute (queue, perlinArgs,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);

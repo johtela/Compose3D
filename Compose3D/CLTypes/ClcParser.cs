@@ -28,6 +28,11 @@
 			return parser.BuildKernelCode ();
 		}
 
+		private IEnumerable<ClcAst.KernelArgument> KernelArguments (IEnumerable<ParameterExpression> pars)
+		{
+			// TODO: Cliffhanger.
+		}
+
 		private ClcAst.KernelArgument KernelArgument (ParameterExpression par)
 		{
 			var typeDef = par.Type.GetGenericTypeDefinition ();

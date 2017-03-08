@@ -22,30 +22,51 @@
 				var body = Ast.Blk ();
 				parser.BeginScope (body);
 				parser._function = ClcAst.Kern (kernel._name,
-					kernel._expr.Parameters.Select (parser.KernelArgument), body);
+					parser.KernelArguments (kernel._expr.Parameters), body);
 				parser.OutputKernel (kernel._expr);
 			}
 			return parser.BuildKernelCode ();
 		}
 
-		private IEnumerable<ClcAst.KernelArgument> KernelArguments (IEnumerable<ParameterExpression> pars)
+		protected override IEnumerable<Ast.Argument> FunctionArguments (IEnumerable<ParameterExpression> pars)
 		{
-			// TODO: Cliffhanger.
+			foreach (var par in pars)
+			{
+				if (par.Type.IsSubclassOf (typeof (ArgGroup)))
+					throw new ParseException ("Argument groups are only valid as kernel arguments.");
+				yield return KernelArgument (par.Type, par.Name);
+			}
 		}
 
-		private ClcAst.KernelArgument KernelArgument (ParameterExpression par)
+		private IEnumerable<ClcAst.KernelArgument> KernelArguments (IEnumerable<ParameterExpression> pars)
 		{
-			var typeDef = par.Type.GetGenericTypeDefinition ();
-			var elemType = par.Type.GetGenericArguments ()[0];
-			var result = typeDef == typeof (Value<>) ? 
-					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Value) :
-				typeDef == typeof (Buffer<>) ?
-					ClcAst.KArg (elemType, par.Name, ClcAst.KernelArgumentKind.Buffer, 
-						ClcAst.KernelArgumentMemory.Global) :
-					null;
-			if (result == null)
-				throw new ArgumentException ("Invalid argument type");
-			_currentScope.AddLocal (par.Name, result);
+			foreach (var par in pars)
+				if (par.Type.IsSubclassOf (typeof (ArgGroup)))
+					foreach (var mem in ArgGroup.MemberDefinitions (par.Type, par.Name + "_"))
+						yield return (ClcAst.KernelArgument)KernelArgument (mem.Item2, mem.Item1);
+				else
+					yield return (ClcAst.KernelArgument)KernelArgument (par.Type, par.Name);
+		}
+
+		private Ast.Argument KernelArgument (Type type, string name)
+		{
+			Ast.Argument result;
+			if (type.IsSubclassOf (typeof (KernelArg)))
+			{
+				var typeDef = type.GetGenericTypeDefinition ();
+				var elemType = type.GetGenericArguments ()[0];
+				result = typeDef == typeof (Value<>) ?
+						ClcAst.KArg (elemType, name, ClcAst.KernelArgumentKind.Value) :
+					typeDef == typeof (Buffer<>) ?
+						ClcAst.KArg (elemType, name, ClcAst.KernelArgumentKind.Buffer,
+							ClcAst.KernelArgumentMemory.Global) :
+						null;
+				if (result == null)
+					throw new ParseException ("Invalid kernel argument type: " + type);
+			}
+			else
+				result = Ast.Arg (type, name);
+			_currentScope.AddLocal (name, result);
 			return result;
 		}
 
@@ -81,7 +102,24 @@
 				var field = astruct.Fields.Find (f => f.Name == me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
+			if (declType.IsSubclassOf (typeof (ArgGroup)))
+			{
+				var argName = ArgGroupMemberName (me);
+				Ast.Variable v = _currentScope.FindLocalVar (argName);
+				if (v == null)
+					throw new ParseException ("Group argument not defined: " + argName);
+				return Ast.VRef (v);
+			}
 			return base.MapMemberAccess (me);
+		}
+
+		private string ArgGroupMemberName (Expression expr)
+		{
+			var pe = expr.CastExpr<ParameterExpression> (ExpressionType.Parameter);
+			if (pe != null)
+				return pe.Name;
+			var me = expr.Expect<MemberExpression> (ExpressionType.MemberAccess);
+			return ArgGroupMemberName (me.Expression) + "_" + me.Member.Name;
 		}
 
 		protected override string MapTypeCast (Type type)

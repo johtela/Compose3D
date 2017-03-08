@@ -15,9 +15,9 @@
 	public static class ParSignal
 	{
 		public static readonly Func<float, uint> 
-			FloatToUintGrayscale = CLKernel.Function 
+			GrayscaleToUint = CLKernel.Function 
 			(
-				() => FloatToUintGrayscale,
+				() => GrayscaleToUint,
 				val => Kernel.Evaluate
 				(
 					from c in ((uint)(val.Clamp (0f, 1f) * 255f)).ToKernel ()
@@ -26,9 +26,9 @@
 			);
 
 		public static readonly Func<Vec3, uint> 
-			Vec3ToUintColor = CLKernel.Function 
+			Color3ToUint = CLKernel.Function 
 			(
-				() => Vec3ToUintColor,
+				() => Color3ToUint,
 				vec => Kernel.Evaluate
 				(
 					from h in 255f.ToKernel ()
@@ -52,9 +52,9 @@
 			);
 
 		public static readonly Func<Vec2> 
-			Pos2DTo0_1 = CLKernel.Function 
+			PixelPosTo0_1 = CLKernel.Function 
 			(
-				() => Pos2DTo0_1,
+				() => PixelPosTo0_1,
 				() => new Vec2 (
 					(float)Kernel.GetGlobalId (0) / Kernel.GetGlobalSize (0),
 					(float)Kernel.GetGlobalId (1) / Kernel.GetGlobalSize (1))
@@ -68,9 +68,9 @@
 			);
 
 		public static readonly Func<int> 
-			Pos2DToIndex = CLKernel.Function 
+			PixelPosToIndex = CLKernel.Function 
 			(
-				() => Pos2DToIndex,
+				() => PixelPosToIndex,
 				() => Kernel.GetGlobalSize (0) * Kernel.GetGlobalId (0) + Kernel.GetGlobalId (1)
 			);
 
@@ -160,17 +160,18 @@
 				)
 			);
 
-		public static CLKernel<PerlinArgs, Buffer<uint>> 
+		public static CLKernel<PerlinArgs, ColorMapArg, Buffer<uint>> 
 			Example = CLKernel.Create 
 			(
 				nameof (Example), 
-				(PerlinArgs perlinArgs, Buffer<uint> result) =>
-					from pos in Pos2DTo0_1 ().ToKernel ()
-					let col = NormalMap (v => Perlin (!perlinArgs.Scale, !perlinArgs.Periodic, v), 1f, pos)
+				(PerlinArgs perlin, ColorMapArg colorMap, Buffer<uint> result) =>
+					from pos in PixelPosTo0_1 ().ToKernel ()
+					let col = NormalMap (v => Perlin (!perlin.Scale, !perlin.Periodic, v), 1f, pos)
+					let foo = ParColorMap.ValueAt (colorMap.Entries, !colorMap.Count, 0f)
 					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
 					select new KernelResult
 					{
-						Assign.Buffer (result, Pos2DToIndex (), Vec3ToUintColor (col))
+						Assign.Buffer (result, PixelPosToIndex (), Color3ToUint (col))
 					}
 			);
 	}

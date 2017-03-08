@@ -112,12 +112,12 @@
 			new Dictionary<Type, Tuple<string, Type>[]> ();
 		private KernelArg[] _members;
 
-		public static IEnumerable<Tuple<string, Type>> MemberDefinitions (Type type)
+		public static IEnumerable<Tuple<string, Type>> MemberDefinitions (Type type, string parName)
 		{
 			Tuple<string, Type>[] result;
 			if (!_memberDefinitions.TryGetValue (type, out result))
 			{
-				result = GetMemberDefinitions (type, "").ToArray ();
+				result = GetMemberDefinitions (type, parName).ToArray ();
 				_memberDefinitions.Add (type, result);
 			}
 			return result;

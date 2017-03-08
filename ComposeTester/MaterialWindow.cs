@@ -74,12 +74,18 @@
 			var queue = new CLCommandQueue (context);
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
+			var cols = new ColorMapEntry[2];
 			var perlinArgs = new PerlinArgs ()
 			{
 				Scale = KernelArg.Value (new Vec2 (5f)),
 				Periodic = KernelArg.Value (1)
 			};
-			ParSignal.Example.Execute (queue, perlinArgs,
+			var colorMap = new ColorMapArg ()
+			{
+				Entries = KernelArg.Buffer (cols, ComputeMemoryFlags.ReadOnly),
+				Count = KernelArg.Value (cols.Length)
+			};
+			ParSignal.Example.Execute (queue, perlinArgs, colorMap,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);

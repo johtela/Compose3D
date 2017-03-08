@@ -110,6 +110,7 @@
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
     <Compile Include="Parallel\Kernel.cs" />
+    <Compile Include="Parallel\ParColorMap.cs" />
     <Compile Include="Parallel\ParPerlin.cs" />
     <Compile Include="Parallel\ParSignal.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />

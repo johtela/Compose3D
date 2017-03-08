@@ -111,6 +111,16 @@
 			return Ast.Mac (def.Parameters, def.Result, block);
 		}
 
+		protected virtual IEnumerable<Ast.Argument> FunctionArguments (IEnumerable<ParameterExpression> pars)
+		{
+			return pars.Select (p =>
+			{
+				var arg = Ast.Arg (p.Type, p.Name);
+				_currentScope.AddLocal (arg.Name, arg);
+				return arg;
+			});
+		}
+
 		protected static string ConstructFunctionName (MemberInfo member)
 		{
 			return member.DeclaringType.Name + "_" + member.Name;
@@ -118,13 +128,10 @@
 
 		protected void Function (string name, LambdaExpression expr)
 		{
-			var args = (from p in expr.Parameters
-						select Ast.Arg (p.Type, p.Name)).ToArray ();
 			var block = Ast.Blk ();
-			_function = Ast.Fun (name, expr.ReturnType, args, block);
 			BeginScope (block);
-			foreach (var arg in args)
-				_currentScope.AddLocal (arg.Name, arg);
+			var args = FunctionArguments (expr.Parameters).ToArray ();
+			_function = Ast.Fun (name, expr.ReturnType, args, block);
 			FunctionBody (expr.Body);
 			EndScope ();
 		}

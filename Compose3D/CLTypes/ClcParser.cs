@@ -30,12 +30,7 @@
 
 		protected override IEnumerable<Ast.Argument> FunctionArguments (IEnumerable<ParameterExpression> pars)
 		{
-			foreach (var par in pars)
-			{
-				if (par.Type.IsSubclassOf (typeof (ArgGroup)))
-					throw new ParseException ("Argument groups are only valid as kernel arguments.");
-				yield return KernelArgument (par.Type, par.Name);
-			}
+			return pars.Select (p => KernelArgument (p.Type, p.Name));
 		}
 
 		private IEnumerable<ClcAst.KernelArgument> KernelArguments (IEnumerable<ParameterExpression> pars)
@@ -62,7 +57,7 @@
 							ClcAst.KernelArgumentMemory.Global) :
 						null;
 				if (result == null)
-					throw new ParseException ("Invalid kernel argument type: " + type);
+					throw new ParseException ("Argument groups are only valid as kernel arguments.");
 			}
 			else
 				result = Ast.Arg (type, name);

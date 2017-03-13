@@ -26,7 +26,17 @@
 			ValueAt = CLKernel.Function
 			(
 				() => ValueAt,
-				(colMap, count, value) => new Vec3 (0f)
+				(colMap, count, value) => Kernel.Evaluate
+				(
+					from high in Control<int>.DoUntilChanges (0, count, count,
+						(i, res) => (!colMap)[i].Key > value ? i : res).ToKernel ()
+					let low = high - 1
+					select 
+						high == 0 ? (!colMap)[high].Color :
+						high == count ? (!colMap)[low].Color :
+						(!colMap)[low].Color.Mix ((!colMap)[high].Color, 
+							(value - (!colMap)[low].Key) / ((!colMap)[high].Key - (!colMap)[low].Key))
+				)
 			);
 	}
 }

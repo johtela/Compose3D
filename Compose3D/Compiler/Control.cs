@@ -30,7 +30,7 @@
 					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
 		}
 
-		private static Ast.Macro UntilMacro ()
+		private static Ast.Macro DoUntilMacro ()
 		{
 			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
@@ -50,6 +50,23 @@
 					Ast.MCall (term, done, Ast.VRef (def.Result))))));
 		}
 
+		private static Ast.Macro DoUntilChangesMacro ()
+		{
+			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, T>));
+			var ind = Macro.GenUniqueVar (typeof (int), "ind");
+			var init = Ast.MPRef (def.Parameters[2]);
+			var start = Ast.MPRef (def.Parameters[0]);
+			var cond = Ast.Op ("{0} && {1}",
+				Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1])),
+				Ast.Op ("{0} == {1}", Ast.VRef (def.Result), init));
+			var incr = Ast.Op ("{0}++", Ast.VRef (ind));
+			var body = (def.Parameters[3] as Ast.MacroDefParam).Definition;
+			return Ast.Mac (def.Parameters, def.Result, Ast.Blk (
+				Ast.Ass (Ast.VRef (def.Result), init),
+				Ast.For (ind, start, cond, incr, 					
+					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
+		}
+
 		private static Ast.Macro IfMacro ()
 		{
 			var def = Macro.GetMacroDefinition (typeof (Macro<bool, Macro<T>, Macro<T>, T>));
@@ -66,8 +83,11 @@
 		public static readonly Macro<int, int, T, Macro<int, T, T>, T> For =
 			Macro.Create (() => For, ForMacro ());
 
-		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> Until =
-			Macro.Create (() => Until, UntilMacro ());
+		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> DoUntil =
+			Macro.Create (() => DoUntil, DoUntilMacro ());
+
+		public static readonly Macro<int, int, T, Macro<int, T, T>, T> DoUntilChanges =
+			Macro.Create (() => DoUntilChanges, DoUntilChangesMacro ());
 
 		public static readonly Macro<bool, Macro<T>, Macro<T>, T> If =
 			Macro.Create (() => If, IfMacro ());

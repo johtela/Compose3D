@@ -34,7 +34,7 @@
 			}
 		}
 
-		public class Variable : Expression
+		public class Variable : Ast
 		{
 			public readonly Type Type;
 			public readonly string Name;
@@ -662,6 +662,34 @@
 			}
 		}
 
+		public class WhileLoop : Statement
+		{
+			public readonly Expression Condition;
+			public readonly Statement Body;
+
+			internal WhileLoop (Expression condition, Statement body)
+			{
+				Condition = condition;
+				Body = body;
+			}
+
+			public override string Output (LinqParser parser)
+			{
+				var result = new StringBuilder ();
+				EmitLine (result, "while ({0})", Condition.Output (parser));
+				EmitIntended (result, Body, parser);
+				return result.ToString ();
+			}
+
+			public override Ast Transform (Func<Ast, Ast> transform)
+			{
+				var cond = (Expression)Condition.Transform (transform);
+				var body = (Statement)Body.Transform (transform);
+				return transform (cond == Condition && body == Body ? 
+					this : new WhileLoop (cond, body));
+			}
+		}
+
 		public class CallStatement : Statement
 		{
 			public readonly ExternalFunctionCall ExternalCall;
@@ -1042,6 +1070,11 @@
 			Expression increment, Statement body)
 		{
 			return new ForLoop (loopVar, initialValue, condition, increment, body);
+		}
+
+		public static WhileLoop While (Expression condition, Statement body)
+		{
+			return new WhileLoop (condition, body);
 		}
 
 		public static CallStatement CallS (ExternalFunctionCall call)

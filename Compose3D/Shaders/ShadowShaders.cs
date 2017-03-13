@@ -167,10 +167,11 @@
 				(Vec4 posInViewSpace, float bias) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					let mapIndex = Control<int>.For (0, (!u.viewLightMatrices).Length, -1,
-						(int i, int best) => best < 0 &&
+					let mapIndex = Control<int>.Until (0, (!u.viewLightMatrices).Length, -1,
+						(int i, int best) =>
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
-							i : best)
+							i : best,
+						(int best) => best >= 0)
 					let posInLightSpace = (!u.viewLightMatrices)[mapIndex] * posInViewSpace
 					let projCoords = posInLightSpace[Coord.x, Coord.y, Coord.z] / posInLightSpace.W
 					let texCoords = projCoords * 0.5f + new Vec3 (0.5f)

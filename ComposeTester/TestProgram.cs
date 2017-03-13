@@ -20,7 +20,7 @@
 		static void Main (string[] args)
 		{
 			//TestParallel ();
-			var wnd = new MaterialWindow ();
+			var wnd = new FighterWindow ();
 			wnd.Run ();
 			//			Task.Factory.StartNew (() =>
 			//				Tester.RunTestsTimed (

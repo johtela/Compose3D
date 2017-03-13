@@ -20,14 +20,34 @@
 		{
 			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
-			var init = Ast.MPRef (def.Parameters[0]);
+			var start = Ast.MPRef (def.Parameters[0]);
 			var cond = Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1]));
 			var incr = Ast.Op ("{0}++", Ast.VRef (ind));
 			var body = (def.Parameters[3] as Ast.MacroDefParam).Definition;
 			return Ast.Mac (def.Parameters, def.Result,	Ast.Blk (
 				Ast.Ass (Ast.VRef (def.Result), Ast.MPRef (def.Parameters[2])),
-				Ast.For (ind, init, cond, incr,
+				Ast.For (ind, start, cond, incr,
 					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
+		}
+
+		private static Ast.Macro UntilMacro ()
+		{
+			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T>));
+			var ind = Macro.GenUniqueVar (typeof (int), "ind");
+			var done = Macro.GenUniqueVar (typeof (bool), "done");
+			var start = Ast.MPRef (def.Parameters[0]);
+			var cond = Ast.Op ("{0} && {1}",
+				Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1])),
+				Ast.Op ("!{0}", Ast.VRef (done)));
+			var incr = Ast.Op ("{0}++", Ast.VRef (ind));
+			var body = (def.Parameters[3] as Ast.MacroDefParam).Definition;
+			var term = (def.Parameters[4] as Ast.MacroDefParam).Definition;
+			return Ast.Mac (def.Parameters, def.Result, Ast.Blk (
+				Ast.DeclVar (done, Ast.Lit ("false")),
+				Ast.Ass (Ast.VRef (def.Result), Ast.MPRef (def.Parameters[2])),
+				Ast.For (ind, start, cond, incr, Ast.Blk (
+					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)),
+					Ast.MCall (term, done, Ast.VRef (def.Result))))));
 		}
 
 		private static Ast.Macro IfMacro ()
@@ -45,6 +65,9 @@
 
 		public static readonly Macro<int, int, T, Macro<int, T, T>, T> For =
 			Macro.Create (() => For, ForMacro ());
+
+		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> Until =
+			Macro.Create (() => Until, UntilMacro ());
 
 		public static readonly Macro<bool, Macro<T>, Macro<T>, T> If =
 			Macro.Create (() => If, IfMacro ());

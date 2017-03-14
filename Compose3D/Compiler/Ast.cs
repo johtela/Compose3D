@@ -1041,6 +1041,11 @@
 			return new DeclareVar (definition, value);
 		}
 
+		public static DeclareVar DeclVar (Variable definition)
+		{
+			return new DeclareVar (definition, null);
+		}
+
 		public static Block Blk (IEnumerable<Statement> statements)
 		{
 			return new Block (statements);

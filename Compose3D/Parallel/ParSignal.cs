@@ -1,15 +1,78 @@
 ﻿namespace Compose3D.Parallel
 {
 	using System;
+	using System.Linq;
 	using System.Runtime.InteropServices;
+	using Cloo;
+	using Extensions;
 	using Compiler;
 	using CLTypes;
 	using Maths;
 
 	public class PerlinArgs : ArgGroup
 	{
-		public Value<Vec2> Scale;
-		public Value<int> Periodic;
+		public readonly Value<Vec2> Scale;
+		public readonly Value<int> Periodic;
+
+		public PerlinArgs (Vec2 scale, bool periodic)
+		{
+			Scale = Value (scale);
+			Periodic = Value (periodic ? 1 : 0);
+		}
+	}
+
+	[CLStruct]
+	[StructLayout (LayoutKind.Sequential, Pack = 4)]
+	public struct ColorMapEntry
+	{
+		public float Key;
+		public Vec3 Color;
+
+		public ColorMapEntry (float key, Vec3 color)
+		{
+			Key = key;
+			Color = color;
+		}
+	}
+
+	public class ColorizeArgs : ArgGroup
+	{
+		public readonly Buffer<ColorMapEntry> Entries;
+		public readonly Value<int> Count;
+
+		public ColorizeArgs (params ColorMapEntry[] entries)
+		{
+			if (entries.Length == 0)
+				throw new ArgumentException ("Must provide at least one entry to color map", nameof (entries));
+			Entries = Buffer (entries, ComputeMemoryFlags.ReadOnly);
+			Count = Value (entries.Length);
+		}
+	}
+
+	public class SpectralControlArgs : ArgGroup
+	{
+		public readonly Value<int> FirstBand;
+		public readonly Value<int> LastBand;
+		public readonly Buffer<float> NormalizedWeights;
+		public readonly Value<int> Count;
+
+		public SpectralControlArgs (int firstBand, int lastBand, params float[] weights)
+		{
+			if (firstBand < 0)
+				throw new ArgumentException ("Bands must be positive");
+			if (firstBand > lastBand)
+				throw new ArgumentException ("lastBand must be greater or equal to firstBand");
+			if (lastBand > 15)
+				throw new ArgumentException ("lastBand must be less than 16.");
+			if (weights.Length != (lastBand - firstBand) + 1)
+				throw new ArgumentException ("Invalid number of bands");
+			var sumWeights = weights.Aggregate (0f, (s, w) => s + w);
+			var normWeights = weights.Map (w => w / sumWeights);
+			FirstBand = Value (firstBand);
+			LastBand = Value (lastBand);
+			NormalizedWeights = Buffer (normWeights, ComputeMemoryFlags.ReadOnly);
+			Count = Value (normWeights.Length);
+		}
 	}
 
 	public static class ParSignal
@@ -160,14 +223,45 @@
 				)
 			);
 
-		public static CLKernel<PerlinArgs, ColorMapArg, Buffer<uint>> 
+		public static readonly Func<Buffer<ColorMapEntry>, int, float, Vec3>
+			Colorize = CLKernel.Function
+			(
+				() => Colorize,
+				(colMap, count, value) => Kernel.Evaluate
+				(
+					from high in Control<int>.DoUntilChanges (0, count, count,
+						(i, res) => (!colMap)[i].Key > value ? i : res).ToKernel ()
+					let low = high - 1
+					select
+						high == 0 ? (!colMap)[high].Color :
+						high == count ? (!colMap)[low].Color :
+						(!colMap)[low].Color.Mix ((!colMap)[high].Color,
+							(value - (!colMap)[low].Key) / ((!colMap)[high].Key - (!colMap)[low].Key))
+				)
+			);
+
+		public static readonly Macro<Macro<Vec2, float>, int, int, Buffer<float>, int, Vec2, float>
+			SpectralControl = CLKernel.Macro
+			(
+				() => SpectralControl,
+				(signal, firstBand, lastBand, weights, count, vec) => 
+					Control<float>.For (firstBand, lastBand + 1, 0f,
+						(i, result) => Kernel.Evaluate
+						(
+							from input in (vec * (1 << i)).ToKernel ()
+							select result + signal (input) * (!weights)[i - firstBand]
+						)
+					)
+			);
+
+		public static CLKernel<PerlinArgs, ColorizeArgs, Buffer<uint>> 
 			Example = CLKernel.Create 
 			(
 				nameof (Example), 
-				(PerlinArgs perlin, ColorMapArg colorMap, Buffer<uint> result) =>
+				(PerlinArgs perlin, ColorizeArgs colorMap, Buffer<uint> result) =>
 					from pos in PixelPosTo0_1 ().ToKernel ()
 					let col = NormalMap (v => Perlin (!perlin.Scale, !perlin.Periodic, v), 1f, pos)
-					let foo = ParColorMap.ValueAt (colorMap.Entries, !colorMap.Count, 0f)
+					let foo = Colorize (colorMap.Entries, !colorMap.Count, 0f)
 					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
 					select new KernelResult
 					{

@@ -67,6 +67,23 @@
 					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
 		}
 
+		private static Ast.Macro WhileMacro ()
+		{
+			var def = Macro.GetMacroDefinition (typeof (Macro<T, Macro<T, bool>, Macro<T, T>, T>));
+			var done = Macro.GenUniqueVar (typeof (bool), "done");
+			var init = Ast.MPRef (def.Parameters[0]);
+			var cond = Ast.Op ("!{0}", Ast.VRef (done));
+			var cont = (def.Parameters[1] as Ast.MacroDefParam).Definition;
+			var body = (def.Parameters[2] as Ast.MacroDefParam).Definition;
+			return Ast.Mac (def.Parameters, def.Result, Ast.Blk (
+				Ast.Ass (Ast.VRef (def.Result), init),
+				Ast.DeclVar (done),
+				Ast.MCall (cont, done, Ast.VRef (def.Result)),
+				Ast.While (cond, Ast.Blk (
+					Ast.MCall (body, def.Result, Ast.VRef (def.Result)),
+					Ast.MCall (cont, done, Ast.VRef (def.Result))))));
+		}
+
 		private static Ast.Macro IfMacro ()
 		{
 			var def = Macro.GetMacroDefinition (typeof (Macro<bool, Macro<T>, Macro<T>, T>));
@@ -77,19 +94,46 @@
 				Ast.If (cond, Ast.MCall (thenm, def.Result), Ast.MCall (elsem, def.Result))));
 		}
 
-		public static readonly Macro<int, int, int, T, Macro<int, T, T>, T> ForStep =
-			Macro.Create (() => ForStep, ForStepMacro ());
+		public static readonly Macro<int, int, int, T, Macro<int, T, T>, T> 
+			ForStep = Macro.Create 
+			(
+				() => ForStep, 
+				ForStepMacro ()
+			);
 
-		public static readonly Macro<int, int, T, Macro<int, T, T>, T> For =
-			Macro.Create (() => For, ForMacro ());
+		public static readonly Macro<int, int, T, Macro<int, T, T>, T> 
+			For = Macro.Create 
+			(
+				() => For, 
+				ForMacro ()
+			);
 
-		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> DoUntil =
-			Macro.Create (() => DoUntil, DoUntilMacro ());
+		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> 
+			DoUntil = Macro.Create 
+			(
+				() => DoUntil, 
+				DoUntilMacro ()
+			);
 
-		public static readonly Macro<int, int, T, Macro<int, T, T>, T> DoUntilChanges =
-			Macro.Create (() => DoUntilChanges, DoUntilChangesMacro ());
+		public static readonly Macro<int, int, T, Macro<int, T, T>, T> 
+			DoUntilChanges = Macro.Create 
+			(
+				() => DoUntilChanges, 
+				DoUntilChangesMacro ()
+			);
 
-		public static readonly Macro<bool, Macro<T>, Macro<T>, T> If =
-			Macro.Create (() => If, IfMacro ());
+		public static readonly Macro<T, Macro<T, bool>, Macro<T, T>, T>
+			While = Macro.Create
+			(
+				() => While,
+				WhileMacro ()
+			);
+
+		public static readonly Macro<bool, Macro<T>, Macro<T>, T> 
+			If = Macro.Create 
+			(
+				() => If, 
+				IfMacro ()
+			);
 	}
 }

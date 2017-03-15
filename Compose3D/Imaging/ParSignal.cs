@@ -22,31 +22,19 @@
 		}
 	}
 
-	[CLStruct]
-	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct ColorMapEntry
-	{
-		public float Key;
-		public Vec3 Color;
-
-		public ColorMapEntry (float key, Vec3 color)
-		{
-			Key = key;
-			Color = color;
-		}
-	}
-
 	public class ColorizeArgs : ArgGroup
 	{
-		public readonly Buffer<ColorMapEntry> Entries;
+		public readonly Buffer<float> Keys;
+		public readonly Buffer<Vec4> Colors;
 		public readonly Value<int> Count;
 
-		public ColorizeArgs (params ColorMapEntry[] entries)
+		public ColorizeArgs (ColorMap<Vec4> colorMap)
 		{
-			if (entries.Length == 0)
-				throw new ArgumentException ("Must provide at least one entry to color map", nameof (entries));
-			Entries = Buffer (entries, ComputeMemoryFlags.ReadOnly);
-			Count = Value (entries.Length);
+			var keys = colorMap.Keys ().ToArray ();
+			var colors = colorMap.Values ().ToArray ();
+			Keys = Buffer (keys, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
+			Colors = Buffer (colors, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
+			Count = Value (keys.Length);
 		}
 	}
 
@@ -102,6 +90,19 @@
 				)
 			);
 
+		public static readonly Func<Vec4, uint>
+			Color4ToUint = CLKernel.Function
+			(
+				() => Color4ToUint,
+				vec => Kernel.Evaluate
+				(
+					from h in 255f.ToKernel ()
+					select (uint)(vec.X.Clamp (0f, 1f) * h) << 24 |
+						(uint)(vec.Y.Clamp (0f, 1f) * h) << 16 |
+						(uint)(vec.Z.Clamp (0f, 1f) * h) << 8 |
+						(uint)(vec.W.Clamp (0f, 1f) * h)
+				)
+			);
 		public static readonly Func<Vec2, int, Vec2, float> 
 			Perlin = CLKernel.Function 
 			(
@@ -232,20 +233,19 @@
 				)
 			);
 
-		public static readonly Func<Buffer<ColorMapEntry>, int, float, Vec3>
+		public static readonly Func<Buffer<float>, Buffer<Vec4>, int, float, Vec4>
 			Colorize = CLKernel.Function
 			(
 				() => Colorize,
-				(colMap, count, value) => Kernel.Evaluate
+				(keys, colors, count, value) => Kernel.Evaluate
 				(
 					from high in Control<int>.DoUntilChanges (0, count, count,
-						(i, res) => (!colMap)[i].Key > value ? i : res).ToKernel ()
+						(i, res) => (!keys)[i] > value ? i : res).ToKernel ()
 					let low = high - 1
 					select
-						high == 0 ? (!colMap)[high].Color :
-						high == count ? (!colMap)[low].Color :
-						(!colMap)[low].Color.Mix ((!colMap)[high].Color,
-							(value - (!colMap)[low].Key) / ((!colMap)[high].Key - (!colMap)[low].Key))
+						high == 0 ? (!colors)[0] :
+						high == count ? (!colors)[low] :
+						(!colors)[low].Mix ((!colors)[high], (value - (!keys)[low]) / ((!keys)[high] - (!keys)[low]))
 				)
 			);
 

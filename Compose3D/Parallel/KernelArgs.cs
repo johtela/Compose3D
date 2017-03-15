@@ -72,7 +72,7 @@
 		public override int PushToCLKernel (CLKernel clKernel, int index)
 		{
 			if (_comBuffer == null)
-				_comBuffer = (_flags | ComputeMemoryFlags.WriteOnly) != 0 ?
+				_comBuffer = (_flags & ComputeMemoryFlags.WriteOnly) != 0 ?
 					new ComputeBuffer<T> (clKernel._comKernel.Context, _flags, _data.Length) :
 					new ComputeBuffer<T> (clKernel._comKernel.Context, _flags, _data);
 			clKernel._comKernel.SetMemoryArgument (index, _comBuffer);

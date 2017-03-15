@@ -14,9 +14,8 @@
 	using GLTypes;
 
 	/// <summary>
-	/// Vector stucture that is mapped to the GLSL type `<#= suffix #>vec<#= dim #>` when used in
-	/// shaders. All the functionality available for vectors in GLSL is 
-	/// implementented in C# as well.
+	/// Vector stucture that is mapped to `<#= suffix #>vec<#= dim #>` when used in
+	/// OpenGL shaders and `<#= type #><#= dim #>` when used in OpenCL kernels.
 	/// </summary>
 	[GLType ("<#= suffix #>vec<#= dim #>")]
 	[CLType ("<#= type #><#= dim #>")]

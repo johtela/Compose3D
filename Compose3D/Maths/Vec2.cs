@@ -1,7 +1,4 @@
-﻿
-
-
-namespace Compose3D.Maths
+﻿namespace Compose3D.Maths
 {
     using System;
     using System.Text;
@@ -10,9 +7,8 @@ namespace Compose3D.Maths
 	using GLTypes;
 
 	/// <summary>
-	/// Vector stucture that is mapped to the GLSL type `vec2` when used in
-	/// shaders. All the functionality available for vectors in GLSL is 
-	/// implementented in C# as well.
+	/// Vector stucture that is mapped to `vec2` when used in
+	/// OpenGL shaders and `float2` when used in OpenCL kernels.
 	/// </summary>
 	[GLType ("vec2")]
 	[CLType ("float2")]
@@ -32,11 +28,9 @@ namespace Compose3D.Maths
 		[CLField ("y")]
         public float Y; 
 
-
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
-
 		[GLConstructor ("vec2 ({0})")]
 		[CLConstructor ("(float2) ({0})")]
 		public Vec2 (float x, float y)
@@ -45,11 +39,9 @@ namespace Compose3D.Maths
 			Y = y; 
 		}
 
-
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
-
 		[GLConstructor ("vec2 ({0})")]
 		[CLConstructor ("(float2) ({0})")]
 		public Vec2 (float value)
@@ -57,9 +49,6 @@ namespace Compose3D.Maths
 			X = value; 
 			Y = value; 
 		}
-
-
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -70,7 +59,6 @@ namespace Compose3D.Maths
 			X = vec.X; 
 			Y = vec.Y; 
 		}
-
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -83,7 +71,6 @@ namespace Compose3D.Maths
 			Y = vec.Y; 
 		}
 
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -95,7 +82,6 @@ namespace Compose3D.Maths
 			Y = vec.Y; 
 		}
 
-
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -105,7 +91,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec2 (-X, -Y);
 		}
-
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -117,7 +102,6 @@ namespace Compose3D.Maths
 			return new Vec2 (X + other.X, Y + other.Y);
 		}
 
-
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -127,7 +111,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec2 (X - other.X, Y - other.Y);
 		}
-
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -139,7 +122,6 @@ namespace Compose3D.Maths
 			return new Vec2 (X * other.X, Y * other.Y);
 		}
 
-
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -149,7 +131,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec2 (X * scalar, Y * scalar);
 		}
-
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -161,7 +142,6 @@ namespace Compose3D.Maths
 			return new Vec2 (X / other.X, Y / other.Y);
 		}
 
-
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -171,7 +151,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec2 (X / scalar, Y / scalar);
 		}
-
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -183,7 +162,6 @@ namespace Compose3D.Maths
 			return X * other.X + Y * other.Y;
 		}
 
-
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -191,9 +169,6 @@ namespace Compose3D.Maths
 		{
 			return X == other.X && Y == other.Y;
 		}
-
-
-
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -214,7 +189,6 @@ namespace Compose3D.Maths
 				{	         
 					case 0: return X;          
 					case 1: return Y; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -224,14 +198,10 @@ namespace Compose3D.Maths
 				{	         
 					case 0: X = value; break;          
 					case 1: Y = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-
-
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.

@@ -1,7 +1,4 @@
-﻿
-
-
-namespace Compose3D.Maths
+﻿namespace Compose3D.Maths
 {
     using System;
     using System.Text;
@@ -10,9 +7,8 @@ namespace Compose3D.Maths
 	using GLTypes;
 
 	/// <summary>
-	/// Vector stucture that is mapped to the GLSL type `vec4` when used in
-	/// shaders. All the functionality available for vectors in GLSL is 
-	/// implementented in C# as well.
+	/// Vector stucture that is mapped to `vec4` when used in
+	/// OpenGL shaders and `float4` when used in OpenCL kernels.
 	/// </summary>
 	[GLType ("vec4")]
 	[CLType ("float4")]
@@ -46,11 +42,9 @@ namespace Compose3D.Maths
 		[CLField ("w")]
         public float W; 
 
-
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
-
 		[GLConstructor ("vec4 ({0})")]
 		[CLConstructor ("(float4) ({0})")]
 		public Vec4 (float x, float y, float z, float w)
@@ -61,11 +55,9 @@ namespace Compose3D.Maths
 			W = w; 
 		}
 
-
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
-
 		[GLConstructor ("vec4 ({0})")]
 		[CLConstructor ("(float4) ({0})")]
 		public Vec4 (float value)
@@ -75,9 +67,6 @@ namespace Compose3D.Maths
 			Z = value; 
 			W = value; 
 		}
-
-
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -90,7 +79,6 @@ namespace Compose3D.Maths
 			Z = z; 
 			W = w; 
 		}
-
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -105,7 +93,6 @@ namespace Compose3D.Maths
 			W = w; 
 		}
 
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -119,7 +106,6 @@ namespace Compose3D.Maths
 			W = vec.W; 
 		}
 
-
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -129,7 +115,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec4 (-X, -Y, -Z, -W);
 		}
-
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -141,7 +126,6 @@ namespace Compose3D.Maths
 			return new Vec4 (X + other.X, Y + other.Y, Z + other.Z, W + other.W);
 		}
 
-
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -151,7 +135,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec4 (X - other.X, Y - other.Y, Z - other.Z, W - other.W);
 		}
-
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -163,7 +146,6 @@ namespace Compose3D.Maths
 			return new Vec4 (X * other.X, Y * other.Y, Z * other.Z, W * other.W);
 		}
 
-
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -173,7 +155,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec4 (X * scalar, Y * scalar, Z * scalar, W * scalar);
 		}
-
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -185,7 +166,6 @@ namespace Compose3D.Maths
 			return new Vec4 (X / other.X, Y / other.Y, Z / other.Z, W / other.W);
 		}
 
-
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -195,7 +175,6 @@ namespace Compose3D.Maths
 		{
 			return new Vec4 (X / scalar, Y / scalar, Z / scalar, W / scalar);
 		}
-
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -207,7 +186,6 @@ namespace Compose3D.Maths
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
 
-
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -215,9 +193,6 @@ namespace Compose3D.Maths
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
-
-
-
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -240,7 +215,6 @@ namespace Compose3D.Maths
 					case 1: return Y;          
 					case 2: return Z;          
 					case 3: return W; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -252,14 +226,10 @@ namespace Compose3D.Maths
 					case 1: Y = value; break;          
 					case 2: Z = value; break;          
 					case 3: W = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-
-
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -276,7 +246,6 @@ namespace Compose3D.Maths
 			}
 		}
 
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -291,7 +260,6 @@ namespace Compose3D.Maths
 				this[(int)z] = value.Z; 
 			}
 		}
-
 
 		
 		/// <summary>

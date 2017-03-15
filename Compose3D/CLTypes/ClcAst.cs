@@ -91,7 +91,7 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return string.Format ("typedef {0} __attribute__ ((packed)) tag_{1}\n{{\n{2}\n}} {1};\n", 
+				return string.Format ("typedef {0} __attribute__ ((aligned (4))) tag_{1}\n{{\n{2}\n}} {1};\n", 
 					IsUnion ? "union" : "struct",
 					Name,
 					Fields.Select (f => string.Format ("    {0};", f.Output (parser)))

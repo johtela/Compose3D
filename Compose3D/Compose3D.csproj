@@ -110,8 +110,9 @@
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
     <Compile Include="Parallel\Kernel.cs" />
-    <Compile Include="Parallel\ParPerlin.cs" />
-    <Compile Include="Parallel\ParSignal.cs" />
+    <Compile Include="Imaging\ParPerlin.cs" />
+    <Compile Include="Imaging\ParSignal.cs" />
+    <Compile Include="Parallel\Tuple.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />

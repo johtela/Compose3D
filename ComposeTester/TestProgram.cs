@@ -1,16 +1,10 @@
 ﻿namespace ComposeTester
 {
 	using System;
-	using System.Linq;
 	using System.Threading.Tasks;
-	using LinqCheck;
-	using Compose3D.Reactive;
-	using Visuals;
 	using System.Windows.Forms;
-	using OpenTK.Input;
-	using Compose3D.CLTypes;
-	using Compose3D.Parallel;
-	using Compose3D.Compiler;
+	using LinqCheck;
+	using Visuals;
 
 	public class TestProgram
 	{
@@ -19,27 +13,18 @@
 		[STAThread]		
 		static void Main (string[] args)
 		{
-			//TestParallel ();
 			var wnd = new MaterialWindow ();
 			wnd.Run ();
-			//			Task.Factory.StartNew (() =>
-			//				Tester.RunTestsTimed (
-			//					new VecTests (),
-			//					new MatTests (),
-			//					new QuatTests (),
-			//					new SceneTests (),
-			//					new IntervalTreeTests (),
-			//					new BoundingTreeTests (),
-			//					new KdTreeTests ()));
-			//			Application.Run (VConsole);
-		}
-
-		private static void TestParallel ()
-		{
-			var device = CLContext.Gpus.First ();
-			var context = CLContext.CreateContextForDevices (device);
-			var kern = ParSignal.Example;
-			var prog = new CLProgram (context, kern);
+			//Task.Factory.StartNew (() =>
+			//	Tester.RunTests (
+			//		new VecTests (),
+			//		new MatTests (),
+			//		new QuatTests (),
+			//		new SceneTests (),
+			//		new IntervalTreeTests (),
+			//		new BoundingTreeTests (),
+			//		new KdTreeTests ()));
+			//Application.Run (VConsole);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace Compose3D.Parallel
+﻿namespace Compose3D.Imaging
 {
 	using System;
 	using System.Linq;
@@ -8,6 +8,7 @@
 	using Compiler;
 	using CLTypes;
 	using Maths;
+	using Parallel;
 
 	public class PerlinArgs : ArgGroup
 	{
@@ -160,7 +161,7 @@
 					new Vec2 (vec.X, value)
 			);
 
-		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, Vec2> 
+		public static readonly Macro<Macro<Vec2, float>, Vec2, Vec2, CLTuple<float, Vec2>> 
 			Dfdv2 = CLKernel.Macro 
 			(
 				() => Dfdv2,
@@ -170,7 +171,11 @@
 					let result = Control<Vec2>.For (0, 2, new Vec2 (0f),
 						(i, v) => Vec2With (v, i, signal (v + Vec2With (new Vec2 (0f), i, dv[i])) - value)
 					)
-					select result / dv
+					select new CLTuple<float, Vec2> ()
+					{
+						Item1 = value,
+						Item2 = result / dv
+					}
 				)
 			);
 
@@ -178,7 +183,7 @@
 			Warp = CLKernel.Macro 
 			(
 				() => Warp,
-				(signal, warp, dv, vec) => signal (vec + Dfdv2 (warp, dv, vec))
+				(signal, warp, dv, vec) => signal (vec + Dfdv2 (warp, dv, vec).Item2)
 			);
 
 		public static readonly Macro<Macro<Vec2, float>, Macro<Vec2, float>, float, Vec2, float> 
@@ -209,7 +214,7 @@
 				(signal, other, mask, vec) => signal (vec).Mix (other (vec), mask (vec))
 			);
 
-		public static readonly Macro<Macro<Vec2, float>, float, Vec2, Vec3> 
+		public static readonly Macro<Macro<Vec2, float>, float, Vec2, CLTuple<float, Vec3>> 
 			NormalMap = CLKernel.Macro 
 			(
 				() => NormalMap,
@@ -218,8 +223,12 @@
 					from dv in Dv ().ToKernel ()
 					let v = Dfdv2 (signal, dv, vec)
 					let scale = dv * strength
-					let n = new Vec3 (v * scale, 1f).Normalized
-					select n * 0.5f + new Vec3 (0.5f)
+					let n = new Vec3 (v.Item2 * scale, 1f).Normalized
+					select new CLTuple<float, Vec3>
+					{
+						Item1 = v.Item1,
+						Item2 = n * 0.5f + new Vec3 (0.5f)
+					}
 				)
 			);
 
@@ -252,21 +261,6 @@
 							select result + signal (input) * (!weights)[i - firstBand]
 						)
 					)
-			);
-
-		public static CLKernel<PerlinArgs, ColorizeArgs, Buffer<uint>> 
-			Example = CLKernel.Create 
-			(
-				nameof (Example), 
-				(PerlinArgs perlin, ColorizeArgs colorMap, Buffer<uint> result) =>
-					from pos in PixelPosTo0_1 ().ToKernel ()
-					let col = NormalMap (v => Perlin (!perlin.Scale, !perlin.Periodic, v), 1f, pos)
-					let foo = Colorize (colorMap.Entries, !colorMap.Count, 0f)
-					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
-					select new KernelResult
-					{
-						Assign.Buffer (result, PixelPosToIndex (), Color3ToUint (col))
-					}
 			);
 	}
 }

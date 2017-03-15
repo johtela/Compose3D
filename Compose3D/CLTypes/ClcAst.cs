@@ -132,9 +132,12 @@
 
 			public override string Output (LinqParser parser)
 			{
-				return "{" + InitFields.Select (t => 
-					string.Format (".{0} = {1}", t.Item1.Output (parser), t.Item2.Output (parser)))
-					.SeparateWith (",\n\t") + "}";
+				return string.Format ("({0}) {{ {1} }}", 
+					parser.MapType (StructType),
+					InitFields.Select (t => (StructType.IsCLUnion () ? 
+						string.Format (".{0} = {1}", t.Item1.Output (parser), t.Item2.Output (parser)) :
+						t.Item2.Output (parser)))
+					.SeparateWith (", "));
 			}
 
 			public override Ast Transform (Func<Ast, Ast> transform)

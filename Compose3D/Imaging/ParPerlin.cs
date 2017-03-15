@@ -1,13 +1,16 @@
-﻿namespace Compose3D.Parallel
+﻿namespace Compose3D.Imaging
 {
 	using System;
 	using CLTypes;
 	using Maths;
+	using Parallel;
 
 	public static class ParPerlin
 	{
-		private static readonly Func<int, int> Permutation =
-			CLKernel.Function (() => Permutation,
+		private static readonly Func<int, int> 
+			Permutation = CLKernel.Function 
+			(
+				() => Permutation,
 				(int index) => Kernel.Evaluate
 				(
 					from con in Kernel.Constants (new
@@ -32,12 +35,17 @@
 				)
 			);
 
-		private static readonly Func<Vec3, Vec3> Fade =
-			CLKernel.Function (() => Fade,
-				(Vec3 t) => t * t * t * (t * (t * 6f - new Vec3 (15f)) + new Vec3 (10f))	);
+		private static readonly Func<Vec3, Vec3> 
+			Fade = CLKernel.Function 
+			(
+				() => Fade,
+				(Vec3 t) => t * t * t * (t * (t * 6f - new Vec3 (15f)) + new Vec3 (10f))	
+			);
 
-		private static readonly Func<int, float, float, float, float> Gradient =
-			CLKernel.Function (() => Gradient,
+		private static readonly Func<int, float, float, float, float> 
+			Gradient = CLKernel.Function 
+			(
+				() => Gradient,
 				(int hash, float x, float y, float z) => Kernel.Evaluate
 				(
 					from h in (hash & 15).ToKernel ()
@@ -47,8 +55,10 @@
 				)
 			);
 
-		public static readonly Func<Vec3, float> Noise =
-			CLKernel.Function (() => Noise,
+		public static readonly Func<Vec3, float> 
+			Noise =CLKernel.Function 
+			(
+				() => Noise,
 				(Vec3 vec) => Kernel.Evaluate
 				(
 					from cube in vec.Floor ().ToKernel ()
@@ -88,8 +98,10 @@
 				)
 			);
 
-		public static readonly Func<Vec3, Vec3, float> PeriodicNoise =
-			CLKernel.Function (() => PeriodicNoise,
+		public static readonly Func<Vec3, Vec3, float> 
+			PeriodicNoise =	CLKernel.Function 
+			(
+				() => PeriodicNoise,
 				(Vec3 vec, Vec3 period) => Kernel.Evaluate
 				(
 					from cube in vec.Floor ().ToKernel ()

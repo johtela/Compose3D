@@ -93,7 +93,7 @@
 			if (declType.IsCLStruct ()  || declType.IsCLUnion ())
 			{
 				MapType (declType);
-				var astruct = (Ast.Structure)_globals[declType.Name];
+				var astruct = (Ast.Structure)_globals[StructTypeName (declType)];
 				var field = astruct.Fields.Find (f => f.Name == me.Member.Name);
 				return Ast.FRef (Expr (me.Expression), field);
 			}
@@ -127,7 +127,7 @@
 			if (type.IsCLStruct () || type.IsCLUnion ())
 			{
 				DefineStruct (type, type.IsCLUnion ());
-				return type.Name;
+				return StructTypeName (type);
 			}
 			return base.MapType (type);
 		}
@@ -135,7 +135,7 @@
 		private void DefineStruct (Type structType, bool isUnion)
 		{
 			if (!DefineType (structType)) return;
-			var name = structType.Name;
+			var name = StructTypeName (structType);
 			var fields = from field in structType.GetCLFields ()
 						 let fi = GetArrayLen (field, field.FieldType)
 						 select Ast.Fld (fi.Item1, field.Name, fi.Item2);

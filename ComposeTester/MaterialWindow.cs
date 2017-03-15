@@ -70,18 +70,37 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var prog = new CLProgram (context, ParSignal.Example);
+			var prog = new CLProgram (context, Signal);
 			var queue = new CLCommandQueue (context);
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
-			var cols = new ColorMapEntry[2];
 			var perlinArgs = new PerlinArgs (new Vec2 (5f), true);
-			var colorMap = new ColorizeArgs (cols);
-			ParSignal.Example.Execute (queue, perlinArgs, colorMap,
+			var colorMap = new ColorizeArgs (new ColorMapEntry[]
+			{
+				new ColorMapEntry (-1f, VertexColor<Vec3>.Red.diffuse),
+				new ColorMapEntry (0f, VertexColor<Vec3>.Green.diffuse),
+				new ColorMapEntry (1f, VertexColor<Vec3>.Blue.diffuse),
+			});
+			Signal.Execute (queue, perlinArgs, colorMap,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 		}
+
+		public static CLKernel<PerlinArgs, ColorizeArgs, Buffer<uint>>
+			Signal = CLKernel.Create
+			(
+				nameof (Signal),
+				(PerlinArgs perlin, ColorizeArgs colorMap, Buffer<uint> result) =>
+					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
+					let t = ParSignal.NormalMap (v => ParSignal.Perlin (!perlin.Scale, !perlin.Periodic, v), 1f, pos)
+					let col = ParSignal.Colorize (colorMap.Entries, !colorMap.Count, t.Item1)
+					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
+					select new KernelResult
+					{
+						Assign.Buffer (result, ParSignal.PixelPosToIndex (), ParSignal.Color3ToUint (t.Item2))
+					}
+			);
 
 		private void CreateSceneGraph ()
 		{

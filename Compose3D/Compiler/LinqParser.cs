@@ -167,6 +167,16 @@
 			return true;
 		}
 
+		protected string StructTypeName (Type structType)
+		{
+			var name = structType.Name;
+			return structType.IsConstructedGenericType ?
+				string.Format ("{0}_{1}",
+					name.Substring (0, name.IndexOf ('`')),
+					structType.GetGenericArguments ().Select (MapType).SeparateWith ("_")) :
+				name;
+		}
+
 		protected Ast.Expression Expr (Expression expr)
 		{
 			var result =
@@ -233,7 +243,7 @@
 				expr.Match<MemberInitExpression, Ast.Expression> (mi =>
 				{
 					MapType (mi.Type);
-					var astruct = (Ast.Structure)_globals[mi.Type.Name];
+					var astruct = (Ast.Structure)_globals[StructTypeName (mi.Type)];
 					var fieldInits = from b in mi.Bindings.Cast<MemberAssignment> ()
 									 let field = astruct.Fields.Find (f => f.Name == b.Member.Name)
 									 select Tuple.Create (Ast.VRef (field), Expr (b.Expression));

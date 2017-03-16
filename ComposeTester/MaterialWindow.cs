@@ -74,26 +74,32 @@
 			var queue = new CLCommandQueue (context);
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
-			var perlinArgs = new PerlinArgs (new Vec2 (5f), true);
+			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
+			var spectral = new SpectralControlArgs (0, 2, 1f, 0.5f, 0.3f);
 			var colorMap = new ColorizeArgs (ColorMap<Vec4>.RGB ());
-			Signal.Execute (queue, perlinArgs, colorMap,
+			Signal.Execute (queue, perlinArgs, colorMap, spectral,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 		}
 
-		public static CLKernel<PerlinArgs, ColorizeArgs, Buffer<uint>>
+		public static CLKernel<PerlinArgs, ColorizeArgs, SpectralControlArgs, Buffer<uint>>
 			Signal = CLKernel.Create
 			(
 				nameof (Signal),
-				(PerlinArgs perlin, ColorizeArgs colorMap, Buffer<uint> result) =>
+				(PerlinArgs perlin, ColorizeArgs colorMap, SpectralControlArgs spectral, Buffer<uint> result) =>
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let t = ParSignal.NormalMap (v => ParSignal.Perlin (!perlin.Scale, !perlin.Periodic, v), 1f, pos)
-					let col = ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, t.Item1)
-					//let col = NormalMap (v => NormalRangeToZeroOne (Perlin (v, !perlinArgs)), 1f, pos)
+					let t = ParSignal.NormalMap (
+						v1 => ParSignal.SpectralControl (
+							v2 => ParSignal.Perlin (!perlin.Scale, !perlin.Periodic, v2),
+							!spectral.FirstBand, !spectral.LastBand, spectral.NormalizedWeights, v1),
+						1f, pos)
+					let col = ParSignal.Color4ToUint ( 
+						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, t.Item1))
+					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (t.Item1))
 					select new KernelResult
 					{
-						Assign.Buffer (result, ParSignal.PixelPosToIndex (), ParSignal.Color4ToUint (col))
+						Assign.Buffer (result, ParSignal.PixelPosToIndex (), col)
 					}
 			);
 

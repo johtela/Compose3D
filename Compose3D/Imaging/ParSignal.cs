@@ -43,7 +43,6 @@
 		public readonly Value<int> FirstBand;
 		public readonly Value<int> LastBand;
 		public readonly Buffer<float> NormalizedWeights;
-		public readonly Value<int> Count;
 
 		public SpectralControlArgs (int firstBand, int lastBand, params float[] weights)
 		{
@@ -59,8 +58,7 @@
 			var normWeights = weights.Map (w => w / sumWeights);
 			FirstBand = Value (firstBand);
 			LastBand = Value (lastBand);
-			NormalizedWeights = Buffer (normWeights, ComputeMemoryFlags.ReadOnly);
-			Count = Value (normWeights.Length);
+			NormalizedWeights = Buffer (normWeights, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
 		}
 	}
 
@@ -249,11 +247,11 @@
 				)
 			);
 
-		public static readonly Macro<Macro<Vec2, float>, int, int, Buffer<float>, int, Vec2, float>
+		public static readonly Macro<Macro<Vec2, float>, int, int, Buffer<float>, Vec2, float>
 			SpectralControl = CLKernel.Macro
 			(
 				() => SpectralControl,
-				(signal, firstBand, lastBand, weights, count, vec) => 
+				(signal, firstBand, lastBand, weights, vec) => 
 					Control<float>.For (firstBand, lastBand + 1, 0f,
 						(i, result) => Kernel.Evaluate
 						(

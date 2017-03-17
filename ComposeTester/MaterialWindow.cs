@@ -75,7 +75,7 @@
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
-			var spectral = new SpectralControlArgs (0, 2, 1f, 0.5f, 0.3f);
+			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
 			var colorMap = new ColorizeArgs (ColorMap<Vec4>.RGB ());
 			Signal.Execute (queue, perlinArgs, colorMap, spectral,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);

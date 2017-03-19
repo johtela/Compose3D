@@ -14,21 +14,21 @@
 				x => ((x * 34f + new Vec3 (1f)) * x).Mod (289f)
 			);
 
-		private static Func<Vec3, Vec3, bool, Vec3>
+		private static Func<Vec3, Vec3, int, Vec3>
 			Distance = CLKernel.Function
 			(
 				() => Distance,
-				(v1, v2, manhattan) =>
-					manhattan ? 
+				(v1, v2, distKind) =>
+					distKind == (int)DistanceKind.Manhattan ? 
 						v1.Abs () + v2.Abs () :
 						(v1 * v1) + (v2 * v2)
 			);
 
-		private static Func<Vec3, Vec2, float, float, bool, Vec3>
+		private static Func<Vec3, Vec2, float, float, int, Vec3>
 			GridDistances = CLKernel.Function
 			(
 				() => GridDistances,
-				(p, Pf,	xoffs, jitter, manhattan) => Kernel.Evaluate
+				(p, Pf,	xoffs, jitter, distKind) => Kernel.Evaluate
 				(
 					from con in Kernel.Constants (new
 					{
@@ -41,15 +41,15 @@
 					let oy = pK.Floor ().Mod (7f) * con.K - con.Ko
 					let dx = jitter * ox + new Vec3 (Pf.X + xoffs)
 					let dy = jitter * oy + new Vec3 (Pf.Y) - con.of
-					select Distance (dx, dy, manhattan)
+					select Distance (dx, dy, distKind)
 				)
 			);
 
-		public static Func<Vec2, float, bool, Vec2>
+		public static Func<Vec2, float, int, Vec2>
 			Noise2D = CLKernel.Function
 			(
 				() => Noise2D,
-				(P, jitter, manhattan) => Kernel.Evaluate
+				(P, jitter, distKind) => Kernel.Evaluate
 				(
 					from con in Kernel.Constants (new
 					{
@@ -58,9 +58,9 @@
 					let Pi = P.Floor ().Mod (289f)
 					let Pf = P.Fraction ()
 					let px = Permute (con.oi + new Vec3 (Pi.X))
-					let d1 = GridDistances (Permute (new Vec3 (px.X + Pi.Y) + con.oi), Pf, 0.5f, jitter, manhattan)
-					let d2 = GridDistances (Permute (new Vec3 (px.Y + Pi.Y) + con.oi), Pf, -0.5f, jitter, manhattan)
-					let d3 = GridDistances (Permute (new Vec3 (px.Z + Pi.Y) + con.oi), Pf, -1.5f, jitter, manhattan)
+					let d1 = GridDistances (Permute (new Vec3 (px.X + Pi.Y) + con.oi), Pf, 0.5f, jitter, distKind)
+					let d2 = GridDistances (Permute (new Vec3 (px.Y + Pi.Y) + con.oi), Pf, -0.5f, jitter, distKind)
+					let d3 = GridDistances (Permute (new Vec3 (px.Z + Pi.Y) + con.oi), Pf, -1.5f, jitter, distKind)
 					let d1a = d1.Min (d2)
 					let d2a = d1.Max (d2).Min (d3)
 					let d1b = d1a.Min (d2a)

@@ -22,6 +22,22 @@
 		}
 	}
 
+	public class WorleyArgs : ArgGroup
+	{
+		public readonly Value<Vec2> Scale;
+		public readonly Value<float> Jitter;
+		public readonly Value<int> DistanceKind;
+		public readonly Value<int> NoiseKind;
+
+		public WorleyArgs (Vec2 scale, float jitter, DistanceKind distKind, WorleyNoiseKind noiseKind)
+		{
+			Scale = Value (scale);
+			Jitter = Value (jitter);
+			DistanceKind = Value ((int)distKind);
+			NoiseKind = Value ((int)noiseKind);
+		}
+	}
+
 	public class ColorizeArgs : ArgGroup
 	{
 		public readonly Buffer<float> Keys;
@@ -102,15 +118,30 @@
 				)
 			);
 		public static readonly Func<Vec2, int, Vec2, float> 
-			Perlin = CLKernel.Function 
+			PerlinNoise = CLKernel.Function 
 			(
-				() => Perlin,
+				() => PerlinNoise,
 				(scale, periodic, pos) => Kernel.Evaluate
 				(
 					from scaled in (pos * scale).ToKernel ()
 					select periodic == 0 ?
 						ParPerlin.Noise (new Vec3 (scaled, 0f)) :
 						ParPerlin.PeriodicNoise (new Vec3 (scaled, 0f), new Vec3 (scale, 256f))
+				)
+			);
+
+		public static readonly Func<Vec2, float, int, int, Vec2, float>
+			WorleyNoise = CLKernel.Function
+			(
+				() => WorleyNoise,
+				(scale, jitter, manhattan, kind, pos) => Kernel.Evaluate
+				(
+					from scaled in (pos * scale).ToKernel ()
+					let res = ParWorley.Noise2D (pos, jitter, manhattan)
+					select
+						kind == (int)WorleyNoiseKind.F1 ? res.X :
+						kind == (int)WorleyNoiseKind.F2 ? res.Y :
+						res.Y - res.X
 				)
 			);
 

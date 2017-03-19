@@ -453,7 +453,7 @@
 		/// Applies the <see cref="Math.Abs(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("abs ({0})")]
-		[CLFunction ("abs ({0})")]
+		[CLFunction ("fabs ({0})")]
 		public static V Abs<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{
@@ -497,7 +497,7 @@
 		/// Applies the <see cref="FMath.Fraction(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
-		[CLFunction ("fract ({0})")]
+		[CLFunction ("fract ({0}, null)")]
 		public static V Fraction<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{

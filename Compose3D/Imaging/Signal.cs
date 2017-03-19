@@ -11,6 +11,7 @@
 
 	public delegate U Signal<in T, out U> (T samplePoint);
 
+	public enum DistanceKind { Euclidean, Manhattan }
 	public enum WorleyNoiseKind { F1, F2, F3, F2_F1 }
 
 	public static class Signal

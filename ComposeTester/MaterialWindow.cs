@@ -77,7 +77,11 @@
 			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
 			var worleyArgs = new WorleyArgs (new Vec2 (5f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
 			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
-			var colorMap = new ColorizeArgs (ColorMap<Vec4>.RGB ());
+			var colorMap = new ColorizeArgs (new ColorMap<Vec4> ()
+			{
+				{ 0f, new Vec4 (1f) },
+				{ 1f, new Vec4 (0f) }
+			});
 			//PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
 			//	KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			WorleySignal.Execute (queue, worleyArgs, colorMap, 
@@ -113,7 +117,7 @@
 				(WorleyArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
 					let v = ParSignal.WorleyNoise (!worley.Scale, !worley.Jitter, !worley.DistanceKind, 
-						!worley.NoiseKind, pos)
+						!worley.NoiseKind, pos) * -5f + 1f
 					let col = ParSignal.Color4ToUint (
 						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
 					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))

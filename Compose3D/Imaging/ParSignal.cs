@@ -137,7 +137,7 @@
 				(scale, jitter, manhattan, kind, pos) => Kernel.Evaluate
 				(
 					from scaled in (pos * scale).ToKernel ()
-					let res = ParWorley.Noise2D (pos, jitter, manhattan)
+					let res = ParWorley.Noise2D (scaled, jitter, manhattan)
 					select
 						kind == (int)WorleyNoiseKind.F1 ? res.X :
 						kind == (int)WorleyNoiseKind.F2 ? res.Y :

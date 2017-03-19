@@ -497,7 +497,7 @@
 		/// Applies the <see cref="FMath.Fraction(float)"/> function to the vector componentwise.
 		/// </summary>
 		[GLFunction ("fract ({0})")]
-		[CLFunction ("fract ({0}, null)")]
+		[CLFunction ("({0} - floor ({0}))")]
 		public static V Fraction<V> (this V vec)
 			where V : struct, IVec<V, float>
 		{

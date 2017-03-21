@@ -70,12 +70,14 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var prog = new CLProgram (context, WorleySignal);
+			var prog = new CLProgram (context, WorleyCPSignal);
 			var queue = new CLCommandQueue (context);
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
 			var worleyArgs = new WorleyArgs (new Vec2 (5f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
+			var worleyCPArgs = new WorleyCPArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
+				Signal.HaltonControlPoints ().Take (5).ReplicateOnTorus ().ToArray ());
 			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
 			var colorMap = new ColorizeArgs (new ColorMap<Vec4> ()
 			{
@@ -84,7 +86,9 @@
 			});
 			//PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
 			//	KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-			WorleySignal.Execute (queue, worleyArgs, colorMap, 
+			//WorleySignal.Execute (queue, worleyArgs, colorMap, 
+			//	KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+			WorleyCPSignal.Execute (queue, worleyCPArgs, colorMap,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
@@ -117,7 +121,24 @@
 				(WorleyArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
 					let v = ParSignal.WorleyNoise (!worley.Scale, !worley.Jitter, !worley.DistanceKind, 
-						!worley.NoiseKind, pos) * -5f + 1f
+						!worley.NoiseKind, pos)
+					let col = ParSignal.Color4ToUint (
+						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
+					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
+					select new KernelResult
+					{
+						Assign.Buffer (result, ParSignal.PixelPosToIndex (), gs)
+					}
+			);
+
+		public static CLKernel<WorleyCPArgs, ColorizeArgs, Buffer<uint>>
+			WorleyCPSignal = CLKernel.Create
+			(
+				nameof (WorleyCPSignal),
+				(WorleyCPArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
+					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
+					let v = ParSignal.WorleyCPNoise (worley.ControlPoints, !worley.Count, !worley.DistanceKind,
+						!worley.NoiseKind, pos)
 					let col = ParSignal.Color4ToUint (
 						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
 					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))

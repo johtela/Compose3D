@@ -20,7 +20,7 @@
 
 		private static Dictionary<MethodInfo, string> _functions = new Dictionary<MethodInfo, string> ()
         {
-            { GetMethod (mathT, "Abs", floatT), "abs ({0})" },
+            { GetMethod (mathT, "Abs", floatT), "fabs ({0})" },
             { GetMethod (mathT, "Abs", intT), "abs ({0})" },
             { GetMethod (mathT, "Sign", floatT), "sign ({0})" },
             { GetMethod (mathT, "Sign", doubleT), "sign ({0})" },

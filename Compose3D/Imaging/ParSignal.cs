@@ -38,6 +38,22 @@
 		}
 	}
 
+	public class WorleyCPArgs : ArgGroup
+	{
+		public readonly Buffer<Vec2> ControlPoints;
+		public readonly Value<int> Count;
+		public readonly Value<int> DistanceKind;
+		public readonly Value<int> NoiseKind;
+
+		public WorleyCPArgs (DistanceKind distKind, WorleyNoiseKind noiseKind, params Vec2[] controlPoints)
+		{
+			DistanceKind = Value ((int)distKind);
+			NoiseKind = Value ((int)noiseKind);
+			ControlPoints = Buffer (controlPoints, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
+			Count = Value (controlPoints.Length);
+		}
+	}
+
 	public class ColorizeArgs : ArgGroup
 	{
 		public readonly Buffer<float> Keys;
@@ -134,13 +150,28 @@
 			WorleyNoise = CLKernel.Function
 			(
 				() => WorleyNoise,
-				(scale, jitter, manhattan, kind, pos) => Kernel.Evaluate
+				(scale, jitter, distKind, noiseKind, pos) => Kernel.Evaluate
 				(
 					from scaled in (pos * scale).ToKernel ()
-					let res = ParWorley.Noise2D (scaled, jitter, manhattan)
+					let res = ParWorley.Noise2D (scaled, jitter, distKind)
 					select
-						kind == (int)WorleyNoiseKind.F1 ? res.X :
-						kind == (int)WorleyNoiseKind.F2 ? res.Y :
+						noiseKind == (int)WorleyNoiseKind.F1 ? res.X :
+						noiseKind == (int)WorleyNoiseKind.F2 ? res.Y :
+						res.Y - res.X
+				)
+			);
+
+		public static readonly Func<Buffer<Vec2>, int, int, int, Vec2, float>
+			WorleyCPNoise = CLKernel.Function
+			(
+				() => WorleyCPNoise, 
+				(controlPoints, count, distKind, noiseKind, pos) => Kernel.Evaluate
+				(
+					from res in ParWorley.Noise2DCP (controlPoints, count, distKind, pos).ToKernel ()
+					select
+						noiseKind == (int)WorleyNoiseKind.F1 ? res.X :
+						noiseKind == (int)WorleyNoiseKind.F2 ? res.Y :
+						noiseKind == (int)WorleyNoiseKind.F3 ? res.Z :
 						res.Y - res.X
 				)
 			);

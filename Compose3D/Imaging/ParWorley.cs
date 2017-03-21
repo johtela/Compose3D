@@ -2,6 +2,7 @@
 {
 	using System;
 	using CLTypes;
+	using Compiler;
 	using Maths;
 	using Parallel;
 
@@ -15,13 +16,23 @@
 			);
 
 		private static Func<Vec3, Vec3, int, Vec3>
-			Distance = CLKernel.Function
+			Distance3 = CLKernel.Function
 			(
-				() => Distance,
+				() => Distance3,
 				(v1, v2, distKind) =>
 					distKind == (int)DistanceKind.Manhattan ? 
 						v1.Abs () + v2.Abs () :
 						(v1 * v1) + (v2 * v2)
+			);
+
+		private static Func<Vec2, int, float>
+			Distance = CLKernel.Function
+			(
+				() => Distance,
+				(vec, distKind) =>
+					distKind == (int)DistanceKind.Manhattan ?
+						Math.Abs (vec.X) + Math.Abs (vec.Y) :
+						vec.Dot (vec)
 			);
 
 		private static Func<Vec3, Vec2, float, float, int, Vec3>
@@ -41,7 +52,7 @@
 					let oy = pK.Floor ().Mod (7f) * con.K - con.Ko
 					let dx = jitter * ox + new Vec3 (Pf.X + xoffs)
 					let dy = jitter * oy + new Vec3 (Pf.Y) - con.of
-					select Distance (dx, dy, distKind)
+					select Distance3 (dx, dy, distKind)
 				)
 			);
 
@@ -71,6 +82,26 @@
 					let dy = Math.Min (dyz.X, Math.Min (dyz.Y, d2b.X))
 					select new Vec2 (d1d.X, dy).Sqrt ()
 				)
+			);
+
+		public static Func<Buffer<Vec2>, int, int, Vec2, Vec3>
+			Noise2DCP = CLKernel.Function
+			(
+				() => Noise2DCP,
+				(controlPoints, count, distKind, pos) =>
+					Control<Vec3>.For (0, count, new Vec3 (1000000f),
+
+						(i, res) => Kernel.Evaluate
+						(
+							from dist in Distance ((!controlPoints)[i] - pos, distKind).ToKernel ()
+							select
+								dist < res.X ? new Vec3 (dist, res.X, res.Y) :
+								dist < res.Y ? new Vec3 (res.X, dist, res.Y) :
+								dist < res.Z ? new Vec3 (res.X, res.Y, dist) :
+								res
+						)
+					)
+					.Sqrt ()
 			);
 	}
 }

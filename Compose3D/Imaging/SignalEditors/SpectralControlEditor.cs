@@ -99,12 +99,6 @@
 					new XAttribute ("Value", weight))));
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "SpectralControl", Name, FirstBand, LastBand,
-				ActiveBandWeights ());
-		}
-
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source); }
@@ -118,5 +112,10 @@
 					ActiveBandWeights ().ToArray ());
 			}
 		}
+
+        public SpectralControlArgs Args
+        {
+            get { return new SpectralControlArgs (FirstBand, LastBand, BandWeights.ToArray ()); }
+        }
 	}
 }

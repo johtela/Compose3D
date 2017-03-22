@@ -41,10 +41,5 @@
 		protected override void Save (XElement xelem)
 		{
 		}
-
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "Mask", Name, Other.Name, Mask.Name);
-		}
 	}
 }

@@ -32,11 +32,6 @@
 			xelem.SaveColorMap<Vec3> (ColorMap);
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "Colorize", Name, ColorMap);
-		}
-
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source); }
@@ -46,5 +41,10 @@
 		{
 			get { return Source.Signal.Colorize (ColorMap); }
 		}
+
+        public ColorizeArgs<Vec3> Args
+        {
+            get { return new ColorizeArgs<Vec3> (ColorMap); }
+        }
 	}
 }

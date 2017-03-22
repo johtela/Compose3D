@@ -34,11 +34,6 @@
 						"No", "Yes"), true));
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature ("SignalEditor", "Perlin", Name, Seed, Scale, Periodic);
-		}
-
 		protected override void Load (XElement xelem)
 		{
 			Seed = xelem.AttrInt (nameof (Seed));
@@ -69,5 +64,10 @@
 				return signal.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f));
 			}
 		}
+
+        public PerlinArgs Args
+        {
+            get { return new PerlinArgs (Scale, Periodic); }
+        }
 	}
 }

@@ -38,11 +38,6 @@
 			xelem.SetAttributeValue (nameof (Scale), Scale);
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "Warp", Name, Warp, Scale, Dv);
-		}
-
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source, Warp); }

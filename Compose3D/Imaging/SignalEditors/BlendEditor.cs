@@ -46,10 +46,5 @@
 		{
 			xelem.SetAttributeValue (nameof (BlendFactor), BlendFactor);
 		}
-
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "Blend", Name, Other.Name, BlendFactor);
-		}
 	}
 }

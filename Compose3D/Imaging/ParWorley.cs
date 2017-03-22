@@ -4,7 +4,6 @@
 	using CLTypes;
 	using Compiler;
 	using Maths;
-	using Parallel;
 
 	public static class ParWorley
 	{

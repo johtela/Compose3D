@@ -1,8 +1,7 @@
-﻿namespace Compose3D.Parallel
+﻿namespace Compose3D.CLTypes
 {
 	using System;
 	using Compiler;
-	using CLTypes;
 
 	public delegate T Kernel<T> ();
 

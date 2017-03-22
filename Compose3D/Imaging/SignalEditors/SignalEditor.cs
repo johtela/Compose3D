@@ -4,7 +4,6 @@
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
-	using System.Text;
 	using System.Xml.Linq;
 	using Extensions;
 	using Imaging;
@@ -35,11 +34,11 @@
 
 		public static SignalEditor<Vec2, float> Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
 			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, int seed = 0, 
-			DistanceFunctionKind distanceFunction = DistanceFunctionKind.Euclidean, float jitter = 0f, 
+			DistanceKind distanceKind = DistanceKind.Euclidean, float jitter = 0f, 
 			bool periodic = false)
 		{
 			return new WorleyEditor () { Name = name, NoiseKind = kind, ControlPoints = controlPoints,
-				ControlPointCount = controlPointCount, Seed = seed, DistanceFunction = distanceFunction,
+				ControlPointCount = controlPointCount, Seed = seed, DistanceKind = distanceKind,
 				Jitter = jitter, Periodic = periodic };
 		}
 
@@ -179,10 +178,7 @@
 				levelContainers.Add (container);
 			}
 			changed (rootEditors[0]);
-			return new CommandContainer (Container.Horizontal (true, false, levelContainers),
-				new KeyboardCommand ("Code copied to clipboard.",
-					React.By ((Key key) => System.Windows.Forms.Clipboard.SetText (ToCode (rootEditors))),
-					Key.C, Key.LControl));
+            return Container.Horizontal (true, false, levelContainers);
 		}
 
 		public static Control EditorUI (string filePath, Texture outputTexture, Vec2i outputSize,
@@ -206,14 +202,6 @@
 			return from level in all.GroupBy (e => e._level).OrderBy (g => g.Key)
 				   from editor in level
 				   select editor;
-		}
-
-		public static string ToCode (params AnySignalEditor[] rootEditors)
-		{
-			var result = new StringBuilder ();
-			foreach (var editor in EditorsByLevel (rootEditors))
-				result.Append (editor.InitializationCode ());
-			return result.ToString ();
 		}
 
 		public static XElement SaveToXml (params AnySignalEditor[] rootEditors)

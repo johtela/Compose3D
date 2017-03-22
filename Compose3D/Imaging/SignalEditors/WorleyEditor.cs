@@ -11,13 +11,12 @@
 	using Visuals;
 
 	public enum ControlPointKind { Random, Halton23 }
-	public enum DistanceFunctionKind { Euclidean, Squared, Manhattan }
 
 	internal class WorleyEditor : SignalEditor<Vec2, float>
 	{
 		public WorleyNoiseKind NoiseKind;
 		public ControlPointKind ControlPoints;
-		public DistanceFunctionKind DistanceFunction;
+		public DistanceKind DistanceKind;
 		public int ControlPointCount;
 		public int Seed;
 		public float Jitter;
@@ -30,7 +29,6 @@
 
 		private Func<Vec2, Vec2, float>[] _distFunctions = {
 				Vec.DistanceTo<Vec2>,
-				Vec.SquaredDistanceTo<Vec2>,
 				Vec.ManhattanDistanceTo<Vec2>
 			};
 
@@ -54,9 +52,9 @@
 					new NumericEdit (ControlPointCount, true, 1,
 						React.By ((float i) => ControlPointCount = (int)i).And (changedf).Filter (i => i > 2)), true),
 				Container.LabelAndControl ("Distance: ",
-					new Picker ((int)DistanceFunction,
-						React.By ((int i) => DistanceFunction = (DistanceFunctionKind)i).And (changed),
-						Enum.GetNames (typeof (DistanceFunctionKind))), true),
+					new Picker ((int)DistanceKind,
+						React.By ((int i) => DistanceKind = (DistanceKind)i).And (changed),
+						Enum.GetNames (typeof (DistanceKind))), true),
 				Container.LabelAndControl ("Jitter: ",
 					new NumericEdit (Jitter, false, 0.1f,
 						React.By ((float x) => Jitter = x).And (changedf)), true),
@@ -70,7 +68,7 @@
 		{
 			NoiseKind = xelem.AttrEnum<WorleyNoiseKind> (nameof (NoiseKind));
 			ControlPoints = xelem.AttrEnum<ControlPointKind> (nameof (ControlPoints));
-			DistanceFunction = xelem.AttrEnum<DistanceFunctionKind> (nameof (DistanceFunction));
+			DistanceKind = xelem.AttrEnum<DistanceKind> (nameof (DistanceKind));
 			ControlPointCount = xelem.AttrInt (nameof (ControlPointCount));
 			Seed = xelem.AttrInt (nameof (Seed));
 			Jitter = xelem.AttrFloat (nameof (Jitter));
@@ -81,17 +79,11 @@
 		{
 			xelem.SetAttributeValue (nameof (NoiseKind), NoiseKind);
 			xelem.SetAttributeValue (nameof (ControlPoints), ControlPoints);
-			xelem.SetAttributeValue (nameof (DistanceFunction), DistanceFunction);
+			xelem.SetAttributeValue (nameof (DistanceKind), DistanceKind);
 			xelem.SetAttributeValue (nameof (ControlPointCount), ControlPointCount);
 			xelem.SetAttributeValue (nameof (Seed), Seed);
 			xelem.SetAttributeValue (nameof (Jitter), Jitter);
 			xelem.SetAttributeValue (nameof (Periodic), Periodic);
-		}
-
-		protected override string ToCode ()
-		{
-			return MethodSignature ("SignalEditor", "Worley", Name, NoiseKind, ControlPoints,
-				ControlPointCount, Seed, DistanceFunction, Jitter, Periodic);
 		}
 
 		public override IEnumerable<AnySignalEditor> Inputs
@@ -99,18 +91,28 @@
 			get { return Enumerable.Empty<AnySignalEditor> (); }
 		}
 
-		public override Signal<Vec2, float> Signal
+        private IEnumerable<Vec2> GetControlPoints ()
+        {
+            var cpoints = _cpGenerators[(int)ControlPoints] (Seed)
+                .Take (ControlPointCount)
+                .Jitter (Jitter);
+            if (Periodic)
+                cpoints = cpoints.ReplicateOnTorus ();
+            return cpoints;
+        }
+
+        public override Signal<Vec2, float> Signal
 		{
 			get
 			{
-				var cpoints = _cpGenerators[(int)ControlPoints] (Seed)
-					.Take (ControlPointCount)
-					.Jitter (Jitter);
-				if (Periodic)
-					cpoints = cpoints.ReplicateOnTorus ();
-				var dfunc = _distFunctions[(int)DistanceFunction];
-				return Imaging.Signal.WorleyNoise (NoiseKind, dfunc, cpoints);
+				return Imaging.Signal.WorleyNoise (NoiseKind, _distFunctions[(int)DistanceKind], 
+                    GetControlPoints ());
 			}
 		}
+
+        public WorleyArgs Args
+        {
+            get { return new WorleyArgs (DistanceKind, NoiseKind, GetControlPoints ().ToArray ()); }
+        }
 	}
 }

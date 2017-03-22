@@ -3,7 +3,6 @@
 	using System;
 	using CLTypes;
 	using Maths;
-	using Parallel;
 
 	public static class ParPerlin
 	{

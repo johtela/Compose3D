@@ -47,7 +47,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -69,7 +68,7 @@
     <Compile Include="GLTypes\GlslParser.cs" />
     <Compile Include="Imaging\ParWorley.cs" />
     <Compile Include="Maths\Convert.cs" />
-    <Compile Include="Parallel\KernelArgs.cs" />
+    <Compile Include="CLTypes\KernelArgs.cs" />
     <Compile Include="CLTypes\CLProgram.cs" />
     <Compile Include="CLTypes\CLTypeMapping.cs" />
     <Compile Include="CLTypes\CLTypeHelpers.cs" />
@@ -82,7 +81,6 @@
     <Compile Include="DataStructures\BoundingRectTree.cs" />
     <Compile Include="Imaging\SignalEditors\AnySignalEditor.cs" />
     <Compile Include="Imaging\SignalEditors\BlendEditor.cs" />
-    <Compile Include="Imaging\SignalEditors\CodeGen.cs" />
     <Compile Include="Imaging\ColorMap.cs" />
     <Compile Include="Imaging\GaussianFilter.cs" />
     <Compile Include="Imaging\Signal.cs" />
@@ -110,10 +108,10 @@
     </Compile>
     <Compile Include="Maths\Noise.cs" />
     <Compile Include="Maths\PerlinNoise.cs" />
-    <Compile Include="Parallel\Kernel.cs" />
+    <Compile Include="CLTypes\Kernel.cs" />
     <Compile Include="Imaging\ParPerlin.cs" />
     <Compile Include="Imaging\ParSignal.cs" />
-    <Compile Include="Parallel\Tuple.cs" />
+    <Compile Include="CLTypes\CLTuple.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
@@ -255,7 +253,7 @@
     <Compile Include="Shaders\FragmentShaders.cs" />
     <Compile Include="Geometry\Lathe.cs" />
     <Compile Include="Geometry\VertexManipulator.cs" />
-    <Compile Include="Shaders\Shader.cs" />
+    <Compile Include="GLTypes\Shader.cs" />
     <Compile Include="Compiler\ParsingHelpers.cs" />
     <Compile Include="Geometry\Transformable.cs" />
     <Compile Include="Geometry\Extrusion.cs" />

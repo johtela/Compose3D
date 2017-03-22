@@ -36,11 +36,6 @@
 			xelem.SetAttributeValue (nameof (Strength), Strength);
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "NormalMap", Name, Strength, Dv);
-		}
-
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source); }

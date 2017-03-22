@@ -37,17 +37,6 @@
 				new VisualStyle (pen: new Pen (Color.AliceBlue, 2f)));
 		}
 
-		protected string MethodSignature (string instance, string method, params object[] args)
-		{
-			return string.Format ("{0}.{1} ({2})", instance, method,
-				args.Select (CodeGen.ToCode).SeparateWith (", "));
-		}
-
-		internal string InitializationCode ()
-		{
-			return string.Format ("var {0} = {1};\n", Name, ToCode ());
-		}
-
 		private string XElementName ()
 		{
 			var result = GetType ().Name;
@@ -71,7 +60,6 @@
 		}
 
 		protected abstract Control CreateControl ();
-		protected abstract string ToCode ();
 
 		protected virtual void Load (XElement xelem) { }
 		protected virtual void Save (XElement xelem) { }

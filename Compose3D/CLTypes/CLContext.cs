@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using Cloo;
-    using Parallel;
 
     public class CLContext
     {

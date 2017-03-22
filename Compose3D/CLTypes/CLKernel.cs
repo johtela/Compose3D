@@ -4,7 +4,6 @@
 	using System.Linq.Expressions;
 	using Cloo;
 	using Compiler;
-	using Parallel;
 
 	public class CLKernel
 	{

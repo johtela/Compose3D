@@ -7,7 +7,6 @@
     using System.Reflection;
     using Extensions;
 	using Compiler;
-	using Parallel;
 
 	public class ClcParser : LinqParser
 	{

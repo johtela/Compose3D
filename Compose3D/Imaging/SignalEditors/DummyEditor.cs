@@ -16,11 +16,6 @@
 				HAlign.Right, VAlign.Center);
 		}
 
-		protected override string ToCode ()
-		{
-			return Name;
-		}
-
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return Enumerable.Empty<AnySignalEditor> (); }

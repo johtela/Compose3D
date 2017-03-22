@@ -1,10 +1,9 @@
-﻿namespace Compose3D.Parallel
+﻿namespace Compose3D.CLTypes
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using CLTypes;
 	using Maths;
 	using Cloo;
 

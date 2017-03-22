@@ -7,7 +7,6 @@
 	using Compiler;
 	using CLTypes;
 	using Maths;
-	using Parallel;
 
 	public class PerlinArgs : ArgGroup
 	{
@@ -53,13 +52,14 @@
 		}
 	}
 
-	public class ColorizeArgs : ArgGroup
+	public class ColorizeArgs<V> : ArgGroup
+        where V : struct, IVec<V, float>
 	{
 		public readonly Buffer<float> Keys;
-		public readonly Buffer<Vec4> Colors;
+		public readonly Buffer<V> Colors;
 		public readonly Value<int> Count;
 
-		public ColorizeArgs (ColorMap<Vec4> colorMap)
+		public ColorizeArgs (ColorMap<V> colorMap)
 		{
 			var keys = colorMap.Keys ().ToArray ();
 			var colors = colorMap.Values ().ToArray ();
@@ -92,6 +92,18 @@
 			NormalizedWeights = Buffer (normWeights, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
 		}
 	}
+
+    public class TransformArgs : ArgGroup
+    {
+        public readonly Value<float> Scale;
+        public readonly Value<float> Offset;
+
+        public TransformArgs (float scale, float offset)
+        {
+            Scale = new Value<float> (scale);
+            Offset = new Value<float> (offset);
+        }
+    }
 
 	public static class ParSignal
 	{

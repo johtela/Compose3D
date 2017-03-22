@@ -16,16 +16,6 @@
 		public float Offset;
 		public SignalEditor<V, float> Source;
 
-		public override Signal<V, float> Signal
-		{
-			get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (-1f, 1f); }
-		}
-
-		public override IEnumerable<AnySignalEditor> Inputs
-		{
-			get { return EnumerableExt.Enumerate (Source); }
-		}
-
 		protected override Control CreateControl ()
 		{
 			var changed = Changed.Adapt<float, AnySignalEditor> (this);
@@ -51,9 +41,19 @@
 			xelem.SetAttributeValue (nameof (Offset), Offset);
 		}
 
-		protected override string ToCode ()
-		{
-			return MethodSignature (Source.Name, "Transform", Name, Scale, Offset);
-		}
-	}
+        public override Signal<V, float> Signal
+        {
+            get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (-1f, 1f); }
+        }
+
+        public override IEnumerable<AnySignalEditor> Inputs
+        {
+            get { return EnumerableExt.Enumerate (Source); }
+        }
+
+        public TransformArgs Args
+        {
+            get { return new TransformArgs (Scale, Offset); }
+        }
+    }
 }

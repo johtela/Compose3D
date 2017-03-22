@@ -17,8 +17,8 @@
 	public struct MaterialVertex : IVertex, ITextured, INormalMapped
 	{
 		public Vec3 position;
-		public Vec3 normal;
 		public Vec2 texturePos;
+		public Vec3 normal;
 		public Vec3 tangent;
 
 		Vec3 IPositional<Vec3>.position

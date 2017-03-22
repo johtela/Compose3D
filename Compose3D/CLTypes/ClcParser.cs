@@ -16,19 +16,24 @@
 
 		public static string CompileKernels (params CLKernel[] kernels)
 		{
-			var parser = new ClcParser ();
-			foreach (var kernel in kernels)
-			{
-				var body = Ast.Blk ();
-				parser.BeginScope (body);
-				parser._function = ClcAst.Kern (kernel._name,
-					parser.KernelArguments (kernel._expr.Parameters), body);
-				parser.OutputKernel (kernel._expr);
-			}
-			return parser.BuildKernelCode ();
+			return new ClcParser ().CompileAndOutput (kernels);
 		}
 
-		protected override IEnumerable<Ast.Argument> FunctionArguments (IEnumerable<ParameterExpression> pars)
+        private string CompileAndOutput (CLKernel[] kernels)
+        {
+            foreach (var kernel in kernels)
+            {
+                var body = Ast.Blk ();
+                BeginScope (body);
+                _function = ClcAst.Kern (kernel._name,
+                    KernelArguments (kernel._expr.Parameters), body);
+                OutputKernel (kernel._expr);
+                _program.Functions.Add (Macro.InstantiateAllMacros (_function));
+            }
+            return _program.Output (this);
+        }
+
+        protected override IEnumerable<Ast.Argument> FunctionArguments (IEnumerable<ParameterExpression> pars)
 		{
 			return pars.Select (p => KernelArgument (p.Type, p.Name));
 		}
@@ -73,12 +78,6 @@
 		public static void CreateMacro (MemberInfo member, LambdaExpression macro)
 		{
 			CreateMacro (new ClcParser (), member, macro);
-		}
-
-		private string BuildKernelCode ()
-		{
-			_program.Functions.Add (Macro.InstantiateAllMacros (_function));
-			return _program.Output (this);
 		}
 
 		protected override Ast.Expression MapMemberAccess (MemberExpression me)

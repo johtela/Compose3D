@@ -297,6 +297,7 @@
     <None Include="Docs\Background.md" />
     <None Include="Docs\Introduction.md" />
     <None Include="Docs\Maths.md" />
+    <None Include="Docs\NewIntro.md" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Textures\SamplerCube.tt">

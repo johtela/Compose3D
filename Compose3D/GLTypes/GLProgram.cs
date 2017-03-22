@@ -33,7 +33,6 @@
 			int vao = GL.GenVertexArray ();
 			GL.BindVertexArray (vao);
 			var recSize = Marshal.SizeOf (typeof (V));
-			var offset = 0;
 			GL.BindBuffer (BufferTarget.ArrayBuffer, vertices._glvbo);
 			foreach (var attr in VertexAttr.GetAttributes<V> ())
 			{
@@ -41,9 +40,9 @@
 				if (index >= 0)
 				{
 					GL.EnableVertexAttribArray (index);
+					var offset = Marshal.OffsetOf (typeof (V), attr.Name);
 					GL.VertexAttribPointer (index, attr.Count, attr.PointerType, false, recSize, offset);
 				}
-				offset += attr.Size;
 			}
 			return vao;
 		}

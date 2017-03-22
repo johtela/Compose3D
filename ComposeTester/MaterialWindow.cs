@@ -70,13 +70,13 @@
 		{
 			var device = CLContext.Gpus.First ();
 			var context = CLContext.CreateContextForDevices (device);
-			var prog = new CLProgram (context, WorleyCPSignal);
+			var prog = new CLProgram (context, PerlinSignal, WorleySignal, UniformWorleySignal);
 			var queue = new CLCommandQueue (context);
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
-			var worleyArgs = new WorleyArgs (new Vec2 (5f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
-			var worleyCPArgs = new WorleyCPArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
+			var worleyArgs = new UniformWorleyArgs (new Vec2 (10f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
+			var worleyCPArgs = new WorleyArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
 				Signal.HaltonControlPoints ().Take (5).ReplicateOnTorus ().ToArray ());
 			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
 			var colorMap = new ColorizeArgs (new ColorMap<Vec4> ()
@@ -84,11 +84,11 @@
 				{ 0f, new Vec4 (1f) },
 				{ 1f, new Vec4 (0f) }
 			});
-			//PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
-			//	KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-			//WorleySignal.Execute (queue, worleyArgs, colorMap, 
-			//	KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-			WorleyCPSignal.Execute (queue, worleyCPArgs, colorMap,
+            PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
+                KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+            UniformWorleySignal.Execute (queue, worleyArgs, colorMap,
+                KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+            WorleySignal.Execute (queue, worleyCPArgs, colorMap,
 				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
 			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
@@ -114,13 +114,13 @@
 					}
 			);
 
-		public static CLKernel<WorleyArgs, ColorizeArgs, Buffer<uint>>
-			WorleySignal = CLKernel.Create
+		public static CLKernel<UniformWorleyArgs, ColorizeArgs, Buffer<uint>>
+			UniformWorleySignal = CLKernel.Create
 			(
-				nameof (WorleySignal),
-				(WorleyArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
+				nameof (UniformWorleySignal),
+				(UniformWorleyArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let v = ParSignal.WorleyNoise (!worley.Scale, !worley.Jitter, !worley.DistanceKind, 
+					let v = ParSignal.UniformWorleyNoise (!worley.Scale, !worley.Jitter, !worley.DistanceKind, 
 						!worley.NoiseKind, pos)
 					let col = ParSignal.Color4ToUint (
 						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
@@ -131,14 +131,14 @@
 					}
 			);
 
-		public static CLKernel<WorleyCPArgs, ColorizeArgs, Buffer<uint>>
-			WorleyCPSignal = CLKernel.Create
+		public static CLKernel<WorleyArgs, ColorizeArgs, Buffer<uint>>
+			WorleySignal = CLKernel.Create
 			(
-				nameof (WorleyCPSignal),
-				(WorleyCPArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
+				nameof (WorleySignal),
+				(WorleyArgs worley, ColorizeArgs colorMap, Buffer<uint> result) =>
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let v = ParSignal.WorleyCPNoise (worley.ControlPoints, !worley.Count, !worley.DistanceKind,
-						!worley.NoiseKind, pos)
+					let v = ParSignal.WorleyNoise (worley.ControlPoints, !worley.Count, !worley.DistanceKind,
+						!worley.NoiseKind, pos) * 2f
 					let col = ParSignal.Color4ToUint (
 						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
 					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
@@ -164,17 +164,16 @@
 			rect.UpdateTangents (BeginMode.Triangles);
 
 			_signalTexture = new Texture (TextureTarget.Texture2D);
-			CreateSignalTexture ();
-			//var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (), 
-			//	new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
-			var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
-				new Vec2 (0.25f, 0.75f), new Vec2i (2));
-
 			_diffuseMap = new Texture (TextureTarget.Texture2D);
 			_normalMap = new Texture (TextureTarget.Texture2D);
+			CreateSignalTexture ();
+            var infoWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (),
+                new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
+            var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
+				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
-			_sceneGraph.Root.Add (_camera, _mesh, /* infoWindow, */ textureWindow);
+			_sceneGraph.Root.Add (_camera, _mesh, infoWindow, textureWindow);
 		}
 
 		private void SetupRendering ()
@@ -182,7 +181,7 @@
 			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture)
 				.MapInput ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
-				//.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
+				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
 				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 

@@ -258,32 +258,18 @@
 				(signal, warp, dv, vec) => signal (vec + Dfdv2 (warp, dv, vec).Item2)
 			);
 
-		public static readonly Macro<Macro<Vec2, float>, Macro<Vec2, float>, float, Vec2, float> 
+		public static readonly Macro<float, float, float, float> 
 			Blend = CLKernel.Macro 
 			(
 				() => Blend,
-				(signal, other, blendFactor, vec) => FMath.Mix (signal (vec), other (vec), blendFactor)
+				(signal, other, blendFactor) => FMath.Mix (signal, other, blendFactor)
 			);
 
-		public static readonly Macro<Macro<Vec2, Vec3>, Macro<Vec2, Vec3>, float, Vec2, Vec3> 
+		public static readonly Macro<Vec3, Vec3, float, Vec3> 
 			Blend3 = CLKernel.Macro 
 			(
 				() => Blend3,
-				(signal, other, blendFactor, vec) => signal (vec).Mix (other (vec), blendFactor)
-			);
-
-		public static readonly Macro<Macro<Vec2, float>, Macro<Vec2, float>, Macro<Vec2, float>, Vec2, float> 
-			Mask = CLKernel.Macro 
-			(
-				() => Mask,
-				(signal, other, mask, vec) => FMath.Mix (signal (vec), other (vec), mask (vec))
-			);
-
-		public static readonly Macro<Macro<Vec2, Vec3>, Macro<Vec2, Vec3>, Macro<Vec2, float>, Vec2, Vec3> 
-			Mask3 = CLKernel.Macro 
-			(
-				() => Mask3,
-				(signal, other, mask, vec) => signal (vec).Mix (other (vec), mask (vec))
+				(signal, other, blendFactor) => signal.Mix (other, blendFactor)
 			);
 
 		public static readonly Macro<Macro<Vec2, float>, float, Vec2, CLTuple<float, Vec3>> 

@@ -2,7 +2,9 @@
 {
 	using System.Linq;
 	using Extensions;
-	using Compose3D.Maths;
+    using Compose3D.CLTypes;
+    using Compose3D.Compiler;
+    using Compose3D.Maths;
 	using Compose3D.Imaging;
 	using Compose3D.Imaging.SignalEditors;
 	using Compose3D.Geometry;
@@ -17,7 +19,6 @@
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
 	using Cloo;
-	using Compose3D.CLTypes;
 
 	public class MaterialWindow : GameWindow
 	{
@@ -74,8 +75,8 @@
 			var size = new Vec2i (256);
 			var buffer = new uint[size.X * size.Y];
 			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
-			var worleyArgs = new UniformWorleyArgs (new Vec2 (10f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
-			var worleyCPArgs = new WorleyArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
+			var unifWorleyArgs = new UniformWorleyArgs (new Vec2 (10f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
+			var worleyArgs = new WorleyArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
 				Signal.HaltonControlPoints ().Take (5).ReplicateOnTorus ().ToArray ());
 			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
 			var colorMap = new ColorizeArgs<Vec4> (new ColorMap<Vec4> ()
@@ -83,13 +84,13 @@
 				{ 0f, new Vec4 (1f) },
 				{ 1f, new Vec4 (0f) }
 			});
-            PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
+            //PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
+            //    KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+            UniformWorleySignal.Execute (queue, unifWorleyArgs, colorMap,
                 KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-            UniformWorleySignal.Execute (queue, worleyArgs, colorMap,
-                KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-            WorleySignal.Execute (queue, worleyCPArgs, colorMap,
-				KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-			_signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
+            //WorleySignal.Execute (queue, worleyArgs, colorMap,
+            //    KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
+            _signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
 				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 		}
 
@@ -101,8 +102,8 @@
 					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
 					let t = ParSignal.NormalMap (
 						v1 => ParSignal.SpectralControl (
-							v2 => ParSignal.PerlinNoise (!perlin.Scale, !perlin.Periodic, v2),
-							!spectral.FirstBand, !spectral.LastBand, spectral.NormalizedWeights, v1),
+                            v2 => ParSignal.PerlinNoise (!perlin.Scale, !perlin.Periodic, v2), 
+							!spectral.FirstBand, !spectral.LastBand, spectral.NormalizedWeights, v1), 
 						1f, pos)
 					let col = ParSignal.Color4ToUint ( 
 						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, t.Item1))

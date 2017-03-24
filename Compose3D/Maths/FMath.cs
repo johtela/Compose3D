@@ -18,10 +18,21 @@
 	/// The vector overloads of these functions can be found in the <see cref="Vec"/> class.
 	public static class FMath
 	{
-		/// <summary>
-		/// Returns the largest integer number that is smaller or equal to `value`.
-		/// </summary>
-		[GLFunction ("floor ({0})")]
+        public const float E = 2.71828175f;
+        public const float Log10E = 0.4342945f;
+        public const float Log2E = 1.442695f;
+        public const float Pi = 3.14159274f;
+        public const float PiOver2 = 1.57079637f;
+        public const float PiOver3 = 1.04719758f;
+        public const float PiOver4 = 0.7853982f;
+        public const float PiOver6 = 0.5235988f;
+        public const float ThreePiOver2 = 4.712389f;
+        public const float TwoPi = 6.28318548f;
+
+        /// <summary>
+        /// Returns the largest integer number that is smaller or equal to `value`.
+        /// </summary>
+        [GLFunction ("floor ({0})")]
 		[CLFunction ("floor ({0})")]
 		public static float Floor (this float value)
 		{

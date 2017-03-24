@@ -216,16 +216,22 @@
 		public static T[] SampleToBuffer<T> (this Signal<Vec2i, T> signal, Vec2i bufferSize)
 		{
 			var length = bufferSize.Producti ();
-			var result = new T[length];
-			Parallel.For (0, bufferSize.Y, y =>
-			{
-				Parallel.For (0, bufferSize.X, x =>
-					result[y * bufferSize.Y + x] = signal (new Vec2i (x, y)));
-			});
+            var result = new T[length];
+            signal.SampleToBuffer (result, bufferSize);
 			return result;
 		}
 
-		public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
+        public static void SampleToBuffer<T> (this Signal<Vec2i, T> signal, T[] buffer, Vec2i bufferSize)
+        {
+            var length = bufferSize.Producti ();
+            Parallel.For (0, bufferSize.Y, y =>
+            {
+                Parallel.For (0, bufferSize.X, x =>
+                    buffer[y * bufferSize.Y + x] = signal (new Vec2i (x, y)));
+            });
+        }
+
+        public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
 		{
 			return vec => new Vec2 (
 				vec.X * scale / bitmapSize.X,

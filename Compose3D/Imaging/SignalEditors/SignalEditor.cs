@@ -102,11 +102,12 @@
 			return new NormalMapEditor () { Name = name, Source = source, Strength = strength, Dv = dv };
 		}
 
-		public static AnySignalEditor ToTexture (this AnySignalEditor editor, Texture texture)
-		{
-			editor._texture = texture;
-			return editor;
-		}
+        public static SignalEditor<T, U> Render<T, U> (this SignalEditor<T, U> editor, 
+            Action<SignalEditor<T, U>, Vec2i> render)
+        {
+            editor.RenderToBuffer = (Action<AnySignalEditor, Vec2i>)render;
+            return editor;
+        }
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, 
 			Reaction<AnySignalEditor> changed, HashSet<AnySignalEditor> all)
@@ -125,36 +126,20 @@
 			}
 		}
 
-		private static Signal<Vec2, uint> MapSignal (AnySignalEditor editor)
-		{
-			return
-				editor is SignalEditor<Vec2, Vec3> ? 
-					((SignalEditor<Vec2, Vec3>)editor).Signal
-					.Vec3ToUintColor () :
-				editor is SignalEditor<Vec2, float> ? 
-					((SignalEditor<Vec2, float>)editor).Signal
-					.Scale (0.5f)
-					.Offset (0.5f)
-					.FloatToUintGrayscale () :
-				null;
-		}
-
 		public static Control EditorUI (Texture outputTexture, Vec2i outputSize, 
-			DelayedReactionUpdater updater,	params AnySignalEditor[] rootEditors)
+            DelayedReactionUpdater delayedUpdater, params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
 			var changed = React.By ((AnySignalEditor editor) =>
 			{
-				editor._buffer = null;
 				foreach (var edit in all.Where (e => e._level > editor._level))
-					edit._buffer = null;
-				editor._buffer = MapSignal (editor)
-					.MapInput (Signal.BitmapCoordToUnitRange (outputSize, 1f))
-					.SampleToBuffer (outputSize);
-				outputTexture.LoadArray (editor._buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
+					edit._updated = false;
+                editor._updated = false;
+				editor.Render (outputSize);
+				outputTexture.LoadArray (editor.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
 					PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 			})
-			.Delay (updater, 0.5);
+			.Delay (delayedUpdater, 0.5);
 
 			for (int i = 0; i < rootEditors.Length; i++)
 				CollectInputEditors (rootEditors[i], 0, changed, all);
@@ -166,14 +151,11 @@
 						e.Control, 
 						React.By<Control> (_ => 
 						{
-							if (e._buffer == null)
-								e._buffer = MapSignal (e)
-									.MapInput (Signal.BitmapCoordToUnitRange (outputSize, 1f))
-									.SampleToBuffer (outputSize);
-							outputTexture.LoadArray (e._buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
+                            e.Render (outputSize);
+							outputTexture.LoadArray (e.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
 								PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 						})
-						.Delay (updater, 0.5)
+						.Delay (delayedUpdater, 0.5)
 					)));
 				levelContainers.Add (container);
 			}

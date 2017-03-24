@@ -319,5 +319,17 @@
 						)
 					)
 			);
+
+		public static readonly Macro<Macro<Vec2, float>, uint>
+			SignalToGrayscale = CLKernel.Macro
+			(
+				() => SignalToGrayscale,
+				signal => Kernel.Evaluate
+				(
+					from pos in PixelPosTo0_1 ().ToKernel ()
+					let v = signal (pos)
+					select GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
+				)
+			);
 	}
 }

@@ -24,6 +24,18 @@
 		{
 			return new Buffer<T> (data, flags);
 		}
+
+		public static Buffer<T> ReadBuffer<T> (T[] data)
+			where T : struct
+		{
+			return new Buffer<T> (data, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
+		}
+
+		public static Buffer<T> WriteBuffer<T> (T[] data)
+			where T : struct
+		{
+			return new Buffer<T> (data, ComputeMemoryFlags.WriteOnly);
+		}
 	}
 
 	public class Value<T> : KernelArg

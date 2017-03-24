@@ -11,7 +11,7 @@
 	using Maths;
 	using UI;
 
-	internal class SpectralControlEditor<V> : SignalEditor<V, float>
+	public class SpectralControlEditor<V> : SignalEditor<V, float>
 		where V : struct, IVec<V, float>
 	{
 		public SignalEditor<V, float> Source;

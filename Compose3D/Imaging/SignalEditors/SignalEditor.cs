@@ -26,13 +26,13 @@
 			return new DummyEditor<T, U> () { Name = name, Source = signal };
 		}
 
-		public static SignalEditor<Vec2, float> Perlin (string name, Vec2 scale, int seed = 0, 
+		public static PerlinEditor Perlin (string name, Vec2 scale, int seed = 0, 
 			bool periodic = false)
 		{
 			return new PerlinEditor () { Name = name, Seed = seed, Scale = scale, Periodic = periodic };
 		}
 
-		public static SignalEditor<Vec2, float> Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
+		public static WorleyEditor Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
 			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, int seed = 0, 
 			DistanceKind distanceKind = DistanceKind.Euclidean, float jitter = 0f, 
 			bool periodic = false)
@@ -42,48 +42,48 @@
 				Jitter = jitter, Periodic = periodic };
 		}
 
-		public static SignalEditor<V, float> Warp<V> (this SignalEditor<V, float> source, 
+		public static WarpEditor<V> Warp<V> (this SignalEditor<V, float> source, 
 			string name, SignalEditor<V, float> warp, float scale, V dv)
 			where V : struct, IVec<V, float>
 		{
 			return new WarpEditor<V> () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv };
 		}
 
-		public static SignalEditor<V, float> Blend<V> (this SignalEditor<V, float> source,
+		public static BlendEditor<V> Blend<V> (this SignalEditor<V, float> source,
 			string name, SignalEditor<V, float> other, float blendFactor)
 			where V : struct, IVec<V, float>
 		{
 			return new BlendEditor<V> () { Name = name, Source = source, Other = other, BlendFactor = blendFactor };
 		}
 
-		public static SignalEditor<V, float> Mask<V> (this SignalEditor<V, float> source,
+		public static MaskEditor<V> Mask<V> (this SignalEditor<V, float> source,
 			string name, SignalEditor<V, float> other, SignalEditor<V, float> mask)
 			where V : struct, IVec<V, float>
 		{
 			return new MaskEditor<V> () { Name = name, Source = source, Other = other, Mask = mask };
 		}
 
-		public static SignalEditor<V, float> MaskWithSource<V> (this SignalEditor<V, float> source,
+		public static MaskEditor<V> MaskWithSource<V> (this SignalEditor<V, float> source,
 			string name, SignalEditor<V, float> other)
 			where V : struct, IVec<V, float>
 		{
 			return new MaskEditor<V> () { Name = name, Source = source, Other = other, Mask = source };
 		}
 
-		public static SignalEditor<V, float> Transform<V> (this SignalEditor<V, float> source,
+		public static TransformEditor<V> Transform<V> (this SignalEditor<V, float> source,
 			string name, float scale = 1f, float offset = 0f)
 			where V : struct, IVec<V, float>
 		{
 			return new TransformEditor<V> () { Name = name, Source = source, Scale = scale, Offset = offset };
 		}
 
-		public static SignalEditor<T, Vec3> Colorize<T> (this SignalEditor<T, float> source, 
+		public static ColorizeEditor<T> Colorize<T> (this SignalEditor<T, float> source, 
 			string name, ColorMap<Vec3> colorMap)
 		{
 			return new ColorizeEditor<T> () { Name = name, Source = source, ColorMap = colorMap };
 		}
 
-		public static SignalEditor<V, float> SpectralControl<V> (this SignalEditor<V, float> source,
+		public static SpectralControlEditor<V> SpectralControl<V> (this SignalEditor<V, float> source,
 			string name, int firstBand, int lastBand, params float[] bandWeights)
 			where V : struct, IVec<V, float>
 		{
@@ -96,16 +96,16 @@
 			};
 		}
 
-		public static SignalEditor<Vec2, Vec3> NormalMap (this SignalEditor<Vec2, float> source,
+		public static NormalMapEditor NormalMap (this SignalEditor<Vec2, float> source,
 			string name, float strength, Vec2 dv)
 		{
 			return new NormalMapEditor () { Name = name, Source = source, Strength = strength, Dv = dv };
 		}
 
-        public static SignalEditor<T, U> Render<T, U> (this SignalEditor<T, U> editor, 
-            Action<SignalEditor<T, U>, Vec2i> render)
+        public static T Render<T> (this T editor, Action<T, Vec2i> render)
+			where T : AnySignalEditor
         {
-            editor.RenderToBuffer = (Action<AnySignalEditor, Vec2i>)render;
+            editor.RenderToBuffer = (e, s) => render ((T)e, s);
             return editor;
         }
 

@@ -23,7 +23,7 @@
 					_comProgram.GetBuildLog (_comProgram.Devices.First ()));
 			}
 			foreach (var kernel in kernels)
-				kernel._comKernel = _comProgram.CreateKernel (kernel._name);
+				kernel._comKernel = _comProgram.CreateKernel (kernel.Name);
 		}
 	}
 }

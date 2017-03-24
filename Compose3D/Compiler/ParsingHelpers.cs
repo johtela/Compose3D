@@ -127,12 +127,6 @@
             }
         }
 
-		public static MethodCallExpression GetSelect (this Expression expr, Type declaringType)
-		{
-			var mcexpr = expr as MethodCallExpression;
-			return mcexpr != null && mcexpr.Method.IsSelect (declaringType) ? mcexpr : null;
-		}
-
         public static LambdaExpression GetSelectLambda (this MethodCallExpression expr)
         {
 			return expr.Arguments[1].ExpectLambda ();

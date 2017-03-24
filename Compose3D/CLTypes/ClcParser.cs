@@ -24,7 +24,7 @@
             {
                 var body = Ast.Blk ();
                 BeginScope (body);
-                _function = ClcAst.Kern (kernel._name,
+                _function = ClcAst.Kern (kernel.Name,
                     KernelArguments (kernel._expr.Parameters), body);
                 OutputKernel (kernel._expr);
                 _program.Functions.Add (Macro.InstantiateAllMacros (_function));

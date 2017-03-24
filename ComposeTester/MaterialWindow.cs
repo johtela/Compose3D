@@ -45,109 +45,6 @@
 			SetupCameraMovement ();
 		}
 
-		private Control SignalTextureUI ()
-		{
-			var size = new Vec2i (256);
-
-			var sine = new Signal<Vec2, float> (v => v.X.Sin () * v.Y.Sin ())
-				.MapInput ((Vec2 v) => v * MathHelper.Pi * 4f)
-				.ToSignalEditor ("sine");
-			var worley = SignalEditor.Worley ("worley", WorleyNoiseKind.F1, ControlPointKind.Random,
-				10, 0, DistanceKind.Euclidean, 0f, true);
-			var transform = worley.Transform ("transform", -30f, 0.5f);
-			var dv = new Vec2 (1f) / new Vec2 (size.X, size.Y);
-			var perlin = SignalEditor.Perlin ("perlin", new Vec2 (10f));
-			var spectral = perlin.SpectralControl ("spectral", 0, 2, 1f, 0.5f, 0.2f);
-			var warp = transform.Warp ("warp", spectral, 0.001f, dv);
-			var signal = warp.Colorize ("signal", ColorMap<Vec3>.GrayScale ());
-			var normal = warp.NormalMap ("normal", 1f, dv);
-
-			return SignalEditor.EditorUI (@"Materials\Ground.xml", 
-				_signalTexture, size, _updater, normal, signal);
-		}
-
-		private void CreateSignalTexture ()
-		{
-			var device = CLContext.Gpus.First ();
-			var context = CLContext.CreateContextForDevices (device);
-			var prog = new CLProgram (context, PerlinSignal, WorleySignal, UniformWorleySignal);
-			var queue = new CLCommandQueue (context);
-			var size = new Vec2i (256);
-			var buffer = new uint[size.X * size.Y];
-			var perlinArgs = new PerlinArgs (new Vec2 (9f), true);
-			var unifWorleyArgs = new UniformWorleyArgs (new Vec2 (10f), 1f, DistanceKind.Euclidean, WorleyNoiseKind.F1);
-			var worleyArgs = new WorleyArgs (DistanceKind.Euclidean, WorleyNoiseKind.F2_F1, 
-				Signal.HaltonControlPoints ().Take (5).ReplicateOnTorus ().ToArray ());
-			var spectral = new SpectralControlArgs (0, 3, 1f, 0.5f, 0.3f, 0.2f);
-			var colorMap = new ColorizeArgs<Vec4> (new ColorMap<Vec4> ()
-			{
-				{ 0f, new Vec4 (1f) },
-				{ 1f, new Vec4 (0f) }
-			});
-            //PerlinSignal.Execute (queue, perlinArgs, colorMap, spectral,
-            //    KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-            UniformWorleySignal.Execute (queue, unifWorleyArgs, colorMap,
-                KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-            //WorleySignal.Execute (queue, worleyArgs, colorMap,
-            //    KernelArg.Buffer (buffer, ComputeMemoryFlags.WriteOnly), size.X, size.Y);
-            _signalTexture.LoadArray (buffer, _signalTexture.Target, 0, size.X, size.Y,
-				PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
-		}
-
-		public static CLKernel<PerlinArgs, ColorizeArgs<Vec4>, SpectralControlArgs, Buffer<uint>>
-			PerlinSignal = CLKernel.Create
-			(
-				nameof (PerlinSignal),
-				(PerlinArgs perlin, ColorizeArgs<Vec4> colorMap, SpectralControlArgs spectral, Buffer<uint> result) =>
-					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let t = ParSignal.NormalMap (
-						v1 => ParSignal.SpectralControl (
-                            v2 => ParSignal.PerlinNoise (!perlin.Scale, !perlin.Periodic, v2), 
-							!spectral.FirstBand, !spectral.LastBand, spectral.NormalizedWeights, v1), 
-						1f, pos)
-					let col = ParSignal.Color4ToUint ( 
-						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, t.Item1))
-					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (t.Item1))
-					select new KernelResult
-					{
-						Assign.Buffer (result, ParSignal.PixelPosToIndex (), col)
-					}
-			);
-
-		public static CLKernel<UniformWorleyArgs, ColorizeArgs<Vec4>, Buffer<uint>>
-			UniformWorleySignal = CLKernel.Create
-			(
-				nameof (UniformWorleySignal),
-				(UniformWorleyArgs worley, ColorizeArgs<Vec4> colorMap, Buffer<uint> result) =>
-					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let v = ParSignal.UniformWorleyNoise (!worley.Scale, !worley.Jitter, !worley.DistanceKind, 
-						!worley.NoiseKind, pos)
-					let col = ParSignal.Color4ToUint (
-						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
-					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
-					select new KernelResult
-					{
-						Assign.Buffer (result, ParSignal.PixelPosToIndex (), gs)
-					}
-			);
-
-		public static CLKernel<WorleyArgs, ColorizeArgs<Vec4>, Buffer<uint>>
-			WorleySignal = CLKernel.Create
-			(
-				nameof (WorleySignal),
-				(WorleyArgs worley, ColorizeArgs<Vec4> colorMap, Buffer<uint> result) =>
-					from pos in ParSignal.PixelPosTo0_1 ().ToKernel ()
-					let v = ParSignal.WorleyNoise (worley.ControlPoints, !worley.Count, !worley.DistanceKind,
-						!worley.NoiseKind, pos) * 2f
-					let col = ParSignal.Color4ToUint (
-						ParSignal.Colorize (colorMap.Keys, colorMap.Colors, !colorMap.Count, v))
-					let gs = ParSignal.GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
-					select new KernelResult
-					{
-						Assign.Buffer (result, ParSignal.PixelPosToIndex (), gs)
-					}
-			);
-
 		private void CreateSceneGraph ()
 		{
 			_sceneGraph = new SceneGraph ();
@@ -166,8 +63,8 @@
 			_signalTexture = new Texture (TextureTarget.Texture2D);
 			_diffuseMap = new Texture (TextureTarget.Texture2D);
 			_normalMap = new Texture (TextureTarget.Texture2D);
-			CreateSignalTexture ();
-            var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, SignalTextureUI (),
+			var material = new Ground (new Vec2i (256), @"Materials\Ground.xml", _signalTexture, _updater);
+            var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, material.Editor,
                 new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
             var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));

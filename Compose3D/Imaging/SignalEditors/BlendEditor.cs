@@ -9,7 +9,7 @@
 	using Maths;
 	using UI;
 
-	internal class BlendEditor<V> : SignalEditor<V, float>
+	public class BlendEditor<V> : SignalEditor<V, float>
 		where V : struct, IVec<V, float>
 	{
 		public float BlendFactor;

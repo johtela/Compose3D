@@ -7,13 +7,14 @@
 
 	public class CLKernel
 	{
+		public readonly string Name;
+
 		internal ComputeKernel _comKernel;
-		internal string _name;
 		internal LambdaExpression _expr;
 
 		internal CLKernel (string name, LambdaExpression expr)
 		{
-			_name = name;
+			Name = name;
 			_expr = expr;
 		}
 

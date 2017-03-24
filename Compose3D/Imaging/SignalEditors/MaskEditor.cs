@@ -9,7 +9,7 @@
 	using Maths;
 	using UI;
 
-	internal class MaskEditor<V> : SignalEditor<V, float>
+	public class MaskEditor<V> : SignalEditor<V, float>
 		where V : struct, IVec<V, float>
 	{
 		public SignalEditor<V, float> Source;

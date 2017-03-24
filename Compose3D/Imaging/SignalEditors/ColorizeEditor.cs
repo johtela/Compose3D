@@ -9,7 +9,7 @@
 	using Maths;
 	using UI;
 
-	internal class ColorizeEditor<T> : SignalEditor<T, Vec3>
+	public class ColorizeEditor<T> : SignalEditor<T, Vec3>
 	{
 		public SignalEditor<T, float> Source;
 		public ColorMap<Vec3> ColorMap;

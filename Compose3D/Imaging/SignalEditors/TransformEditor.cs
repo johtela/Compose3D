@@ -9,7 +9,7 @@
 	using Maths;
 	using UI;
 
-	internal class TransformEditor<V> : SignalEditor<V, float>
+	public class TransformEditor<V> : SignalEditor<V, float>
 		where V : struct, IVec<V, float>
 	{
 		public float Scale;

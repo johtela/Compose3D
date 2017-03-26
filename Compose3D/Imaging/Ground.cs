@@ -15,18 +15,12 @@
         {
 			var worley = SignalEditor.Worley (Worley.Name,
 					WorleyNoiseKind.F1, ControlPointKind.Random,
-					10, 0, DistanceKind.Euclidean, 0f, true)
-				.Render ((e, s) => RunKernel (e, s, Worley, e.Args));
-			var transform = worley.Transform (Transform.Name, -30f, 0.5f)
-				.Render ((e, s) => RunKernel (e, s, Transform, worley.Args, e.Args));
+					10, 0, DistanceKind.Euclidean, 0f, true);
+			var transform = worley.Transform (Transform.Name, -30f, 0.5f);
 			var dv = new Vec2 (1f) / new Vec2 (Size.X, Size.Y);
-            var perlin = SignalEditor.Perlin (Perlin.Name, new Vec2 (10f))
-				.Render ((e, s) => RunKernel (e, s, Perlin, e.Args));
-            var spectral = perlin.SpectralControl (Spectral.Name, 0, 2, 1f, 0.5f, 0.2f)
-				.Render ((e, s) => RunKernel (e, s, Spectral, perlin.Args, e.Args));
-            var warp = transform.Warp (Warp.Name, spectral, 0.001f, dv)
-				.Render ((e, s) => RunKernel (e, s, Warp, worley.Args, transform.Args, perlin.Args, 
-					spectral.Args, e.Args));
+			var perlin = SignalEditor.Perlin (Perlin.Name, new Vec2 (10f));
+			var spectral = perlin.SpectralControl (Spectral.Name, 0, 2, 1f, 0.5f, 0.2f);
+			var warp = transform.Warp (Warp.Name, spectral, 0.001f, dv);
             var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale ());
             var normal = warp.NormalMap ("Normal", 1f, dv);
 

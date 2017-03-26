@@ -11,10 +11,9 @@
 	using Maths;
 	using UI;
 
-	public class SpectralControlEditor<V> : SignalEditor<V, float>
-		where V : struct, IVec<V, float>
+	internal class SpectralControlEditor : SignalEditor<float>
 	{
-		public SignalEditor<V, float> Source;
+		public SignalEditor<float> Source;
 		public int FirstBand;
 		public int LastBand;
 		public List<float> BandWeights;
@@ -104,7 +103,7 @@
 			get { return EnumerableExt.Enumerate (Source); }
 		}
 
-		public override Signal<V, float> Signal
+		public override Signal<Vec2, float> Signal
 		{
 			get
 			{

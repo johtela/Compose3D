@@ -10,13 +10,12 @@
 	using Maths;
 	using UI;
 
-	public class WarpEditor<V> : SignalEditor<V, float>
-		where V : struct, IVec<V, float>
+	internal class WarpEditor : SignalEditor<float>
 	{
 		public float Scale;
-		public V Dv;
-		public SignalEditor<V, float> Source;
-		public SignalEditor<V, float> Warp;
+		public Vec2 Dv;
+		public SignalEditor<float> Source;
+		public SignalEditor<float> Warp;
 
 		protected override Control CreateControl ()
 		{
@@ -44,7 +43,7 @@
 			get { return EnumerableExt.Enumerate (Source, Warp); }
 		}
 
-		public override Signal<V, float> Signal
+		public override Signal<Vec2, float> Signal
 		{
 			get { return Source.Signal.Warp (Warp.Signal.Cache ().Scale (Scale), Dv); }
 		}

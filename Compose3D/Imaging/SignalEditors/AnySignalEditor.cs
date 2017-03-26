@@ -1,41 +1,34 @@
-﻿	namespace Compose3D.Imaging.SignalEditors
+﻿namespace Compose3D.Imaging.SignalEditors
 {
-    using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Drawing;
 	using System.Xml.Linq;
+	using OpenTK.Graphics.OpenGL4;
 	using Visuals;
+	using CLTypes;
     using Maths;
 	using Reactive;
+	using Textures;
 	using UI;
 
 	public abstract class AnySignalEditor
 	{
+		private static HashSet<CLKernel> _kernels;
+		protected static CLContext _context;
+		protected static CLCommandQueue _queue;
+		protected static CLProgram _program;
+
 		private Connected _control;
 		internal int _level;
         internal bool _updated;
 
-        protected AnySignalEditor ()
-        {
-            RenderToBuffer = (editor, size) => editor.MapSignal ()
-                .MapInput (Signal.BitmapCoordToUnitRange (size, 1f))
-                .SampleToBuffer (Buffer, size);
-        }
-
-        private Signal<Vec2, uint> MapSignal ()
-        {
-            return
-                this is SignalEditor<Vec2, Vec3> ?
-                    ((SignalEditor<Vec2, Vec3>)this).Signal
-                    .Vec3ToUintColor () :
-                this is SignalEditor<Vec2, float> ?
-                    ((SignalEditor<Vec2, float>)this).Signal
-                    .Scale (0.5f)
-                    .Offset (0.5f)
-                    .FloatToUintGrayscale () :
-                null;
-        }
+		public AnySignalEditor (CLKernel kernel)
+		{
+			if (kernel != null && !_kernels.Contains (kernel))
+				_kernels.Add (kernel);
+			Texture = new Texture (TextureTarget.Texture2D);
+		}
 
         protected Control InputSignalControl (string name, AnySignalEditor input)
 		{
@@ -44,14 +37,23 @@
 				new VisualStyle (pen: new Pen (Color.AliceBlue, 2f)));
 		}
 
-        internal void Render (Vec2i size)
+		private void SetupCLProgram ()
+		{
+			if (_context != null)
+				return;
+			_context = CLContext.CreateContextForDevices (CLContext.Gpus.First ());
+			_queue = new CLCommandQueue (_context);
+			_program = new CLProgram (_context, _kernels.ToArray ());
+		}
+
+		internal void Render (Vec2i size)
         {
             if (_updated)
                 return;
+			SetupCLProgram ();
             var length = size.Producti ();
-            if (Buffer == null || Buffer.Length != length)
-                Buffer = new uint[length];
-            RenderToBuffer (this, size);
+			AllocateBuffer (length);
+            RenderToBuffer (size);
             _updated = true;
         }
 
@@ -77,12 +79,15 @@
 			Load (xml.Elements (XElementName ()).Single (xe => xe.Attribute ("Name").Value == Name));
 		}
 
+		protected abstract void AllocateBuffer (int length);
+		protected abstract void RenderToBuffer (Vec2i size);
+		protected abstract void UpdateTexture (Vec2i size);
 		protected abstract Control CreateControl ();
 
 		protected virtual void Load (XElement xelem) { }
 		protected virtual void Save (XElement xelem) { }
 
-        public string Name { get; internal set; }
+		public string Name { get; internal set; }
 
         public Connected Control
         {
@@ -94,12 +99,10 @@
             }
         }
 
-        public uint[] Buffer { get; private set; }
-
         public abstract IEnumerable<AnySignalEditor> Inputs { get; }
 
-        public Reaction<AnySignalEditor> Changed { get; internal set; }
+		public Texture Texture { get; private set; }
 
-        public Action<AnySignalEditor, Vec2i> RenderToBuffer { get; set; }
+        public Reaction<AnySignalEditor> Changed { get; internal set; }
 	}
 }

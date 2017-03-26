@@ -5,6 +5,7 @@
 	using System.IO;
 	using System.Linq;
 	using System.Xml.Linq;
+	using OpenTK.Graphics.OpenGL4;
 	using Extensions;
 	using Imaging;
 	using Reactive;
@@ -12,29 +13,57 @@
 	using Textures;
 	using UI;
 	using OpenTK.Input;
-	using OpenTK.Graphics.OpenGL4;
 
-	public abstract class SignalEditor<T, U> : AnySignalEditor
+	public abstract class SignalEditor<T> : AnySignalEditor
+		where T : struct
 	{
-		public abstract Signal<T, U> Signal { get; }
+		public SignalEditor ()
+			: base (null) { }
+
+		protected override void AllocateBuffer (int length)
+		{
+			if (Buffer == null || Buffer.Length != length)
+				Buffer = new T[length];
+		}
+
+		protected override void RenderToBuffer (Vec2i size)
+		{
+			Signal.MapInput (Imaging.Signal.BitmapCoordToUnitRange (size, 1f))
+				.SampleToBuffer (Buffer, size);
+		}
+
+		protected override void UpdateTexture (Vec2i size)
+		{
+			if (this is SignalEditor<float>)
+				Texture.LoadArray (Buffer, Texture.Target, 0, size.X, size.Y,
+					PixelFormat.Red, PixelInternalFormat.CompressedSignedRedRgtc1, PixelType.Float);
+			else
+				Texture.LoadArray (Buffer, Texture.Target, 0, size.X, size.Y,
+					PixelFormat.Rgb, PixelInternalFormat.Rgb32f, PixelType.Float);
+		}
+
+		public T[] Buffer { get; private set; }
+
+		public abstract Signal<Vec2, T> Signal { get; }
 	}
 
 	public static class SignalEditor
 	{
 		const float UpdateDelay = 0.2f;
 
-		public static SignalEditor<T, U> ToSignalEditor<T, U> (this Signal<T, U> signal, string name)
+		public static SignalEditor<T> ToSignalEditor<T> (this Signal<Vec2, T> signal, string name)
+			where T : struct
 		{
-			return new DummyEditor<T, U> () { Name = name, Source = signal };
+			return new DummyEditor<T> () { Name = name, Source = signal };
 		}
 
-		public static PerlinEditor Perlin (string name, Vec2 scale, int seed = 0, 
+		public static SignalEditor<float> Perlin (string name, Vec2 scale, int seed = 0, 
 			bool periodic = false)
 		{
 			return new PerlinEditor () { Name = name, Seed = seed, Scale = scale, Periodic = periodic };
 		}
 
-		public static WorleyEditor Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
+		public static SignalEditor<float> Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
 			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, int seed = 0, 
 			DistanceKind distanceKind = DistanceKind.Euclidean, float jitter = 0f, 
 			bool periodic = false)
@@ -44,72 +73,59 @@
 				Jitter = jitter, Periodic = periodic };
 		}
 
-		public static WarpEditor<V> Warp<V> (this SignalEditor<V, float> source, 
-			string name, SignalEditor<V, float> warp, float scale, V dv)
-			where V : struct, IVec<V, float>
+		public static SignalEditor<float> Warp (this SignalEditor<float> source, 
+			string name, SignalEditor<float> warp, float scale, Vec2 dv)
 		{
-			return new WarpEditor<V> () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv };
+			return new WarpEditor () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv };
 		}
 
-		public static BlendEditor<V> Blend<V> (this SignalEditor<V, float> source,
-			string name, SignalEditor<V, float> other, float blendFactor)
-			where V : struct, IVec<V, float>
+		public static SignalEditor<float> Blend (this SignalEditor<float> source,
+			string name, SignalEditor<float> other, float blendFactor)
 		{
-			return new BlendEditor<V> () { Name = name, Source = source, Other = other, BlendFactor = blendFactor };
+			return new BlendEditor () { Name = name, Source = source, Other = other, BlendFactor = blendFactor };
 		}
 
-		public static MaskEditor<V> Mask<V> (this SignalEditor<V, float> source,
-			string name, SignalEditor<V, float> other, SignalEditor<V, float> mask)
-			where V : struct, IVec<V, float>
+		public static SignalEditor<float> Mask(this SignalEditor<float> source,
+			string name, SignalEditor<float> other, SignalEditor<float> mask)
 		{
-			return new MaskEditor<V> () { Name = name, Source = source, Other = other, Mask = mask };
+			return new MaskEditor () { Name = name, Source = source, Other = other, Mask = mask };
 		}
 
-		public static MaskEditor<V> MaskWithSource<V> (this SignalEditor<V, float> source,
-			string name, SignalEditor<V, float> other)
-			where V : struct, IVec<V, float>
+		public static SignalEditor<float> MaskWithSource<V> (this SignalEditor<float> source,
+			string name, SignalEditor<float> other)
 		{
-			return new MaskEditor<V> () { Name = name, Source = source, Other = other, Mask = source };
+			return new MaskEditor () { Name = name, Source = source, Other = other, Mask = source };
 		}
 
-		public static TransformEditor<V> Transform<V> (this SignalEditor<V, float> source,
+		public static SignalEditor<float> Transform (this SignalEditor<float> source,
 			string name, float scale = 1f, float offset = 0f)
-			where V : struct, IVec<V, float>
 		{
-			return new TransformEditor<V> () { Name = name, Source = source, Scale = scale, Offset = offset };
+			return new TransformEditor () { Name = name, Source = source, Scale = scale, Offset = offset };
 		}
 
-		public static ColorizeEditor<T> Colorize<T> (this SignalEditor<T, float> source, 
+		public static SignalEditor<Vec3> Colorize (this SignalEditor<float> source, 
 			string name, ColorMap<Vec3> colorMap)
 		{
-			return new ColorizeEditor<T> () { Name = name, Source = source, ColorMap = colorMap };
+			return new ColorizeEditor () { Name = name, Source = source, ColorMap = colorMap };
 		}
 
-		public static SpectralControlEditor<V> SpectralControl<V> (this SignalEditor<V, float> source,
+		public static SignalEditor<float> SpectralControl (this SignalEditor<float> source,
 			string name, int firstBand, int lastBand, params float[] bandWeights)
-			where V : struct, IVec<V, float>
 		{
 			var bw = new List<float> (16);
 			bw.AddRange (0f.Repeat (16));
 			for (int i = firstBand; i <= lastBand; i++)
 				bw [i] = bandWeights [i - firstBand];
-			return new SpectralControlEditor<V> () { 
+			return new SpectralControlEditor () { 
 				Name = name, Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw
 			};
 		}
 
-		public static NormalMapEditor NormalMap (this SignalEditor<Vec2, float> source,
+		public static SignalEditor<Vec3> NormalMap (this SignalEditor<float> source,
 			string name, float strength, Vec2 dv)
 		{
 			return new NormalMapEditor () { Name = name, Source = source, Strength = strength, Dv = dv };
 		}
-
-        public static T Render<T> (this T editor, Action<T, Vec2i> render)
-			where T : AnySignalEditor
-        {
-            editor.RenderToBuffer = (e, s) => render ((T)e, s);
-            return editor;
-        }
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, 
 			Reaction<AnySignalEditor> changed, HashSet<AnySignalEditor> all)
@@ -138,8 +154,6 @@
 					edit._updated = false;
                 editor._updated = false;
 				editor.Render (outputSize);
-				outputTexture.LoadArray (editor.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
-					PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 			})
 			.Delay (delayedUpdater, UpdateDelay);
 
@@ -151,12 +165,7 @@
 				var container = Container.Vertical (false, false, 
 					level.Select (e => new Tuple<Control, Reaction<Control>> (
 						e.Control, 
-						React.By<Control> (_ => 
-						{
-                            e.Render (outputSize);
-							outputTexture.LoadArray (e.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
-								PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
-						})
+						React.By<Control> (_ => e.Render (outputSize))
 						.Delay (delayedUpdater, UpdateDelay)
 					)));
 				levelContainers.Add (container);

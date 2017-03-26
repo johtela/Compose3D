@@ -9,9 +9,9 @@
 	using Maths;
 	using UI;
 
-	public class NormalMapEditor : SignalEditor<Vec2, Vec3>
+	internal class NormalMapEditor : SignalEditor<Vec3>
 	{
-		public SignalEditor<Vec2, float> Source;
+		public SignalEditor<float> Source;
 		public float Strength;
 		public Vec2 Dv;
 

@@ -12,7 +12,7 @@
 
 	public enum ControlPointKind { Random, Halton23 }
 
-	public class WorleyEditor : SignalEditor<Vec2, float>
+	internal class WorleyEditor : SignalEditor<float>
 	{
 		public WorleyNoiseKind NoiseKind;
 		public ControlPointKind ControlPoints;

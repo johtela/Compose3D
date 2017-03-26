@@ -2,12 +2,14 @@
 {
 	using System.Collections.Generic;
 	using System.Linq;
+	using Maths;
 	using Visuals;
 	using UI;
 
-	internal class DummyEditor<T, U> : SignalEditor<T, U>
+	internal class DummyEditor<T> : SignalEditor<T>
+		where T : struct
 	{
-		public Signal<T, U> Source;
+		public Signal<Vec2, T> Source;
 
 		protected override Control CreateControl ()
 		{
@@ -21,7 +23,7 @@
 			get { return Enumerable.Empty<AnySignalEditor> (); }
 		}
 
-		public override Signal<T, U> Signal
+		public override Signal<Vec2, T> Signal
 		{
 			get { return Source; }
 		}

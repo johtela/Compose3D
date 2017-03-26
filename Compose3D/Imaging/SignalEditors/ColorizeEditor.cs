@@ -9,9 +9,9 @@
 	using Maths;
 	using UI;
 
-	public class ColorizeEditor<T> : SignalEditor<T, Vec3>
+	internal class ColorizeEditor : SignalEditor<Vec3>
 	{
-		public SignalEditor<T, float> Source;
+		public SignalEditor<float> Source;
 		public ColorMap<Vec3> ColorMap;
 
 		protected override Control CreateControl ()
@@ -37,7 +37,7 @@
 			get { return EnumerableExt.Enumerate (Source); }
 		}
 
-		public override Signal<T, Vec3> Signal
+		public override Signal<Vec2, Vec3> Signal
 		{
 			get { return Source.Signal.Colorize (ColorMap); }
 		}

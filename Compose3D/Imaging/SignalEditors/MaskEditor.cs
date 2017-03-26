@@ -9,14 +9,13 @@
 	using Maths;
 	using UI;
 
-	public class MaskEditor<V> : SignalEditor<V, float>
-		where V : struct, IVec<V, float>
+	internal class MaskEditor : SignalEditor<float>
 	{
-		public SignalEditor<V, float> Source;
-		public SignalEditor<V, float> Other;
-		public SignalEditor<V, float> Mask;
+		public SignalEditor<float> Source;
+		public SignalEditor<float> Other;
+		public SignalEditor<float> Mask;
 
-		public override Signal<V, float> Signal
+		public override Signal<Vec2, float> Signal
 		{
 			get { return Source.Signal.Mask (Other.Signal, Mask.Signal); }
 		}

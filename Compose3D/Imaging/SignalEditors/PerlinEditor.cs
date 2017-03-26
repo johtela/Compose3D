@@ -8,7 +8,7 @@
 	using Maths;
 	using UI;
 
-	public class PerlinEditor : SignalEditor<Vec2, float>
+	internal class PerlinEditor : SignalEditor<float>
 	{
 		public int Seed;
 		public Vec2 Scale;

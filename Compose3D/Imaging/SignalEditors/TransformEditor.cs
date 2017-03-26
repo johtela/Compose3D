@@ -9,12 +9,11 @@
 	using Maths;
 	using UI;
 
-	public class TransformEditor<V> : SignalEditor<V, float>
-		where V : struct, IVec<V, float>
+	internal class TransformEditor : SignalEditor<float>
 	{
 		public float Scale;
 		public float Offset;
-		public SignalEditor<V, float> Source;
+		public SignalEditor<float> Source;
 
 		protected override Control CreateControl ()
 		{
@@ -41,7 +40,7 @@
 			xelem.SetAttributeValue (nameof (Offset), Offset);
 		}
 
-        public override Signal<V, float> Signal
+        public override Signal<Vec2, float> Signal
         {
             get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (-1f, 1f); }
         }

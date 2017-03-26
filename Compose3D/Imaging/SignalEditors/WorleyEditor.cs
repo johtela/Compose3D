@@ -29,7 +29,7 @@
 
 		private Func<Vec2, Vec2, float>[] _distFunctions = {
 				Vec.DistanceTo<Vec2>,
-				Vec.ManhattanDistanceTo<Vec2>
+				(v1, v2) => Vec.ManhattanDistanceTo<Vec2> (v1, v2).Sqrt ()
 			};
 
 		protected override Control CreateControl ()

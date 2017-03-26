@@ -70,6 +70,29 @@
 			return new CLKernel<T1, T2, T3, T4> (name, func);
 		}
 
+		public static CLKernel<T1, T2, T3, T4, T5> Create<T1, T2, T3, T4, T5> (string name,
+			Expression<Func<T1, T2, T3, T4, T5, Kernel<KernelResult>>> func)
+			where T1 : KernelArg
+			where T2 : KernelArg
+			where T3 : KernelArg
+			where T4 : KernelArg
+			where T5 : KernelArg
+		{
+			return new CLKernel<T1, T2, T3, T4, T5> (name, func);
+		}
+
+		public static CLKernel<T1, T2, T3, T4, T5, T6> Create<T1, T2, T3, T4, T5, T6> (string name,
+			Expression<Func<T1, T2, T3, T4, T5, T6, Kernel<KernelResult>>> func)
+			where T1 : KernelArg
+			where T2 : KernelArg
+			where T3 : KernelArg
+			where T4 : KernelArg
+			where T5 : KernelArg
+			where T6 : KernelArg
+		{
+			return new CLKernel<T1, T2, T3, T4, T5, T6> (name, func);
+		}
+
 		public static Func<TRes> Function<TRes> (Expression<Func<Func<TRes>>> member, Expression<Func<TRes>> func)
 		{
 			ClcParser.CreateFunction ((member.Body as MemberExpression).Member, func);
@@ -231,6 +254,41 @@
 			params long[] workSizes)
 		{
 			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
+		}
+	}
+
+	public class CLKernel<T1, T2, T3, T4, T5> : CLKernel
+		where T1 : KernelArg
+		where T2 : KernelArg
+		where T3 : KernelArg
+		where T4 : KernelArg
+		where T5 : KernelArg
+	{
+		internal CLKernel (string name, LambdaExpression expr)
+			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
+			params long[] workSizes)
+		{
+			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5 }, workSizes);
+		}
+	}
+
+	public class CLKernel<T1, T2, T3, T4, T5, T6> : CLKernel
+		where T1 : KernelArg
+		where T2 : KernelArg
+		where T3 : KernelArg
+		where T4 : KernelArg
+		where T5 : KernelArg
+		where T6 : KernelArg
+	{
+		internal CLKernel (string name, LambdaExpression expr)
+			: base (name, expr) { }
+
+		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6,
+			params long[] workSizes)
+		{
+			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5, arg6 }, workSizes);
 		}
 	}
 }

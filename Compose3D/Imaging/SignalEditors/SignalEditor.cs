@@ -21,6 +21,8 @@
 
 	public static class SignalEditor
 	{
+		const float UpdateDelay = 0.2f;
+
 		public static SignalEditor<T, U> ToSignalEditor<T, U> (this Signal<T, U> signal, string name)
 		{
 			return new DummyEditor<T, U> () { Name = name, Source = signal };
@@ -139,7 +141,7 @@
 				outputTexture.LoadArray (editor.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
 					PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 			})
-			.Delay (delayedUpdater, 0.5);
+			.Delay (delayedUpdater, UpdateDelay);
 
 			for (int i = 0; i < rootEditors.Length; i++)
 				CollectInputEditors (rootEditors[i], 0, changed, all);
@@ -155,7 +157,7 @@
 							outputTexture.LoadArray (e.Buffer, outputTexture.Target, 0, outputSize.X, outputSize.Y, 
 								PixelFormat.Rgba, PixelInternalFormat.Rgb, PixelType.UnsignedInt8888);
 						})
-						.Delay (delayedUpdater, 0.5)
+						.Delay (delayedUpdater, UpdateDelay)
 					)));
 				levelContainers.Add (container);
 			}

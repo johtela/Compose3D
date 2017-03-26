@@ -115,7 +115,7 @@
 
         public SpectralControlArgs Args
         {
-            get { return new SpectralControlArgs (FirstBand, LastBand, BandWeights.ToArray ()); }
+            get { return new SpectralControlArgs (FirstBand, LastBand, ActiveBandWeights ().ToArray ()); }
         }
 	}
 }

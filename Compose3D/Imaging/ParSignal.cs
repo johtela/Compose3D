@@ -217,6 +217,13 @@
 				val => val * 0.5f + 0.5f
 			);
 
+		public static readonly Func<float, float, float, float>
+			Transform = CLKernel.Function
+			(
+				() => Transform,
+				(scale, offset, val) => ((val * scale) + offset).Clamp (-1f, 1f)
+			);
+
 		public static readonly Macro<Macro<float, float>, float, float, float> 
 			Dfdx = CLKernel.Macro 
 			(
@@ -251,11 +258,16 @@
 				)
 			);
 
-		public static readonly Macro<Macro<Vec2, float>, Macro<Vec2, float>, Vec2, Vec2, float> 
+		public static readonly Macro<Macro<Vec2, float>, Macro<Vec2, float>, Vec2, float> 
 			Warp = CLKernel.Macro 
 			(
 				() => Warp,
-				(signal, warp, dv, vec) => signal (vec + Dfdv2 (warp, dv, vec).Item2)
+				(signal, warp, vec) => Kernel.Evaluate
+				(
+					from dv in Dv ().ToKernel ()
+					let warpDv = Dfdv2 (warp, dv, vec).Item2
+					select signal (vec + warpDv)
+				)
 			);
 
 		public static readonly Macro<float, float, float, float> 
@@ -318,18 +330,6 @@
 							select result + signal (input) * (!weights)[i - firstBand]
 						)
 					)
-			);
-
-		public static readonly Macro<Macro<Vec2, float>, uint>
-			SignalToGrayscale = CLKernel.Macro
-			(
-				() => SignalToGrayscale,
-				signal => Kernel.Evaluate
-				(
-					from pos in PixelPosTo0_1 ().ToKernel ()
-					let v = signal (pos)
-					select GrayscaleToUint (ParSignal.NormalRangeTo0_1 (v))
-				)
 			);
 	}
 }

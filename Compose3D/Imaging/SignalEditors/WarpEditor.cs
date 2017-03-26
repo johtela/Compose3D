@@ -3,6 +3,7 @@
 	using System.Collections.Generic;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
@@ -46,6 +47,11 @@
 		public override Signal<V, float> Signal
 		{
 			get { return Source.Signal.Warp (Warp.Signal.Cache ().Scale (Scale), Dv); }
+		}
+
+		public Value<float> Args
+		{ 
+			get { return KernelArg.Value (Scale); }
 		}
 	}
 }

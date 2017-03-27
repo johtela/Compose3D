@@ -7,12 +7,16 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class PerlinEditor : SignalEditor<float>
 	{
 		public int Seed;
 		public Vec2 Scale;
 		public bool Periodic;
+
+		public PerlinEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

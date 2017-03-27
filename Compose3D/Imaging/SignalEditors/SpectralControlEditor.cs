@@ -10,6 +10,7 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class SpectralControlEditor : SignalEditor<float>
 	{
@@ -19,6 +20,9 @@
 		public List<float> BandWeights;
 
 		private Container _bandContainer;
+
+		public SpectralControlEditor (Texture texture)
+			: base (texture) { }
 
 		private Tuple<Control, Reaction<Control>> BandSlider (int band)
 		{

@@ -18,7 +18,6 @@
 	using OpenTK.Graphics;
 	using OpenTK.Input;
 	using OpenTK.Graphics.OpenGL4;
-	using Cloo;
 
 	public class MaterialWindow : GameWindow
 	{
@@ -28,9 +27,6 @@
 		private Vec2 _rotation;
 		private float _zoom;
 		private SceneGraph _sceneGraph;
-		private Texture _signalTexture;
-		private Texture _diffuseMap;
-		private Texture _normalMap;
 		private DelayedReactionUpdater _updater;
 
 		public MaterialWindow ()
@@ -43,6 +39,25 @@
 			CreateSceneGraph ();
 			SetupRendering ();
 			SetupCameraMovement ();
+		}
+
+		private Control Editor (Vec2i outputSize, string fileName, 
+			MaterialPanel<TexturedVertex> panel)
+		{
+			var worley = SignalEditor.Worley ("Worley",
+					WorleyNoiseKind.F1, ControlPointKind.Random,
+					10, 0, DistanceKind.Euclidean, 0f, true);
+			var transform = worley.Transform ("Transform", -30f, 0.5f);
+			var dv = new Vec2 (1f) / new Vec2 (outputSize.X, outputSize.Y);
+			var perlin = SignalEditor.Perlin ("Perlin", new Vec2 (10f));
+			var spectral = perlin.SpectralControl ("Spectral", 0, 2, null, 1f, 0.5f, 0.2f);
+			var warp = transform.Warp ("Warp", spectral, 0.001f, dv);
+			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale ());
+			var normal = warp.NormalMap ("Normal", 1f, dv);
+
+			return SignalEditor.EditorUI (fileName, outputSize, 
+				React.By ((Texture tex) => panel.Texture = tex), 
+				_updater, normal, signal);
 		}
 
 		private void CreateSceneGraph ()
@@ -60,17 +75,14 @@
 			rect.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 			rect.UpdateTangents (BeginMode.Triangles);
 
-			_signalTexture = new Texture (TextureTarget.Texture2D);
-			_diffuseMap = new Texture (TextureTarget.Texture2D);
-			_normalMap = new Texture (TextureTarget.Texture2D);
-			var material = new Ground (new Vec2i (256), @"Materials\Ground.xml", _signalTexture, _updater);
-            var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, material.Editor,
-                new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
-            var textureWindow = Panel<TexturedVertex>.Movable (_sceneGraph, false, _signalTexture, 
+			var texturePanel = MaterialPanel<TexturedVertex>.Movable (_sceneGraph, false,
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
+			var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, 
+				Editor (new Vec2i (256), @"Materials\Ground.xml", texturePanel),
+                new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
-			_sceneGraph.Root.Add (_camera, _mesh, guiWindow, textureWindow);
+			_sceneGraph.Root.Add (_camera, _mesh, guiWindow, texturePanel);
 		}
 
 		private void SetupRendering ()
@@ -80,12 +92,15 @@
 			var renderPanel = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))
 				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
+			var renderMaterialPanel = MaterialPanels.Renderer (_sceneGraph)
+				.MapInput ((double _) => new Vec2i (ClientSize.Width, ClientSize.Height));
 
 			Render.Clear<double> (new Vec4 (0f, 0f, 0f, 1f), 
 					ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
 				.And (React.By<double> (UpdateCamera))
 				.And (renderMaterial)
 				.And (renderPanel)
+				.And (renderMaterialPanel)
 				.Viewport (this)
 				.SwapBuffers (this)
 				.WhenRendered (this).Evoke ();

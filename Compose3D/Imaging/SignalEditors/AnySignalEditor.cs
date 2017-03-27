@@ -14,7 +14,7 @@
 
 	public abstract class AnySignalEditor
 	{
-		private static HashSet<CLKernel> _kernels;
+		private static HashSet<CLKernel> _kernels = new HashSet<CLKernel> ();
 		protected static CLContext _context;
 		protected static CLCommandQueue _queue;
 		protected static CLProgram _program;
@@ -23,11 +23,11 @@
 		internal int _level;
         internal bool _updated;
 
-		public AnySignalEditor (CLKernel kernel)
+		public AnySignalEditor (CLKernel kernel, Texture texture)
 		{
 			if (kernel != null && !_kernels.Contains (kernel))
 				_kernels.Add (kernel);
-			Texture = new Texture (TextureTarget.Texture2D);
+			Texture = texture ?? new Texture (TextureTarget.Texture2D);
 		}
 
         protected Control InputSignalControl (string name, AnySignalEditor input)
@@ -39,7 +39,7 @@
 
 		private void SetupCLProgram ()
 		{
-			if (_context != null)
+			if (_context != null || _kernels.Count == 0)
 				return;
 			_context = CLContext.CreateContextForDevices (CLContext.Gpus.First ());
 			_queue = new CLCommandQueue (_context);

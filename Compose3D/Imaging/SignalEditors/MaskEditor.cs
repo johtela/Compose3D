@@ -5,8 +5,8 @@
 	using Extensions;
 	using Imaging;
 	using Visuals;
-	using Reactive;
 	using Maths;
+	using Textures;
 	using UI;
 
 	internal class MaskEditor : SignalEditor<float>
@@ -14,6 +14,9 @@
 		public SignalEditor<float> Source;
 		public SignalEditor<float> Other;
 		public SignalEditor<float> Mask;
+
+		public MaskEditor (Texture texture)
+			: base (texture) { }
 
 		public override Signal<Vec2, float> Signal
 		{

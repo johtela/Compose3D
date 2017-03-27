@@ -66,8 +66,6 @@
     <Compile Include="Compiler\Scopes.cs" />
     <Compile Include="GLTypes\GlslAst.cs" />
     <Compile Include="GLTypes\GlslParser.cs" />
-    <Compile Include="Imaging\Ground.cs" />
-    <Compile Include="Imaging\Material.cs" />
     <Compile Include="Imaging\ParWorley.cs" />
     <Compile Include="Maths\Convert.cs" />
     <Compile Include="CLTypes\KernelArgs.cs" />
@@ -116,6 +114,7 @@
     <Compile Include="CLTypes\CLTuple.cs" />
     <Compile Include="Reactive\RenderReactions.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
+    <Compile Include="SceneGraph\MaterialPanel.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="DataStructures\Octree.cs" />
     <Compile Include="Geometry\Composite.cs" />

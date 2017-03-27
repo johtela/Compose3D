@@ -8,12 +8,16 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class BlendEditor : SignalEditor<float>
 	{
 		public float BlendFactor;
 		public SignalEditor<float> Source;
 		public SignalEditor<float> Other;
+
+		public BlendEditor (Texture texture)
+			: base (texture) { }
 
 		public override Signal<Vec2, float> Signal
 		{

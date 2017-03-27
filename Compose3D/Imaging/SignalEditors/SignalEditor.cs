@@ -17,8 +17,8 @@
 	public abstract class SignalEditor<T> : AnySignalEditor
 		where T : struct
 	{
-		public SignalEditor ()
-			: base (null) { }
+		public SignalEditor (Texture texture)
+			: base (null, texture) { }
 
 		protected override void AllocateBuffer (int length)
 		{
@@ -28,7 +28,7 @@
 
 		protected override void RenderToBuffer (Vec2i size)
 		{
-			Signal.MapInput (Imaging.Signal.BitmapCoordToUnitRange (size, 1f))
+			Signal.MapInput (Imaging.Signal.BitmapCoordTo0_1 (size, 1f))
 				.SampleToBuffer (Buffer, size);
 		}
 
@@ -51,80 +51,92 @@
 	{
 		const float UpdateDelay = 0.2f;
 
-		public static SignalEditor<T> ToSignalEditor<T> (this Signal<Vec2, T> signal, string name)
+		public static SignalEditor<T> ToSignalEditor<T> (this Signal<Vec2, T> signal, string name,
+			Texture texture = null)
 			where T : struct
 		{
-			return new DummyEditor<T> () { Name = name, Source = signal };
+			return new DummyEditor<T> (texture) { Name = name, Source = signal };
 		}
 
 		public static SignalEditor<float> Perlin (string name, Vec2 scale, int seed = 0, 
-			bool periodic = false)
+			bool periodic = false, Texture texture = null)
 		{
-			return new PerlinEditor () { Name = name, Seed = seed, Scale = scale, Periodic = periodic };
+			return new PerlinEditor (texture) { Name = name, Seed = seed, Scale = scale,
+				Periodic = periodic };
 		}
 
 		public static SignalEditor<float> Worley (string name, WorleyNoiseKind kind = WorleyNoiseKind.F1, 
-			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, int seed = 0, 
-			DistanceKind distanceKind = DistanceKind.Euclidean, float jitter = 0f, 
-			bool periodic = false)
+			ControlPointKind controlPoints = ControlPointKind.Random, int controlPointCount = 10, 
+			int seed = 0, DistanceKind distanceKind = DistanceKind.Euclidean, float jitter = 0f, 
+			bool periodic = false, Texture texture = null)
 		{
-			return new WorleyEditor () { Name = name, NoiseKind = kind, ControlPoints = controlPoints,
-				ControlPointCount = controlPointCount, Seed = seed, DistanceKind = distanceKind,
-				Jitter = jitter, Periodic = periodic };
+			return new WorleyEditor (texture) { Name = name, NoiseKind = kind,
+				ControlPoints = controlPoints, ControlPointCount = controlPointCount, Seed = seed,
+				DistanceKind = distanceKind, Jitter = jitter, Periodic = periodic };
 		}
 
 		public static SignalEditor<float> Warp (this SignalEditor<float> source, 
-			string name, SignalEditor<float> warp, float scale, Vec2 dv)
+			string name, SignalEditor<float> warp, float scale, Vec2 dv, Texture texture = null)
 		{
-			return new WarpEditor () { Name = name, Source = source, Warp = warp, Scale = scale, Dv = dv };
+			return new WarpEditor (texture) { Name = name, Source = source, Warp = warp,
+				Scale = scale, Dv = dv };
 		}
 
 		public static SignalEditor<float> Blend (this SignalEditor<float> source,
-			string name, SignalEditor<float> other, float blendFactor)
+			string name, SignalEditor<float> other, float blendFactor, Texture texture = null)
 		{
-			return new BlendEditor () { Name = name, Source = source, Other = other, BlendFactor = blendFactor };
+			return new BlendEditor (texture) { Name = name, Source = source, Other = other,
+				BlendFactor = blendFactor };
 		}
 
 		public static SignalEditor<float> Mask(this SignalEditor<float> source,
-			string name, SignalEditor<float> other, SignalEditor<float> mask)
+			string name, SignalEditor<float> other, SignalEditor<float> mask, 
+			Texture texture = null)
 		{
-			return new MaskEditor () { Name = name, Source = source, Other = other, Mask = mask };
+			return new MaskEditor (texture) { Name = name, Source = source, Other = other,
+				Mask = mask };
 		}
 
 		public static SignalEditor<float> MaskWithSource<V> (this SignalEditor<float> source,
-			string name, SignalEditor<float> other)
+			string name, SignalEditor<float> other, Texture texture = null)
 		{
-			return new MaskEditor () { Name = name, Source = source, Other = other, Mask = source };
+			return new MaskEditor (texture) { Name = name, Source = source, Other = other,
+				Mask = source };
 		}
 
 		public static SignalEditor<float> Transform (this SignalEditor<float> source,
-			string name, float scale = 1f, float offset = 0f)
+			string name, float scale = 1f, float offset = 0f, Texture texture = null)
 		{
-			return new TransformEditor () { Name = name, Source = source, Scale = scale, Offset = offset };
+			return new TransformEditor (texture) { Name = name, Source = source, Scale = scale,
+				Offset = offset };
 		}
 
 		public static SignalEditor<Vec3> Colorize (this SignalEditor<float> source, 
-			string name, ColorMap<Vec3> colorMap)
+			string name, ColorMap<Vec3> colorMap, Texture texture = null)
 		{
-			return new ColorizeEditor () { Name = name, Source = source, ColorMap = colorMap };
+			return new ColorizeEditor (texture) { Name = name, Source = source,
+				ColorMap = colorMap };
 		}
 
 		public static SignalEditor<float> SpectralControl (this SignalEditor<float> source,
-			string name, int firstBand, int lastBand, params float[] bandWeights)
+			string name, int firstBand, int lastBand, Texture texture = null, 
+			params float[] bandWeights)
 		{
 			var bw = new List<float> (16);
 			bw.AddRange (0f.Repeat (16));
 			for (int i = firstBand; i <= lastBand; i++)
 				bw [i] = bandWeights [i - firstBand];
-			return new SpectralControlEditor () { 
-				Name = name, Source = source, FirstBand = firstBand, LastBand = lastBand, BandWeights = bw
+			return new SpectralControlEditor (texture) { 
+				Name = name, Source = source, FirstBand = firstBand, LastBand = lastBand,
+				BandWeights = bw
 			};
 		}
 
 		public static SignalEditor<Vec3> NormalMap (this SignalEditor<float> source,
-			string name, float strength, Vec2 dv)
+			string name, float strength, Vec2 dv, Texture texture = null)
 		{
-			return new NormalMapEditor () { Name = name, Source = source, Strength = strength, Dv = dv };
+			return new NormalMapEditor (texture) { Name = name, Source = source, Strength = strength,
+				Dv = dv };
 		}
 
 		private static void CollectInputEditors (AnySignalEditor editor, int level, 
@@ -144,8 +156,8 @@
 			}
 		}
 
-		public static Control EditorUI (Texture outputTexture, Vec2i outputSize, 
-            DelayedReactionUpdater delayedUpdater, params AnySignalEditor[] rootEditors)
+		public static Control EditorUI (Vec2i outputSize, Reaction<Texture> updated,
+			DelayedReactionUpdater delayedUpdater, params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
 			var changed = React.By ((AnySignalEditor editor) =>
@@ -155,6 +167,7 @@
                 editor._updated = false;
 				editor.Render (outputSize);
 			})
+			.And (updated.MapInput ((AnySignalEditor editor) => editor.Texture))
 			.Delay (delayedUpdater, UpdateDelay);
 
 			for (int i = 0; i < rootEditors.Length; i++)
@@ -165,8 +178,9 @@
 				var container = Container.Vertical (false, false, 
 					level.Select (e => new Tuple<Control, Reaction<Control>> (
 						e.Control, 
-						React.By<Control> (_ => e.Render (outputSize))
-						.Delay (delayedUpdater, UpdateDelay)
+						React.By ((Control _) => e.Render (outputSize))
+							.And (updated.MapInput ((Control _) => e.Texture))
+							.Delay (delayedUpdater, UpdateDelay)
 					)));
 				levelContainers.Add (container);
 			}
@@ -174,12 +188,12 @@
             return Container.Horizontal (true, false, levelContainers);
 		}
 
-		public static Control EditorUI (string filePath, Texture outputTexture, Vec2i outputSize,
+		public static Control EditorUI (string filePath, Vec2i outputSize, Reaction<Texture> updated, 
 			DelayedReactionUpdater updater, params AnySignalEditor[] rootEditors)
 		{
 			if (File.Exists (filePath))
 				LoadFromFile (filePath, rootEditors);
-			return new CommandContainer (EditorUI (outputTexture, outputSize, updater, rootEditors),
+			return new CommandContainer (EditorUI (outputSize, updated, updater, rootEditors),
 				new KeyboardCommand ("Saved to file: " + filePath,
 					React.By ((Key key) => SaveToFile (filePath, rootEditors)),
 					Key.S, Key.LControl));

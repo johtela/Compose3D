@@ -12,6 +12,7 @@
 	using Textures;
 
 	public enum UpdateAction { Done, Redraw, HandleInput };
+	public enum PanelRenderer { Standard, Custom }
 
 	public class Panel<V> : SceneNode 
 		where V : struct, IVertex, ITextured
@@ -21,41 +22,41 @@
 		private Geometry<V> _rectangle;
 		private VBO<V> _vertexBuffer;
 		private VBO<int> _indexBuffer;
-		private bool _flipVertically;
 		private bool _movable;
 		private bool _moving;
 		private bool _resizing;
 		private Vec3 _origOffs;
 		private Vec2i _origMousePos;
 		private Vec2i _origSize;
-		private Vec2i _repeat;
 
-		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat)
+		protected bool _flipVertically;
+		protected PanelRenderer _renderer;
+
+		public Panel (SceneGraph graph, bool flipVertically, bool movable)
 			: base (graph)
 		{
 			_rectangle = Quadrilateral<V>.Rectangle (1f, 1f).Translate (0.5f, -0.5f);
 			_flipVertically = flipVertically;
 			_movable = movable;
-			_repeat = repeat;
-			var fac = repeat.Convert<Vec2i, Vec2> ();
-			if (flipVertically)
-				_rectangle.ApplyTextureFront (1f, TexturePos.TopLeft * fac, TexturePos.BottomRight * fac);
-			else
-				_rectangle.ApplyTextureFront (1f, TexturePos.BottomLeft, TexturePos.TopRight * fac);
 		}
 
-		public Panel (SceneGraph graph, bool flipVertically, bool movable, Vec2i repeat, Texture texture)
-			: this (graph, flipVertically, movable, repeat)
+		public Panel (SceneGraph graph, bool flipVertically, bool movable, Texture texture)
+			: this (graph, flipVertically, movable)
 		{
 			Texture = texture;
 		}
 
-		public Panel (SceneGraph graph, bool flipVertically, bool movable, Texture texture)
-			: this (graph, flipVertically, movable, new Vec2i (1), texture) { }
+		protected virtual void SetTextureCoordinates (Geometry<V> geometry)
+		{
+			if (_flipVertically)
+				_rectangle.ApplyTextureFront (1f, TexturePos.TopLeft, TexturePos.BottomRight);
+			else
+				_rectangle.ApplyTextureFront (1f, TexturePos.BottomLeft, TexturePos.TopRight);
+		}
 
 		public Mat4 GetModelViewMatrix (Vec2i viewportSize)
 		{
-			var texSize = Texture.Size * _repeat * 2;
+			var texSize = GetSize () * 2;
 			var scalingMat = Mat.Scaling<Mat4> (
 				(float)texSize.X / viewportSize.X, 
 				(float)texSize.Y / viewportSize.Y);
@@ -161,7 +162,10 @@
 			get
 			{
 				if (_vertexBuffer == null)
+				{
+					SetTextureCoordinates (_rectangle);
 					_vertexBuffer = new VBO<V> (_rectangle.Vertices, BufferTarget.ArrayBuffer);
+				}
 				return _vertexBuffer;
 			}
 		}
@@ -176,16 +180,14 @@
 			}
 		}
 
+		public PanelRenderer Renderer
+		{
+			get {return _renderer; }
+		}
+
 		public static SceneNode Movable (SceneGraph graph, bool flipVertically, Texture texture, Vec2 pos)
 		{
 			return new Panel<V> (graph, flipVertically, true, texture)
-				.Offset (new Vec3 (pos, 0f));
-		}
-
-		public static SceneNode Movable (SceneGraph graph, bool flipVertically, Texture texture, Vec2 pos,
-			Vec2i repeat)
-		{
-			return new Panel<V> (graph, flipVertically, true, repeat, texture)
 				.Offset (new Vec3 (pos, 0f));
 		}
 	}

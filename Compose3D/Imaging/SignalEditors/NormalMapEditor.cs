@@ -8,12 +8,16 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class NormalMapEditor : SignalEditor<Vec3>
 	{
 		public SignalEditor<float> Source;
 		public float Strength;
 		public Vec2 Dv;
+
+		public NormalMapEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

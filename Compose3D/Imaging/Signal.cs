@@ -103,7 +103,7 @@
 			       select x.Clamp (min, max);
 		}
 
-		public static Signal<T, float> NormalRangeToZeroOne<T> (this Signal<T, float> signal)
+		public static Signal<T, float> NormalRangeTo0_1<T> (this Signal<T, float> signal)
 		{
 			return from x in signal
 			       select x * 0.5f + 0.5f;
@@ -231,7 +231,7 @@
             });
         }
 
-        public static Func<Vec2i, Vec2> BitmapCoordToUnitRange (Vec2i bitmapSize, float scale)
+        public static Func<Vec2i, Vec2> BitmapCoordTo0_1 (Vec2i bitmapSize, float scale)
 		{
 			return vec => new Vec2 (
 				vec.X * scale / bitmapSize.X,

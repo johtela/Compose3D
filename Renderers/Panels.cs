@@ -1,13 +1,13 @@
 ﻿namespace Compose3D.Renderers
 {
 	using System.Linq;
-	using Compose3D.GLTypes;
-	using Compose3D.Maths;
-	using Compose3D.Geometry;
-	using Compose3D.Reactive;
-	using Compose3D.SceneGraph;
-	using Compose3D.Shaders;
-	using Compose3D.Textures;
+	using GLTypes;
+	using Maths;
+	using Geometry;
+	using Reactive;
+	using SceneGraph;
+	using Shaders;
+	using Textures;
 	using OpenTK.Graphics.OpenGL4;
 	
 	public class Panels
@@ -27,8 +27,7 @@
 		private Panels ()
 		{
 			texture = new TextureUniforms (_panelShader, new Sampler2D (0).NearestColor ()
-				//.ClampToEdges (Axes.X | Axes.Y)
-				);
+				.ClampToEdges (Axes.X | Axes.Y));
 			transform = new TransformUniforms (_panelShader);
 		}
 
@@ -49,7 +48,12 @@
 		private void Render (Vec2i viewportSize)
 		{
 			transform.perspectiveMatrix &= new Mat4 (1f);
-			foreach (var panel in _scene.Root.Traverse ().OfType<Panel<TexturedVertex>> ())
+			var renderedPanels =
+				from p in _scene.Root.Traverse ().OfType<Panel<TexturedVertex>> ()
+				where p.Renderer == PanelRenderer.Standard
+				select p;
+
+			foreach (var panel in renderedPanels)
 			{
 				(!texture.textureMap).Bind (panel.Texture);
 				transform.modelViewMatrix &= panel.GetModelViewMatrix (viewportSize);

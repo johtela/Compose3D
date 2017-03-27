@@ -9,6 +9,7 @@
 	using Reactive;
 	using UI;
 	using Visuals;
+	using Textures;
 
 	public enum ControlPointKind { Random, Halton23 }
 
@@ -31,6 +32,9 @@
 				Vec.DistanceTo<Vec2>,
 				(v1, v2) => Vec.ManhattanDistanceTo<Vec2> (v1, v2).Sqrt ()
 			};
+
+		public WorleyEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

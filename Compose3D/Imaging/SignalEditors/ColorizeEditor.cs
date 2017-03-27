@@ -7,12 +7,16 @@
 	using Visuals;
 	using Reactive;
 	using Maths;
+	using Textures;
 	using UI;
 
 	internal class ColorizeEditor : SignalEditor<Vec3>
 	{
 		public SignalEditor<float> Source;
 		public ColorMap<Vec3> ColorMap;
+
+		public ColorizeEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

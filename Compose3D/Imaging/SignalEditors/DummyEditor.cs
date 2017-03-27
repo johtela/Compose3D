@@ -4,12 +4,16 @@
 	using System.Linq;
 	using Maths;
 	using Visuals;
+	using Textures;
 	using UI;
 
 	internal class DummyEditor<T> : SignalEditor<T>
 		where T : struct
 	{
 		public Signal<Vec2, T> Source;
+
+		public DummyEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

@@ -8,12 +8,16 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class TransformEditor : SignalEditor<float>
 	{
 		public float Scale;
 		public float Offset;
 		public SignalEditor<float> Source;
+
+		public TransformEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

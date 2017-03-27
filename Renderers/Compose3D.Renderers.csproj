@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="Materials.cs" />
     <Compile Include="Entities.cs" />
+    <Compile Include="MaterialPanels.cs" />
     <Compile Include="Panels.cs" />
     <Compile Include="Shadows.cs" />
     <Compile Include="Skybox.cs" />

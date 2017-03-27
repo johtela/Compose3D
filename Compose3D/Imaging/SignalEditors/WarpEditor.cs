@@ -9,6 +9,7 @@
 	using Reactive;
 	using Maths;
 	using UI;
+	using Textures;
 
 	internal class WarpEditor : SignalEditor<float>
 	{
@@ -16,6 +17,9 @@
 		public Vec2 Dv;
 		public SignalEditor<float> Source;
 		public SignalEditor<float> Warp;
+
+		public WarpEditor (Texture texture)
+			: base (texture) { }
 
 		protected override Control CreateControl ()
 		{

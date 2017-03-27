@@ -30,7 +30,8 @@
 			return base.GetSize () * _repeat;
 		}
 
-		public static TransformNode Movable (SceneGraph graph, bool flipVertically, Vec2 pos, Vec2i repeat)
+		public static TransformNode<MaterialPanel<V>> Movable (SceneGraph graph, bool flipVertically, 
+			Vec2 pos, Vec2i repeat)
 		{
 			return new MaterialPanel<V> (graph, flipVertically, true, repeat)
 				.Offset (new Vec3 (pos, 0f));

@@ -28,6 +28,8 @@
 		private float _zoom;
 		private SceneGraph _sceneGraph;
 		private DelayedReactionUpdater _updater;
+		private Texture _diffuseMap;
+		private Texture _normalMap;
 
 		public MaterialWindow ()
 			: base (1024, 700, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
@@ -52,8 +54,8 @@
 			var perlin = SignalEditor.Perlin ("Perlin", new Vec2 (10f));
 			var spectral = perlin.SpectralControl ("Spectral", 0, 2, null, 1f, 0.5f, 0.2f);
 			var warp = transform.Warp ("Warp", spectral, 0.001f, dv);
-			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale ());
-			var normal = warp.NormalMap ("Normal", 1f, dv);
+			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale (), _diffuseMap);
+			var normal = warp.NormalMap ("Normal", 1f, dv, _normalMap);
 
 			return SignalEditor.EditorUI (fileName, outputSize, 
 				React.By ((Texture tex) => panel.Texture = tex), 
@@ -75,10 +77,13 @@
 			rect.ApplyTextureFront (1f, new Vec2 (0f), new Vec2 (1f));
 			rect.UpdateTangents (BeginMode.Triangles);
 
+			_diffuseMap = new Texture (TextureTarget.Texture2D);
+			_normalMap = new Texture (TextureTarget.Texture2D);
+
 			var texturePanel = MaterialPanel<TexturedVertex>.Movable (_sceneGraph, false,
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
 			var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, 
-				Editor (new Vec2i (256), @"Materials\Ground.xml", texturePanel),
+				Editor (new Vec2i (256), @"Materials\Ground.xml", texturePanel.Node),
                 new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);
@@ -87,7 +92,7 @@
 
 		private void SetupRendering ()
 		{
-			var renderMaterial = Materials.Renderer (_signalTexture, _signalTexture)
+			var renderMaterial = Materials.Renderer (_diffuseMap, _normalMap)
 				.MapInput ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))

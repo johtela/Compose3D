@@ -1,35 +1,36 @@
 ﻿namespace Compose3D.SceneGraph
 {
-    using Compose3D.Maths;
-    using Geometry;
-    using System;
+    using Maths;
     using System.Collections.Generic;
-	using System.Linq;
-	using Extensions;
 
-    public static class Scene
+	public static class Scene
     {
         public static SceneNode Add (this SceneGroup group, params SceneNode[] subNodes)
         {
             return group.Add (subNodes as IEnumerable<SceneNode>);
         }
 
-		public static TransformNode OffsetOrientAndScale (this SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
+		public static TransformNode<T> OffsetOrientAndScale<T> (this T node, Vec3 offset,
+			Vec3 orientation, Vec3 scale)
+			where T : SceneNode
 		{
-			return new TransformNode (node.Graph, node, offset, orientation, scale);
+			return new TransformNode<T> (node.Graph, node, offset, orientation, scale);
 		}
 
-		public static TransformNode Offset (this SceneNode node, Vec3 offset)
+		public static TransformNode<T> Offset<T> (this T node, Vec3 offset)
+			where T : SceneNode
 		{
 			return OffsetOrientAndScale (node, offset, new Vec3 (0f), new Vec3 (1f));
 		}
 
-		public static TransformNode Orient (this SceneNode node, Vec3 orientation)
+		public static TransformNode<T> Orient<T> (this T node, Vec3 orientation)
+			where T : SceneNode
 		{
 			return OffsetOrientAndScale (node, new Vec3 (0f), orientation, new Vec3 (1f));
 		}
 
-		public static TransformNode Scale (this SceneNode node, Vec3 factor)
+		public static TransformNode<T> Scale<T> (this T node, Vec3 factor)
+			where T : SceneNode
 		{
 			return OffsetOrientAndScale (node, new Vec3 (0f), new Vec3 (0f), factor);
 		}

@@ -21,7 +21,6 @@
 
 		private Connected _control;
 		internal int _level;
-        internal bool _updated;
 
 		public AnySignalEditor (CLKernel kernel, Texture texture)
 		{
@@ -48,13 +47,11 @@
 
 		internal void Render (Vec2i size)
         {
-            if (_updated)
-                return;
 			SetupCLProgram ();
             var length = size.Producti ();
 			AllocateBuffer (length);
             RenderToBuffer (size);
-            _updated = true;
+			UpdateTexture (size);
         }
 
         private string XElementName ()

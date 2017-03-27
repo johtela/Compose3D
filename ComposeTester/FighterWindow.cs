@@ -24,7 +24,7 @@
 		private DirectionalLight _dirLight;
 		private Vec2 _rotation;
 		private float _zoom;
-		private TransformNode _fighter;
+		private TransformNode<Mesh<EntityVertex>> _fighter;
 		private ControlPanel<TexturedVertex> _infoWindow;
 		private Panel<TexturedVertex> _shadowWindow;
 		private int _fpsCount;

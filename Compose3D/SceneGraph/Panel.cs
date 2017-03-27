@@ -101,10 +101,10 @@
 				MouseOnPanel (new Vec2i (mouse.X, mouse.Y), viewportSize))
 			{
 				_origMousePos = new Vec2i (mouse.X, mouse.Y);
-				var parent = Parent as TransformNode;
+				var parent = Parent as ITransformNode;
 				if (parent == null)
 					throw new InvalidOperationException (
-						"Parent node of movable panel needs to be TransformNode. " +
+						"Parent node of movable panel must implement ITransformNode. " +
 						"Alternatively you can create the panel with 'movable' parameter as false.");
 				_origOffs = parent.Offset;
 				_moving = true;
@@ -117,7 +117,7 @@
 				{
 					var vport = new Vec2 (viewportSize.X, -viewportSize.Y);
 					var normalizedDelta = new Vec2 (delta.X, delta.Y) * 2f / vport;
-					((TransformNode)Parent).Offset = _origOffs + new Vec3(normalizedDelta, 0f);
+					((ITransformNode)Parent).Offset = _origOffs + new Vec3(normalizedDelta, 0f);
 				}
 				return UpdateAction.Done;
 			}

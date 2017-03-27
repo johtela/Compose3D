@@ -49,7 +49,7 @@
 
 	public static class SignalEditor
 	{
-		const float UpdateDelay = 0.2f;
+		const float UpdateDelay = 0.5f;
 
 		public static SignalEditor<T> ToSignalEditor<T> (this Signal<Vec2, T> signal, string name,
 			Texture texture = null)
@@ -156,18 +156,16 @@
 			}
 		}
 
-		public static Control EditorUI (Vec2i outputSize, Reaction<Texture> updated,
+		public static Control EditorUI (Vec2i outputSize, Reaction<Texture> selected,
 			DelayedReactionUpdater delayedUpdater, params AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();
 			var changed = React.By ((AnySignalEditor editor) =>
 			{
-				foreach (var edit in all.Where (e => e._level > editor._level))
-					edit._updated = false;
-                editor._updated = false;
 				editor.Render (outputSize);
+				foreach (var edit in all.Where (e => e._level > editor._level))
+					edit.Render (outputSize);
 			})
-			.And (updated.MapInput ((AnySignalEditor editor) => editor.Texture))
 			.Delay (delayedUpdater, UpdateDelay);
 
 			for (int i = 0; i < rootEditors.Length; i++)
@@ -175,16 +173,13 @@
 			var levelContainers = new List<Container> ();
 			foreach (var level in all.GroupBy (e => e._level).OrderBy (g => g.Key))
 			{
+				foreach (var editor in level)
+					editor.Render (outputSize);
 				var container = Container.Vertical (false, false, 
 					level.Select (e => new Tuple<Control, Reaction<Control>> (
-						e.Control, 
-						React.By ((Control _) => e.Render (outputSize))
-							.And (updated.MapInput ((Control _) => e.Texture))
-							.Delay (delayedUpdater, UpdateDelay)
-					)));
+						e.Control, selected.MapInput ((Control _) => e.Texture))));
 				levelContainers.Add (container);
 			}
-			changed (rootEditors[0]);
             return Container.Horizontal (true, false, levelContainers);
 		}
 

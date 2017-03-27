@@ -1,18 +1,23 @@
 ﻿namespace Compose3D.SceneGraph
 {
-	using System.Linq;
-	using Extensions;
-	using Compose3D.Maths;
-	using DataStructures;
+	using Maths;
 
-	public class TransformNode : SceneNodeWrapper
+	public interface ITransformNode
+	{
+		Vec3 Offset { get; set; }
+		Vec3 Orientation { get; set; }
+		Vec3 Scale { get; set; }
+	}
+
+	public class TransformNode<T> : NodeWrapper<T>, ITransformNode
+		where T : SceneNode
 	{
 		private Mat4 _transform;
 		private Vec3 _offset;
 		private Vec3 _orientation;
 		private Vec3 _scale;
 
-		public TransformNode (SceneGraph graph, SceneNode node, Vec3 offset, Vec3 orientation, Vec3 scale)
+		public TransformNode (SceneGraph graph, T node, Vec3 offset, Vec3 orientation, Vec3 scale)
 			: base (graph, node)
 		{
 			_offset = offset;

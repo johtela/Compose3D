@@ -146,7 +146,7 @@
     <Compile Include="SceneGraph\SceneGraph.cs" />
     <Compile Include="SceneGraph\SceneGroup.cs" />
     <Compile Include="SceneGraph\SceneNode.cs" />
-    <Compile Include="SceneGraph\SceneNodeWrapper.cs" />
+    <Compile Include="SceneGraph\NodeWrapper.cs" />
     <Compile Include="SceneGraph\StaticMesh.cs" />
     <Compile Include="SceneGraph\TerrainMesh.cs" />
     <Compile Include="Shaders\GeometryShaders.cs" />

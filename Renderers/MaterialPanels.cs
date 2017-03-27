@@ -35,7 +35,7 @@
 		{
 			_panelShader = new GLProgram (
 				VertexShaders.TransformedTexture<TexturedVertex, PanelFragment, TransformUniforms> (),
-				FragmentShaders.TexturedOutput<PanelFragment, TextureUniforms> ());
+				FragmentShader ());
 			_panels = new MaterialPanels (_panelShader);
 			_scene = scene;
 

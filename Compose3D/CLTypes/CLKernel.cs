@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Linq.Expressions;
+	using System.Threading.Tasks;
 	using Cloo;
 	using Compiler;
 
@@ -24,16 +25,28 @@
 				throw new InvalidOperationException ("Kernel is not compiled.");
 		}
 
-		protected void ExecuteSynchronously (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
+		protected void RunAsynchronously (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
 		{
 			CheckIsInitialized ();
 			for (int i = 0, index = 0; i < args.Length; i++)
 				index = args[i].PushToCLKernel (this, index);
-			var cq = queue._comQueue;
-			cq.Execute (_comKernel, null, workSizes, null, null);
+			queue._comQueue.Execute (_comKernel, null, workSizes, null, null);
 			for (int i = 0; i < args.Length; i++)
 				args[i].ReadResult (queue);
-			cq.Finish ();
+		}
+
+		protected void RunSynchronously (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
+		{
+			RunAsynchronously (queue, args, workSizes);
+			queue.WaitUntilCompleted ();
+		}
+
+		protected Task RunAsTask (CLCommandQueue queue, KernelArg[] args, long[] workSizes)
+		{
+			RunAsynchronously (queue, args, workSizes);
+			var eventList = new ComputeEventList ();
+			eventList.Add (queue._comQueue.AddMarker ());
+			return Task.Factory.StartNew (() => eventList.Wait ());
 		}
 
 		public static CLKernel<T1> Create<T1> (string name,
@@ -209,7 +222,17 @@
 
 		public void Execute (CLCommandQueue queue, T1 arg1,	params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, params long[] workSizes)
+		{
+			RunAsynchronously (queue, new KernelArg[] { arg1 }, workSizes);
 		}
 	}
 
@@ -222,7 +245,17 @@
 
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, T2 arg2, params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1, arg2 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, T2 arg2, params long[] workSizes)
+		{
+			RunAsynchronously (queue, new KernelArg[] { arg1, arg2 }, workSizes);
 		}
 	}
 
@@ -237,7 +270,19 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, 
 			params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2, arg3 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3,
+			params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1, arg2, arg3 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3,
+			params long[] workSizes)
+		{
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2, arg3 }, workSizes);
 		}
 	}
 
@@ -253,7 +298,19 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, 
 			params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4,
+			params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4,
+			params long[] workSizes)
+		{
+			RunAsynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4 }, workSizes);
 		}
 	}
 
@@ -270,7 +327,19 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
 			params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
+			params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
+			params long[] workSizes)
+		{
+			RunAsynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5 }, workSizes);
 		}
 	}
 
@@ -288,7 +357,19 @@
 		public void Execute (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6,
 			params long[] workSizes)
 		{
-			ExecuteSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5, arg6 }, workSizes);
+			RunSynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5, arg6 }, workSizes);
+		}
+
+		public Task ExecuteAsync (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6,
+			params long[] workSizes)
+		{
+			return RunAsTask (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5, arg6 }, workSizes);
+		}
+
+		public void Enqueue (CLCommandQueue queue, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6,
+			params long[] workSizes)
+		{
+			RunAsynchronously (queue, new KernelArg[] { arg1, arg2, arg3, arg4, arg5, arg6 }, workSizes);
 		}
 	}
 }

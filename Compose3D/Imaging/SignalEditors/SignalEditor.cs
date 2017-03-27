@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
+	using System.Threading.Tasks;
 	using System.Xml.Linq;
 	using OpenTK.Graphics.OpenGL4;
 	using Extensions;
@@ -26,10 +27,11 @@
 				Buffer = new T[length];
 		}
 
-		protected override void RenderToBuffer (Vec2i size)
+		protected override Task RenderToBuffer (Vec2i size)
 		{
-			Signal.MapInput (Imaging.Signal.BitmapCoordTo0_1 (size, 1f))
-				.SampleToBuffer (Buffer, size);
+			return Task.Factory.StartNew (() =>
+				Signal.MapInput (Imaging.Signal.BitmapCoordTo0_1 (size, 1f))
+					.SampleToBuffer (Buffer, size));
 		}
 
 		protected override void UpdateTexture (Vec2i size)

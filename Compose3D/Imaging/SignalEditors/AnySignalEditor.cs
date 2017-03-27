@@ -3,6 +3,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Drawing;
+	using System.Threading.Tasks;
 	using System.Xml.Linq;
 	using OpenTK.Graphics.OpenGL4;
 	using Visuals;
@@ -50,8 +51,8 @@
 			SetupCLProgram ();
             var length = size.Producti ();
 			AllocateBuffer (length);
-            RenderToBuffer (size);
-			UpdateTexture (size);
+            RenderToBuffer (size).ContinueWith (_ => UpdateTexture (size), 
+				TaskScheduler.FromCurrentSynchronizationContext ());
         }
 
         private string XElementName ()
@@ -77,7 +78,7 @@
 		}
 
 		protected abstract void AllocateBuffer (int length);
-		protected abstract void RenderToBuffer (Vec2i size);
+		protected abstract Task RenderToBuffer (Vec2i size);
 		protected abstract void UpdateTexture (Vec2i size);
 		protected abstract Control CreateControl ();
 

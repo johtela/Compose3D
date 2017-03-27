@@ -16,5 +16,10 @@
 
 		public CLCommandQueue (CLContext context)
 			: this (context, context.Devices.First (), ComputeCommandQueueFlags.None) { }
+
+		public void WaitUntilCompleted ()
+		{
+			_comQueue.Finish ();
+		}
 	}
 }

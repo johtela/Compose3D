@@ -1,9 +1,6 @@
 ﻿namespace ComposeTester
 {
-	using System.Linq;
 	using Extensions;
-    using Compose3D.CLTypes;
-    using Compose3D.Compiler;
     using Compose3D.Maths;
 	using Compose3D.Imaging;
 	using Compose3D.Imaging.SignalEditors;

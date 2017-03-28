@@ -138,7 +138,7 @@
 					gl_Position = !t.perspectiveMatrix * viewPos,
 					texPosition = v.texturePos,
 					tangentViewDir = (TBN * new Vec3 (0f, 0f, 1f)).Normalized,
-					tangentLightDir = (TBN * new Vec3 (0f, 1f, 1f)).Normalized
+					tangentLightDir = (TBN * new Vec3 (1f, 0f, 1f)).Normalized
 				});
 		}
 

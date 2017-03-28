@@ -175,7 +175,7 @@
 		{
 			var scale = dv * strength;
 			return from v in signal.Dfdv (dv)
-				   let n = new Vec3 (v * scale, 1f).Normalized
+				   let n = new Vec3 (-v * scale, 1f).Normalized
 				   select n * 0.5f + new Vec3 (0.5f);
 		}
 
@@ -226,8 +226,8 @@
             var length = bufferSize.Producti ();
             Parallel.For (0, bufferSize.Y, y =>
             {
-                Parallel.For (0, bufferSize.X, x =>
-                    buffer[y * bufferSize.Y + x] = signal (new Vec2i (x, y)));
+                for (var x = 0; x < bufferSize.X; x++)
+                    buffer[y * bufferSize.Y + x] = signal (new Vec2i (x, bufferSize.Y - y - 1));
             });
         }
 

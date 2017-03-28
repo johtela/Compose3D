@@ -65,7 +65,7 @@
 				var signal = Periodic ?
 					new Signal<Vec3, float> (v => noiseGen.PeriodicNoise (v, new Vec3 (Scale, 256f))) :
 					new Signal<Vec3, float> (noiseGen.Noise);
-				return signal.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f));
+				return signal.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f)).NormalRangeTo0_1 ();
 			}
 		}
 

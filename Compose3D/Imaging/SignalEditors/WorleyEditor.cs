@@ -110,7 +110,7 @@
 			get
 			{
 				return Imaging.Signal.WorleyNoise (NoiseKind, _distFunctions[(int)DistanceKind], 
-                    GetControlPoints ());
+                    GetControlPoints ()).Clamp (0f, 1f);
 			}
 		}
 

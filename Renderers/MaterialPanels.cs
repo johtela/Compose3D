@@ -73,7 +73,7 @@
 				select new
 				{
 					outputColor = !u.ColorOutput != 0 ? col : 
-						new Vec4 (col[Coord.x, Coord.x, Coord.x] * 0.5f + new Vec3 (0.5f), 1f)
+						new Vec4 (col[Coord.x, Coord.x, Coord.x], 1f)
 				});
 		}
 	}

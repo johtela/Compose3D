@@ -196,7 +196,6 @@
 					Key.S, Key.LControl));
 		}
 
-
 		private static IEnumerable<AnySignalEditor> EditorsByLevel (AnySignalEditor[] rootEditors)
 		{
 			var all = new HashSet<AnySignalEditor> ();

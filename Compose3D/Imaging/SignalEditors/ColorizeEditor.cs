@@ -23,7 +23,7 @@
 			var changed = Changed.Adapt<ColorMap<Vec3>, AnySignalEditor> (this);
 			return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
 				InputSignalControl ("Source", Source),
-				new ColorMapEdit (-1f, 1f, 20f, 200f, ColorMap, changed));
+				new ColorMapEdit (0f, 1f, 20f, 200f, ColorMap, changed));
 		}
 
 		protected override void Load (XElement xelem)

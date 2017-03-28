@@ -46,7 +46,7 @@
 
         public override Signal<Vec2, float> Signal
         {
-            get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (-1f, 1f); }
+            get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (0, 1f); }
         }
 
         public override IEnumerable<AnySignalEditor> Inputs

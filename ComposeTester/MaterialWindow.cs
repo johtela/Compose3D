@@ -27,6 +27,7 @@
 		private DelayedReactionUpdater _updater;
 		private Texture _diffuseMap;
 		private Texture _normalMap;
+		private Texture _heightMap;
 
 		public MaterialWindow ()
 			: base (1024, 700, GraphicsMode.Default, "Compose3D", GameWindowFlags.Default, 
@@ -50,7 +51,7 @@
 			var dv = new Vec2 (1f) / new Vec2 (outputSize.X, outputSize.Y);
 			var perlin = SignalEditor.Perlin ("Perlin", new Vec2 (10f));
 			var spectral = perlin.SpectralControl ("Spectral", 0, 2, null, 1f, 0.5f, 0.2f);
-			var warp = transform.Warp ("Warp", spectral, 0.001f, dv);
+			var warp = transform.Warp ("Warp", spectral, 0.001f, dv, _heightMap);
 			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale (), _diffuseMap);
 			var normal = warp.NormalMap ("Normal", 1f, dv, _normalMap);
 
@@ -76,6 +77,7 @@
 
 			_diffuseMap = new Texture (TextureTarget.Texture2D);
 			_normalMap = new Texture (TextureTarget.Texture2D);
+			_heightMap = new Texture (TextureTarget.Texture2D);
 
 			var texturePanel = MaterialPanel<TexturedVertex>.Movable (_sceneGraph, false,
 				new Vec2 (0.25f, 0.75f), new Vec2i (2));
@@ -89,7 +91,7 @@
 
 		private void SetupRendering ()
 		{
-			var renderMaterial = Materials.Renderer (_diffuseMap, _normalMap)
+			var renderMaterial = Materials.Renderer (_diffuseMap, _normalMap, _heightMap)
 				.MapInput ((double _) => _camera);
 			var renderPanel = Panels.Renderer (_sceneGraph)
 				.And (React.By ((Vec2i vp) => ControlPanel<TexturedVertex>.UpdateAll (_sceneGraph, this, vp)))

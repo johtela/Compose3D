@@ -186,7 +186,7 @@
 
 				from f in Shader.Inputs<MaterialFragment> ()
 				from u in Shader.Uniforms<Materials> ()
-				let texCoords = ParallaxMapping (!u.heightMap, f.texPosition, f.tangentViewDir, 0.01f)
+				let texCoords = ParallaxMapping (!u.heightMap, f.texPosition, f.tangentViewDir, 0.05f)
 				let diffuse = (!u.diffuseMap).Texture (texCoords)[Coord.x, Coord.y, Coord.z]
 				let normal = (!u.normalMap).Texture (texCoords)[Coord.x, Coord.y, Coord.z] * 2f - new Vec3 (1f)
 				select new

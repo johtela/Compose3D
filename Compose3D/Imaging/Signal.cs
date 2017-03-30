@@ -130,7 +130,7 @@
 				var value = signal (v);
 				for (int i = 0; i < result.Dimensions; i++)
 					result[i] = signal (v.Add (default (V).With (i, dv[i]))) - value;
-				return result.Divide (dv);
+				return result;
 			};
 		}
 
@@ -173,9 +173,8 @@
 
 		public static Signal<Vec2, Vec3> NormalMap (this Signal<Vec2, float> signal, float strength, Vec2 dv)
 		{
-			var scale = dv * strength;
 			return from v in signal.Dfdv (dv)
-				   let n = new Vec3 (-v * scale, 1f).Normalized
+				   let n = new Vec3 (-v * strength, 1f).Normalized
 				   select n * 0.5f + new Vec3 (0.5f);
 		}
 

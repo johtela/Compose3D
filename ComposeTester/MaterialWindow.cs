@@ -51,7 +51,7 @@
 			var dv = new Vec2 (1f) / new Vec2 (outputSize.X, outputSize.Y);
 			var perlin = SignalEditor.Perlin ("Perlin", new Vec2 (10f));
 			var spectral = perlin.SpectralControl ("Spectral", 0, 2, null, 1f, 0.5f, 0.2f);
-			var warp = transform.Warp ("Warp", spectral, 0.001f, dv, _heightMap);
+			var warp = transform.Warp ("Warp", spectral, 0.1f, dv, _heightMap);
 			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale (), _diffuseMap);
 			var normal = warp.NormalMap ("Normal", 1f, dv, _normalMap);
 

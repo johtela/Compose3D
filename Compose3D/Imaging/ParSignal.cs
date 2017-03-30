@@ -203,11 +203,15 @@
 				() => new Vec2 (1f / Kernel.GetGlobalSize (0), 1f / Kernel.GetGlobalSize (1))
 			);
 
-		public static readonly Func<int> 
+		public static readonly Func<Vec2i, Vec2i, int> 
 			PixelPosToIndex = CLKernel.Function 
 			(
 				() => PixelPosToIndex,
-				() => Kernel.GetGlobalSize (0) * Kernel.GetGlobalId (0) + Kernel.GetGlobalId (1)
+				(pos, size) => Kernel.Evaluate
+				(
+					from wrapped in new Vec2i (pos.X % size.X, pos.Y % size.Y).ToKernel ()
+					select size.X * (size.Y - wrapped.Y - 1) + wrapped.X
+				)
 			);
 
 		public static readonly Func<float, float> 
@@ -220,7 +224,7 @@
 		public static readonly Func<float, float, float, float>
 			Transform = CLKernel.Function
 			(
-				() => Transform,
+				() => Transform, 
 				(scale, offset, val) => ((val * scale) + offset).Clamp (-1f, 1f)
 			);
 
@@ -255,6 +259,21 @@
 						Item1 = value,
 						Item2 = result / dv
 					}
+				)
+			);
+
+		public static readonly Func<Buffer<float>, Vec2i, Vec2i, Vec2>
+			Dfdv2Buffer = CLKernel.Function
+			(
+				() => Dfdv2Buffer,
+				(input, pos, size) => Kernel.Evaluate
+				(
+					from value in new Vec2 ((!input)[PixelPosToIndex (pos, size)]).ToKernel ()
+					let df = new Vec2 (
+						PixelPosToIndex (new Vec2i (pos.X + 1, pos.Y), size),
+						PixelPosToIndex (new Vec2i (pos.X, pos.Y + 1), size))
+					let dv = new Vec2 (1f / size.X, 1f / size.Y)
+					select (df - value) / dv
 				)
 			);
 
@@ -300,6 +319,21 @@
 						Item2 = n * 0.5f + new Vec3 (0.5f)
 					}
 				)
+			);
+
+		public static readonly CLKernel<Buffer<float>, Value<float>, Buffer<Vec3>>
+			NormalMapBuffer = CLKernel.Create
+			(
+				nameof (NormalMapBuffer),
+				(Buffer<float> input, Value<float> strength, Buffer<Vec3> output) =>
+					from pos in new Vec2i (Kernel.GetGlobalId (0), Kernel.GetGlobalId (1)).ToKernel ()
+					let size = new Vec2i (Kernel.GetGlobalSize (0), Kernel.GetGlobalSize (1))
+					let v = Dfdv2Buffer (input, pos, size) * !strength
+					let n = new Vec3 (v, 1f).Normalized
+					select new KernelResult
+					{
+						Assign.Buffer (output, PixelPosToIndex (pos, size), n)
+					}
 			);
 
 		public static readonly Func<Buffer<float>, Buffer<Vec4>, int, float, Vec4>

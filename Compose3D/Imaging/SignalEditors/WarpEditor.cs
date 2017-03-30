@@ -28,7 +28,7 @@
 				InputSignalControl ("Source", Source),
 				InputSignalControl ("Warp", Warp),
 				Container.LabelAndControl ("Scale: ",
-					new NumericEdit (Scale, false, 0.001f,
+					new NumericEdit (Scale, false, 0.1f,
 						React.By ((float s) => Scale = s).And (changed)), true));
 		}
 

@@ -41,9 +41,9 @@
 			xelem.SetAttributeValue (nameof (Strength), Strength);
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.NormalMap.ExecuteAsync (_queue,
+			ParSignalBuffer.NormalMap.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				KernelArg.Value (Strength),
 				KernelArg.WriteBuffer (Buffer),

@@ -20,6 +20,7 @@
 		public void AddBarrier ()
 		{
 			_comQueue.AddBarrier ();
+			_comQueue.Flush ();
 		}
 
 		public void WaitUntilCompleted ()

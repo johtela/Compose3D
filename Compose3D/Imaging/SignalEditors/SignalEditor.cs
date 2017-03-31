@@ -28,11 +28,10 @@
 				Buffer = new T[length];
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return Task.Factory.StartNew (() =>
-				Signal.MapInput (Imaging.Signal.BitmapCoordTo0_1 (size, 1f))
-					.SampleToBuffer (Buffer, size));
+			Signal.MapInput (Imaging.Signal.BitmapCoordTo0_1 (size, 1f))
+				.SampleToBuffer (Buffer, size);
 		}
 
 		protected override void UpdateTexture (Vec2i size)
@@ -167,6 +166,7 @@
 				foreach (var level in updatedLevels)
 					foreach (var edit in level)
 						edit.Render (outputSize);
+				AnySignalEditor.WaitRenderComplete (outputSize);
 			})
 			.Delay (delayedUpdater, UpdateDelay);
 
@@ -182,6 +182,7 @@
 						e.Control, selected.MapInput ((Control _) => e.Texture))));
 				levelContainers.Add (container);
 			}
+			AnySignalEditor.WaitRenderComplete (outputSize);
             return Container.Horizontal (true, false, levelContainers);
 		}
 

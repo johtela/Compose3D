@@ -104,9 +104,9 @@
 					new XAttribute ("Value", weight))));
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.SpectralControl.ExecuteAsync (_queue,
+			ParSignalBuffer.SpectralControl.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				new SpectralControlArgs (FirstBand, LastBand, ActiveBandWeights ().ToArray ()),
 				KernelArg.WriteBuffer (Buffer),

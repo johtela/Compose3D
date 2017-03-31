@@ -16,6 +16,7 @@
 	public abstract class AnySignalEditor
 	{
 		private static HashSet<CLKernel> _kernels = new HashSet<CLKernel> ();
+		private static List<AnySignalEditor> _rendered = new List<AnySignalEditor> ();
 		protected static CLContext _context;
 		protected static CLCommandQueue _queue;
 		protected static CLProgram _program;
@@ -46,13 +47,22 @@
 			_program = new CLProgram (_context, _kernels.ToArray ());
 		}
 
+		internal static void WaitRenderComplete (Vec2i size)
+		{
+			if (_context != null)
+				_queue.WaitUntilCompleted ();
+			foreach (var edit in _rendered)
+				edit.UpdateTexture (size);
+			_rendered.Clear ();
+		}
+
 		internal void Render (Vec2i size)
         {
 			SetupCLProgram ();
             var length = size.Producti ();
 			AllocateBuffer (length);
-            RenderToBuffer (size).ContinueWith (_ => UpdateTexture (size), 
-				TaskScheduler.FromCurrentSynchronizationContext ());
+            RenderToBuffer (size);
+			_rendered.Add (this);
         }
 
         private string XElementName ()
@@ -78,7 +88,7 @@
 		}
 
 		protected abstract void AllocateBuffer (int length);
-		protected abstract Task RenderToBuffer (Vec2i size);
+		protected abstract void RenderToBuffer (Vec2i size);
 		protected abstract void UpdateTexture (Vec2i size);
 		protected abstract Control CreateControl ();
 

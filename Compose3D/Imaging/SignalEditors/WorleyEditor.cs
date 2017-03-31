@@ -107,9 +107,9 @@
             return cpoints;
         }
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.WorleyNoise.ExecuteAsync (_queue,
+			ParSignalBuffer.WorleyNoise.ExecuteAsync (_queue,
 				new WorleyArgs (DistanceKind, NoiseKind, GetControlPoints ().ToArray ()),
 				KernelArg.WriteBuffer (Buffer),
 				size.X, size.Y);

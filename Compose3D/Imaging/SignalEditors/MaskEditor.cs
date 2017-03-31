@@ -38,9 +38,9 @@
 				InputSignalControl ("Mask", Mask));
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.Mask.ExecuteAsync (_queue,
+			ParSignalBuffer.Mask.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				KernelArg.ReadBuffer (Other.Buffer),
 				KernelArg.ReadBuffer (Mask.Buffer),

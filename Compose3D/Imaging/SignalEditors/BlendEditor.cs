@@ -26,9 +26,9 @@
 			get { return Source.Signal.Blend (Other.Signal, BlendFactor); }
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.Blend.ExecuteAsync (_queue,
+			ParSignalBuffer.Blend.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				KernelArg.ReadBuffer (Other.Buffer),
 				KernelArg.Value (BlendFactor),

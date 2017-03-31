@@ -244,8 +244,8 @@
 					from pos in GetPixelPos ().ToKernel ()
 					let size = GetTextureSize ()
 					let f = !scale * Math.Max (size.X, size.Y)
-					let dv = (Dfdv2 (warp, pos, size) * f).Truncate ().ToVeci ()
-					let val = (!input)[PixelPosToIndex (pos + dv, size)].Clamp (0f, 1f)
+					let dv = (Dfdv2 (warp, pos, size) * f).ToVeci ()
+					let val = (!input)[PixelPosToIndex (pos + dv, size)]
 					select new KernelResult
 					{
 						Assign.Buffer (output, PixelPosToIndex (pos, size), val)

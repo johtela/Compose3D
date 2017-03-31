@@ -43,9 +43,9 @@
 			xelem.SetAttributeValue (nameof (Scale), Scale);
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.Warp.ExecuteAsync (_queue,
+			ParSignalBuffer.Warp.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				KernelArg.ReadBuffer (Warp.Buffer),
 				KernelArg.Value (Scale),

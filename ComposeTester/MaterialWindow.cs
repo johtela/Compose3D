@@ -51,7 +51,8 @@
 			var dv = new Vec2 (1f) / new Vec2 (outputSize.X, outputSize.Y);
 			var perlin = SignalEditor.Perlin ("Perlin", new Vec2 (10f));
 			var spectral = perlin.SpectralControl ("Spectral", 0, 2, null, 1f, 0.5f, 0.2f);
-			var warp = transform.Warp ("Warp", spectral, 0.1f, dv, _heightMap);
+			var spectralTransform = spectral.Transform ("Spectral Tx", 1f, 0f); ;
+			var warp = transform.Warp ("Warp", spectralTransform, 0.1f, dv, _heightMap);
 			var signal = warp.Colorize ("Signal", ColorMap<Vec3>.GrayScale (), _diffuseMap);
 			var normal = warp.NormalMap ("Normal", 1f, dv, _normalMap);
 
@@ -80,9 +81,9 @@
 			_heightMap = new Texture (TextureTarget.Texture2D);
 
 			var texturePanel = MaterialPanel<TexturedVertex>.Movable (_sceneGraph, false,
-				new Vec2 (0.25f, 0.75f), new Vec2i (2));
+				new Vec2 (0.4f, 0.8f), new Vec2i (2));
 			var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, 
-				Editor (new Vec2i (256), @"Materials\Ground.xml", texturePanel.Node),
+				Editor (new Vec2i (512), @"Materials\Ground.xml", texturePanel.Node),
                 new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);

@@ -28,9 +28,9 @@
 				new ColorMapEdit (0f, 1f, 20f, 200f, ColorMap, changed));
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.Colorize.ExecuteAsync (_queue,
+			ParSignalBuffer.Colorize.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				new ColorizeArgs (ColorMap),
 				KernelArg.WriteBuffer (Buffer),

@@ -93,7 +93,7 @@
 		public override void ReadResult (CLCommandQueue queue)
 		{
 			if ((_flags & ComputeMemoryFlags.ReadOnly) == 0)
-				queue._comQueue.ReadFromBuffer (_comBuffer, ref _data, false, null);
+				queue._comQueue.ReadFromBuffer (_comBuffer, ref _data, true, null);
 		}
 
 		[CLUnaryOperator ("{0}")]

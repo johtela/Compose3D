@@ -46,9 +46,9 @@
 			xelem.SetAttributeValue (nameof (Offset), Offset);
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.Transform.ExecuteAsync (_queue,
+			ParSignalBuffer.Transform.ExecuteAsync (_queue,
 				KernelArg.ReadBuffer (Source.Buffer),
 				new TransformArgs (Scale, Offset),
 				KernelArg.WriteBuffer (Buffer),

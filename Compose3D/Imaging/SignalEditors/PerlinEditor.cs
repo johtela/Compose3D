@@ -54,9 +54,9 @@
 			xelem.SetAttributeValue (nameof (Periodic), Periodic);
 		}
 
-		protected override Task RenderToBuffer (Vec2i size)
+		protected override void RenderToBuffer (Vec2i size)
 		{
-			return ParSignalBuffer.PerlinNoise.ExecuteAsync (_queue,
+			ParSignalBuffer.PerlinNoise.ExecuteAsync (_queue,
 				new PerlinArgs (Scale, Periodic),
 				KernelArg.WriteBuffer (Buffer),
 				size.X, size.Y);

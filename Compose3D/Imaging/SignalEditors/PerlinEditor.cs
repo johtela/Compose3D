@@ -4,10 +4,12 @@
 	using System.Linq;
 	using System.Xml.Linq;
 	using Visuals;
+	using CLTypes;
 	using Reactive;
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
 	internal class PerlinEditor : SignalEditor<float>
 	{
@@ -16,7 +18,7 @@
 		public bool Periodic;
 
 		public PerlinEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.PerlinNoise, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -52,6 +54,14 @@
 			xelem.SetAttributeValue (nameof (Periodic), Periodic);
 		}
 
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.PerlinNoise.ExecuteAsync (_queue,
+				new PerlinArgs (Scale, Periodic),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return Enumerable.Empty<AnySignalEditor> (); }
@@ -68,10 +78,5 @@
 				return signal.MapInput ((Vec2 v) => new Vec3 (v * Scale, 0f)).NormalRangeTo0_1 ();
 			}
 		}
-
-        public PerlinArgs Args
-        {
-            get { return new PerlinArgs (Scale, Periodic); }
-        }
 	}
 }

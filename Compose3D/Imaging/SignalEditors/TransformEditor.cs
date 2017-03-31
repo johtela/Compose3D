@@ -3,12 +3,14 @@
 	using System.Collections.Generic;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
 	internal class TransformEditor : SignalEditor<float>
 	{
@@ -17,7 +19,7 @@
 		public SignalEditor<float> Source;
 
 		public TransformEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.Transform, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -44,7 +46,16 @@
 			xelem.SetAttributeValue (nameof (Offset), Offset);
 		}
 
-        public override Signal<Vec2, float> Signal
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.Transform.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				new TransformArgs (Scale, Offset),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
+		public override Signal<Vec2, float> Signal
         {
             get { return Source.Signal.Scale (Scale).Offset (Offset).Clamp (0, 1f); }
         }
@@ -52,11 +63,6 @@
         public override IEnumerable<AnySignalEditor> Inputs
         {
             get { return EnumerableExt.Enumerate (Source); }
-        }
-
-        public TransformArgs Args
-        {
-            get { return new TransformArgs (Scale, Offset); }
         }
     }
 }

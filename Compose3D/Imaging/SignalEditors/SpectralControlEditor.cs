@@ -5,12 +5,14 @@
 	using System.Linq;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
 	internal class SpectralControlEditor : SignalEditor<float>
 	{
@@ -22,7 +24,7 @@
 		private Container _bandContainer;
 
 		public SpectralControlEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.SpectralControl, texture) { }
 
 		private Tuple<Control, Reaction<Control>> BandSlider (int band)
 		{
@@ -102,6 +104,15 @@
 					new XAttribute ("Value", weight))));
 		}
 
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.SpectralControl.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				new SpectralControlArgs (FirstBand, LastBand, ActiveBandWeights ().ToArray ()),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source); }
@@ -115,10 +126,5 @@
 					ActiveBandWeights ().ToArray ());
 			}
 		}
-
-        public SpectralControlArgs Args
-        {
-            get { return new SpectralControlArgs (FirstBand, LastBand, ActiveBandWeights ().ToArray ()); }
-        }
 	}
 }

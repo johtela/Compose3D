@@ -3,25 +3,37 @@
 	using System.Collections.Generic;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
-	internal class BlendEditor : SignalEditor<float>
+	internal class BlendEditor : SignalEditor<Vec4>
 	{
 		public float BlendFactor;
-		public SignalEditor<float> Source;
-		public SignalEditor<float> Other;
+		public SignalEditor<Vec4> Source;
+		public SignalEditor<Vec4> Other;
 
 		public BlendEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.Blend, texture) { }
 
-		public override Signal<Vec2, float> Signal
+		public override Signal<Vec2, Vec4> Signal
 		{
 			get { return Source.Signal.Blend (Other.Signal, BlendFactor); }
+		}
+
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.Blend.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				KernelArg.ReadBuffer (Other.Buffer),
+				KernelArg.Value (BlendFactor),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
 		}
 
 		public override IEnumerable<AnySignalEditor> Inputs

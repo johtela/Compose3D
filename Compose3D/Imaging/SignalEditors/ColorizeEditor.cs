@@ -3,20 +3,22 @@
 	using System.Collections.Generic;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using Textures;
 	using UI;
+	using System.Threading.Tasks;
 
-	internal class ColorizeEditor : SignalEditor<Vec3>
+	internal class ColorizeEditor : SignalEditor<Vec4>
 	{
 		public SignalEditor<float> Source;
 		public ColorMap<Vec3> ColorMap;
 
 		public ColorizeEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.Colorize, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -24,6 +26,15 @@
 			return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				new ColorMapEdit (0f, 1f, 20f, 200f, ColorMap, changed));
+		}
+
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.Colorize.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				new ColorizeArgs (ColorMap),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
 		}
 
 		protected override void Load (XElement xelem)
@@ -41,14 +52,9 @@
 			get { return EnumerableExt.Enumerate (Source); }
 		}
 
-		public override Signal<Vec2, Vec3> Signal
+		public override Signal<Vec2, Vec4> Signal
 		{
 			get { return Source.Signal.Colorize (ColorMap); }
 		}
-
-        public ColorizeArgs<Vec3> Args
-        {
-            get { return new ColorizeArgs<Vec3> (ColorMap); }
-        }
 	}
 }

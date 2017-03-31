@@ -8,6 +8,7 @@
 	using System.Xml.Linq;
 	using OpenTK.Graphics.OpenGL4;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Reactive;
 	using Maths;
@@ -18,8 +19,8 @@
 	public abstract class SignalEditor<T> : AnySignalEditor
 		where T : struct
 	{
-		public SignalEditor (Texture texture)
-			: base (null, texture) { }
+		public SignalEditor (CLKernel kernel, Texture texture)
+			: base (kernel, texture) { }
 
 		protected override void AllocateBuffer (int length)
 		{
@@ -41,7 +42,7 @@
 					PixelFormat.Red, PixelInternalFormat.CompressedSignedRedRgtc1, PixelType.Float);
 			else
 				Texture.LoadArray (Buffer, Texture.Target, 0, size.X, size.Y,
-					PixelFormat.Rgb, PixelInternalFormat.Rgb32f, PixelType.Float);
+					PixelFormat.Rgba, PixelInternalFormat.Rgba32f, PixelType.Float);
 		}
 
 		public T[] Buffer { get; private set; }
@@ -84,26 +85,19 @@
 				Scale = scale, Dv = dv };
 		}
 
-		public static SignalEditor<float> Blend (this SignalEditor<float> source,
-			string name, SignalEditor<float> other, float blendFactor, Texture texture = null)
+		public static SignalEditor<Vec4> Blend (this SignalEditor<Vec4> source,
+			string name, SignalEditor<Vec4> other, float blendFactor, Texture texture = null)
 		{
 			return new BlendEditor (texture) { Name = name, Source = source, Other = other,
 				BlendFactor = blendFactor };
 		}
 
-		public static SignalEditor<float> Mask(this SignalEditor<float> source,
-			string name, SignalEditor<float> other, SignalEditor<float> mask, 
+		public static SignalEditor<Vec4> Mask(this SignalEditor<Vec4> source,
+			string name, SignalEditor<Vec4> other, SignalEditor<float> mask, 
 			Texture texture = null)
 		{
 			return new MaskEditor (texture) { Name = name, Source = source, Other = other,
 				Mask = mask };
-		}
-
-		public static SignalEditor<float> MaskWithSource<V> (this SignalEditor<float> source,
-			string name, SignalEditor<float> other, Texture texture = null)
-		{
-			return new MaskEditor (texture) { Name = name, Source = source, Other = other,
-				Mask = source };
 		}
 
 		public static SignalEditor<float> Transform (this SignalEditor<float> source,
@@ -113,7 +107,7 @@
 				Offset = offset };
 		}
 
-		public static SignalEditor<Vec3> Colorize (this SignalEditor<float> source, 
+		public static SignalEditor<Vec4> Colorize (this SignalEditor<float> source, 
 			string name, ColorMap<Vec3> colorMap, Texture texture = null)
 		{
 			return new ColorizeEditor (texture) { Name = name, Source = source,
@@ -134,7 +128,7 @@
 			};
 		}
 
-		public static SignalEditor<Vec3> NormalMap (this SignalEditor<float> source,
+		public static SignalEditor<Vec4> NormalMap (this SignalEditor<float> source,
 			string name, float strength, Vec2 dv, Texture texture = null)
 		{
 			return new NormalMapEditor (texture) { Name = name, Source = source, Strength = strength,
@@ -165,8 +159,14 @@
 			var changed = React.By ((AnySignalEditor editor) =>
 			{
 				editor.Render (outputSize);
-				foreach (var edit in all.Where (e => e._level > editor._level))
-					edit.Render (outputSize);
+				var updatedLevels = from edit in all
+									where edit._level > editor._level
+									group edit by edit._level into level
+									orderby level.Key
+									select level;
+				foreach (var level in updatedLevels)
+					foreach (var edit in level)
+						edit.Render (outputSize);
 			})
 			.Delay (delayedUpdater, UpdateDelay);
 

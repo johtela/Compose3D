@@ -57,7 +57,7 @@
 			{
 				(!Texture.textureMap).Bind (panel.Texture);
 				Transform.modelViewMatrix &= panel.GetModelViewMatrix (viewportSize);
-				ColorOutput &= panel.Texture.PixelFormat == PixelFormat.Rgb ? 1 : 0;
+				ColorOutput &= panel.Texture.PixelFormat == PixelFormat.Rgba ? 1 : 0;
 				_panelShader.DrawElements (PrimitiveType.Triangles, panel.VertexBuffer, panel.IndexBuffer);
 				(!Texture.textureMap).Unbind (panel.Texture);
 			}

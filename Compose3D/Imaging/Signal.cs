@@ -171,11 +171,11 @@
 			return signal.Combine (other, mask, (v1, v2, m) => v1.Mix (v2, m));
 		}
 
-		public static Signal<Vec2, Vec3> NormalMap (this Signal<Vec2, float> signal, float strength, Vec2 dv)
+		public static Signal<Vec2, Vec4> NormalMap (this Signal<Vec2, float> signal, float strength, Vec2 dv)
 		{
 			return from v in signal.Dfdv (dv)
 				   let n = new Vec3 (-v * strength, 1f).Normalized
-				   select n * 0.5f + new Vec3 (0.5f);
+				   select new Vec4 (n * 0.5f + new Vec3 (0.5f), 1f);
 		}
 
 		public static Signal<T, uint> Vec4ToUintColor<T> (this Signal<T, Vec4> signal)
@@ -206,10 +206,9 @@
 			});
 		}
 
-		public static Signal<T, V> Colorize<T, V> (this Signal<T, float> signal, ColorMap<V> colorMap)
-			where V : struct, IVec<V, float>
+		public static Signal<T, Vec4> Colorize<T> (this Signal<T, float> signal, ColorMap<Vec3> colorMap)
 		{
-			return signal.Select (x => colorMap[x]);
+			return signal.Select (x => new Vec4 (colorMap[x], 1f));
 		}
 
 		public static T[] SampleToBuffer<T> (this Signal<Vec2i, T> signal, Vec2i bufferSize)

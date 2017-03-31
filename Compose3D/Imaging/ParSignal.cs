@@ -2,108 +2,9 @@
 {
 	using System;
 	using System.Linq;
-	using Cloo;
-	using Extensions;
 	using Compiler;
 	using CLTypes;
 	using Maths;
-
-	public class PerlinArgs : ArgGroup
-	{
-		public readonly Value<Vec2> Scale;
-		public readonly Value<int> Periodic;
-
-		public PerlinArgs (Vec2 scale, bool periodic)
-		{
-			Scale = Value (scale);
-			Periodic = Value (periodic ? 1 : 0);
-		}
-	}
-
-    public class WorleyArgs : ArgGroup
-    {
-        public readonly Buffer<Vec2> ControlPoints;
-        public readonly Value<int> Count;
-        public readonly Value<int> DistanceKind;
-        public readonly Value<int> NoiseKind;
-
-        public WorleyArgs (DistanceKind distKind, WorleyNoiseKind noiseKind, params Vec2[] controlPoints)
-        {
-            DistanceKind = Value ((int)distKind);
-            NoiseKind = Value ((int)noiseKind);
-            ControlPoints = Buffer (controlPoints, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
-            Count = Value (controlPoints.Length);
-        }
-    }
-
-    public class UniformWorleyArgs : ArgGroup
-	{
-		public readonly Value<Vec2> Scale;
-		public readonly Value<float> Jitter;
-		public readonly Value<int> DistanceKind;
-		public readonly Value<int> NoiseKind;
-
-		public UniformWorleyArgs (Vec2 scale, float jitter, DistanceKind distKind, WorleyNoiseKind noiseKind)
-		{
-			Scale = Value (scale);
-			Jitter = Value (jitter);
-			DistanceKind = Value ((int)distKind);
-			NoiseKind = Value ((int)noiseKind);
-		}
-	}
-
-	public class ColorizeArgs<V> : ArgGroup
-        where V : struct, IVec<V, float>
-	{
-		public readonly Buffer<float> Keys;
-		public readonly Buffer<V> Colors;
-		public readonly Value<int> Count;
-
-		public ColorizeArgs (ColorMap<V> colorMap)
-		{
-			var keys = colorMap.Keys ().ToArray ();
-			var colors = colorMap.Values ().ToArray ();
-			Keys = Buffer (keys, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
-			Colors = Buffer (colors, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
-			Count = Value (keys.Length);
-		}
-	}
-
-	public class SpectralControlArgs : ArgGroup
-	{
-		public readonly Value<int> FirstBand;
-		public readonly Value<int> LastBand;
-		public readonly Buffer<float> NormalizedWeights;
-
-		public SpectralControlArgs (int firstBand, int lastBand, params float[] weights)
-		{
-			if (firstBand < 0)
-				throw new ArgumentException ("Bands must be positive");
-			if (firstBand > lastBand)
-				throw new ArgumentException ("lastBand must be greater or equal to firstBand");
-			if (lastBand > 15)
-				throw new ArgumentException ("lastBand must be less than 16.");
-			if (weights.Length != (lastBand - firstBand) + 1)
-				throw new ArgumentException ("Invalid number of bands");
-			var sumWeights = weights.Aggregate (0f, (s, w) => s + w);
-			var normWeights = weights.Map (w => w / sumWeights);
-			FirstBand = Value (firstBand);
-			LastBand = Value (lastBand);
-			NormalizedWeights = Buffer (normWeights, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer);
-		}
-	}
-
-    public class TransformArgs : ArgGroup
-    {
-        public readonly Value<float> Scale;
-        public readonly Value<float> Offset;
-
-        public TransformArgs (float scale, float offset)
-        {
-            Scale = new Value<float> (scale);
-            Offset = new Value<float> (offset);
-        }
-    }
 
 	public static class ParSignal
 	{
@@ -151,9 +52,10 @@
 				(scale, periodic, pos) => Kernel.Evaluate
 				(
 					from scaled in (pos * scale).ToKernel ()
-					select periodic == 0 ?
+					let val = periodic == 0 ?
 						ParPerlin.Noise (new Vec3 (scaled, 0f)) :
 						ParPerlin.PeriodicNoise (new Vec3 (scaled, 0f), new Vec3 (scale, 256f))
+					select val * 0.5f + 0.5f
 				)
 			);
 
@@ -164,11 +66,12 @@
                 (controlPoints, count, distKind, noiseKind, pos) => Kernel.Evaluate
                 (
                     from res in ParWorley.Noise2DCP (controlPoints, count, distKind, pos).ToKernel ()
-                    select
+                    let val =
                         noiseKind == (int)WorleyNoiseKind.F1 ? res.X :
                         noiseKind == (int)WorleyNoiseKind.F2 ? res.Y :
                         noiseKind == (int)WorleyNoiseKind.F3 ? res.Z :
                         res.Y - res.X
+					select val.Clamp (0f, 1f)
                 )
             );
 
@@ -188,30 +91,10 @@
 			);
 
 		public static readonly Func<Vec2> 
-			PixelPosTo0_1 = CLKernel.Function 
-			(
-				() => PixelPosTo0_1,
-				() => new Vec2 (
-					(float)Kernel.GetGlobalId (0) / Kernel.GetGlobalSize (0),
-					(float)Kernel.GetGlobalId (1) / Kernel.GetGlobalSize (1))
-			);
-
-		public static readonly Func<Vec2> 
 			Dv = CLKernel.Function 
 			(
 				() => Dv,
 				() => new Vec2 (1f / Kernel.GetGlobalSize (0), 1f / Kernel.GetGlobalSize (1))
-			);
-
-		public static readonly Func<Vec2i, Vec2i, int> 
-			PixelPosToIndex = CLKernel.Function 
-			(
-				() => PixelPosToIndex,
-				(pos, size) => Kernel.Evaluate
-				(
-					from wrapped in new Vec2i (pos.X % size.X, pos.Y % size.Y).ToKernel ()
-					select size.X * (size.Y - wrapped.Y - 1) + wrapped.X
-				)
 			);
 
 		public static readonly Func<float, float> 
@@ -257,23 +140,8 @@
 					select new CLTuple<float, Vec2> ()
 					{
 						Item1 = value,
-						Item2 = result / dv
+						Item2 = result
 					}
-				)
-			);
-
-		public static readonly Func<Buffer<float>, Vec2i, Vec2i, Vec2>
-			Dfdv2Buffer = CLKernel.Function
-			(
-				() => Dfdv2Buffer,
-				(input, pos, size) => Kernel.Evaluate
-				(
-					from value in new Vec2 ((!input)[PixelPosToIndex (pos, size)]).ToKernel ()
-					let df = new Vec2 (
-						PixelPosToIndex (new Vec2i (pos.X + 1, pos.Y), size),
-						PixelPosToIndex (new Vec2i (pos.X, pos.Y + 1), size))
-					let dv = new Vec2 (1f / size.X, 1f / size.Y)
-					select (df - value) / dv
 				)
 			);
 
@@ -321,21 +189,6 @@
 				)
 			);
 
-		public static readonly CLKernel<Buffer<float>, Value<float>, Buffer<Vec3>>
-			NormalMapBuffer = CLKernel.Create
-			(
-				nameof (NormalMapBuffer),
-				(Buffer<float> input, Value<float> strength, Buffer<Vec3> output) =>
-					from pos in new Vec2i (Kernel.GetGlobalId (0), Kernel.GetGlobalId (1)).ToKernel ()
-					let size = new Vec2i (Kernel.GetGlobalSize (0), Kernel.GetGlobalSize (1))
-					let v = Dfdv2Buffer (input, pos, size) * !strength
-					let n = new Vec3 (v, 1f).Normalized
-					select new KernelResult
-					{
-						Assign.Buffer (output, PixelPosToIndex (pos, size), n)
-					}
-			);
-
 		public static readonly Func<Buffer<float>, Buffer<Vec4>, int, float, Vec4>
 			Colorize = CLKernel.Function
 			(
@@ -348,7 +201,8 @@
 					select
 						high == 0 ? (!colors)[0] :
 						high == count ? (!colors)[low] :
-						(!colors)[low].Mix ((!colors)[high], (value - (!keys)[low]) / ((!keys)[high] - (!keys)[low]))
+						(!colors)[low].Mix ((!colors)[high], (value - (!keys)[low]) / 
+							((!keys)[high] - (!keys)[low]))
 				)
 			);
 
@@ -365,5 +219,6 @@
 						)
 					)
 			);
+
 	}
 }

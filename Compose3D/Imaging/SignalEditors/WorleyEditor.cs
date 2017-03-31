@@ -4,12 +4,14 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Xml.Linq;
+	using CLTypes;
 	using Imaging;
 	using Maths;
 	using Reactive;
 	using UI;
 	using Visuals;
 	using Textures;
+	using System.Threading.Tasks;
 
 	public enum ControlPointKind { Random, Halton23 }
 
@@ -34,7 +36,7 @@
 			};
 
 		public WorleyEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.WorleyNoise, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -105,7 +107,15 @@
             return cpoints;
         }
 
-        public override Signal<Vec2, float> Signal
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.WorleyNoise.ExecuteAsync (_queue,
+				new WorleyArgs (DistanceKind, NoiseKind, GetControlPoints ().ToArray ()),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
+		public override Signal<Vec2, float> Signal
 		{
 			get
 			{
@@ -113,10 +123,5 @@
                     GetControlPoints ());
 			}
 		}
-
-        public WorleyArgs Args
-        {
-            get { return new WorleyArgs (DistanceKind, NoiseKind, GetControlPoints ().ToArray ()); }
-        }
 	}
 }

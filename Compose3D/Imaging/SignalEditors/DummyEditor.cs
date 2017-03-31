@@ -13,7 +13,7 @@
 		public Signal<Vec2, T> Source;
 
 		public DummyEditor (Texture texture)
-			: base (texture) { }
+			: base (null, texture) { }
 
 		protected override Control CreateControl ()
 		{

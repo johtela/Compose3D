@@ -17,6 +17,11 @@
 		public CLCommandQueue (CLContext context)
 			: this (context, context.Devices.First (), ComputeCommandQueueFlags.None) { }
 
+		public void AddBarrier ()
+		{
+			_comQueue.AddBarrier ();
+		}
+
 		public void WaitUntilCompleted ()
 		{
 			_comQueue.Finish ();

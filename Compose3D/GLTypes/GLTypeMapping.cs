@@ -55,6 +55,7 @@
             { ExpressionType.Subtract, "{0} - {1}" },
             { ExpressionType.Multiply, "{0} * {1}" },
             { ExpressionType.Divide, "{0} / {1}" },
+			{ ExpressionType.Modulo, "{0} % {1}" },
             { ExpressionType.Negate, "-{0}"},
 			{ ExpressionType.And, "{0} & {1}"},
 			{ ExpressionType.Or, "{0} | {1}"},
@@ -73,7 +74,8 @@
             { ExpressionType.PostDecrementAssign, "{0}--" },
             { ExpressionType.PostIncrementAssign, "{0}++" },
 			{ ExpressionType.AddAssign, "{0} += {1}" },
-			{ ExpressionType.SubtractAssign, "{0} -= {1}" }
+			{ ExpressionType.SubtractAssign, "{0} -= {1}" },
+			{ ExpressionType.ModuloAssign, "{0} %= {1}" }
 		};
 
 		public override string Type (Type type)

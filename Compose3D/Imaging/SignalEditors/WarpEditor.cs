@@ -10,6 +10,7 @@
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
 	internal class WarpEditor : SignalEditor<float>
 	{
@@ -19,7 +20,7 @@
 		public SignalEditor<float> Warp;
 
 		public WarpEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.Warp, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -42,6 +43,16 @@
 			xelem.SetAttributeValue (nameof (Scale), Scale);
 		}
 
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.Warp.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				KernelArg.ReadBuffer (Warp.Buffer),
+				KernelArg.Value (Scale),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source, Warp); }
@@ -50,11 +61,6 @@
 		public override Signal<Vec2, float> Signal
 		{
 			get { return Source.Signal.Warp (Warp.Signal.Cache ().Scale (Scale), Dv); }
-		}
-
-		public Value<float> Args
-		{ 
-			get { return KernelArg.Value (Scale); }
 		}
 	}
 }

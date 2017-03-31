@@ -3,21 +3,23 @@
 	using System.Collections.Generic;
 	using System.Xml.Linq;
 	using Extensions;
+	using CLTypes;
 	using Imaging;
 	using Visuals;
 	using Reactive;
 	using Maths;
 	using UI;
 	using Textures;
+	using System.Threading.Tasks;
 
-	internal class NormalMapEditor : SignalEditor<Vec3>
+	internal class NormalMapEditor : SignalEditor<Vec4>
 	{
 		public SignalEditor<float> Source;
 		public float Strength;
 		public Vec2 Dv;
 
 		public NormalMapEditor (Texture texture)
-			: base (texture) { }
+			: base (ParSignalBuffer.NormalMap, texture) { }
 
 		protected override Control CreateControl ()
 		{
@@ -39,12 +41,21 @@
 			xelem.SetAttributeValue (nameof (Strength), Strength);
 		}
 
+		protected override Task RenderToBuffer (Vec2i size)
+		{
+			return ParSignalBuffer.NormalMap.ExecuteAsync (_queue,
+				KernelArg.ReadBuffer (Source.Buffer),
+				KernelArg.Value (Strength),
+				KernelArg.WriteBuffer (Buffer),
+				size.X, size.Y);
+		}
+
 		public override IEnumerable<AnySignalEditor> Inputs
 		{
 			get { return EnumerableExt.Enumerate (Source); }
 		}
 
-		public override Signal<Vec2, Vec3> Signal
+		public override Signal<Vec2, Vec4> Signal
 		{
 			get { return Source.Signal.Cache ().NormalMap (Strength, Dv); }
 		}

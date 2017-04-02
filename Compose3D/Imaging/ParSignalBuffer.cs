@@ -134,7 +134,9 @@
 				() => PixelPosToIndex,
 				(pos, size) => Kernel.Evaluate
 				(
-					from wrapped in new Vec2i (pos.X % size.X, pos.Y % size.Y).ToKernel ()
+					from wrapped in new Vec2i (
+						pos.X < 0 ? size.X + pos.X : pos.X % size.X, 
+						pos.Y < 0 ? size.Y + pos.Y : pos.Y % size.Y).ToKernel ()
 					select size.X * (size.Y - wrapped.Y - 1) + wrapped.X
 				)
 			);
@@ -232,7 +234,7 @@
 					let df = new Vec2 (
 						(!input)[PixelPosToIndex (new Vec2i (pos.X + 1, pos.Y), size)],
 						(!input)[PixelPosToIndex (new Vec2i (pos.X, pos.Y + 1), size)])
-					select df - value
+					select (df - value)
 				)
 			);
 

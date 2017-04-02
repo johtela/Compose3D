@@ -24,7 +24,7 @@
 		protected override Control CreateControl ()
 		{
 			var changed = Changed.Adapt<float, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Normal Map", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				Container.LabelAndControl ("Strength: ",
 					new NumericEdit (Strength, false, 1f,

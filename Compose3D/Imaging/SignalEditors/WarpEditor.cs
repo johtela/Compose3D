@@ -25,7 +25,7 @@
 		protected override Control CreateControl ()
 		{
 			var changed = Changed.Adapt<float, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Warp", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				InputSignalControl ("Warp", Warp),
 				Container.LabelAndControl ("Scale: ",

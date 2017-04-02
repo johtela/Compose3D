@@ -24,7 +24,7 @@
 		{
 			var changed = Changed.Adapt<int, AnySignalEditor> (this);
 			var changedf = Changed.Adapt<float, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Perlin Noise", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				Container.LabelAndControl ("Seed: ",
 					new NumericEdit (Seed, true, 1f, React.By ((float s) => Seed = (int)s)
 						.And (changedf)), true),

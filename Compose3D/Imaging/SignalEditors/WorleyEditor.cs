@@ -42,7 +42,7 @@
 		{
 			var changed = Changed.Adapt<int, AnySignalEditor> (this);
 			var changedf = Changed.Adapt<float, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Worley Noise", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				Container.LabelAndControl ("Type: ",
 					new Picker ((int)NoiseKind,
 						React.By ((int i) => NoiseKind = (WorleyNoiseKind)i).And (changed),

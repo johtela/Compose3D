@@ -32,7 +32,7 @@
 
 		protected override Control CreateControl ()
 		{
-			return FoldableContainer.WithLabel ("Blend", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				InputSignalControl ("Other", Other),
 				InputSignalControl ("Mask", Mask));

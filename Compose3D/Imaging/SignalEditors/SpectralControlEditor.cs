@@ -80,7 +80,7 @@
 			var sliders = Enumerable.Range (FirstBand, LastBand - FirstBand + 1)
 				.Select (BandSlider).ToArray ();
 			_bandContainer = Container.Horizontal (true, false, sliders);
-			return FoldableContainer.WithLabel ("Spectral Control", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				fbEdit, lbEdit, _bandContainer);
 		}

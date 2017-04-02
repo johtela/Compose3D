@@ -44,7 +44,7 @@
 		protected override Control CreateControl ()
 		{
 			var changed = Changed.Adapt<float, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Blend", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				InputSignalControl ("Other", Other),
 				Container.LabelAndControl ("Blend Factor: ",

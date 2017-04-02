@@ -23,7 +23,7 @@
 		protected override Control CreateControl ()
 		{
 			var changed = Changed.Adapt<ColorMap<Vec3>, AnySignalEditor> (this);
-			return FoldableContainer.WithLabel ("Color Map", true, HAlign.Left,
+			return FoldableContainer.WithLabel (Name, true, HAlign.Left,
 				InputSignalControl ("Source", Source),
 				new ColorMapEdit (0f, 1f, 20f, 200f, ColorMap, changed));
 		}

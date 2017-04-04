@@ -41,7 +41,7 @@ features it offers:
 
 **Spatial Data Structures**
 
-* Axes-aligned bounding boxes
+* Axis-aligned bounding boxes (_AABB_)
 * Interval trees, Kd-trees, Octrees for fast occlusion testing, and for finding 
   points and vertices quickly based on their coordinates. Interval tree is balanced
   for best possible performance

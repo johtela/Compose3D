@@ -1,4 +1,4 @@
-﻿#Motivation for Compose3D
+﻿# Motivation for Compose3D
 
 Getting started with modern OpenGL programming can be a daunting task. To get a 
 simple triangle on the screen you need to write couple of screenfuls of code. You 

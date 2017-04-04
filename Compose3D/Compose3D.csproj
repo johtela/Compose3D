@@ -200,7 +200,6 @@
     <Compile Include="Textures\Texture.cs" />
     <Compile Include="Textures\BitmapHelper.cs" />
     <Compile Include="Geometry\Polygon.cs" />
-    <Compile Include="Maths\Coord.cs" />
     <Compile Include="Maths\Mat2.cs">
       <DependentUpon>Mat2.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -371,6 +370,13 @@
     <None Include="Textures\SamplerTemplate.tt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Docs\Maths.html">
+      <DependentUpon>Maths.md</DependentUpon>
+    </Content>
+    <Content Include="Docs\md-styles.css" />
+    <Content Include="Docs\md-template.html" />
+    <Content Include="Docs\prism.css" />
+    <Content Include="Docs\prism.js" />
     <Content Include="Textures\Samper1DArray.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Samper1DArray.cs</LastGenOutput>

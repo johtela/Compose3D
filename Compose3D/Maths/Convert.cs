@@ -3,6 +3,10 @@
 	using CLTypes;
 	using GLTypes;
 
+/**
+This is a test comment. Let's see how this works.
+A second line here. Here is a foo bar.
+**/
 	public static class Convert
 	{
 		[GLFunction ("ivec2 ({0})")]

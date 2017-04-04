@@ -1,4 +1,4 @@
-﻿#Math Support
+﻿# Math Support
 
 It is virtually impossible to write an OpenGL application without some kind of a 
 mathematical library that provides at least the basic concepts of matrix algebra. 
@@ -28,7 +28,7 @@ interface and semantics in both languages.
 
 The math types and functions live in the `Compose3D.Maths` namespace.
 
-##Vectors
+## Vectors
 
 Vectors lift the scalar values into _n_th dimension. They are used to represent 
 position, direction, color, and many other things that are considered when generating
@@ -55,7 +55,7 @@ adding support to `double` is just a matter of adding the implementations to all
 functions, which is trivial to do. Currently this is left out, just to keep the library 
 footprint a bit smaller. The support will come some time later depending on the demand.
 
-###The Basic Vector Types
+### The Basic Vector Types
 
 The basic vector types are the same as in GLSL: `Vec2` for 2-dimensional vectors, 
 `Vec3` for 3-dimensional, and so on. Their naming convention differs from GLSL in 
@@ -89,7 +89,7 @@ Also equality and inequality operators are overloaded, of course:
 - `v1 == v2`, equality (same as `v1.Equals (v2)`),
 - `v1 != v2`, inequality.
 
-####Accessing Components
+#### Accessing Components
 
 There are three ways to access the vector components. The simplest way is to just to 
 reference the component by name, for example `v.Y`. The more sophisticated way is to 
@@ -117,7 +117,7 @@ index 0, Y-component 1, and so on. This makes it possible to iterate through the
 components generically without hard-coding the number of dimensions. Accessing by
 index is done using the normal array syntax: `v[0] == v.X`.
 
-###Generalizing Vectors
+### Generalizing Vectors
 
 In GLSL there are distinct vector types for each component type and vector dimension.
 Implementing these directly in C# would result in a lot of duplicate code that would
@@ -136,7 +136,7 @@ Another way to reduce the duplicate code is to create an interface which all the
 vector types implement, and define operations in terms of the interface rather than the 
 concrete types. Vector types all implement the `IVec<V, T>` interface which is defined 
 as follows:
-
+``` csharp
 	public interface IVec<V, T> : IEquatable<V>
 		where V : struct, IVec<V, T>
 		where T : struct, IEquatable<T>
@@ -207,7 +207,7 @@ as follows:
 		/// </summary>
 		V Normalized { get; }
 	}
-
+```
 Using this interface we can define the rest of the operations that operate on vectors
 without resorting to code generation. This is especially pleasing when we can share
 implementation with multiple component types and vector dimensions.
@@ -239,7 +239,7 @@ is an example:
 		return vec.Subtract (along.Multiply (2 * vec.Dot (along)));
 	}
 
-###Functions for Vectors
+### Functions for Vectors
 
 Most math functions in GLSL work both with scalar values and with vectors. The same
 applies to Compose3D as well. The scalar versions of the functions can be found in
@@ -261,13 +261,13 @@ There are also some functions that work only for specific vector types. An examp
 such is the cross product operation `Cross ()`, which is defined only for the `Vec3` 
 type. 
 
-##Matrices
+## Matrices
 
 One distinction between Compose3D and OpenTK is that in the former the matrices are 
 defined in the column-major manner. OpenTK chooses the row-major way for some reason. 
 This choice is significant for many reasons, one of which is that it determines also 
 the order in which the matrices should be multiplied. Given two matrices _M_ and _N_, 
-if you want to first apply _M_ and then _N_, you should multiply them together in this 
+if you want to first apply $M$ and then _N_, you should multiply them together in this 
 order: _N_ * _M_. The same applies if you want to transform a vector _V_ by matrix _M_. 
-The correct order of multiplicands is: _M_ * _V_.
+The correct order of multiplicands is: $MV$.
 

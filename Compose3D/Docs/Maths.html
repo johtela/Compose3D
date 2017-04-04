@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Math Support</title>
+    <link rel="stylesheet" href="md-styles.css" />
+    <link rel="stylesheet" href="prism.css" />
+</head>
+<body class="markdown-body">
+
+    <h1 id="math-support">Math Support</h1>
+<p>It is virtually impossible to write an OpenGL application without some kind of a
+mathematical library that provides at least the basic concepts of matrix algebra.
+OpenGL is just a graphics API, so it does not provide a library for mathematical
+calculations. GLSL, on the other hand, has such a library built into it, but the
+same functionality is not available in the client code, because it can be written
+in any programming language.</p>
+<p>So, the first need that arises is to have a mathematical library that provides at
+least the same functionality as GLSL. Preferably the semantics of the library should
+be as close to GLSL as possible. The mathematical entities like vectors and matrices
+should be defined in the same way in both. The only difference should be where the
+mathematics code is run; on CPU or on GPU.</p>
+<p>This is the motivation for adding the mathematics support to Compose3D. There is a
+similar library in OpenTK, but it differs in many places from GLSL so Compose3D does
+not use it. The requirement of the math library is to have the same set of types and
+functions for C# and for GLSL, so that the code would work the same way regardless of
+where it is executed. For this reason we cannot use some generic mathematics library
+like the one provided with OpenTK.</p>
+<p>Compose3D implements big part of the functionality available in GLSL. The purpose is
+not only to allow writing code that can be translated to GLSL. The implementation
+works also in C#. In some cases the existing functions of <code>System.Math</code> class can
+be used. Function provided by .NET framework are mapped to GLSL if they have same
+interface and semantics in both languages.</p>
+<p>The math types and functions live in the <code>Compose3D.Maths</code> namespace.</p>
+<h2 id="vectors">Vectors</h2>
+<p>Vectors lift the scalar values into _n_th dimension. They are used to represent
+position, direction, color, and many other things that are considered when generating
+3D graphics. The main operations of vectors are the same as of scalar values:
+addition, subraction, multiplication, and division. These are calculated in a
+<em>componentwise</em> manner. That is, each component of a vector is added, subracted,
+multiplied, or divided separately; either with a same value, or wih a corresponding
+component of another vector.</p>
+<p>Most of the scalar operations can be generalized analogously to vectors. Also, a big
+part of the code in the <code>Compose3D.Maths</code> namespace is lifting the mathematic
+operations from scalar values to vectors. Almost all of the operations are also
+supported by GLSL, so they can be used interchangeably in the shader code.</p>
+<p>The only decimal type currently supported by Compose3D is <code>float</code>, i.e. a 32-bit
+floating point value. This is the most commonly used decimal type in GLSL as well --
+mostly because double precision types come with a performance penalty, and they are
+only supported by more recent graphics hardware. In most applications single precision
+is enough to produce good quality graphics.</p>
+<p>There is an easy way to include support for double precision types to Compose3D later on,
+though. All the vector and matrix types are parameterized by their component type. So,
+adding support to <code>double</code> is just a matter of adding the implementations to all of the
+functions, which is trivial to do. Currently this is left out, just to keep the library
+footprint a bit smaller. The support will come some time later depending on the demand.</p>
+<h3 id="the-basic-vector-types">The Basic Vector Types</h3>
+<p>The basic vector types are the same as in GLSL: <code>Vec2</code> for 2-dimensional vectors,
+<code>Vec3</code> for 3-dimensional, and so on. Their naming convention differs from GLSL in
+two ways. Firstly, the type names are in Pascal case, i.e. they begin with a capital
+letter. The second difference is that the component type indicator is at the end of the
+type name, not at the beginning. I.e. instead of <code>ivec2</code> the type is named <code>Vec2i</code> in
+Compose3D. This is to prevent confusing them to interface types which also begin with
+capital <code>I</code>.</p>
+<p>Also the operations defined for vectors are as similar to GLSL as possible. The main
+arithmetic operators are overloaded, so that the syntax is also similar. The overloaded
+operators are.</p>
+<ul>
+<li><code>-v</code> negation,</li>
+<li><code>v1 + v2</code> addition,</li>
+<li><code>v1 - v2</code> subtraction,</li>
+<li><code>v1 * v2</code> multiplication, and</li>
+<li><code>v1 / v2</code> division.</li>
+</ul>
+<p>Also the scalar versions are available for multiplication and division (<code>v</code> is a
+vector type, and <code>s</code> is a primitive type, like <code>float</code> or <code>int</code>.</p>
+<ul>
+<li><code>v * s</code>, and</li>
+<li><code>v / s</code>.</li>
+</ul>
+<p>Other commonly used operations on vectors are dot product (<code>Dot ()</code>) and length of the
+vector, which is defined as the property <code>Length</code>.</p>
+<p>Also equality and inequality operators are overloaded, of course:</p>
+<ul>
+<li><code>v1 == v2</code>, equality (same as <code>v1.Equals (v2)</code>),</li>
+<li><code>v1 != v2</code>, inequality.</li>
+</ul>
+<h4 id="accessing-components">Accessing Components</h4>
+<p>There are three ways to access the vector components. The simplest way is to just to
+reference the component by name, for example <code>v.Y</code>. The more sophisticated way is to
+use swizzling, which is possible to implement in C#, but not with the same syntax as in
+GLSL. For example, to access the last two components of a 3-dimensional vector, you can
+use the indexer property as follows:</p>
+<pre><code>v[Coord.y, Coord.z]
+</code></pre>
+<p>This translates to GLSL expression:</p>
+<pre><code>v.yz
+</code></pre>
+<p>Swizling allows you to access the components in a random order even a same component
+twice:</p>
+<pre><code>v[Coord.y, Coord.x] + v[Coord.z, Coord.z]
+</code></pre>
+<p>These are translated to GLSL as follows:</p>
+<pre><code>v.yx + v.zz
+</code></pre>
+<p>The third way is to refer to the vector component by its index; X-component has
+index 0, Y-component 1, and so on. This makes it possible to iterate through the
+components generically without hard-coding the number of dimensions. Accessing by
+index is done using the normal array syntax: <code>v[0] == v.X</code>.</p>
+<h3 id="generalizing-vectors">Generalizing Vectors</h3>
+<p>In GLSL there are distinct vector types for each component type and vector dimension.
+Implementing these directly in C# would result in a lot of duplicate code that would
+look almost identical across the types. Still, there is no easy way to generalize
+the code using generics, because primitive types share no common interfaces of base
+classes, and number of components cannot reasonably be represented by a type.</p>
+<p>For this reason Compose3D uses a couple of tricks to reduce the duplicate code. First,
+the code for basic vector types is actually generated from T4 templates. This reduces
+the number of source lines to be maintained. There are problems which entail this
+approach, such as a minor change propagating through the generated code. But all in
+all, it makes tasks like adding support for the <code>double</code> component type less laborious
+in the future.</p>
+<p>Another way to reduce the duplicate code is to create an interface which all the basic
+vector types implement, and define operations in terms of the interface rather than the
+concrete types. Vector types all implement the <code>IVec&lt;V, T&gt;</code> interface which is defined
+as follows:</p>
+<pre><code class="language-csharp">	public interface IVec&lt;V, T&gt; : IEquatable&lt;V&gt;
+		where V : struct, IVec&lt;V, T&gt;
+		where T : struct, IEquatable&lt;T&gt;
+	{
+		/// &lt;summary&gt;
+		/// Negate all of the components of the vector.
+		/// &lt;/summary&gt;
+		V Invert ();
+
+		/// &lt;summary&gt;
+		/// Add another vector this one componentwise.
+		/// &lt;/summary&gt;
+		V Add (V other);
+
+		/// &lt;summary&gt;
+		/// Subtract the given vector from this one componentwise.
+		/// &lt;/summary&gt;
+		V Subtract (V other);
+
+		/// &lt;summary&gt;
+		/// Multiply the components of this vector with a same scalar value.
+		/// &lt;/summary&gt;
+		V Multiply (T scalar);
+
+		/// &lt;summary&gt;
+		/// Multiply with another vector componentwise.
+		/// &lt;/summary&gt;
+		V Multiply (V scale);
+
+		/// &lt;summary&gt;
+		/// Divide the components of this vector by a same scalar value.
+		/// &lt;/summary&gt;
+		V Divide (T scalar);
+
+		/// &lt;summary&gt;
+		/// Divide by another vector componentwise.
+		/// &lt;/summary&gt;
+		V Divide (V scale);
+
+		/// &lt;summary&gt;
+		/// Calculate the dot product with another vector.
+		/// &lt;/summary&gt;
+		T Dot (V other);
+
+		/// &lt;summary&gt;
+		/// Number of dimensions/components in the vector.
+		/// &lt;/summary&gt;
+		int Dimensions { get; }
+
+		/// &lt;summary&gt;
+		/// The value of the index'th component of the vector.
+		/// &lt;/summary&gt;
+		T this[int index] { get; set; }
+
+		/// &lt;summary&gt;
+		/// The lengh of the vector.
+		/// &lt;/summary&gt;
+		T Length { get; }
+
+		/// &lt;summary&gt;
+		/// The lengh of the vector squared. This is bit faster to calculate than the actual length
+		/// because the square root operation is omitted.
+		/// &lt;/summary&gt;
+		T LengthSquared { get; }
+
+		/// &lt;summary&gt;
+		/// The normalized vector. I.e. vector with same direction, but with lenght of 1.
+		/// &lt;/summary&gt;
+		V Normalized { get; }
+	}
+</code></pre>
+<p>Using this interface we can define the rest of the operations that operate on vectors
+without resorting to code generation. This is especially pleasing when we can share
+implementation with multiple component types and vector dimensions.</p>
+<p>If you are wondering why the interface contains the implementing type as its first type
+argument, there is a reson for this. This allows us to define the methods of the interface
+with concrete types instead of the interface type. So, instead of defining the addition as:</p>
+<pre><code>IVec&lt;T&gt; Add (IVec&lt;T&gt; other)
+</code></pre>
+<p>we are defining it as:</p>
+<pre><code>V Add (V other)
+</code></pre>
+<p>where V is the implementing struct. This way we don't loose the concrete type information
+whenever calling the interface methods. It saves us from many type casts that would be
+needed, if we would use the former way.</p>
+<p>Another benefit of this approach is that all the extension methods that we define for
+the interface can be defined in the same way, preserving the type information without
+upcasting the arguments to the <code>IVec</code> interface. The requirement that a type must
+implement an interface can be defined by the type constraint in the where clause. Below
+is an example:</p>
+<pre><code>public static V Reflect&lt;V, T&gt; (this V vec, V along)
+	where V : struct, IVec&lt;V, float&gt;
+	where T : struct, IEquatable&lt;T&gt;
+{
+	return vec.Subtract (along.Multiply (2 * vec.Dot (along)));
+}
+</code></pre>
+<h3 id="functions-for-vectors">Functions for Vectors</h3>
+<p>Most math functions in GLSL work both with scalar values and with vectors. The same
+applies to Compose3D as well. The scalar versions of the functions can be found in
+the <code>Compose3D.Maths.GLMath</code> class which is kind of an extension of the
+<code>System.Math</code> class. The main difference between these is that the default argument
+type of functions in <code>GLMath</code> is <code>float</code> whereas in <code>System.Math</code> it is <code>double</code>.
+Also <code>System.Math</code> lacks the very useful functions defined in GLSL like <code>Clamp ()</code>,
+<code>Mix ()</code>, <code>Step ()</code>, and <code>SmoothStep ()</code>.</p>
+<p>Almost all of the functions that work with scalars are &quot;lifted&quot; to work with vectors
+as well. These functions take advantage of the <code>IVec&lt;V, T&gt;</code> interface, so typically
+there is only one implementation which works accross all vector sizes, and sometimes
+accross different component types too. The implementation works componentwise so that
+each component of a vector is processed in the same way. The other arguments, if there
+are any, can be vectors of the same dimension and component type, or scalars of the same
+numeric type.</p>
+<p>There are also some functions that work only for specific vector types. An example of
+such is the cross product operation <code>Cross ()</code>, which is defined only for the <code>Vec3</code>
+type.</p>
+<h2 id="matrices">Matrices</h2>
+<p>One distinction between Compose3D and OpenTK is that in the former the matrices are
+defined in the column-major manner. OpenTK chooses the row-major way for some reason.
+This choice is significant for many reasons, one of which is that it determines also
+the order in which the matrices should be multiplied. Given two matrices <em>M</em> and <em>N</em>,
+if you want to first apply <span class="math">M</span> and then <em>N</em>, you should multiply them together in this
+order: <em>N</em> * <em>M</em>. The same applies if you want to transform a vector <em>V</em> by matrix <em>M</em>.
+The correct order of multiplicands is: <span class="math">MV</span>.</p>
+
+
+    <script src='prism.js'></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+        extensions: ["jsMath2jax.js"]
+        });
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML'></script>
+</body>
+</html>

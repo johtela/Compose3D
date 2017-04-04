@@ -1,6 +1,6 @@
-﻿#ComposeFx - Toolbox for GPU Programming in C#
+﻿# ComposeFx - Toolbox for GPU Programming in C#
 
-ComposeFx is a C# library that helps you to harness the power of GPU computing. 
+ComposeFx is a C# library that helps you harness the power of GPU computing. 
 It builds on top of OpenGL and OpenCL and provides an abstraction layer that makes their
 usage simpler and easier. The name "Compose Framework" stems from the guiding principle of
 the library design. By using functional programming style and composable abstractions 

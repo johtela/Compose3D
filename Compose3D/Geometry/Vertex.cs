@@ -96,8 +96,8 @@
 			where P : struct, IPositional<V>
 			where V : struct, IVec<V, float>
 		{
-			var min = Vec.FromArray<V, float> (float.PositiveInfinity.Repeat (4).ToArray ());
-			var max = Vec.FromArray<V, float> (float.NegativeInfinity.Repeat (4).ToArray ());
+			var min = Vec.New<V, float> (float.PositiveInfinity);
+			var max = Vec.New<V, float> (float.NegativeInfinity);
 
 			foreach (var pos in vertices)
 				for (int i = 0; i < min.Dimensions; i++)

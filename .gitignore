@@ -9,3 +9,4 @@ obj
 *.user
 /Build/Debug
 /Compose3D/Docs/html
+.vs

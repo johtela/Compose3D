@@ -114,7 +114,7 @@
 			where P : struct, IPositional<V>
 			where V : struct, IVec<V, float>
 		{
-			return vertices.MaximumItems (v => v.position.Multiply (direction).Sum ());
+			return vertices.MaximumItems (v => v.position.Dot (direction));
 		}
 		
 		public static IEnumerable<P> Facing<P, V> (this IEnumerable<P> vertices, V direction)

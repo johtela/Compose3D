@@ -7,7 +7,7 @@
 	using OpenTK;
 	using Extensions;
 
-	public static class Tesselator<V> where V : struct, IVertex 
+	public static class Tesselator<P> where P : struct, IPositional<Vec3> 
 	{
 		private class TessVertex : IEnumerable<TessVertex>
 		{
@@ -23,13 +23,14 @@
 				get { return Angle >= MathHelper.Pi; }
 			}
 
-			public static TessVertex FromEnumerable (IEnumerable<TessVertex> e)
-			{
-				var first = e.First ();
+            public static TessVertex CircularList (int count)
+            {
+                var first = new TessVertex { Index = 0 };
 				var prev = first;
 
-				foreach (var tv in e.Skip (1))
+				for (var i = 1; i < count; i ++)
 				{
+                    var tv = new TessVertex { Index = i };
 					prev.Next = tv;
 					tv.Previous = prev;
 					prev = tv;
@@ -62,16 +63,14 @@
 			}
 		}
 
-		public static int[] TesselatePolygon (V[] vertices)
+		public static int[] TesselatePolygon (P[] vertices)
 		{
 			var count = vertices.Length;
 			if (count < 3)
 				throw new ArgumentException ("Tesselator needs at least 3 vertices");
 			var result = new int[(count - 2) * 3];
 			var resInd = 0;
-			var tessVerts = TessVertex.FromEnumerable (
-				from i in Enumerable.Range (0, count)
-				select new TessVertex () { Index = i });
+            var tessVerts = TessVertex.CircularList (count);
 
 			foreach (var tv in tessVerts)
 				UpdateVertexAngle (tv, vertices);
@@ -101,13 +100,13 @@
 			return result;
 		}
 
-		private static void UpdateVertexAngle (TessVertex tessVert, V[] vertices)
+		private static void UpdateVertexAngle (TessVertex tessVert, P[] vertices)
 		{
 			tessVert.Angle = AngleBetweenEdges (
 				tessVert.Previous.Index, tessVert.Index, tessVert.Next.Index, vertices);
 		}
 
-		private static void UpdateIsEar (TessVertex current, V[] vertices)
+		private static void UpdateIsEar (TessVertex current, P[] vertices)
 		{
 			if (current.IsReflex)
 				current.IsEar = false;
@@ -124,7 +123,7 @@
 			}
 		}
 
-		private static float AngleBetweenEdges (int prev, int current, int next, V[] vertices)
+		private static float AngleBetweenEdges (int prev, int current, int next, P[] vertices)
 		{
 			var vec1 = vertices[prev].position - vertices[current].position;
 			var vec2 = vertices[next].position - vertices[current].position;

@@ -56,7 +56,8 @@
 			var roof = Roof (out roofSnapTag);
 			var gables = Gables (roof, out gableTopTag);
 			var wallsAndGables = WallsAndGables (roof, gables, roofSnapTag, gableTopTag);
-			return Composite.Create (Aligning.AlignZ (Alignment.Center, roof, wallsAndGables)).Center ();
+			return Composite.Create (Aligning.AlignZ (Alignment.Center, roof, wallsAndGables)).Center ()
+                .Color (VertexColor<Vec3>.Bronze) ;
 		}
 
 		private static IEnumerable<Mat4> TubeTransforms ()

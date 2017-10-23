@@ -8,27 +8,20 @@
 	public static class Aligning
 	{
 		private static Mat4 GetAlignmentMatrix (Alignment xalign, Alignment yalign, Alignment zalign,
-			Aabb<Vec3> previous, Aabb<Vec3> current)
+			Aabb<Vec3> alignWith, Aabb<Vec3> bbox)
 		{
 			return Mat.Translation<Mat4> (
-				previous.GetAlignmentOffset (current, 0, xalign),
-				previous.GetAlignmentOffset (current, 1, yalign),
-				previous.GetAlignmentOffset (current, 2, zalign));
+				alignWith.GetAlignmentOffset (bbox, 0, xalign),
+				alignWith.GetAlignmentOffset (bbox, 1, yalign),
+				alignWith.GetAlignmentOffset (bbox, 2, zalign));
 		}
 
 		public static IEnumerable<Geometry<V>> Align<V> (this IEnumerable<Geometry<V>> geometries, 
 			Alignment xalign, Alignment yalign, Alignment zalign) where V : struct, IVertex
 		{
-			var previous = geometries.First ().BoundingBox;
+			var alignWith = geometries.First ().BoundingBox;
 			var alignedGeometries = geometries.Skip (1).Select (geom => 
-			{
-				var current = geom.BoundingBox;
-				var matrix = GetAlignmentMatrix (xalign, yalign, zalign, previous, current);
-				previous = new Aabb<Vec3> (
-					new Vec3 (matrix * new Vec4 (current.Min, 1f)), 
-					new Vec3 (matrix * new Vec4 (current.Max, 1f)));
-				return geom.Transform (matrix);
-			});
+				geom.Transform (GetAlignmentMatrix (xalign, yalign, zalign, alignWith, geom.BoundingBox)));
 			return geometries.Take (1).Concat (alignedGeometries);
 		}
 

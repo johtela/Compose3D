@@ -82,7 +82,7 @@
 			var texturePanel = MaterialPanel<TexturedVertex>.Movable (_sceneGraph, false,
 				new Vec2 (0.4f, 0.8f), new Vec2i (1));
 			var guiWindow = ControlPanel<TexturedVertex>.Movable (_sceneGraph, 
-				Editor (new Vec2i (512), @"Materials\Ground.xml", texturePanel.Node),
+				Editor (new Vec2i (1024), @"Materials\Ground.xml", texturePanel.Node),
                 new Vec2i (650, 550), new Vec2 (-0.99f, 0.99f));
 
 			_mesh = new Mesh<MaterialVertex> (_sceneGraph, rect);

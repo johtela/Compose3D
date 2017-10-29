@@ -312,8 +312,14 @@
 		{
 			var i = 1;
 			return EnumerableExt.Generate<Vec2> (() => 
-				new Vec2 (FMath.HaltonSequenceItem (2, i), FMath.HaltonSequenceItem (3, i++)));
+				new Vec2 (FMath.Halton (2, i), FMath.Halton (3, i++)));
 		}
+
+        public static IEnumerable<Vec2> HammersleyControlPoints (int count)
+        {
+            for (int i = 0; i < count; i++)
+                yield return FMath.Hammersley2D (i, count);
+        }
 
 		public static IEnumerable<V> Jitter<V> (this IEnumerable<V> controlPoints, float maxDelta)
 			where V : struct, IVec<V, float>

@@ -13,7 +13,7 @@
 	using Textures;
 	using System.Threading.Tasks;
 
-	public enum ControlPointKind { Random, Halton23 }
+	public enum ControlPointKind { Random, Halton23, Hammersley }
 
 	internal class WorleyEditor : SignalEditor<float>
 	{
@@ -25,9 +25,10 @@
 		public float Jitter;
 		public bool Periodic;
 
-		private Func<int, IEnumerable<Vec2>>[] _cpGenerators = {
-				Imaging.Signal.RandomControlPoints<Vec2>,
-				_ => Imaging.Signal.HaltonControlPoints ()
+		private Func<int, int, IEnumerable<Vec2>>[] _cpGenerators = {
+				(seed, count) => Imaging.Signal.RandomControlPoints<Vec2> (seed),
+				(seed, count) => Imaging.Signal.HaltonControlPoints (),
+                (seed, count) => Imaging.Signal.HammersleyControlPoints (count)
 			};
 
 		private Func<Vec2, Vec2, float>[] _distFunctions = {
@@ -99,7 +100,7 @@
 
         private IEnumerable<Vec2> GetControlPoints ()
         {
-            var cpoints = _cpGenerators[(int)ControlPoints] (Seed)
+            var cpoints = _cpGenerators[(int)ControlPoints] (Seed, ControlPointCount)
                 .Take (ControlPointCount)
                 .Jitter (Jitter);
             if (Periodic)

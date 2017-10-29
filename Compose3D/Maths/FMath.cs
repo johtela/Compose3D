@@ -426,7 +426,7 @@
 			throw new NotImplementedException ();
 		}
 
-		public static float HaltonSequenceItem (int basePrime, int index)
+		public static float Halton (int basePrime, int index)
 		{
 			var result = 0.0;
 			var f = 1.0;
@@ -438,5 +438,20 @@
 			}
 			return (float)result;
 		}
-	}
+
+        private static float RadicalInverseVdC (uint bits)
+        {
+            bits = (bits << 16) | (bits >> 16);
+            bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
+            bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
+            bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
+            bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
+            return (float)bits * 2.3283064365386963e-10f; // / 0x100000000
+        }
+
+        public static Vec2 Hammersley2D (int index, int count)
+        {
+            return new Vec2 ((float)index / (float)count, RadicalInverseVdC ((uint)index));
+        }
+    }
 }

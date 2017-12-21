@@ -273,7 +273,8 @@
 				var snapToVertex = rear.Geometry.Vertices.Furthest (Dir3D.Back).Furthest (Dir3D.Up).First ();
 				var exhaust = Composite.Create (plates);
 				Geometry = exhaust
-					.SnapVertex (exhaust.Vertices.Furthest (Dir3D.Up).First (), snapToVertex, Axes.Y | Axes.Z)
+					.SnapTo (exhaust.Vertices.Furthest (Dir3D.Up).First ().position, snapToVertex.position, 
+                        Axes.Y | Axes.Z)
 					.Translate (0f, -0.02f, 0.02f)
 					.Color (VertexColor<Vec3>.BlackPlastic);
 				

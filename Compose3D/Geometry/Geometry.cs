@@ -133,17 +133,12 @@
 			return result;
 		}
 
-		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, Vec3 position, V snapToVertex, Axes snapAxes)
+		public static Geometry<V> SnapTo<V> (this Geometry<V> geometry, Vec3 position, Vec3 snapTo, 
+            Axes snapAxes)
 			where V : struct, IVertex3D
 		{
-			var offset = GetSnapOffset (position, snapToVertex.position, snapAxes);
+			var offset = GetSnapOffset (position, snapTo, snapAxes);
 			return geometry.Translate (offset.X, offset.Y, offset.Z);
-		}
-
-		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, V vertex, V snapToVertex, Axes snapAxes)
-			where V : struct, IVertex3D
-		{
-			return geometry.SnapVertex (vertex.position, snapToVertex, snapAxes);
 		}
 
 		public static IEnumerable<V> Normals<V> (this Geometry<V> geometry)

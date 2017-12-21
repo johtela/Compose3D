@@ -21,40 +21,39 @@
 				.Align (Alignment.None, Alignment.Center, Alignment.Center)).Center ();
 		}
 
-		private static Geometry<EntityVertex> Roof (out int tag)
+		private static Geometry<EntityVertex> Roof (out Vec3 tag)
 		{
 			var trapezoid = Quadrilateral<EntityVertex>.Trapezoid (20f, 1f, 0f, 1f);
-			tag = trapezoid.TagVertex (trapezoid.Vertices.Furthest (Dir3D.Down).Furthest (Dir3D.Right).Single ());
+			tag = trapezoid.Vertices.Furthest (Dir3D.Down).Furthest (Dir3D.Right).Single ().position;
 			var leftPane = trapezoid.Extrude (30f).RotateZ (MathHelper.PiOver4);
 			var rightPane = leftPane.ReflectX ();
 			return Composite.Create (Stacking.StackRight (leftPane, rightPane));
 		}
 
-		private static Geometry<EntityVertex> Gables (Geometry<EntityVertex> roof, out int tag)
+		private static Geometry<EntityVertex> Gables (Geometry<EntityVertex> roof, out Vec3 tag)
 		{
 			var gableHeight = roof.BoundingBox.Size.Y * 0.85f;
 			var frontGable = Triangle<EntityVertex>.Isosceles (2 * gableHeight, gableHeight);
-			tag = frontGable.TagVertex (frontGable.Vertices.Furthest (Dir3D.Up).Single ());
+			tag = frontGable.Vertices.Furthest (Dir3D.Up).Single ().position;
 			var backGable = frontGable.ReflectZ ().Translate (0f, 0f, -roof.BoundingBox.Size.Z * 0.9f);
 			return Composite.Create (frontGable, backGable);
 		}
 
-		private static Geometry<EntityVertex> WallsAndGables (Geometry<EntityVertex> roof, Geometry<EntityVertex> gables, 
-			int roofSnapTag, int gableTopTag)
+		private static Geometry<EntityVertex> WallsAndGables (Geometry<EntityVertex> roof, 
+            Geometry<EntityVertex> gables, Vec3 roofSnapTag, Vec3 gableTopTag)
 		{
-			var walls = Quadrilateral<EntityVertex>.Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z)
+			var walls = Quadrilateral<EntityVertex>
+                .Rectangle (gables.BoundingBox.Size.X, gables.BoundingBox.Size.Z)
 				.Extrude (12f, false).RotateX (MathHelper.PiOver2);
 			var wallsAndGables = Composite.Create (Stacking.StackUp (walls, gables)
 				.Align (Alignment.Center, Alignment.None, Alignment.Center));
-			return wallsAndGables.SnapVertex (wallsAndGables.FindVertexByTag (gableTopTag), 
-				roof.FindVertexByTag (roofSnapTag), Axes.All);
+			return wallsAndGables.SnapTo (gableTopTag, roofSnapTag, Axes.All);
 		}
 
 		public static Geometry<EntityVertex> House ()
 		{
-			int roofSnapTag, gableTopTag;
-			var roof = Roof (out roofSnapTag);
-			var gables = Gables (roof, out gableTopTag);
+            var roof = Roof (out Vec3 roofSnapTag);
+            var gables = Gables (roof, out Vec3 gableTopTag);
 			var wallsAndGables = WallsAndGables (roof, gables, roofSnapTag, gableTopTag);
 			return Composite.Create (Aligning.AlignZ (Alignment.Center, roof, wallsAndGables)).Center ()
                 .Color (VertexColor<Vec3>.Bronze) ;

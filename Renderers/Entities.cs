@@ -16,7 +16,7 @@
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	public struct EntityVertex : IVertex3D, IVertexInitializer<EntityVertex, Vec3>, IVertexColor<Vec3>, 
-		ITextured, ITagged<EntityVertex>, IReflective
+		ITextured, IReflective
 	{
 		public Vec3 position;
 		public Vec3 normal;
@@ -69,12 +69,6 @@
 			set { texturePos = value; }
 		}
 
-		int ITagged<EntityVertex>.tag
-		{
-			get { return tag; }
-			set { tag = value; }
-		}
-		
 		float IReflective.reflectivity
 		{
 			get { return reflectivity; }

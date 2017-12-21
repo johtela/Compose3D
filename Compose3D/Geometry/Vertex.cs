@@ -41,15 +41,15 @@
 		void Initialize (ref V vertex);
 	}
 
-	public interface ITagged<V> where V : IVertex3D
-	{
-		/// <summary>
-		/// Tag can be used to identify a vertex.
-		/// </summary>
-		int tag { get; set; }
-	}
+    public static class Dir2D
+    {
+        public static Vec2 Left = new Vec2 (-1f, 0f);
+        public static Vec2 Right = new Vec2 (1f, 0f);
+        public static Vec2 Down = new Vec2 (0f, -1f);
+        public static Vec2 Up = new Vec2 (0f, 1f);
+    }
 
-	public static class Dir3D
+    public static class Dir3D
 	{
 		public static Vec3 Left = new Vec3 (-1f, 0f, 0f);
 		public static Vec3 Right = new Vec3 (1f, 0f, 0f);
@@ -61,8 +61,6 @@
 
 	public static class VertexHelpers
 	{
-		private static int _lastTag;
-
 		public static V New<V>(Vec3 position, Vec3 normal)
             where V : struct, IVertex3D
         {
@@ -84,20 +82,20 @@
 			return vertex;
 		}
 
-		public static V Center<P, V> (this IEnumerable<P> vertices)
-			where P : struct, IVertex<V>
-			where V : struct, IVec<V, float>
+		public static D Center<V, D> (this IEnumerable<V> vertices)
+			where V : struct, IVertex<D>
+			where D : struct, IVec<D, float>
 		{
-			var extents = vertices.Extents<P, V> ();
+			var extents = vertices.Extents<V, D> ();
 			return extents.Item1.Add (extents.Item2).Divide (2f);
 		}
 
-		public static Tuple<V, V> Extents<P, V> (this IEnumerable<P> vertices)
-			where P : struct, IVertex<V>
-			where V : struct, IVec<V, float>
+		public static Tuple<D, D> Extents<V, D> (this IEnumerable<V> vertices)
+			where V : struct, IVertex<D>
+			where D : struct, IVec<D, float>
 		{
-			var min = Vec.New<V, float> (float.PositiveInfinity);
-			var max = Vec.New<V, float> (float.NegativeInfinity);
+			var min = Vec.New<D, float> (float.PositiveInfinity);
+			var max = Vec.New<D, float> (float.NegativeInfinity);
 
 			foreach (var pos in vertices)
 				for (int i = 0; i < min.Dimensions; i++)
@@ -110,9 +108,9 @@
 			return Tuple.Create (min, max);
 		}
 
-		public static IEnumerable<P> Furthest<P, V> (this IEnumerable<P> vertices, V direction)
-			where P : struct, IVertex<V>
-			where V : struct, IVec<V, float>
+		public static IEnumerable<V> Furthest<V, D> (this IEnumerable<V> vertices, D direction)
+			where V : struct, IVertex<D>
+			where D : struct, IVec<D, float>
 		{
 			return vertices.MaximumItems (v => v.position.Dot (direction));
 		}
@@ -123,8 +121,8 @@
 			return vertices.Where (v => v.Facing (direction));
 		}
 		
-		public static bool AreCoplanar<P> (this IEnumerable<P> vertices) 
-			where P : struct, IVertex<Vec3>
+		public static bool AreCoplanar<V> (this IEnumerable<V> vertices) 
+			where V : struct, IVertex<Vec3>
 		{
 			if (vertices.Count () < 4)
 				return true;
@@ -134,19 +132,6 @@
 			var normal = ab.Cross (ac);
 
 			return vertices.All (v => normal.Dot (v.position - first).ApproxEquals (0f, 0.1f));
-		}
-
-		public static int TagVertex<V> (this Geometry<V> geometry, V vertex) 
-			where V : struct, IVertex3D, ITagged<V>
-		{
-			geometry.Vertices[geometry.FindVertex (vertex)].tag = ++_lastTag;
-			return _lastTag;
-		}
-
-		public static V FindVertexByTag<V> (this Geometry<V> geometry, int tag)
-			where V : struct, IVertex3D, ITagged<V>
-		{
-			return geometry.Vertices.First (v => v.tag == tag);
 		}
 	}
 }

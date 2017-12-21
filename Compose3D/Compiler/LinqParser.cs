@@ -177,86 +177,107 @@
 				name;
 		}
 
-		protected Ast.Expression Expr (Expression expr)
-		{
-			var result =
-				expr.Match<BinaryExpression, Ast.Expression> (be =>
-					Ast.Op (MapOperator (be.Method, be.NodeType), Expr (be.Left), Expr (be.Right)))
-				??
-				expr.Match<UnaryExpression, Ast.Expression> (ue =>
-					Ast.Op (
-						ue.NodeType == ExpressionType.Convert ?
-							MapTypeCast (ue.Type) :
-							MapOperator (ue.Method, ue.NodeType),
-						Expr (ue.Operand)))
-				??
-				expr.Match<MethodCallExpression, Ast.Expression> (mc =>
-				{
-					if (mc.Method.Name == "get_Item")
-					{
-						if (mc.Arguments[0].Type == typeof (Maths.Coord))
-							return Ast.FRef (Expr (mc.Object),
-								Ast.Fld (mc.Arguments.Select (a => Expr (a).Output (this)).SeparateWith ("")));
-						var syntax = _typeMapping.Indexer (mc.Method);
-						return syntax == null || mc.Arguments.Count != 1 ?
-							null :
-							Ast.Op (syntax, Expr (mc.Object), Expr (mc.Arguments[0]));
-					}
-					var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
-					return Ast.Call (MapFunction (mc.Method), args.Select (Expr));
-				}) ??
-				expr.Match<InvocationExpression, Ast.Expression> (ie =>
-				{
-					var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
-					if (me != null)
-						return FunctionCall (ie, me.Member);
-					throw new ParseException ("Function call is allowed only for static members.");
-				}) ??
-				expr.Match<MemberExpression, Ast.Expression> (MapMemberAccess)
-				??
-				expr.Match<NewExpression, Ast.Expression> (ne =>
-					ne.Constructor == null ? null :
-						Ast.Call (MapConstructor (ne.Constructor), ne.Arguments.Select (Expr)))
-                ??
-                expr.Match<ConstantExpression, Ast.Expression> (ce => 
-					Ast.Lit (string.Format (CultureInfo.InvariantCulture, 
-						ce.Type == typeof (float) ?  "{0:0.0############}f" : "{0}", ce.Value))) 
-				?? 
-				expr.Match<NewArrayExpression, Ast.Expression> (na => 
-					ArrayConstant (na.Type.GetElementType (), na.Expressions.Count,
-						na.Expressions.Select (Expr))) 
-				??
-                expr.Match<ConditionalExpression, Ast.Expression> (ce => 
-					Ast.Cond (Expr (ce.Test), Expr (ce.IfTrue), Expr (ce.IfFalse)))
-				?? 
-                expr.Match<ParameterExpression, Ast.Expression> (pe =>
-				{
-					var local = _currentScope.FindLocalVar (pe.Name);
-					if (local != null)
-						return Ast.VRef (local);
-					var mpar = _currentScope.FindMacroParam (pe);
-					if (mpar != null)
-						return Ast.MPRef (mpar);
-					throw new ParseException ("Reference to undefined local variable: " + pe.Name);
-				}) 
-				?? 
-				expr.Match<MemberInitExpression, Ast.Expression> (mi =>
-				{
-					MapType (mi.Type);
-					var astruct = (Ast.Structure)_globals[StructTypeName (mi.Type)];
-					var fieldInits = from b in mi.Bindings.Cast<MemberAssignment> ()
-									 let field = astruct.Fields.Find (f => f.Name == b.Member.Name)
-									 select Tuple.Create (Ast.VRef (field), Expr (b.Expression));
-					return InitStructure (mi.Type, fieldInits);
-				})
-				??
-				null;
-            if (result == null)
-                throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
-            return result;
+        protected Ast.Expression Expr (Expression expr)
+        {
+            return ChooseExpr ((dynamic)expr);
         }
 
-		private void AddExternalReferences (Ast.Program program, HashSet<Type> typesDefined)
+        protected Ast.Expression ChooseExpr (BinaryExpression be)
+        {
+            return Ast.Op (MapOperator (be.Method, be.NodeType), 
+                Expr (be.Left), Expr (be.Right));
+        }
+
+        protected Ast.Expression ChooseExpr (UnaryExpression ue)
+        {
+            return Ast.Op (
+                ue.NodeType == ExpressionType.Convert ?
+                    MapTypeCast (ue.Type) :
+                    MapOperator (ue.Method, ue.NodeType),
+                Expr (ue.Operand));
+        }
+
+        protected Ast.Expression ChooseExpr (MethodCallExpression mc)
+        {
+            if (mc.Method.Name == "get_Item")
+            {
+                if (mc.Arguments[0].Type == typeof (Maths.Coord))
+                    return Ast.FRef (Expr (mc.Object),
+                        Ast.Fld (mc.Arguments.Select (a =>
+                            Expr (a).Output (this)).SeparateWith ("")));
+                var syntax = _typeMapping.Indexer (mc.Method);
+                return syntax == null || mc.Arguments.Count != 1 ?
+                    null :
+                    Ast.Op (syntax, Expr (mc.Object), Expr (mc.Arguments[0]));
+            }
+            var args = mc.Method.IsStatic ? mc.Arguments : mc.Arguments.Prepend (mc.Object);
+            return Ast.Call (MapFunction (mc.Method), args.Select (Expr));
+        }
+
+        protected Ast.Expression ChooseExpr (InvocationExpression ie)
+        {
+            var me = ie.Expression.CastExpr<MemberExpression> (ExpressionType.MemberAccess);
+            if (me != null)
+                return FunctionCall (ie, me.Member);
+            throw new ParseException ("Function call is allowed only for static members.");
+        }
+
+        protected Ast.Expression ChooseExpr (MemberExpression me)
+        {
+            return MapMemberAccess (me);
+        }
+
+        protected Ast.Expression ChooseExpr (NewExpression ne)
+        {
+            return ne.Constructor == null ? null :
+                Ast.Call (MapConstructor (ne.Constructor), ne.Arguments.Select (Expr));
+        }
+
+        protected Ast.Expression ChooseExpr (ConstantExpression ce)
+        {
+            return Ast.Lit (string.Format (CultureInfo.InvariantCulture,
+                ce.Type == typeof (float) ? "{0:0.0############}f" : "{0}", ce.Value)); 
+        }
+
+        protected Ast.Expression ChooseExpr (NewArrayExpression na)
+        {
+            return ArrayConstant (na.Type.GetElementType (), na.Expressions.Count,
+                na.Expressions.Select (Expr));
+        }
+
+        protected Ast.Expression ChooseExpr (ConditionalExpression ce)
+        {
+            return Ast.Cond (Expr (ce.Test), Expr (ce.IfTrue),
+                Expr (ce.IfFalse));
+        }
+
+        protected Ast.Expression ChooseExpr (ParameterExpression pe)
+        {
+            var local = _currentScope.FindLocalVar (pe.Name);
+            if (local != null)
+                return Ast.VRef (local);
+            var mpar = _currentScope.FindMacroParam (pe);
+            if (mpar != null)
+                return Ast.MPRef (mpar);
+            throw new ParseException ("Reference to undefined local variable: " + pe.Name);
+        }
+
+        protected Ast.Expression ChooseExpr (MemberInitExpression mi)
+        {
+            MapType (mi.Type);
+            var astruct = (Ast.Structure)_globals[StructTypeName (mi.Type)];
+            var fieldInits = from b in mi.Bindings.Cast<MemberAssignment> ()
+                             let field = astruct.Fields.Find (f => f.Name == b.Member.Name)
+                             select Tuple.Create (Ast.VRef (field), Expr(b.Expression));
+            return InitStructure (mi.Type, fieldInits);
+        }
+
+        protected Ast.Expression ChooseExpr (Expression expr)
+        {
+            throw new ParseException (string.Format ("Unsupported expression type {0}", expr));
+        }
+
+        private void AddExternalReferences (Ast.Program program, HashSet<Type> typesDefined)
 		{
 			if (typesDefined == null || program == null)
 				return;
@@ -512,8 +533,8 @@
 		protected void MacroBody (Ast.MacroDefinition definition, Expression expr)
 		{
 			var node = expr.CastExpr<MethodCallExpression> (ExpressionType.Call);
-			_currentScope.CodeOut (Ast.Ass (Ast.VRef (definition.Result), 
-				Expr (ExtractMacros (
+			_currentScope.CodeOut (Ast.Ass (Ast.VRef (definition.Result),
+                Expr (ExtractMacros (
 					node != null && node.Method.IsEvaluate (_linqType) ?
 						ParseLinqExpression (node.Arguments[0]) :
 						expr, null))));

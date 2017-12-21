@@ -24,7 +24,7 @@
 		}
 
 		public static IEnumerable<Geometry<V>> Stack<V> (this IEnumerable<Geometry<V>> geometries, 
-			Axis axis, AxisDirection direction) where V : struct, IVertex
+			Axis axis, AxisDirection direction) where V : struct, IVertex3D
 		{
 			var previous = geometries.First ().BoundingBox;
 			var stackedGeometries = geometries.Skip (1).Select (geom => 
@@ -40,79 +40,79 @@
 		}
 
 		public static IEnumerable<Geometry<V>> Stack<V> (Axis axis, AxisDirection direction, 
-			params Geometry<V>[] geometries) where V : struct, IVertex
+			params Geometry<V>[] geometries) where V : struct, IVertex3D
 		{
 			return geometries.Stack (axis, direction);
 		}
 
 		public static IEnumerable<Geometry<V>> StackLeft<V> (this IEnumerable<Geometry<V>> geometries) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.X, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackLeft<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackLeft ();
 		}
 
 		public static IEnumerable<Geometry<V>> StackRight<V> (this IEnumerable<Geometry<V>> geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.X, AxisDirection.Positive);
 		}
 
 		public static IEnumerable<Geometry<V>> StackRight<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackRight ();
 		}
 
 		public static IEnumerable<Geometry<V>> StackDown<V> (this IEnumerable<Geometry<V>> geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.Y, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackDown<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackDown ();
 		}
 
 		public static IEnumerable<Geometry<V>> StackUp<V> (this IEnumerable<Geometry<V>> geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.Y, AxisDirection.Positive);
 		}
 
 		public static IEnumerable<Geometry<V>> StackUp<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackUp ();
 		}
 
 		public static IEnumerable<Geometry<V>> StackBackward<V> (this IEnumerable<Geometry<V>> geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.Z, AxisDirection.Negative);
 		}
 
 		public static IEnumerable<Geometry<V>> StackBackward<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackBackward ();
 		}
 
 		public static IEnumerable<Geometry<V>> StackForward<V> (this IEnumerable<Geometry<V>> geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.Stack (Axis.Z, AxisDirection.Positive);
 		}
 
 		public static IEnumerable<Geometry<V>> StackForward<V> (params Geometry<V>[] geometries)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometries.StackForward ();
 		}

@@ -106,7 +106,7 @@ namespace Compose3D.Geometry
 		}
 
 		public static Geometry<TVert> ColorInPlace<TVert, V> (this Geometry<TVert> geometry, V color)
-			where TVert : struct, IVertex, IDiffuseColor<V>
+			where TVert : struct, IVertex3D, IDiffuseColor<V>
 			where V : struct, IVec<V, float>
 		{
 			geometry.Vertices.Color (color);
@@ -135,7 +135,7 @@ namespace Compose3D.Geometry
         }
 
 		public static Geometry<TVert> Color<TVert, V> (this Geometry<TVert> geometry, IVertexColor<V> color)
-			where TVert : struct, IVertex, IVertexColor<V>
+			where TVert : struct, IVertex3D, IVertexColor<V>
 			where V : struct, IVec<V, float>
         {
 			var result = new Wrapper<TVert> (geometry);
@@ -151,7 +151,7 @@ namespace Compose3D.Geometry
 		}		
 
 		public static Geometry<TVert> Reflectivity<TVert> (this Geometry<TVert> geometry, float reflectivity)
-			where TVert : struct, IVertex, IReflective
+			where TVert : struct, IVertex3D, IReflective
 		{
 			var result = new Wrapper<TVert> (geometry);
 			Reflectivity (result.Vertices, reflectivity);

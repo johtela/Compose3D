@@ -7,7 +7,7 @@
 	using Textures;
 
 	public class StaticMesh<V> : Mesh<V>
-        where V : struct, IVertex
+        where V : struct, IVertex3D
 	{
 		private Mat4? _transform;
 		private Aabb<Vec3> _boundingBox;

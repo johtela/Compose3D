@@ -9,19 +9,19 @@
 	using OpenTK.Graphics.OpenGL4;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct PositionalVertex : IVertex
+	public struct PositionalVertex : IVertex3D
 	{
 		public Vec3 position;
 		[OmitInGlsl]
 		public Vec3 normal;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.normal
+		Vec3 IVertex3D.normal
 		{
 			get { return normal; }
 			set
@@ -39,14 +39,14 @@
 	}
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct TexturedVertex : IVertex, ITextured
+	public struct TexturedVertex : IVertex3D, ITextured
 	{
 		public Vec3 position;
 		public Vec2 texturePos;
 		[OmitInGlsl]
 		public Vec3 normal;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
@@ -58,7 +58,7 @@
 			set { texturePos = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.normal
+		Vec3 IVertex3D.normal
 		{
 			get { return normal; }
 			set
@@ -93,7 +93,7 @@
 	public static class VertexShaders
 	{
 		public static GLShader Passthrough<V, F> ()
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 			where F : Fragment, new ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
@@ -105,7 +105,7 @@
 		}
 		
 		public static GLShader PassthroughTexture<V, F> ()
-			where V : struct, IVertex, ITextured
+			where V : struct, IVertex3D, ITextured
 			where F : Fragment, IFragmentTexture<Vec2>, new ()
 		{
 			return GLShader.Create (ShaderType.VertexShader, () =>
@@ -119,7 +119,7 @@
 		}			
 
 		public static GLShader TransformedTexture<V, F, U> ()
-			where V : struct, IVertex, ITextured
+			where V : struct, IVertex3D, ITextured
 			where F : Fragment, IFragmentTexture<Vec2>, new ()
 			where U : TransformUniforms
 		{
@@ -134,7 +134,7 @@
 		}			
 
 		public static GLShader BasicShader<V, F, U> ()
-			where V : struct, IVertex, IVertexColor<Vec3>, ITextured, IReflective
+			where V : struct, IVertex3D, IVertexColor<Vec3>, ITextured, IReflective
 			where F : Fragment, IFragmentPosition, IFragmentDiffuse, IFragmentSpecular, IFragmentTexture<Vec2>, 
 					  IFragmentReflectivity, new ()
 			where U : TransformUniforms

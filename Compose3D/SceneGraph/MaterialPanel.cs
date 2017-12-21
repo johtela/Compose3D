@@ -5,7 +5,7 @@
 	using Textures;
 
 	public class MaterialPanel<V> : Panel<V>
-		where V : struct, IVertex, ITextured
+		where V : struct, IVertex3D, ITextured
 	{
 		private Vec2i _repeat;
 

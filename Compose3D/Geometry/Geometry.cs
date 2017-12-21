@@ -33,7 +33,7 @@
 	/// Complex geometries are created by composing simple primitives together.
 	/// </description>
 	public abstract class Geometry<V> : ITransformable<Geometry<V>, Mat4> 
-		where V : struct, IVertex
+		where V : struct, IVertex3D
 	{
 		private Aabb<Vec3> _boundingBox;
 		private V[] _vertices;
@@ -115,7 +115,7 @@
 	/// </summary>
 	public static class Geometry
 	{
-		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex
+		public static Geometry<V> Center<V> (this Geometry<V> geometry) where V : struct, IVertex3D
 		{
 			var center = geometry.BoundingBox.Center;
 			return geometry.Translate (-center.X, -center.Y, -center.Z);
@@ -134,20 +134,20 @@
 		}
 
 		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, Vec3 position, V snapToVertex, Axes snapAxes)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			var offset = GetSnapOffset (position, snapToVertex.position, snapAxes);
 			return geometry.Translate (offset.X, offset.Y, offset.Z);
 		}
 
 		public static Geometry<V> SnapVertex<V> (this Geometry<V> geometry, V vertex, V snapToVertex, Axes snapAxes)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return geometry.SnapVertex (vertex.position, snapToVertex, snapAxes);
 		}
 
 		public static IEnumerable<V> Normals<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			foreach (var v in geometry.Vertices)
 			{

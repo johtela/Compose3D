@@ -2,7 +2,7 @@
 {
 	using System.Collections.Generic;
 
-	internal class Compacted<V> : Geometry<V> where V : struct, IVertex
+	internal class Compacted<V> : Geometry<V> where V : struct, IVertex3D
 	{
 		private V[] _vertices;
 		private int[] _indices;
@@ -27,7 +27,7 @@
 	public static class Compacted
 	{
 		public static Geometry<V> Compact<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return new Compacted<V> (geometry);
 		}

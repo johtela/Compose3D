@@ -9,7 +9,7 @@
 	using DataStructures;
 
 	public class TerrainMesh<V> : SceneNode
-		where V : struct, IVertex, ITextured
+		where V : struct, IVertex3D, ITextured
 	{
 		private VBO<V> _vertexBuffer;
 		private VBO<int>[] _indexBuffers;

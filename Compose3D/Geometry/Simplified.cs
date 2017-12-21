@@ -5,7 +5,7 @@
 	using Maths;
 	using DataStructures;
 
-	internal class Simplified<V> : Wrapper<V> where V : struct, IVertex
+	internal class Simplified<V> : Wrapper<V> where V : struct, IVertex3D
 	{
 		private Octree<V, int, Vec3> _octree;
 		private float _minSmoothAngle;
@@ -73,13 +73,13 @@
 	public static class Simplified
 	{
 		public static Geometry<V> Simplify<V> (this Geometry<V> geometry)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return new Simplified<V> (geometry, 1f);
 		}
 
 		public static Geometry<V> Smoothen<V> (this Geometry<V> geometry, float minSmoothAngle)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return new Simplified<V> (geometry, minSmoothAngle);
 		}

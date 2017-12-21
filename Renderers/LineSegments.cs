@@ -11,12 +11,12 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout (LayoutKind.Sequential)]
-	public struct PathNode : IPositional<Vec3>, IDiffuseColor<Vec3>
+	public struct PathNode : IVertex<Vec3>, IDiffuseColor<Vec3>
 	{
 		public Vec3 position;
 		public Vec3 diffuse;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }

@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-	internal class Transform<V> : Wrapper<V> where V : struct, IVertex
+	internal class Transform<V> : Wrapper<V> where V : struct, IVertex3D
 	{
         internal Mat4 _matrix;
         internal Mat3 _normalMatrix;

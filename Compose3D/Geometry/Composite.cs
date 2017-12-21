@@ -7,7 +7,7 @@
 	/// <summary>
 	/// Basic building block for composite geometries.
 	/// </summary>
-	internal class Composite<V> : Geometry<V> where V : struct, IVertex
+	internal class Composite<V> : Geometry<V> where V : struct, IVertex3D
 	{
 		private Geometry<V>[] _geometries;
 
@@ -42,12 +42,12 @@
 	/// </summary>
 	public static class Composite
 	{
-		public static Geometry<V> Create<V> (params Geometry<V>[] geometries) where V : struct, IVertex
+		public static Geometry<V> Create<V> (params Geometry<V>[] geometries) where V : struct, IVertex3D
 		{
 			return new Composite<V> (geometries);
 		}
 
-		public static Geometry<V> Create<V> (IEnumerable<Geometry<V>> geometries) where V : struct, IVertex
+		public static Geometry<V> Create<V> (IEnumerable<Geometry<V>> geometries) where V : struct, IVertex3D
 		{
 			return new Composite<V> (geometries);
 		}

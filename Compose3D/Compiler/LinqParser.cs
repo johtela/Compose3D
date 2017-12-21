@@ -70,10 +70,9 @@
 				return Ast.VRef (v);
 			if (_globalVars.TryGetValue (me.Member.Name, out v))
 				return Ast.VRef (v);
-			Ast.Constant c;
-			if (_constants.TryGetValue (me.Member.Name, out c))
-				return Ast.VRef (c);
-			throw new ParseException ("Access to undefined member " + me.Member.Name);
+            if (_constants.TryGetValue (me.Member.Name, out Ast.Constant c))
+                return Ast.VRef (c);
+            throw new ParseException ("Access to undefined member " + me.Member.Name);
 		}
 
 		protected abstract string MapTypeCast (Type type);

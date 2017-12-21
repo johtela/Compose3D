@@ -2,7 +2,7 @@
 {
 	using System.Collections.Generic;
 
-	internal class Wrapper<V> : Geometry<V> where V : struct, IVertex
+	internal class Wrapper<V> : Geometry<V> where V : struct, IVertex3D
 	{
 		protected internal Geometry<V> _geometry;
 

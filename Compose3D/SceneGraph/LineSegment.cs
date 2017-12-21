@@ -8,7 +8,7 @@
 	using DataStructures;
 
 	public class LineSegment<P, V> : SceneNode
-		where P : struct, IPositional<V>
+		where P : struct, IVertex<V>
 		where V : struct, IVec<V, float>
 	{
 		private VBO<P> _vertexBuffer;

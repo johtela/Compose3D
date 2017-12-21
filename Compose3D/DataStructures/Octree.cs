@@ -7,7 +7,7 @@
 	using Geometry;
 
 	public class Octree<P, T, V> 
-		where P : IPositional<V>
+		where P : IVertex<V>
 		where V : struct, IVec<V, float>
     {
         private class Node

@@ -6,7 +6,7 @@
 	using Extensions;
 
 	internal class VertexFilter<V> : Wrapper<V>
-		where V : struct, IVertex
+		where V : struct, IVertex3D
 	{
 		private Dictionary<int, int> _relocationTable;
 		private Func<V, bool> _predicate;
@@ -35,34 +35,32 @@
 		protected override IEnumerable<int> GenerateIndices ()
 		{
 			var indices = _geometry.Indices;
-			int v1, v2, v3;
-			for (int i = 0; i < indices.Length; i += 3)
-			{
-				if (_relocationTable.TryGetValue (indices[i], out v1) &&
-					_relocationTable.TryGetValue (indices[i + 1], out v2) &&
-					_relocationTable.TryGetValue (indices[i + 2], out v3))
-				{
-					yield return v1;
-					yield return v2;
-					yield return v3;
-				}
-			}
-		}
+            for (int i = 0; i < indices.Length; i += 3)
+            {
+                if (_relocationTable.TryGetValue (indices[i], out int v1) &&
+                    _relocationTable.TryGetValue (indices[i + 1], out int v2) &&
+                    _relocationTable.TryGetValue (indices[i + 2], out int v3))
+                {
+                    yield return v1;
+                    yield return v2;
+                    yield return v3;
+                }
+            }
+        }
 	}
 	
 	public static class VertexFilters
 	{
 		public static Geometry<V> FilterVertices<V> (this Geometry<V> geometry, Func<V, bool> predicate)
-			where V: struct, IVertex
+			where V: struct, IVertex3D
 		{
 			return new VertexFilter<V> (geometry, predicate);
 		}
 		
-		public static bool Facing<P, V> (this P planar, V direction)
-			where P : struct, IPlanar<V>
-			where V : struct, IVec<V, float>
+		public static bool Facing<V> (this V vertex, Vec3 direction)
+			where V : struct, IVertex3D
 		{
-			return planar.normal.Dot (direction).ApproxEquals (1f, 0.1f);
+			return vertex.normal.Dot (direction).ApproxEquals (1f, 0.1f);
 		}
 	}
 }

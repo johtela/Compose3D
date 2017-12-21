@@ -9,7 +9,7 @@
     using Textures;
 
     public class Mesh<V> : SceneNode 
-        where V : struct, IVertex
+        where V : struct, IVertex3D
     {
         private VBO<V> _vertexBuffer;
         private VBO<int> _indexBuffer;

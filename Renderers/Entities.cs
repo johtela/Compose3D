@@ -15,7 +15,7 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct EntityVertex : IVertex, IVertexInitializer<EntityVertex>, IVertexColor<Vec3>, 
+	public struct EntityVertex : IVertex3D, IVertexInitializer<EntityVertex, Vec3>, IVertexColor<Vec3>, 
 		ITextured, ITagged<EntityVertex>, IReflective
 	{
 		public Vec3 position;
@@ -28,7 +28,7 @@
 		[OmitInGlsl]
 		internal int tag;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
@@ -52,7 +52,7 @@
 			set { shininess = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.normal
+		Vec3 IVertex3D.normal
 		{
 			get { return normal; }
 			set
@@ -81,7 +81,7 @@
 			set { reflectivity = value; }
 		}
 
-		void IVertexInitializer<EntityVertex>.Initialize (ref EntityVertex frag)
+		void IVertexInitializer<EntityVertex, Vec3>.Initialize (ref EntityVertex frag)
 		{
 			frag.texturePos = new Vec2 (float.PositiveInfinity);
 		}

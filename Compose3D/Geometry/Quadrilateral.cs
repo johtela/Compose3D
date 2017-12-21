@@ -4,7 +4,7 @@
     using System.Collections.Generic;
 	using Maths;
 
-	public class Quadrilateral<V> : Primitive<V> where V : struct, IVertex
+	public class Quadrilateral<V> : Primitive<V> where V : struct, IVertex3D
 	{
 		private Quadrilateral (V[] vertices) : base (vertices)
         { }

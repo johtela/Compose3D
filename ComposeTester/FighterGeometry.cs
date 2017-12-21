@@ -10,8 +10,8 @@
 	using OpenTK;
 
 	public class FighterGeometry<V, P>
-		where V : struct, IVertex, IVertexColor<Vec3>, IReflective
-		where P : struct, IPositional<Vec3>, IDiffuseColor<Vec3>
+		where V : struct, IVertex3D, IVertexColor<Vec3>, IReflective
+		where P : struct, IVertex<Vec3>, IDiffuseColor<Vec3>
 	{
 		public readonly Geometry<V> Fighter;
 		public readonly IEnumerable<Path<P, Vec3>> Paths;

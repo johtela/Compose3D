@@ -7,7 +7,7 @@
 	using Extensions;
 	using Textures;
 
-	public class TerrainPatch<V> where V : struct, IVertex, ITextured
+	public class TerrainPatch<V> where V : struct, IVertex3D, ITextured
 	{
 		public readonly Vec2i Start;
 		public readonly Vec2i Size;

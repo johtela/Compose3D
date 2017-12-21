@@ -5,7 +5,7 @@
     using System;
     using System.Collections.Generic;
 
-    public class Circular<V> : Primitive<V> where V : struct, IVertex
+    public class Circular<V> : Primitive<V> where V : struct, IVertex3D
     {
 		bool _fullCircle;
 

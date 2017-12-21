@@ -5,7 +5,7 @@
 	using System;
 	using System.Collections.Generic;
 
-	public class Triangle<V> : Primitive<V> where V : struct, IVertex
+	public class Triangle<V> : Primitive<V> where V : struct, IVertex3D
 	{
 		private Triangle (V[] vertices) : base (vertices)
         { }

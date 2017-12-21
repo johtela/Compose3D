@@ -14,19 +14,19 @@
 	using System.Runtime.InteropServices;
 
 	[StructLayout (LayoutKind.Sequential, Pack=4)]
-	public struct TerrainVertex : IVertex, ITextured
+	public struct TerrainVertex : IVertex3D, ITextured
 	{
 		public Vec3 position;
 		public Vec3 normal;
 		public Vec2 texturePos;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.normal
+		Vec3 IVertex3D.normal
 		{
 			get { return normal; }
 			set

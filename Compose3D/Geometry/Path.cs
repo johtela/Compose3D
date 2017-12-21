@@ -8,7 +8,7 @@
 	using Extensions;
 
 	public class Path<P, V> : ITransformable<Path<P, V>, Mat4>
-		where P : struct, IPositional<V>
+		where P : struct, IVertex<V>
 		where V : struct, IVec<V, float>
 	{
 		public P[] Nodes { get; private set; }

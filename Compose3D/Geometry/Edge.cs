@@ -59,7 +59,7 @@
 	public static class EdgeHelpers
 	{
 		public static IEnumerable<Edge> GetEdges<V> (this Geometry<V> geometry, BeginMode primitive)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			switch (primitive)
 			{
@@ -84,7 +84,7 @@
 		}
 
 		public static IEnumerable<Edge> GetEdges<P, V> (this Path<P, V> path)
-			where P : struct, IPositional<V>
+			where P : struct, IVertex<V>
 			where V : struct, IVec<V, float>
 		{
 			return Enumerable.Range (1, path.Nodes.Length - 1).Select (i => new Edge (i - 1, i));

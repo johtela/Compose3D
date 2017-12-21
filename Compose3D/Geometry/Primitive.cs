@@ -5,7 +5,7 @@
     using System;
     using System.Collections.Generic;
 
-    public abstract class Primitive<V> : Geometry<V> where V : struct, IVertex
+    public abstract class Primitive<V> : Geometry<V> where V : struct, IVertex3D
     {
 		protected V[] _vertices;
 

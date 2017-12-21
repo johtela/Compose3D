@@ -7,7 +7,7 @@
 	using OpenTK;
 	using Extensions;
 
-	public static class Tesselator<P> where P : struct, IPositional<Vec3> 
+	public static class Tesselator<P> where P : struct, IVertex<Vec3> 
 	{
 		private class TessVertex : IEnumerable<TessVertex>
 		{

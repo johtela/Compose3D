@@ -10,7 +10,7 @@
 	using UI;
 
 	public class ControlPanel<V> : Panel<V>
-		where V : struct, IVertex, ITextured
+		where V : struct, IVertex3D, ITextured
 	{
 		private Visual _visual;
 		private Bitmap _bitmap;

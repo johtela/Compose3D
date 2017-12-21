@@ -17,7 +17,7 @@
 		}
 
 		private static V SideVertex<V> (V vertex, Vec3 normal)
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return VertexHelpers.New<V> (vertex.position, normal);
 		}
@@ -37,15 +37,15 @@
 		}
 
 		private static Vec3 CalculateNormal<V> (V[] vertices, V[] backVertices, int index1, int index2) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return vertices [index1].position.CalculateNormal (
 				vertices [index2].position, backVertices [index1].position);
 		}
 
 		private static V[] GetVertices<V, P> (Path<P, Vec3> path, bool flipNormal)
-			where V : struct, IVertex
-			where P : struct, IPositional<Vec3>
+			where V : struct, IVertex3D
+			where P : struct, IVertex<Vec3>
 		{
 			var nodes = path.Nodes;
 			var pos1 = nodes[1].position;
@@ -58,7 +58,7 @@
 		}
 
 		private static int ExtrudeOut<V> (Geometry<V>[] geometries, int i, V[] vertices, V[] backVertices,
-			Edge[] outerEdges) where V : struct, IVertex
+			Edge[] outerEdges) where V : struct, IVertex3D
 		{
 			for (var j = 0; j < outerEdges.Length; j++)
 			{
@@ -78,7 +78,7 @@
 
 		public static Geometry<V> Stretch<V> (this Geometry<V> frontFace, IEnumerable<Mat4> transforms,
 			bool includeFrontFace, bool includeBackFace) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			var vertices = frontFace.Vertices;
 			if (!vertices.AreCoplanar ())
@@ -109,7 +109,7 @@
 		}
 
 		public static Geometry<V> Extrude<V>(this Geometry<V> frontFace, float depth, 
-			bool includeBackFace = true) where V : struct, IVertex
+			bool includeBackFace = true) where V : struct, IVertex3D
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
@@ -120,7 +120,7 @@
 		}
 
 		public static Geometry<V> Inset<V> (this Geometry<V> frontFace, float scaleX, float scaleY) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			var z = frontFace.Vertices.First ().position.Z;
 			if (!frontFace.Vertices.All (v => v.position.Z == z))
@@ -133,8 +133,8 @@
 
 		public static Geometry<V> Extrude<V, P> (this IEnumerable<Path<P, Vec3>> paths,
 			bool includeFrontFace, bool includeBackFace)
-			where V : struct, IVertex
-			where P : struct, IPositional<Vec3>
+			where V : struct, IVertex3D
+			where P : struct, IVertex<Vec3>
 		{
 			var frontFace = paths.First ();
 			if (!paths.All (p => p.Nodes.Length >= 3 && p.Nodes.Length == frontFace.Nodes.Length))
@@ -163,15 +163,15 @@
 		}
 
 		public static Geometry<V> Extrude<V, P> (bool includeFrontFace, bool includeBackFace, params Path<P, Vec3>[] paths)
-			where V : struct, IVertex
-			where P : struct, IPositional<Vec3>
+			where V : struct, IVertex3D
+			where P : struct, IVertex<Vec3>
 		{
 			return paths.Extrude<V, P> (includeFrontFace, includeBackFace);
 		}
 
 		public static Geometry<V> Inset<P, V> (this Path<P, Vec3> path, float scaleX, float scaleY)
-			where V : struct, IVertex
-			where P : struct, IPositional<Vec3>
+			where V : struct, IVertex3D
+			where P : struct, IVertex<Vec3>
 		{
 			var z = path.Nodes.First ().position.Z;
 			if (!path.Nodes.All (p => p.position.Z.ApproxEquals(z)))
@@ -187,7 +187,7 @@
 		public static Geometry<V> ExtrudeToScale<V> (this Geometry<V> plane, float depth, float targetScale, 
 			float steepness, int numSteps, bool includeFrontFace = true, bool includeBackFace = true, 
 			Vec3 scaleAround = new Vec3 ()) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			if (depth <= 0f)
 				throw new ArgumentException (
@@ -210,7 +210,7 @@
 		}
 		
 		public static Geometry<V> Cube<V> (float width, float height, float depth) 
-			where V : struct, IVertex
+			where V : struct, IVertex3D
 		{
 			return Quadrilateral<V>.Rectangle (width, height).Extrude (depth);
 		}

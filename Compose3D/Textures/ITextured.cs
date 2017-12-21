@@ -82,7 +82,7 @@
 		/// of the applied texture viewport.</param>
 		/// <typeparam name="V">The vertex type. Must implement the IVertex and ITextured interfaces.</typeparam>
 		public static void ApplyTextureCoordinates<V> (this Geometry<V> geometry, Mat4 projection, float minCosAngle,
-			 Vec2 minPos, Vec2 maxPos) where V : struct, IVertex, ITextured
+			 Vec2 minPos, Vec2 maxPos) where V : struct, IVertex3D, ITextured
         {
             var projected = geometry.Transform (projection);
             var range = maxPos - minPos;
@@ -102,43 +102,43 @@
         }
 
 		public static void ApplyTextureFront<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, new Mat4 (1f), minCosAngle, minPos, maxPos);
 		}
 
 		public static void ApplyTextureBack<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (MathHelper.Pi), minCosAngle, minPos, maxPos);
 		}
 
 		public static void ApplyTextureLeft<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (MathHelper.PiOver2), minCosAngle, minPos, maxPos);
 		}
 
 		public static void ApplyTextureRight<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationY<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
 		}
 
 		public static void ApplyTextureTop<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (MathHelper.PiOver2), minCosAngle, minPos, maxPos);
 		}
 		
 		public static void ApplyTextureBottom<V> (this Geometry<V> geometry, float minCosAngle, Vec2 minPos, Vec2 maxPos)
-			 where V : struct, IVertex, ITextured
+			 where V : struct, IVertex3D, ITextured
 		{
 			ApplyTextureCoordinates<V> (geometry, Mat.RotationX<Mat4> (-MathHelper.PiOver2), minCosAngle, minPos, maxPos);
 		}
 
 		public static void UpdateTangents<V> (this Geometry<V> geometry, BeginMode primitive)
-			 where V : struct, IVertex, INormalMapped
+			 where V : struct, IVertex3D, INormalMapped
 		{
 			for (int i = 0; i < geometry.Vertices.Length; i++)
 				geometry.Vertices[i].tangent = new Vec3 (0f);

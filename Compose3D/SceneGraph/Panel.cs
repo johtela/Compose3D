@@ -15,7 +15,7 @@
 	public enum PanelRenderer { Standard, Custom }
 
 	public class Panel<V> : SceneNode 
-		where V : struct, IVertex, ITextured
+		where V : struct, IVertex3D, ITextured
 	{
 		public Texture Texture { get; set; }
 

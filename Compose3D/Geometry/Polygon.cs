@@ -6,7 +6,7 @@
 	using System.Linq;
 	using OpenTK;
 
-	public class Polygon<V> : Primitive<V> where V : struct, IVertex
+	public class Polygon<V> : Primitive<V> where V : struct, IVertex3D
 	{
 		private int[] _indices;
 
@@ -36,7 +36,7 @@
 		}
 
 		public static Polygon<V> FromPath<P> (Path<P, Vec3> Path)
-			where P : struct, IPositional<Vec3>
+			where P : struct, IVertex<Vec3>
 		{
 			return FromVertices (Path.Nodes.Select (n => VertexHelpers.New<V> (n.position, new Vec3 (0f, 0f, 1f))));
 		}	

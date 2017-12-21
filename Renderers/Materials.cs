@@ -15,14 +15,14 @@
 	using OpenTK.Graphics.OpenGL4;
 
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
-	public struct MaterialVertex : IVertex, ITextured, INormalMapped
+	public struct MaterialVertex : IVertex3D, ITextured, INormalMapped
 	{
 		public Vec3 position;
 		public Vec2 texturePos;
 		public Vec3 normal;
 		public Vec3 tangent;
 
-		Vec3 IPositional<Vec3>.position
+		Vec3 IVertex<Vec3>.position
 		{
 			get { return position; }
 			set { position = value; }
@@ -34,7 +34,7 @@
 			set { texturePos = value; }
 		}
 
-		Vec3 IPlanar<Vec3>.normal
+		Vec3 IVertex3D.normal
 		{
 			get { return normal; }
 			set

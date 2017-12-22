@@ -195,8 +195,8 @@
 				() => Colorize,
 				(keys, colors, count, value) => Kernel.Evaluate
 				(
-					from high in Control<int>.DoUntilChanges (0, count, count,
-						(i, res) => (!keys)[i] > value ? i : res).ToKernel ()
+					from high in Control<int>.DoWhileSame (0, count, count,
+                        (i, r) => (!keys)[i] > value ? i : r).ToKernel ()
 					let low = high - 1
 					select
 						high == 0 ? (!colors)[0] :

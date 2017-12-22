@@ -30,27 +30,25 @@
 					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
 		}
 
-		private static Ast.Macro DoUntilMacro ()
+		private static Ast.Macro DoWhileMacro ()
 		{
-			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T>));
+			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, Macro<int, T>, Macro<T, bool>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
-			var done = Macro.GenUniqueVar (typeof (bool), "done");
+			var cont = Macro.GenUniqueVar (typeof (bool), "cont");
 			var start = Ast.MPRef (def.Parameters[0]);
 			var cond = Ast.Op ("{0} && {1}",
-				Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1])),
-				Ast.Op ("!{0}", Ast.VRef (done)));
+				Ast.Op ("{0} < {1}", Ast.VRef (ind), Ast.MPRef (def.Parameters[1])), Ast.VRef(cont));
 			var incr = Ast.Op ("{0}++", Ast.VRef (ind));
-			var body = (def.Parameters[3] as Ast.MacroDefParam).Definition;
-			var term = (def.Parameters[4] as Ast.MacroDefParam).Definition;
+			var body = (def.Parameters[2] as Ast.MacroDefParam).Definition;
+			var whileCond = (def.Parameters[3] as Ast.MacroDefParam).Definition;
 			return Ast.Mac (def.Parameters, def.Result, Ast.Blk (
-				Ast.DeclVar (done, Ast.Lit ("false")),
-				Ast.Ass (Ast.VRef (def.Result), Ast.MPRef (def.Parameters[2])),
+				Ast.DeclVar (cont, Ast.Lit ("true")),
 				Ast.For (ind, start, cond, incr, Ast.Blk (
-					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)),
-					Ast.MCall (term, done, Ast.VRef (def.Result))))));
+					Ast.MCall (body, def.Result, Ast.VRef (ind)),
+					Ast.MCall (whileCond, cont, Ast.VRef (def.Result))))));
 		}
 
-		private static Ast.Macro DoUntilChangesMacro ()
+		private static Ast.Macro DoWhileSameMacro ()
 		{
 			var def = Macro.GetMacroDefinition (typeof (Macro<int, int, T, Macro<int, T, T>, T>));
 			var ind = Macro.GenUniqueVar (typeof (int), "ind");
@@ -65,23 +63,6 @@
 				Ast.Ass (Ast.VRef (def.Result), init),
 				Ast.For (ind, start, cond, incr, 					
 					Ast.MCall (body, def.Result, Ast.VRef (ind), Ast.VRef (def.Result)))));
-		}
-
-		private static Ast.Macro WhileMacro ()
-		{
-			var def = Macro.GetMacroDefinition (typeof (Macro<T, Macro<T, bool>, Macro<T, T>, T>));
-			var done = Macro.GenUniqueVar (typeof (bool), "done");
-			var init = Ast.MPRef (def.Parameters[0]);
-			var cond = Ast.Op ("!{0}", Ast.VRef (done));
-			var cont = (def.Parameters[1] as Ast.MacroDefParam).Definition;
-			var body = (def.Parameters[2] as Ast.MacroDefParam).Definition;
-			return Ast.Mac (def.Parameters, def.Result, Ast.Blk (
-				Ast.Ass (Ast.VRef (def.Result), init),
-				Ast.DeclVar (done),
-				Ast.MCall (cont, done, Ast.VRef (def.Result)),
-				Ast.While (cond, Ast.Blk (
-					Ast.MCall (body, def.Result, Ast.VRef (def.Result)),
-					Ast.MCall (cont, done, Ast.VRef (def.Result))))));
 		}
 
 		private static Ast.Macro IfMacro ()
@@ -108,25 +89,18 @@
 				ForMacro ()
 			);
 
-		public static readonly Macro<int, int, T, Macro<int, T, T>, Macro<T, bool>, T> 
-			DoUntil = Macro.Create 
+		public static readonly Macro<int, int, Macro<int, T>, Macro<T, bool>, T> 
+			DoWhile = Macro.Create 
 			(
-				() => DoUntil, 
-				DoUntilMacro ()
+				() => DoWhile, 
+				DoWhileMacro ()
 			);
 
 		public static readonly Macro<int, int, T, Macro<int, T, T>, T> 
-			DoUntilChanges = Macro.Create 
+			DoWhileSame = Macro.Create 
 			(
-				() => DoUntilChanges, 
-				DoUntilChangesMacro ()
-			);
-
-		public static readonly Macro<T, Macro<T, bool>, Macro<T, T>, T>
-			While = Macro.Create
-			(
-				() => While,
-				WhileMacro ()
+				() => DoWhileSame, 
+				DoWhileSameMacro ()
 			);
 
 		public static readonly Macro<bool, Macro<T>, Macro<T>, T> 

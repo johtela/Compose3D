@@ -167,7 +167,7 @@
 				(Vec4 posInViewSpace, float bias) =>
 				(
 					from u in Shader.Uniforms<CascadedShadowUniforms> ()
-					let mapIndex = Control<int>.DoUntilChanges (0, (!u.viewLightMatrices).Length, -1,
+					let mapIndex = Control<int>.DoWhileSame (0, (!u.viewLightMatrices).Length, -1,
 						(int i, int best) =>
 							Between (((!u.viewLightMatrices)[i] * posInViewSpace)[Coord.x, Coord.y, Coord.z], -1f, 1f) ?
 								i : best)

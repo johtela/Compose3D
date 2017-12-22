@@ -158,7 +158,7 @@
 					})
 					let layerDepth = 1f / con.numLayers
 					let p = (viewDir[Coord.x, Coord.y] * scale) / con.numLayers
-					let layer = Control<int>.DoUntilChanges (0, con.numLayers + 1, -1,
+					let layer = Control<int>.DoWhileSame (0, con.numLayers + 1, -1,
 						(int i, int best) => Shader.Evaluate
 						(
 							from height in heightMap.Texture (texCoords - (p * i)).X.ToShader ()

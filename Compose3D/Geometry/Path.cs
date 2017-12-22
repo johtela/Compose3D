@@ -7,50 +7,50 @@
 	using OpenTK;
 	using Extensions;
 
-	public class Path<P, V> : ITransformable<Path<P, V>, Mat4>
-		where P : struct, IVertex<V>
-		where V : struct, IVec<V, float>
+	public class Path<V, D> : ITransformable<Path<V, D>, Mat4>
+		where V : struct, IVertex<D>
+		where D : struct, IVec<D, float>
 	{
-		public P[] Nodes { get; private set; }
+		public V[] Vertices { get; private set; }
 
-		public Path (IEnumerable<P> nodes)
+		public Path (IEnumerable<V> vertices)
 		{
-			var uniqNodes = nodes.RemoveConsequtiveDuplicates ().ToArray ();
-			if (uniqNodes.Length < 2)
+			var uniqVerts = vertices.RemoveConsequtiveDuplicates ().ToArray ();
+			if (uniqVerts.Length < 2)
 				throw new ArgumentException (
 					"Path must contain at least two vertices. Consequtive duplicate vertices " + 
 					"are removed automatically.", "vertices");
-			Nodes = uniqNodes;
+			Vertices = uniqVerts;
 		}
 
-		public Path<P, V> Close ()
+		public Path<V, D> Close ()
 		{
-			return new Path<P, V> (Nodes.Concat (new P[] { Nodes[0] }));
+			return new Path<V, D> (Vertices.Concat (new V[] { Vertices[0] }));
 		}
 
-		public Path<P, V> Open ()
+		public Path<V, D> Open ()
 		{
-			return IsClosed ? new Path<P, V> (Nodes.Take (Nodes.Length - 1)) : this;
+			return IsClosed ? new Path<V, D> (Vertices.Take (Vertices.Length - 1)) : this;
 		}
 
 		public bool IsClosed
 		{
-			get { return Nodes.First ().position.Equals (Nodes.Last ().position); }
+			get { return Vertices.First ().position.Equals (Vertices.Last ().position); }
 		}
 
-		public static Path<P, V> FromVecs (IEnumerable<V> positions)
+		public static Path<V, D> FromVecs (IEnumerable<D> positions)
 		{
-			return new Path<P, V> (positions.Select (p => new P () { position = p }));
+			return new Path<V, D> (positions.Select (p => new V () { position = p }));
 		}
 
-		public static Path<P, V> FromVecs (params V[] positions)
+		public static Path<V, D> FromVecs (params D[] positions)
 		{
-			return FromVecs ((IEnumerable<V>)positions);
+			return FromVecs ((IEnumerable<D>)positions);
 		}
 		
-		public static Path<P, V> FromBSpline (BSpline<V> spline, int numNodes)
+		public static Path<V, D> FromBSpline (BSpline<D> spline, int numNodes)
 		{
-			var nodes = new P[numNodes];
+			var nodes = new V[numNodes];
 			var curr = spline.Knots.First ();
 			var last = spline.Knots.Last () - 0.000001f;
 			var step = (float)(last - curr) / (numNodes - 1);
@@ -60,10 +60,10 @@
 				nodes[i].position = spline.Evaluate (curr);
 				curr = Math.Min (curr + step, last);
 			}
-			return new Path<P, V> (nodes);
+			return new Path<V, D> (nodes);
 		}
 		
-		public static Path<P, V> FromPie (float radiusX, float radiusY, float startAngle, float endAngle,
+		public static Path<V, D> FromPie (float radiusX, float radiusY, float startAngle, float endAngle,
 			int nodeCount)
 		{
 			if (radiusY <= 0f || radiusY <= 0f)
@@ -71,67 +71,67 @@
 			if (startAngle == endAngle)
 				endAngle += MathHelper.TwoPi;
 			var stepAngle = (endAngle - startAngle) / (nodeCount - 1);
-			var nodes = new P[nodeCount];
+			var nodes = new V[nodeCount];
 			var angle = startAngle;
 			for (var i = 0; i < nodeCount; i++)
 			{
-				var pos = Vec.FromArray<V, float> (
+				var pos = Vec.FromArray<D, float> (
 					radiusX * (float)Math.Cos (angle), radiusY * (float)Math.Sin (angle), 0f, 0f);
-				nodes [i] = new P() { position = pos };
+				nodes [i] = new V() { position = pos };
 				angle = angle + stepAngle;
 			}
-			return new Path<P, V> (nodes);
+			return new Path<V, D> (nodes);
 		}
 
-		public static Path<P, V> FromRectangle (float width, float height)
+		public static Path<V, D> FromRectangle (float width, float height)
 		{
 			var halfX = width / 2f;
 			var halfY = height / 2f;
 			return FromVecs (
-				Vec.FromArray<V, float> (-halfX, -halfY),
-				Vec.FromArray<V, float> (-halfX, halfY),
-				Vec.FromArray<V, float> (halfX, halfY),
-				Vec.FromArray<V, float> (halfX, -halfY)).Close ();
+				Vec.FromArray<D, float> (-halfX, -halfY),
+				Vec.FromArray<D, float> (-halfX, halfY),
+				Vec.FromArray<D, float> (halfX, halfY),
+				Vec.FromArray<D, float> (halfX, -halfY)).Close ();
 		}
 
-		public Path<P, V> Transform (Mat4 matrix)
+		public Path<V, D> Transform (Mat4 matrix)
 		{
-			return new Path<P, V> (Nodes.Select (n => WithPosition (n, matrix.Transform (n.position))));
+			return new Path<V, D> (Vertices.Select (n => WithPosition (n, matrix.Transform (n.position))));
 		}
 		
-		public Path<P, V> ReverseWinding ()
+		public Path<V, D> ReverseWinding ()
 		{
-			return new Path<P, V> (Nodes.Reverse ());
+			return new Path<V, D> (Vertices.Reverse ());
 		}
 		
-		public Path<P, V> RenumberNodes (int first)
+		public Path<V, D> RenumberNodes (int first)
 		{
 			if (!IsClosed)
 				throw new ArgumentException ("Paths must be closed in order to renumber its nodes");
-			return new Path<P, V> (Nodes.Slice (first, Nodes.Length - first - 1)
-				.Concat (Nodes.Slice (0, first + 1)));
+			return new Path<V, D> (Vertices.Slice (first, Vertices.Length - first - 1)
+				.Concat (Vertices.Slice (0, first + 1)));
 		}
 
-		private void CheckSameLengthWith (Path<P, V> other)
+		private void CheckSameLengthWith (Path<V, D> other)
 		{
-			if (other.Nodes.Length != Nodes.Length)
+			if (other.Vertices.Length != Vertices.Length)
 				throw new ArgumentException ("Paths must have same number of nodes", "other");
 		}
 		
-		private P WithPosition (P node, V position)
+		private V WithPosition (V node, D position)
 		{
 			node.position = position;
 			return node;
 		}
 
-		public Path<P, V> MorphWith (Path<P, V> other, float interPos)
+		public Path<V, D> MorphWith (Path<V, D> other, float interPos)
 		{
 			CheckSameLengthWith (other);
-			return new Path<P, V> (Nodes.Zip (other.Nodes, 
+			return new Path<V, D> (Vertices.Zip (other.Vertices, 
 				(n1, n2) => WithPosition (n1, n1.position.Mix (n2.position, interPos))));
 		}
 		
-		public IEnumerable<Path<P, V>> MorphTo (Path<P, V> other, IEnumerable<Mat4> transforms)
+		public IEnumerable<Path<V, D>> MorphTo (Path<V, D> other, IEnumerable<Mat4> transforms)
 		{
 			var step = 1f / transforms.Count ();
 			var curr = 0f;
@@ -143,44 +143,44 @@
 			}
 		}
 
-		private IEnumerable<P> SubdividedNodes (int numDivisions)
+		private IEnumerable<V> SubdividedNodes (int numDivisions)
 		{
-			for (int i = 0; i < Nodes.Length - 1; i++)
+			for (int i = 0; i < Vertices.Length - 1; i++)
 			{
-				var current = Nodes[i];
+				var current = Vertices[i];
 				yield return current;
 
 				var step = 1f / (numDivisions + 1f);
 				for (int j = 1; j <= numDivisions; j++)
 				{
-					var pos = current.position.Mix (Nodes[i + 1].position, j * step);
+					var pos = current.position.Mix (Vertices[i + 1].position, j * step);
 					yield return WithPosition (current, pos);
 				}
 			}
-			yield return Nodes[Nodes.Length - 1];
+			yield return Vertices[Vertices.Length - 1];
 		}
 
-		public Path<P, V> Subdivide (int numDivisions)
+		public Path<V, D> Subdivide (int numDivisions)
 		{
-			return new Path<P, V> (SubdividedNodes (numDivisions));
+			return new Path<V, D> (SubdividedNodes (numDivisions));
 		}
 
-		public static Path<P, V> operator + (Path<P, V> path1, Path<P, V> path2)
+		public static Path<V, D> operator + (Path<V, D> path1, Path<V, D> path2)
 		{
-			return new Path<P, V> (path1.Nodes.Concat (path2.Nodes));
+			return new Path<V, D> (path1.Vertices.Concat (path2.Vertices));
 		}
 
-		public static Path<P, V> operator + (Path<P, V> path1, P node)
+		public static Path<V, D> operator + (Path<V, D> path1, V node)
 		{
-			return new Path<P, V> (path1.Nodes.Concat (new P[] { node }));
+			return new Path<V, D> (path1.Vertices.Concat (new V[] { node }));
 		}
 
-		public static Path<P, V> operator + (Path<P, V> path)
+		public static Path<V, D> operator + (Path<V, D> path)
 		{
 			return path.Close ();
 		}
 
-		public static Path<P, V> operator - (Path<P, V> path)
+		public static Path<V, D> operator - (Path<V, D> path)
 		{
 			return path.Open ();
 		}

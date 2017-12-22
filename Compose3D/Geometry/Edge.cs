@@ -1,14 +1,12 @@
 ﻿namespace Compose3D.Geometry
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using OpenTK.Graphics.OpenGL4;
-	using Extensions;
-	using Maths;
-	using Textures;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using OpenTK.Graphics.OpenGL4;
+    using Maths;
 
-	public class Edge : IEquatable<Edge>
+    public class Edge : IEquatable<Edge>
 	{
 		public readonly int Index1;
 		public readonly int Index2;
@@ -87,7 +85,7 @@
 			where P : struct, IVertex<V>
 			where V : struct, IVec<V, float>
 		{
-			return Enumerable.Range (1, path.Nodes.Length - 1).Select (i => new Edge (i - 1, i));
+			return Enumerable.Range (1, path.Vertices.Length - 1).Select (i => new Edge (i - 1, i));
 		}
 	}
 }

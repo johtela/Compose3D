@@ -63,14 +63,14 @@
 					from v in Fuselage.Vertices.Furthest (Dir3D.Back)
 					where v.position.Y >= -0.2f
 					select v.position).Close ();
-				var pivotPoint = XSection.Nodes.Furthest (Dir3D.Up).First ().position;
+				var pivotPoint = XSection.Vertices.Furthest (Dir3D.Up).First ().position;
 				Fuselage = Fuselage.ManipulateVertices (
 					Manipulators.Transform<V> (Mat.RotationX<Mat4> (bend.Radians ()).RelativeTo (pivotPoint))
 					.Where (v => v.position.Z > pivotPoint.Z), true)
 					.Color (_color);
 
-				XSectionStart = XSection.Nodes.Furthest (Dir3D.Down + Dir3D.Left).Single ();
-				XSection = XSection.RenumberNodes (XSection.Nodes.IndexOf (XSectionStart)).Open ();
+				XSectionStart = XSection.Vertices.Furthest (Dir3D.Down + Dir3D.Left).Single ();
+				XSection = XSection.RenumberNodes (XSection.Vertices.IndexOf (XSectionStart)).Open ();
 			}
 		}
 
@@ -84,8 +84,8 @@
 			{
 				XSection = CrossSection (
 					cockpitFuselage.XSectionStart.position,
-					cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().position.Y,
-					cockpitFuselage.XSection.Nodes.Length);
+					cockpitFuselage.XSection.Vertices.Furthest (Dir3D.Up).First ().position.Y,
+					cockpitFuselage.XSection.Vertices.Length);
 
 				var transforms = from z in EnumerableExt.Range (0f, -2f, -0.25f)
 								 select Mat.Translation<Mat4> (0f, 0f, z);
@@ -126,7 +126,7 @@
 			{
 				var startNode = cockpitFuselage.XSectionStart;
                 XSection = CrossSection (startNode.position,
-					-cockpitFuselage.XSection.Nodes.Furthest (Dir3D.Up).First ().position.Y, 20);
+					-cockpitFuselage.XSection.Vertices.Furthest (Dir3D.Up).First ().position.Y, 20);
 
 				var transforms =
 					from s in EnumerableExt.Range (0.25f, 2f, 0.25f)
@@ -144,7 +144,7 @@
 					from v in cockpitFuselage.Fuselage.Vertices.Furthest (Dir3D.Back)
 					where v.position.Y < -0.1f
 					select v.position);
-				var scalePoint = new Vec3 (0f, BellyXSection.Nodes.First ().position.Y, 0f);
+				var scalePoint = new Vec3 (0f, BellyXSection.Vertices.First ().position.Y, 0f);
 				Belly = EnumerableExt.Enumerate (BellyXSection, 
 					BellyXSection.Transform (Mat.Translation<Mat4> (0f, 0f, -1f) * 
 						Mat.Scaling<Mat4> (1.45f, 1f, 1f).RelativeTo (scalePoint)),
@@ -182,11 +182,11 @@
 			public Underside (EngineIntake intake)
 			{
 				var nodes = 
-					from n in intake.RearXSection.ReverseWinding ().Nodes
+					from n in intake.RearXSection.ReverseWinding ().Vertices
 					where n.position.Y <= -0.2f
 					select n;				
 				XSection = new Path<P, Vec3> (nodes);
-				var firstNode = XSection.Nodes.First ();
+				var firstNode = XSection.Vertices.First ();
 				var paths =
 					from s in EnumerableExt.Range (0f, 4f, 1f)
 					let scaleFactor = (0.15f * s).Pow (2f)
@@ -210,8 +210,8 @@
 
 			public Rear (MainFuselage fuselage, Underside underside)
 			{
-				var pos1 = new P () { position = fuselage.RearXSection.Nodes.First ().position + new Vec3 (0f, -0.1f, 0f) };
-				var pos2 = new P () { position = fuselage.RearXSection.Nodes.Last ().position + new Vec3 (0f, -0.1f, 0f) };
+				var pos1 = new P () { position = fuselage.RearXSection.Vertices.First ().position + new Vec3 (0f, -0.1f, 0f) };
+				var pos2 = new P () { position = fuselage.RearXSection.Vertices.Last ().position + new Vec3 (0f, -0.1f, 0f) };
 				XSection = +(fuselage.RearXSection + pos2 + underside.RearXSection + pos1);
 				RearXSection = +(fuselage.RearXSection.Scale (1f, 0.9f) + pos2 + 
 					BottomXSection (underside.RearXSection) + pos1);
@@ -222,7 +222,7 @@
 				var rear = paths.Extrude<V, P> (false, false);
 				RearXSection = paths.Last (); 
 				EngineXSection = new Path<P, Vec3> (
-					from n in RearXSection.Nodes
+					from n in RearXSection.Vertices
 					where n.position.X >= -0.9f && n.position.X <= 0.9f
 					select new P () 
 					{ 
@@ -241,10 +241,10 @@
 
 			private Path<P, Vec3> BottomXSection (Path<P, Vec3> underside)
 			{
-				var first = underside.Nodes.First (); 
+				var first = underside.Vertices.First (); 
 				var radiusX = first.position.X;
-				var radiusY = -underside.Nodes.Furthest (Dir3D.Down).First ().position.Y * 0.8f;
-				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Nodes.Length)
+				var radiusY = -underside.Vertices.Furthest (Dir3D.Down).First ().position.Y * 0.8f;
+				return Path<P, Vec3>.FromPie (radiusX, radiusY, 340f.Radians (), 200f.Radians (), underside.Vertices.Length)
 					.Translate (0f, 0f, first.position.Z);
 			}
 		}
@@ -279,17 +279,17 @@
 					.Color (VertexColor<Vec3>.BlackPlastic);
 				
 				FlangeXSection = new Path<P, Vec3> (
-					from n in rear.RearXSection.Nodes
+					from n in rear.RearXSection.Vertices
 					where n.position.X < -0.65f && n.position.Y < 0.4f
 					select n)
 					.Close ();
 				FlangeEndXSection = new Path<P, Vec3> (
-					from n in FlangeXSection.Nodes
+					from n in FlangeXSection.Vertices
 					select new P ()
 					{
 						position = new Vec3 (n.position.X, n.position.Y.Clamp (-0.2f, 0.1f), n.position.Z)
 					});
-				var center = FlangeEndXSection.Nodes.Center<P, Vec3> ();
+				var center = FlangeEndXSection.Vertices.Center<P, Vec3> ();
 				StabilizerFlange = FlangeXSection.MorphTo (FlangeEndXSection,
 						EnumerableExt.Range (0f, -1.25f, -0.25f).Select (s => Mat.Translation<Mat4> (0f, 0f, s) *
 							Mat.Scaling<Mat4> (1f, 1f - (s * 0.3f).Pow (2f)).RelativeTo (center)))
@@ -448,8 +448,8 @@
 			var bottomFin = new BottomFin ();
 
 			var path = exhaust.FlangeEndXSection;
-			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Nodes.Length);
-			path.Nodes.Color (graySlide);
+			var graySlide = new Vec3 (1f).Interpolate (new Vec3 (0f), path.Vertices.Length);
+			path.Vertices.Color (graySlide);
 			Paths = EnumerableExt.Enumerate (path);
 			
 			Fighter = Composite.Create (Stacking.StackBackward (cockpitFuselage.Fuselage, mainFuselage.Fuselage)

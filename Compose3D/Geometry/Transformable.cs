@@ -1,9 +1,8 @@
 ﻿namespace Compose3D.Geometry
 {
-	using System;
-	using Maths;
-	
-	public interface ITransformable<T, M>
+    using Maths;
+
+    public interface ITransformable<T, M>
 		where T : ITransformable<T, M>
 		where M : struct, ISquareMat<M, float>
 	{

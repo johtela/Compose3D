@@ -20,7 +20,7 @@
 					"Start angle must be less or equal than the end angle.If you want to turn " +
 					"the path a full circle, set the startAngle and endAngle to the same value.", 
 					"startAngle");
-			var pathLen = path.Nodes.Length;
+			var pathLen = path.Vertices.Length;
 			var fullCircle = startAngle == endAngle;
 			if (fullCircle)
 				endAngle += MathHelper.TwoPi;
@@ -64,7 +64,7 @@
 		private static Vec3[] Positions<P> (Path<P, Vec3> path, Axis axis, float angle, Vec3 offset)
 			where P : struct, IVertex<Vec3>
 		{
-			return path.Nodes.Map (v => Rotate (axis, angle, v.position, offset));
+			return path.Vertices.Map (v => Rotate (axis, angle, v.position, offset));
 		}
 
 		private static Vec3 Rotate (Axis axis, float angle, Vec3 vertex, Vec3 offset)

@@ -7,7 +7,7 @@
 	using OpenTK;
 	using Extensions;
 
-	public static class Tesselator<P> where P : struct, IVertex<Vec3> 
+	public static class Tesselator<V> where V : struct, IVertex<Vec3> 
 	{
 		private class TessVertex : IEnumerable<TessVertex>
 		{
@@ -63,7 +63,7 @@
 			}
 		}
 
-		public static int[] TesselatePolygon (P[] vertices)
+		public static int[] TesselatePolygon (V[] vertices)
 		{
 			var count = vertices.Length;
 			if (count < 3)
@@ -100,13 +100,13 @@
 			return result;
 		}
 
-		private static void UpdateVertexAngle (TessVertex tessVert, P[] vertices)
+		private static void UpdateVertexAngle (TessVertex tessVert, V[] vertices)
 		{
 			tessVert.Angle = AngleBetweenEdges (
 				tessVert.Previous.Index, tessVert.Index, tessVert.Next.Index, vertices);
 		}
 
-		private static void UpdateIsEar (TessVertex current, P[] vertices)
+		private static void UpdateIsEar (TessVertex current, V[] vertices)
 		{
 			if (current.IsReflex)
 				current.IsEar = false;
@@ -123,7 +123,7 @@
 			}
 		}
 
-		private static float AngleBetweenEdges (int prev, int current, int next, P[] vertices)
+		private static float AngleBetweenEdges (int prev, int current, int next, V[] vertices)
 		{
 			var vec1 = vertices[prev].position - vertices[current].position;
 			var vec2 = vertices[next].position - vertices[current].position;

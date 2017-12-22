@@ -47,7 +47,7 @@
 			where V : struct, IVertex3D
 			where P : struct, IVertex<Vec3>
 		{
-			var nodes = path.Nodes;
+			var nodes = path.Vertices;
 			var pos1 = nodes[1].position;
 			var pos2 = nodes[0].position;
 			var pos3 = nodes.Skip (2).First (n => !pos1.AreCollinear (pos2, n.position)).position;
@@ -137,10 +137,10 @@
 			where P : struct, IVertex<Vec3>
 		{
 			var frontFace = paths.First ();
-			if (!paths.All (p => p.Nodes.Length >= 3 && p.Nodes.Length == frontFace.Nodes.Length))
+			if (!paths.All (p => p.Vertices.Length >= 3 && p.Vertices.Length == frontFace.Vertices.Length))
 				throw new ArgumentException (
 					"All the paths must contain the same number of vertices (at least 3).", "paths");
-			if (!paths.All (p => p.Nodes.AreCoplanar ()))
+			if (!paths.All (p => p.Vertices.AreCoplanar ()))
 				throw new ArgumentException ("The nodes of the paths must be coplanar.", "paths");
 			
 			var vertices = GetVertices<V, P> (frontFace, false);
@@ -173,8 +173,8 @@
 			where V : struct, IVertex3D
 			where P : struct, IVertex<Vec3>
 		{
-			var z = path.Nodes.First ().position.Z;
-			if (!path.Nodes.All (p => p.position.Z.ApproxEquals(z)))
+			var z = path.Vertices.First ().position.Z;
+			if (!path.Vertices.All (p => p.position.Z.ApproxEquals(z)))
 				throw new ArgumentException (
 					"All the nodes of the path need to be on the XY-plane. I.e. they need to have the " +
 					"same Z-coordinate.", "path");

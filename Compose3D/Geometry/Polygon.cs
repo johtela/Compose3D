@@ -38,7 +38,7 @@
 		public static Polygon<V> FromPath<P> (Path<P, Vec3> Path)
 			where P : struct, IVertex<Vec3>
 		{
-			return FromVertices (Path.Nodes.Select (n => VertexHelpers.New<V> (n.position, new Vec3 (0f, 0f, 1f))));
+			return FromVertices (Path.Vertices.Select (n => VertexHelpers.New<V> (n.position, new Vec3 (0f, 0f, 1f))));
 		}	
 
 		protected override IEnumerable<int> GenerateIndices ()

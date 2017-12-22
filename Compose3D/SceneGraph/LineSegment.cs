@@ -24,7 +24,7 @@
 		{
 			get
 			{
-				return Aabb<Vec3>.FromPositions (Path.Nodes.Select (node =>	
+				return Aabb<Vec3>.FromPositions (Path.Vertices.Select (node =>	
 					node.position.Convert<V, Vec3, float> ()));
 			}
 		}
@@ -34,7 +34,7 @@
 			get
 			{
 				if (_vertexBuffer == null)
-					_vertexBuffer = new VBO<P> (Path.Nodes, BufferTarget.ArrayBuffer);
+					_vertexBuffer = new VBO<P> (Path.Vertices, BufferTarget.ArrayBuffer);
 				return _vertexBuffer;
 			}
 		}

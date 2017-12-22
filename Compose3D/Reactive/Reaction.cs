@@ -1,10 +1,8 @@
 ﻿namespace Compose3D.Reactive
 {
-	using System;
-	using System.Linq;
-	using Extensions;
+    using System;
 
-	public delegate bool Reaction<in T> (T input);
+    public delegate bool Reaction<in T> (T input);
 
 	/// <summary>
 	/// Operations for creating reactions and for extending and combining them in various ways.

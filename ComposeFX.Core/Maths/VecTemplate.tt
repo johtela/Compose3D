@@ -1,0 +1,446 @@
+﻿<#@ assembly name="System.Core" 
+#><#@ import namespace="System.Linq" 
+#><#@ import namespace="System.Text" 
+#><#@ import namespace="System.Collections.Generic" 
+#><#+ void Vec(int dim, string type, string suffix) { 
+	
+	var vecType = "Vec" + dim + suffix;
+#>namespace ComposeFX.Maths
+{
+    using System;
+    using System.Text;
+	using System.Globalization;
+	using Compute;
+	using Graphics;
+
+	/// <summary>
+	/// Vector stucture that is mapped to `<#= suffix #>vec<#= dim #>` when used in
+	/// OpenGL shaders and `<#= type #><#= dim #>` when used in OpenCL kernels.
+	/// </summary>
+	[GLType ("<#= suffix #>vec<#= dim #>")]
+	[CLType ("<#= type #><#= dim #>")]
+    public struct <#= vecType #> : IVec<<#= vecType #>, <#= type #>>
+    { 
+<#+		ComponentFields (dim, type); #>
+		/// <summary>
+		/// Initialize all of the components of the vector.
+		/// </summary>
+<#+		BasicConstructor (dim, type, suffix); #>
+
+		/// <summary>
+		/// Initialize all of the components with a same value.
+		/// </summary>
+<#+		SingleValueConstructor (dim, type, suffix); #>
+
+<#+		for (int i = 2; i <= 4; i++)
+			CopyConstructor (dim, type, suffix, i); #>
+		/// <summary>
+		/// Negate all of the components of the vector.
+		/// </summary>
+		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
+<#+		Unary (dim, vecType, "Invert", "-", ", "); #>
+
+		/// <summary>
+		/// Add another vector this one componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
+<#+		Binary (dim, vecType, "Add", "+", ", "); #>
+
+		/// <summary>
+		/// Subtract the given vector from this one componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
+<#+		Binary (dim, vecType, "Subtract", "-", ", "); #>
+
+		/// <summary>
+		/// Multiply with another vector componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
+<#+		Binary (dim, vecType, "Multiply", "*", ", "); #>
+
+		/// <summary>
+		/// Multiply the components of this vector with a same scalar value.
+		/// </summary>
+		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
+<#+		Scalar (dim, vecType, type, "Multiply", "*", ", "); #>
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+<#+		Binary (dim, vecType, "Divide", "/", ", "); #>
+
+		/// <summary>
+		/// Divide the components of this vector by a same scalar value.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+<#+		Scalar (dim, vecType, type, "Divide", "/", ", "); #>
+
+		/// <summary>
+		/// Calculate the dot product with another vector.
+		/// </summary>
+		[GLFunction ("dot ({0})")]
+		[CLFunction ("dot ({0})")]
+<#+ 	BinaryScalar (dim, vecType, type, "Dot", "*", " + ");#>
+
+		/// <summary>
+		/// Equality comparison with another vector.
+		/// </summary>
+<#+		BinaryScalar (dim, vecType, "bool", "Equals", "==", " && "); #>
+
+<#+		Indexer(dim, type); #>
+
+<#+	    for (int i = dim; i > 1; i--)
+			Swizzler(i, type, suffix); 
+#>		/// <summary>
+		/// The lengh of the vector squared. This is bit faster to calculate than the actual length
+		/// because the square root operation is omitted.
+		/// </summary>
+		public <#= type #> LengthSquared
+		{
+			get { return <#= ComponentList(dim, " + ", comp => string.Format("{0} * {0}", comp)) #>; }
+		}
+
+		/// <summary>
+		/// The lengh of the vector.
+		/// </summary>
+		[GLFunction ("length ({0})")]
+		[CLFunction ("length ({0})")]
+		public <#= type #> Length
+		{
+			get { return (<#= type #>)Math.Sqrt (LengthSquared); }
+		}
+
+		/// <summary>
+		/// The normalized vector. I.e. vector with same direction, but with lenght of 1.
+		/// </summary>
+		[GLFunction ("normalize ({0})")]
+		[CLFunction ("normalize ({0})")]
+		public <#= vecType #> Normalized
+		{
+			get { return Divide (Length); }
+		}
+
+		/// <summary>
+		/// Equality comparison inherited from Object. It is overridden to do the comparison componentwise.
+		/// </summary>
+		public override bool Equals (object obj)
+		{
+            return obj is <#= vecType #> && Equals ((<#= vecType #>)obj);
+		}
+
+		/// <summary>
+		/// Hash code generation inherited from Object. It is overridden to calculate the hash code componentwise.
+		/// </summary>
+        public override int GetHashCode ()
+        {
+			return <#= ComponentList(dim, " ^ ", comp => comp + ".GetHashCode ()") #>;
+        }
+
+		/// <summary>
+		/// String conversion inherited from Object. Formats the vector in matrix style.
+		/// I.e. components inside square brackets without commas in between.
+		/// </summary>
+        public override string ToString ()
+        {
+            var sb = new StringBuilder ("[");
+            for (int i = 0; i < <#= dim #>; i++)
+                sb.AppendFormat (" {0}", this[i].ToString (CultureInfo.InvariantCulture));
+            sb.Append (" ]");
+            return sb.ToString ();
+        }
+
+		/// <summary>
+		/// Negate all of the components of the vector.
+		/// </summary>
+		[GLUnaryOperator ("-{0}")]
+		[CLUnaryOperator ("-{0}")]
+        public static <#= vecType #> operator - (<#= vecType #> vec)
+        {
+            return vec.Invert ();
+        }
+
+		/// <summary>
+		/// Subtracts the right vector from the left componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} - {1}")]
+		[CLBinaryOperator ("{0} - {1}")]
+        public static <#= vecType #> operator - (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Subtract (right);
+        }
+
+		/// <summary>
+		/// Multiply the components of the vector with a same scalar value.
+		/// </summary>
+		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
+        public static <#= vecType #> operator * (<#= type #> scalar, <#= vecType #> vec)
+        {
+            return vec.Multiply (scalar);
+        }
+
+		/// <summary>
+		/// Multiply the components of the vector with a same scalar value.
+		/// </summary>
+		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
+        public static <#= vecType #> operator * (<#= vecType #> vec, <#= type #> scalar)
+        {
+            return vec.Multiply (scalar);
+        }
+
+		/// <summary>
+		/// Multiply the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} * {1}")]
+		[CLBinaryOperator ("{0} * {1}")]
+        public static <#= vecType #> operator * (<#= vecType #> vec, <#= vecType #> scale)
+        {
+            return vec.Multiply (scale);
+        }
+
+		/// <summary>
+		/// Divide the components of the vector by a same scalar value.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static <#= vecType #> operator / (<#= vecType #> vec, <#= type #> scalar)
+        {
+            return vec.Divide (scalar);
+        }
+
+		/// <summary>
+		/// Divide the two vectors componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static <#= vecType #> operator / (<#= vecType #> vec, <#= vecType #> scale)
+        {
+            return vec.Divide (scale);
+        }
+
+		/// <summary>
+		/// Add the two vectors together componentwise.
+		/// </summary>
+		[GLBinaryOperator ("{0} + {1}")]
+		[CLBinaryOperator ("{0} + {1}")]
+        public static <#= vecType #> operator + (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Add (right);
+        }
+
+		/// <summary>
+		/// Componentwise equality comparison between the two vectors.
+		/// </summary>
+		[GLBinaryOperator ("{0} == {1}")]
+		[CLBinaryOperator ("{0} == {1}")]
+        public static bool operator == (<#= vecType #> left, <#= vecType #> right)
+        {
+            return left.Equals (right);
+        }
+
+		/// <summary>
+		/// Componentwise inequality comparison between the two vectors.
+		/// </summary>
+		[GLBinaryOperator ("{0} != {1}")]
+		[CLBinaryOperator ("{0} != {1}")]
+        public static bool operator != (<#= vecType #> left, <#= vecType #> right)
+        {
+            return !left.Equals (right);
+        }
+    }
+} <#+ 
+} 
+
+string Component(int i) {
+    switch (i)
+    {
+        case 0 : return "X";
+        case 1 : return "Y";
+        case 2 : return "Z";
+        case 3 : return "W";
+        default : throw new ArgumentOutOfRangeException("i");
+    }
+}
+
+IEnumerable<string> Components(int dim) {
+	return from i in Enumerable.Range(0, dim)
+		   select Component(i);
+}
+
+string ComponentList(int dim, string delimiter, Func<string, string> map) {
+	return Components(dim).Select(map).Aggregate((s1, s2) => s1 + delimiter + s2);
+}
+
+string ArgumentList(int dim, string type) {
+	return ComponentList(dim, ", ", comp => type + " " + comp.ToLower());
+}
+
+string PartialArgumentList(int start, int dim, string type) {
+	return Components(dim).Skip(start).Select(comp => type + " " + comp.ToLower())
+		.Aggregate((s1, s2) => s1 + ", " + s2);
+}
+
+void ComponentStatements(int dim, Func<string, string> map) {
+	foreach (var comp in Components(dim)) {  
+#><#= map(comp) #>; 
+<#+ }
+}
+
+void ComponentFields(int dim, string type) { 
+	foreach (var comp in Components(dim)) {  
+#>		/// <summary>
+		/// The <#= comp #> component of the vector.
+		/// </summary>
+		[GLField ("<#= comp.ToLower() #>")]
+		[CLField ("<#= comp.ToLower() #>")]
+        public <#= type #> <#= comp #>; 
+
+<#+ }
+}
+ 
+void BasicConstructor(int dim, string type, string suffix) { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
+		public Vec<#= dim #><#= suffix #> (<#= ArgumentList(dim, type) #>)
+		{	
+<#+	ComponentStatements(dim, s => string.Format("			{0} = {1}", s, s.ToLower())); 
+#>		}
+<#+ }
+
+void SingleValueConstructor(int dim, string type, string suffix) { #>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
+		public Vec<#= dim #><#= suffix #> (<#= type #> value)
+		{	
+<#+ ComponentStatements(dim, s => string.Format("			{0} = value", s)); 
+#>		}
+<#+ }
+ 
+void CopyConstructor(int dim, string type, string suffix, int otherDim) { 
+	if (dim > otherDim) { #>
+		/// <summary>
+		/// Copy the components of the vector from another vector.
+		/// </summary>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
+		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec, <#= PartialArgumentList(otherDim, dim, type) #>)
+		{	
+<#+ }
+	else { #>
+		/// <summary>
+		/// Copy the components of the vector from another vector.
+		/// </summary>
+		[GLConstructor ("<#= suffix #>vec<#= dim #> ({0})")]
+		[CLConstructor ("(<#= type #><#= dim #>) ({0})")]
+		public Vec<#= dim #><#= suffix #> (Vec<#= otherDim #><#= suffix #> vec)
+		{	
+<#+ 
+    }
+	var currDim = 0;
+	ComponentStatements(dim, s => 
+		++currDim <= otherDim ?
+			 string.Format("			{0} = vec.{0}", s) : 
+			 string.Format("			{0} = {1}", s, s.ToLower())); 
+#>		}
+
+<#+ } 
+
+void Indexer(int dim, string type) { #>
+
+		/// <summary>
+		/// Number of dimensions/components in the vector.
+		/// </summary>
+		public int Dimensions
+		{
+			get { return <#= dim #>; }
+		}
+
+		/// <summary>
+		/// The value of the index'th component of the vector.
+		/// </summary>
+		public <#= type #> this[int index]
+		{
+			get
+			{
+				switch (index)
+				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
+					case <#= i.ToString() #>: return <#= Component(i) #>; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("index");
+				}
+			} 
+			set
+			{
+				switch (index)
+				{	<#+ foreach (int i in Enumerable.Range(0, dim)) { #>         
+					case <#= i.ToString() #>: <#= Component(i) #> = value; break; <#+ } #>
+
+			        default: throw new ArgumentOutOfRangeException("index");
+				}
+			} 
+		}
+<#+ } 
+
+void Swizzler(int dim, string type, string suffix) { 
+	var vecType = "Vec" + dim.ToString() + suffix;
+#>
+		
+		/// <summary>
+		/// Swizzling of the vector returns the specified components in the specified order.
+		/// </summary>
+		public <#= vecType #> this[<#= ArgumentList(dim, "Coord") #>]
+		{
+			get { return new <#= vecType #> (<#= ComponentList(dim, ", ", s => string.Format("this[(int){0}]", s.ToLower())) #>); }
+			set
+			{
+<#+ ComponentStatements(dim, s => string.Format("				this[(int){0}] = value.{1}", s.ToLower(), s)); 
+#>			}
+		}
+
+<#+ } 
+
+void Unary(int dim, string vecType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> ()
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0}{1}", oper, comp)) #>);
+		}
+<#+ } 
+
+void Binary(int dim, string vecType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= vecType #> other)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>);
+		}
+<#+ } 
+
+void BinaryFunc(int dim, string vecType, string name, string func, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= vecType #> other)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} ({1}, other.{1})", func, comp)) #>);
+		}
+<#+ } 
+
+void Scalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { 
+#>		public <#= vecType #> <#= name #> (<#= scalarType #> scalar)
+		{
+			return new <#= vecType #> (<#= ComponentList(dim, delim, comp => string.Format("{0} {1} scalar", comp, oper)) #>);
+		}
+<#+ } 
+
+void BinaryScalar(int dim, string vecType, string scalarType, string name, string oper, string delim) { 
+#>		public <#= scalarType #> <#= name #> (<#= vecType #> other)
+		{
+			return <#= ComponentList(dim, delim, comp => string.Format("{0} {1} other.{0}", comp, oper)) #>;
+		}
+<#+ } 
+
+#>

@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EB49CA65-F40B-4037-8C06-CC0E7A260954}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ComposeFX.Core</RootNamespace>
+    <AssemblyName>ComposeFX.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataStructures\Aabb.cs" />
+    <Compile Include="DataStructures\BoundingBoxTree.cs" />
+    <Compile Include="DataStructures\BoundingRectTree.cs" />
+    <Compile Include="DataStructures\IBoundingTree.cs" />
+    <Compile Include="DataStructures\IntervalTree.cs" />
+    <Compile Include="DataStructures\KdTree.cs" />
+    <Compile Include="DataStructures\Octree.cs" />
+    <Compile Include="DataStructures\Seq.cs" />
+    <Compile Include="Geometry\Aligning.cs" />
+    <Compile Include="Geometry\Circular.cs" />
+    <Compile Include="Geometry\Compacted.cs" />
+    <Compile Include="Geometry\Composite.cs" />
+    <Compile Include="Geometry\DrawMode.cs" />
+    <Compile Include="Geometry\Edge.cs" />
+    <Compile Include="Geometry\Extrusion.cs" />
+    <Compile Include="Geometry\Geometry.cs" />
+    <Compile Include="Geometry\Lathe.cs" />
+    <Compile Include="Geometry\Path.cs" />
+    <Compile Include="Geometry\Polygon.cs" />
+    <Compile Include="Geometry\Primitive.cs" />
+    <Compile Include="Geometry\Quadrilateral.cs" />
+    <Compile Include="Geometry\ReverseIndices.cs" />
+    <Compile Include="Geometry\Simplified.cs" />
+    <Compile Include="Geometry\Stacking.cs" />
+    <Compile Include="Geometry\Tesselator.cs" />
+    <Compile Include="Geometry\Transform.cs" />
+    <Compile Include="Geometry\Transformable.cs" />
+    <Compile Include="Geometry\Triangle.cs" />
+    <Compile Include="Geometry\Vertex.cs" />
+    <Compile Include="Geometry\VertexColor.cs" />
+    <Compile Include="Geometry\VertexFilter.cs" />
+    <Compile Include="Geometry\VertexManipulator.cs" />
+    <Compile Include="Geometry\Wrapper.cs" />
+    <Compile Include="Maths\BSpline.cs" />
+    <Compile Include="Maths\CLAttributes.cs" />
+    <Compile Include="Maths\Convert.cs" />
+    <Compile Include="Maths\FMath.cs" />
+    <Compile Include="Maths\GLAttributes.cs" />
+    <Compile Include="Maths\IQuat.cs" />
+    <Compile Include="Maths\Mat.cs" />
+    <Compile Include="Maths\Mat2.cs">
+      <DependentUpon>Mat2.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Mat3.cs">
+      <DependentUpon>Mat3.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Mat4.cs">
+      <DependentUpon>Mat4.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Noise.cs" />
+    <Compile Include="Maths\PerlinNoise.cs" />
+    <Compile Include="Maths\Plane.cs" />
+    <Compile Include="Maths\Quat.cs" />
+    <Compile Include="Maths\Vec.cs" />
+    <Compile Include="Maths\Vec2.cs">
+      <DependentUpon>Vec2.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Vec2i.cs">
+      <DependentUpon>Vec2i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Vec3.cs">
+      <DependentUpon>Vec3.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Vec3i.cs">
+      <DependentUpon>Vec3i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Vec4.cs">
+      <DependentUpon>Vec4.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Maths\Vec4i.cs">
+      <DependentUpon>Vec4i.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Mat2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat2.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Mat3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat3.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Mat4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Mat4.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\MatTemplate.tt">
+      <LastGenOutput>MatTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec2i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec2i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec3i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec3i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec4.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\Vec4i.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vec4i.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Maths\VecTemplate.tt">
+      <LastGenOutput>VecTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Visuals\Visuals.csproj">
+      <Project>{df55a445-8526-489c-ac6b-5c969e8de42b}</Project>
+      <Name>Visuals</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -2,7 +2,6 @@
 {
 	using GLTypes;
 	using CLTypes;
-	using OpenTK;
 	using System;
 
 	/// <summary>
@@ -169,7 +168,7 @@
 		/// *Note:* This function is not available in GLSL. It is included here for convenience.
 		public static float CosMix (float start, float end, float interPos)
 		{
-			return Mix (start, end, (1f - Cos (interPos * MathHelper.Pi)) * 0.5f); 
+			return Mix (start, end, (1f - Cos (interPos * Pi)) * 0.5f); 
 		}
 
 		/// <summary>
@@ -283,7 +282,7 @@
 		[CLFunction ("radians ({0})")]
 		public static float Radians (this float degrees)
 		{
-			return degrees * MathHelper.Pi / 180f;
+			return degrees * Pi / 180f;
 		}
 
 		/// <summary>
@@ -301,7 +300,7 @@
 		/// </summary>
 		public static float Radians (this int degrees)
 		{
-			return degrees * MathHelper.Pi / 180f;
+			return degrees * Pi / 180f;
 		}
 
 		/// <summary>
@@ -311,7 +310,7 @@
 		[CLFunction ("radians ({0})")]
 		public static float Degrees (this float radians)
 		{
-			return radians * 180f / MathHelper.Pi;
+			return radians * 180f / Pi;
 		}
 
 		/// <summary>
@@ -321,7 +320,7 @@
 		[CLFunction ("radians ({0})")]
 		public static double Degrees (this double radians)
 		{
-			return radians * 180f / MathHelper.Pi;
+			return radians * 180f / Pi;
 		}
 
 		/// <summary>

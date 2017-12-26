@@ -124,7 +124,7 @@
 			return Ast.Var (type, string.Format ("_{0}{1}", name, _lastUniqInd++));
 		}
 
-		internal static Ast.Function InstantiateAllMacros (Ast.Function function)
+		public static Ast.Function InstantiateAllMacros (Ast.Function function)
 		{
 			while (true)
 			{

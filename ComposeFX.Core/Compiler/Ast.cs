@@ -40,7 +40,7 @@
 			public readonly string Name;
 			public readonly int ArrayLength;
 
-			internal Variable (Type type, string name, int arraylen)
+			public Variable (Type type, string name, int arraylen)
 			{
 				Type = type;
 				Name = name;
@@ -411,7 +411,7 @@
 			public readonly int ItemCount;
 			public readonly Expression[] Items;
 
-			internal NewArray (Type type, int count, IEnumerable<Expression> items)
+			public NewArray (Type type, int count, IEnumerable<Expression> items)
 			{
 				if (items.Count () != count)
 					throw new ArgumentException ("Invalid number arguments", nameof (items));
@@ -426,7 +426,7 @@
 			public readonly Type StructType;
 			public readonly Tuple<VariableRef, Expression>[] InitFields;
 
-			internal InitStruct (Type structType, IEnumerable<Tuple<VariableRef, Expression>> initFields)
+			public InitStruct (Type structType, IEnumerable<Tuple<VariableRef, Expression>> initFields)
 			{
 				StructType = structType;
 				InitFields = initFields.ToArray ();
@@ -780,7 +780,7 @@
 		{
 			public readonly string Name;
 
-			internal Global (string name)
+			public Global (string name)
 			{
 				Name = name;
 			}
@@ -790,7 +790,7 @@
 		{
 			public readonly List<Field> Fields;
 
-			internal Structure (string name, IEnumerable<Field> fields)
+			public Structure (string name, IEnumerable<Field> fields)
 				: base (name)
 			{
 				Fields = new List<Field> (fields);

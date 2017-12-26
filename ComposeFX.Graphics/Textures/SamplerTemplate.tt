@@ -1,0 +1,81 @@
+﻿<#@ assembly name="System.Core" #><#@ 
+import namespace="System.Linq" #><#@ 
+import namespace="System.Text" #><#@ 
+import namespace="System.Collections.Generic" #><#+ 
+void Sampler(int dim, string pixelType, bool array, bool shadow) 
+{ 
+	var samplerType = "Sampler" + DimText(dim) + pixelType + ArrayText(array) + ShadowText(shadow);
+#>namespace ComposeFX.Graphics.Textures
+{
+	using Maths;
+	using GLTypes;
+
+	[GLType ("<#= pixelType #>sampler<#= DimText(dim) + ArrayText(array) + ShadowText(shadow) #>")]
+    public class <#= samplerType #> : Sampler
+    {
+    	public <#= samplerType #> () : base () {}
+
+    	public <#= samplerType #> (int texUnit) 
+    		: base (texUnit) {}
+    	
+		[GLFunction ("textureSize ({0})")]
+<#+		Size(dim, array); #>
+
+<#+		Texture(dim, pixelType, array, shadow); #>
+	}
+}
+<#+
+}
+
+string DimText(int dim)
+{
+	return dim <= 3 ? dim.ToString() + "D" : "Cube";
+}
+
+string ArrayText(bool array)
+{
+	return array ? "Array" : "";
+}
+
+string ShadowText(bool shadow)
+{
+	return shadow ? "Shadow" : "";
+}
+
+void Size(int dim, bool array) 
+{ 
+	string retType;
+	if (dim == 1)
+		retType = "int";
+	else if (dim >= 2 && dim <= 3)
+		retType = "Vec" + (array ? dim + 1 : dim).ToString() + "i";
+	else
+		retType = "Vec2i";
+
+#>		public <#= retType #> Size (int lod)
+		{
+			return default (<#= retType #>);
+		}
+<#+ 
+} 
+
+void Texture(int dim, string pixelType, bool array, bool shadow)
+{
+	var parDim = Math.Min (dim, 3) + (array ? 1 : 0) + (shadow ? 1 : 0);
+	var paramType = parDim == 1 ? "float" : "Vec" + parDim.ToString();
+	var retType = shadow ? "float" : "Vec4" + pixelType;
+
+#>		[GLFunction ("texture ({0})")]
+		public <#= retType #> Texture (<#= paramType #> pos)
+		{
+			return default (<#= retType #>);
+		}
+
+		[GLFunction ("texture ({0})")]
+		public <#= retType #> Texture (<#= paramType #> pos, float bias)
+		{
+			return default (<#= retType #>);
+		}
+<#+
+}
+#>

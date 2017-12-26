@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2005
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compose3D", "Compose3D\Compose3D.csproj", "{515CEF49-ED7F-4EAA-8F64-C62005D8F6D0}"
 EndProject
@@ -23,6 +23,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compose3D.Renderers", "Renderers\Compose3D.Renderers.csproj", "{F9A50D09-7635-4952-9366-4F4544DA31A3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.Core", "ComposeFX.Core\ComposeFX.Core.csproj", "{EB49CA65-F40B-4037-8C06-CC0E7A260954}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.Graphics", "ComposeFX.Graphics\ComposeFX.Graphics.csproj", "{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,6 +118,18 @@ Global
 		{EB49CA65-F40B-4037-8C06-CC0E7A260954}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EB49CA65-F40B-4037-8C06-CC0E7A260954}.Release|x86.ActiveCfg = Release|Any CPU
 		{EB49CA65-F40B-4037-8C06-CC0E7A260954}.Release|x86.Build.0 = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Debug|x86.Build.0 = Debug|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|x86.ActiveCfg = Release|Any CPU
+		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

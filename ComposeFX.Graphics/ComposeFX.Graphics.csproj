@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ComposeFX.Graphics</RootNamespace>
+    <AssemblyName>ComposeFX.Graphics</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="GLTypes\GLError.cs" />
+    <Compile Include="GLTypes\GLObject.cs" />
+    <Compile Include="GLTypes\GLProgram.cs" />
+    <Compile Include="GLTypes\GLShader.cs" />
+    <Compile Include="GLTypes\GlslAst.cs" />
+    <Compile Include="GLTypes\GlslParser.cs" />
+    <Compile Include="GLTypes\GLTypeHelpers.cs" />
+    <Compile Include="GLTypes\GLTypeMapping.cs" />
+    <Compile Include="GLTypes\Shader.cs" />
+    <Compile Include="GLTypes\Uniform.cs" />
+    <Compile Include="GLTypes\VBO.cs" />
+    <Compile Include="GLTypes\VertexAttr.cs" />
+    <Compile Include="InputState.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reactive\DelayedUpdate.cs" />
+    <Compile Include="Reactive\KeyboardReactions.cs" />
+    <Compile Include="Reactive\MouseReactions.cs" />
+    <Compile Include="Reactive\RenderReactions.cs" />
+    <Compile Include="Reactive\WindowReactions.cs" />
+    <Compile Include="SceneGraph\Camera.cs" />
+    <Compile Include="SceneGraph\Lights.cs" />
+    <Compile Include="SceneGraph\LineSegment.cs" />
+    <Compile Include="SceneGraph\MaterialPanel.cs" />
+    <Compile Include="SceneGraph\Mesh.cs" />
+    <Compile Include="SceneGraph\NodeWrapper.cs" />
+    <Compile Include="SceneGraph\Panel.cs" />
+    <Compile Include="SceneGraph\Scene.cs" />
+    <Compile Include="SceneGraph\SceneGraph.cs" />
+    <Compile Include="SceneGraph\SceneGroup.cs" />
+    <Compile Include="SceneGraph\SceneNode.cs" />
+    <Compile Include="SceneGraph\StaticMesh.cs" />
+    <Compile Include="SceneGraph\TransformNode.cs" />
+    <Compile Include="SceneGraph\ViewingFrustum.cs" />
+    <Compile Include="Shaders\FragmentShaders.cs" />
+    <Compile Include="Shaders\GeometryShaders.cs" />
+    <Compile Include="Shaders\Lighting.cs" />
+    <Compile Include="Shaders\ShadowShaders.cs" />
+    <Compile Include="Shaders\VertexShaders.cs" />
+    <Compile Include="Textures\BitmapHelper.cs" />
+    <Compile Include="Textures\Framebuffer.cs" />
+    <Compile Include="Textures\ITextured.cs" />
+    <Compile Include="Textures\Samper1DArray.cs">
+      <DependentUpon>Samper1DArray.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler.cs" />
+    <Compile Include="Textures\Sampler1D.cs">
+      <DependentUpon>Sampler1D.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler1DShadow.cs">
+      <DependentUpon>Sampler1DShadow.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler2D.cs">
+      <DependentUpon>Sampler2D.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler2DArray.cs">
+      <DependentUpon>Sampler2DArray.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler2DShadow.cs">
+      <DependentUpon>Sampler2DShadow.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Sampler3D.cs">
+      <DependentUpon>Sampler3D.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\SamplerCube.cs">
+      <DependentUpon>SamplerCube.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Textures\Texture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComposeFX.Core\ComposeFX.Core.csproj">
+      <Project>{eb49ca65-f40b-4037-8c06-cc0e7a260954}</Project>
+      <Name>ComposeFX.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{bdebbc66-4abf-4ac7-9efe-cc385b2e9e4a}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Textures\Samper1DArray.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Samper1DArray.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler1D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler1D.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler2D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2D.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler2DArray.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2DArray.cs</LastGenOutput>
+    </Content>
+    <Content Include="Textures\Sampler3D.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler3D.cs</LastGenOutput>
+    </Content>
+    <None Include="Textures\SamplerTemplate.tt" />
+    <None Include="Textures\SamplerCube.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SamplerCube.cs</LastGenOutput>
+    </None>
+    <None Include="Textures\Sampler2DShadow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler2DShadow.cs</LastGenOutput>
+    </None>
+    <None Include="Textures\Sampler1DShadow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Sampler1DShadow.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

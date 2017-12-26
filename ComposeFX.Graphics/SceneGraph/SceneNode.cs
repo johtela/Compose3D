@@ -13,9 +13,7 @@
 
 		public SceneNode (SceneGraph graph)
 		{
-			if (graph == null)
-				throw new ArgumentNullException ("graph");
-			Graph = graph;
+            Graph = graph ?? throw new ArgumentNullException ("graph");
 		}
 
 		public SceneGraph Graph { get; private set; }

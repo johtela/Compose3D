@@ -3,7 +3,6 @@
 	using DataStructures;
 	using Maths;
 	using Extensions;
-	using Shaders;
 	using Textures;
 	using System.Linq;
 

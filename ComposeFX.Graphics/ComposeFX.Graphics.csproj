@@ -61,7 +61,6 @@
     <Compile Include="SceneGraph\Camera.cs" />
     <Compile Include="SceneGraph\Lights.cs" />
     <Compile Include="SceneGraph\LineSegment.cs" />
-    <Compile Include="SceneGraph\MaterialPanel.cs" />
     <Compile Include="SceneGraph\Mesh.cs" />
     <Compile Include="SceneGraph\NodeWrapper.cs" />
     <Compile Include="SceneGraph\Panel.cs" />

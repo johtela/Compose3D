@@ -1,8 +1,6 @@
 ﻿namespace ComposeFX.Graphics.SceneGraph
 {
 	using System.Collections.Generic;
-	using DataStructures;
-	using Maths;
 	using Extensions;
 
 	public abstract class NodeWrapper<T> : SceneNode

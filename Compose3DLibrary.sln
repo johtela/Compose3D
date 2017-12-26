@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.Core", "ComposeFX
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.Graphics", "ComposeFX.Graphics\ComposeFX.Graphics.csproj", "{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.TextureSynthesis", "ComposeFX.TextureSynthesis\ComposeFX.TextureSynthesis.csproj", "{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,18 @@ Global
 		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|x86.ActiveCfg = Release|Any CPU
 		{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}.Release|x86.Build.0 = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Debug|x86.Build.0 = Debug|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

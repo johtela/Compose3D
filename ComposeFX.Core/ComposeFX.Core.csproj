@@ -99,8 +99,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Maths\Noise.cs" />
-    <Compile Include="Maths\PerlinNoise.cs" />
     <Compile Include="Maths\Plane.cs" />
     <Compile Include="Maths\Quat.cs" />
     <Compile Include="Maths\Vec.cs" />

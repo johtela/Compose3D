@@ -1,5 +1,7 @@
 ﻿namespace ComposeFX.Maths
 {
+    using System;
+
     public class Ray
     {
         public readonly Vec3 Origin;
@@ -16,27 +18,23 @@
             _dirSign = Direction.Sign ().Max (new Vec3 (0)).ToVeci ();
         }
 
-        public bool Intersects (Aabb<Vec3> aabb)
+        public float Intersects (Aabb<Vec3> aabb)
         {
-            Vec3 tmin, tmax;
             var bounds = aabb.Bounds;
+            var tmin = (bounds[_dirSign.X].X - Origin.X) * _invDir.X;
+            var tmax = (bounds[1 - _dirSign.X].X - Origin.X) * _invDir.X;
+            var tmin2 = (bounds[_dirSign.Y].Y - Origin.Y) * _invDir.Y;
+            var tmax2 = (bounds[1 - _dirSign.Y].Y - Origin.Y) * _invDir.Y;
 
-            tmin.X = (bounds[_dirSign.X].X - Origin.X) * _invDir.X;
-            tmax.X = (bounds[1 - _dirSign.X].X - Origin.X) * _invDir.X;
-            tmin.Y = (bounds[_dirSign.Y].Y - Origin.Y) * _invDir.Y;
-            tmax.Y = (bounds[1 - _dirSign.Y].Y - Origin.Y) * _invDir.Y;
+            if (tmin > tmax2 || tmin2 > tmax)
+                return -1f;
 
-            if ((tmin.X > tmax.Y) || (tmin.Y > tmax.X))
-                return false;
-            if (tmin.Y > tmin.X)
-                tmin.X = tmin.Y;
-            if (tmax.Y < tmax.X)
-                tmax.X = tmax.Y;
+            tmin = Math.Max (tmin, tmin2);
+            tmax = Math.Min (tmax, tmax2);
+            tmin2 = (bounds[_dirSign.Z].Z - Origin.Z) * _invDir.Z;
+            tmax2 = (bounds[1 - _dirSign.Z].Z - Origin.Z) * _invDir.Z;
 
-            tmin.Z = (bounds[_dirSign.Z].Z - Origin.Z) * _invDir.Z;
-            tmax.Z = (bounds[1 - _dirSign.Z].Z - Origin.Z) * _invDir.Z;
-
-            return tmin.X <= tmax.Z && tmin.Z <= tmax.X;
+            return tmin > tmax2 || tmin2 > tmax ? -1 : Math.Max (tmin, tmin2);
         }
     }
 }

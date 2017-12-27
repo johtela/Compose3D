@@ -228,6 +228,16 @@
         }
 
 		/// <summary>
+		/// Divide a scalar by a vector.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static <#= vecType #> operator / (<#= type #> scalar, <#= vecType #> vec)
+        {
+            return new <#= vecType #> (scalar).Divide (vec);
+        }
+
+		/// <summary>
 		/// Add the two vectors together componentwise.
 		/// </summary>
 		[GLBinaryOperator ("{0} + {1}")]

@@ -1,7 +1,4 @@
-﻿
-
-
-namespace ComposeFX.Maths
+﻿namespace ComposeFX.Maths
 {
     using System;
     using System.Text;
@@ -45,11 +42,9 @@ namespace ComposeFX.Maths
 		[CLField ("w")]
         public int W; 
 
-
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
-
 		[GLConstructor ("ivec4 ({0})")]
 		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (int x, int y, int z, int w)
@@ -60,11 +55,9 @@ namespace ComposeFX.Maths
 			W = w; 
 		}
 
-
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
-
 		[GLConstructor ("ivec4 ({0})")]
 		[CLConstructor ("(int4) ({0})")]
 		public Vec4i (int value)
@@ -74,9 +67,6 @@ namespace ComposeFX.Maths
 			Z = value; 
 			W = value; 
 		}
-
-
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -89,7 +79,6 @@ namespace ComposeFX.Maths
 			Z = z; 
 			W = w; 
 		}
-
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -104,7 +93,6 @@ namespace ComposeFX.Maths
 			W = w; 
 		}
 
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -118,7 +106,6 @@ namespace ComposeFX.Maths
 			W = vec.W; 
 		}
 
-
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -128,7 +115,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec4i (-X, -Y, -Z, -W);
 		}
-
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -140,7 +126,6 @@ namespace ComposeFX.Maths
 			return new Vec4i (X + other.X, Y + other.Y, Z + other.Z, W + other.W);
 		}
 
-
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -150,7 +135,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec4i (X - other.X, Y - other.Y, Z - other.Z, W - other.W);
 		}
-
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -162,7 +146,6 @@ namespace ComposeFX.Maths
 			return new Vec4i (X * other.X, Y * other.Y, Z * other.Z, W * other.W);
 		}
 
-
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -172,7 +155,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec4i (X * scalar, Y * scalar, Z * scalar, W * scalar);
 		}
-
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -184,7 +166,6 @@ namespace ComposeFX.Maths
 			return new Vec4i (X / other.X, Y / other.Y, Z / other.Z, W / other.W);
 		}
 
-
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -194,7 +175,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec4i (X / scalar, Y / scalar, Z / scalar, W / scalar);
 		}
-
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -206,7 +186,6 @@ namespace ComposeFX.Maths
 			return X * other.X + Y * other.Y + Z * other.Z + W * other.W;
 		}
 
-
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -214,9 +193,6 @@ namespace ComposeFX.Maths
 		{
 			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
 		}
-
-
-
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -239,7 +215,6 @@ namespace ComposeFX.Maths
 					case 1: return Y;          
 					case 2: return Z;          
 					case 3: return W; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -251,14 +226,10 @@ namespace ComposeFX.Maths
 					case 1: Y = value; break;          
 					case 2: Z = value; break;          
 					case 3: W = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-
-
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -275,7 +246,6 @@ namespace ComposeFX.Maths
 			}
 		}
 
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -290,7 +260,6 @@ namespace ComposeFX.Maths
 				this[(int)z] = value.Z; 
 			}
 		}
-
 
 		
 		/// <summary>
@@ -432,6 +401,16 @@ namespace ComposeFX.Maths
         public static Vec4i operator / (Vec4i vec, Vec4i scale)
         {
             return vec.Divide (scale);
+        }
+
+		/// <summary>
+		/// Divide a scalar by a vector.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static Vec4i operator / (int scalar, Vec4i vec)
+        {
+            return new Vec4i (scalar).Divide (vec);
         }
 
 		/// <summary>

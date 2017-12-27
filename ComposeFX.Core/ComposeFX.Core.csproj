@@ -44,7 +44,7 @@
     <Compile Include="Compiler\ParsingHelpers.cs" />
     <Compile Include="Compiler\Scopes.cs" />
     <Compile Include="Compiler\TypeMapping.cs" />
-    <Compile Include="DataStructures\Aabb.cs" />
+    <Compile Include="Maths\Aabb.cs" />
     <Compile Include="DataStructures\BoundingBoxTree.cs" />
     <Compile Include="DataStructures\BoundingRectTree.cs" />
     <Compile Include="DataStructures\IBoundingTree.cs" />
@@ -101,6 +101,7 @@
     </Compile>
     <Compile Include="Maths\Plane.cs" />
     <Compile Include="Maths\Quat.cs" />
+    <Compile Include="Maths\Ray.cs" />
     <Compile Include="Maths\Vec.cs" />
     <Compile Include="Maths\Vec2.cs">
       <DependentUpon>Vec2.tt</DependentUpon>

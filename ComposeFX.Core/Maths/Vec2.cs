@@ -1,7 +1,4 @@
-﻿
-
-
-namespace ComposeFX.Maths
+﻿namespace ComposeFX.Maths
 {
     using System;
     using System.Text;
@@ -31,11 +28,9 @@ namespace ComposeFX.Maths
 		[CLField ("y")]
         public float Y; 
 
-
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
-
 		[GLConstructor ("vec2 ({0})")]
 		[CLConstructor ("(float2) ({0})")]
 		public Vec2 (float x, float y)
@@ -44,11 +39,9 @@ namespace ComposeFX.Maths
 			Y = y; 
 		}
 
-
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
-
 		[GLConstructor ("vec2 ({0})")]
 		[CLConstructor ("(float2) ({0})")]
 		public Vec2 (float value)
@@ -56,9 +49,6 @@ namespace ComposeFX.Maths
 			X = value; 
 			Y = value; 
 		}
-
-
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -69,7 +59,6 @@ namespace ComposeFX.Maths
 			X = vec.X; 
 			Y = vec.Y; 
 		}
-
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -82,7 +71,6 @@ namespace ComposeFX.Maths
 			Y = vec.Y; 
 		}
 
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -94,7 +82,6 @@ namespace ComposeFX.Maths
 			Y = vec.Y; 
 		}
 
-
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -104,7 +91,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec2 (-X, -Y);
 		}
-
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -116,7 +102,6 @@ namespace ComposeFX.Maths
 			return new Vec2 (X + other.X, Y + other.Y);
 		}
 
-
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -126,7 +111,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec2 (X - other.X, Y - other.Y);
 		}
-
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -138,7 +122,6 @@ namespace ComposeFX.Maths
 			return new Vec2 (X * other.X, Y * other.Y);
 		}
 
-
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -148,7 +131,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec2 (X * scalar, Y * scalar);
 		}
-
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -160,7 +142,6 @@ namespace ComposeFX.Maths
 			return new Vec2 (X / other.X, Y / other.Y);
 		}
 
-
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -170,7 +151,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec2 (X / scalar, Y / scalar);
 		}
-
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -182,7 +162,6 @@ namespace ComposeFX.Maths
 			return X * other.X + Y * other.Y;
 		}
 
-
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -190,9 +169,6 @@ namespace ComposeFX.Maths
 		{
 			return X == other.X && Y == other.Y;
 		}
-
-
-
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -213,7 +189,6 @@ namespace ComposeFX.Maths
 				{	         
 					case 0: return X;          
 					case 1: return Y; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -223,14 +198,10 @@ namespace ComposeFX.Maths
 				{	         
 					case 0: X = value; break;          
 					case 1: Y = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-
-
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -371,6 +342,16 @@ namespace ComposeFX.Maths
         public static Vec2 operator / (Vec2 vec, Vec2 scale)
         {
             return vec.Divide (scale);
+        }
+
+		/// <summary>
+		/// Divide a scalar by a vector.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static Vec2 operator / (float scalar, Vec2 vec)
+        {
+            return new Vec2 (scalar).Divide (vec);
         }
 
 		/// <summary>

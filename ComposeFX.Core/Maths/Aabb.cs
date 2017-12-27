@@ -1,11 +1,7 @@
-﻿namespace ComposeFX.DataStructures
+﻿namespace ComposeFX.Maths
 {
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Text;
-	using Maths;
-	using Geometry;
 
 	/// <summary>
 	/// Enumeration that describes the alignment between two bounding boxes.
@@ -100,6 +96,11 @@
 		{
 			get { return Min.Add (Max).Divide (2f); }
 		}
+
+        public V[] Bounds
+        {
+            get { return new V[] { Min, Max }; }
+        }
 
 		private float[] Corner (int index, int dim)
 		{

@@ -842,6 +842,14 @@
 			return y.Map2<V, float> (x, FMath.Atan2);
 		}
 
+        [GLFunction ("sign ({0})")]
+        [CLFunction ("sign ({0})")]
+        public static V Sign<V> (this V vec)
+			where V : struct, IVec<V, float>
+        {
+            return vec.Map<V, float> (FMath.Sign);
+        }
+
 		/// <summary>
 		/// Check whether any of the components of the vector are NaN. 
 		/// </summary>

@@ -1,6 +1,5 @@
 ﻿namespace ComposeFX.Maths
 {
-	using System.Linq;
 	using DataStructures;
 
 	public struct Plane

@@ -1,7 +1,4 @@
-﻿
-
-
-namespace ComposeFX.Maths
+﻿namespace ComposeFX.Maths
 {
     using System;
     using System.Text;
@@ -38,11 +35,9 @@ namespace ComposeFX.Maths
 		[CLField ("z")]
         public int Z; 
 
-
 		/// <summary>
 		/// Initialize all of the components of the vector.
 		/// </summary>
-
 		[GLConstructor ("ivec3 ({0})")]
 		[CLConstructor ("(int3) ({0})")]
 		public Vec3i (int x, int y, int z)
@@ -52,11 +47,9 @@ namespace ComposeFX.Maths
 			Z = z; 
 		}
 
-
 		/// <summary>
 		/// Initialize all of the components with a same value.
 		/// </summary>
-
 		[GLConstructor ("ivec3 ({0})")]
 		[CLConstructor ("(int3) ({0})")]
 		public Vec3i (int value)
@@ -65,9 +58,6 @@ namespace ComposeFX.Maths
 			Y = value; 
 			Z = value; 
 		}
-
-
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -79,7 +69,6 @@ namespace ComposeFX.Maths
 			Y = vec.Y; 
 			Z = z; 
 		}
-
 
 		/// <summary>
 		/// Copy the components of the vector from another vector.
@@ -93,7 +82,6 @@ namespace ComposeFX.Maths
 			Z = vec.Z; 
 		}
 
-
 		/// <summary>
 		/// Copy the components of the vector from another vector.
 		/// </summary>
@@ -106,7 +94,6 @@ namespace ComposeFX.Maths
 			Z = vec.Z; 
 		}
 
-
 		/// <summary>
 		/// Negate all of the components of the vector.
 		/// </summary>
@@ -116,7 +103,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec3i (-X, -Y, -Z);
 		}
-
 
 		/// <summary>
 		/// Add another vector this one componentwise.
@@ -128,7 +114,6 @@ namespace ComposeFX.Maths
 			return new Vec3i (X + other.X, Y + other.Y, Z + other.Z);
 		}
 
-
 		/// <summary>
 		/// Subtract the given vector from this one componentwise.
 		/// </summary>
@@ -138,7 +123,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec3i (X - other.X, Y - other.Y, Z - other.Z);
 		}
-
 
 		/// <summary>
 		/// Multiply with another vector componentwise.
@@ -150,7 +134,6 @@ namespace ComposeFX.Maths
 			return new Vec3i (X * other.X, Y * other.Y, Z * other.Z);
 		}
 
-
 		/// <summary>
 		/// Multiply the components of this vector with a same scalar value.
 		/// </summary>
@@ -160,7 +143,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec3i (X * scalar, Y * scalar, Z * scalar);
 		}
-
 
 		/// <summary>
 		/// Divide the two vectors componentwise.
@@ -172,7 +154,6 @@ namespace ComposeFX.Maths
 			return new Vec3i (X / other.X, Y / other.Y, Z / other.Z);
 		}
 
-
 		/// <summary>
 		/// Divide the components of this vector by a same scalar value.
 		/// </summary>
@@ -182,7 +163,6 @@ namespace ComposeFX.Maths
 		{
 			return new Vec3i (X / scalar, Y / scalar, Z / scalar);
 		}
-
 
 		/// <summary>
 		/// Calculate the dot product with another vector.
@@ -194,7 +174,6 @@ namespace ComposeFX.Maths
 			return X * other.X + Y * other.Y + Z * other.Z;
 		}
 
-
 		/// <summary>
 		/// Equality comparison with another vector.
 		/// </summary>
@@ -202,9 +181,6 @@ namespace ComposeFX.Maths
 		{
 			return X == other.X && Y == other.Y && Z == other.Z;
 		}
-
-
-
 
 		/// <summary>
 		/// Number of dimensions/components in the vector.
@@ -226,7 +202,6 @@ namespace ComposeFX.Maths
 					case 0: return X;          
 					case 1: return Y;          
 					case 2: return Z; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
@@ -237,14 +212,10 @@ namespace ComposeFX.Maths
 					case 0: X = value; break;          
 					case 1: Y = value; break;          
 					case 2: Z = value; break; 
-
 			        default: throw new ArgumentOutOfRangeException("index");
 				}
 			} 
 		}
-
-
-
 		
 		/// <summary>
 		/// Swizzling of the vector returns the specified components in the specified order.
@@ -259,7 +230,6 @@ namespace ComposeFX.Maths
 				this[(int)z] = value.Z; 
 			}
 		}
-
 
 		
 		/// <summary>
@@ -401,6 +371,16 @@ namespace ComposeFX.Maths
         public static Vec3i operator / (Vec3i vec, Vec3i scale)
         {
             return vec.Divide (scale);
+        }
+
+		/// <summary>
+		/// Divide a scalar by a vector.
+		/// </summary>
+		[GLBinaryOperator ("{0} / {1}")]
+		[CLBinaryOperator ("{0} / {1}")]
+        public static Vec3i operator / (int scalar, Vec3i vec)
+        {
+            return new Vec3i (scalar).Divide (vec);
         }
 
 		/// <summary>

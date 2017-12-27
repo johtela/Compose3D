@@ -405,6 +405,13 @@
 			return (float)Math.Abs (value);
 		}
 
+        [GLFunction ("sign ({0})")]
+        [CLFunction ("sign ({0})")]
+        public static float Sign (this float value)
+        {
+            return Math.Sign (value);
+        }
+
 		/// <summary>
 		/// Available only in the fragment shader, the function returns the partial derivative of `value` with 
 		/// respect to the window x coordinate. Not implmented in C#.

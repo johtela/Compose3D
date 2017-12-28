@@ -14,9 +14,9 @@
 	{
 		public static Gen<Interval<float, int>> GenInterval (float minRange, float maxRange, float maxLen)
 		{
-			return from start in Gen.Choose (minRange, maxRange).ToFloat ()
-				   from len in Gen.Choose (1, maxLen).ToFloat ()
-				   from data in Gen.Choose (0, int.MaxValue)
+			return from start in Gen.ChooseDouble (minRange, maxRange).ToFloat ()
+				   from len in Gen.ChooseDouble (1, maxLen).ToFloat ()
+				   from data in Gen.ChooseInt (0, int.MaxValue)
 				   select new Interval<float, int> (start, start + len, data);
 		}
 
@@ -61,7 +61,7 @@
 		{
 			var prop =
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
-				from low in Prop.ForAll (Gen.Choose (0.0, 100.0).ToFloat ())
+				from low in Prop.ForAll (Gen.ChooseDouble (0.0, 100.0).ToFloat ())
 				select new { it,  low };
 			
 			prop.Label ("No tree overlap => None of the intervals overlap").Check (
@@ -75,8 +75,8 @@
 			var prop =
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
 				let cnt = it.Count
-				from low in Prop.ForAll (Gen.Choose (200.0).ToFloat ())
-				from len in Prop.ForAll (Gen.Choose (1.0, 100.0).ToFloat ())
+				from low in Prop.ForAll (Gen.ChooseDouble (200.0).ToFloat ())
+				from len in Prop.ForAll (Gen.ChooseDouble (1.0, 100.0).ToFloat ())
 				let high = low + len
 				let ival = it.Add (low, high, 0)
 				select new { it,  cnt, low, high, ival };
@@ -99,7 +99,7 @@
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
 				let cnt = it.Count
 				where cnt > 0
-				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				from index in Prop.ForAll (Gen.ChooseInt (0, cnt))
 				let ival = it.Skip (index).First ()
 				let same = it.Add (ival.Low, ival.High, 42)
 				select new { it, cnt, ival, same };
@@ -115,7 +115,7 @@
 				from it in Prop.ForAll (ArbitraryIntervalTree (0f, 100f, 100f))
 				let cnt = it.Count
 				where cnt > 0
-				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				from index in Prop.ForAll (Gen.ChooseInt (0, cnt))
 				let rem = it.Skip (index).First ()
 				let newCnt = it.Remove (rem)
 				let midpoints = (from ival in it

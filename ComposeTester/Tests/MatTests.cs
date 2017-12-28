@@ -91,7 +91,7 @@
             prop.Label ("{0}: mat * I = mat", typeof (M).Name)
                 .Check (p => p.mult_mat1_ident.Equals (p.mat1));
             prop.Label ("{0}: (mat1 * mat2) * mat3 = mat1 * (mat2 * mat3)", typeof (M).Name)
-                .Check (p => Mat.ApproxEquals (p.mult_mat12_3, p.mult_mat1_23));
+                .Check (p => Mat.ApproxEquals (p.mult_mat12_3, p.mult_mat1_23, 0.001f));
         }
 
         public void CheckTranslation<M, V> () 
@@ -164,7 +164,7 @@
                        select new { mat, inv, mat_inv, ident };
 
             prop.Label ("{0}: mat * mat^-1 = I", typeof (M).Name)
-                .Check (p => Mat.ApproxEquals (p.mat_inv, p.ident, 0.01f));
+                .Check (p => Mat.ApproxEquals (p.mat_inv, p.ident, 0.1f));
         }
 
         [Test]

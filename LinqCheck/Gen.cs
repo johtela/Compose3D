@@ -82,10 +82,15 @@ namespace LinqCheck
 				   select Tuple.Create (a, b, c);
 		}
 
-		/// <summary>
-		/// Primitive generator to choose an integer.
-		/// </summary>
-		public static Gen<int> Choose (int min)
+        public static Gen<int> ChooseInt ()
+        {
+            return (rnd, size) => rnd.Next (-size / 2, size / 2);
+        }
+
+        /// <summary>
+        /// Primitive generator to choose an integer.
+        /// </summary>
+        public static Gen<int> ChooseInt (int min)
 		{
 			return (rnd, size) => rnd.Next (min, min + size);
 		}
@@ -93,25 +98,30 @@ namespace LinqCheck
 		/// <summary>
 		/// Primitive generator to choose an integer in the given range.
 		/// </summary>
-		public static Gen<int> Choose (int min, int max)
+		public static Gen<int> ChooseInt (int min, int max)
 		{
 			return (rnd, size) => rnd.Next (min, max);
 		}
 
-		/// <summary>
-		/// Primitive generator to choose a double.
-		/// </summary>
-		public static Gen<double> Choose (double min, double max)
+        public static Gen<double> ChooseDouble ()
+        {
+            return (rnd, size) => ((rnd.NextDouble () - 0.5) * size);
+        }
+
+        /// <summary>
+        /// Primitive generator to choose a double in the given range.
+        /// </summary>
+        public static Gen<double> ChooseDouble (double min)
+        {
+            return (rnd, size) => (rnd.NextDouble () * size) + min;
+        }
+
+        /// <summary>
+        /// Primitive generator to choose a double.
+        /// </summary>
+        public static Gen<double> ChooseDouble (double min, double max)
 		{
 			return (rnd, size) => (rnd.NextDouble () * (max - min)) + min;
-		}
-
-		/// <summary>
-		/// Primitive generator to choose a double in the given range.
-		/// </summary>
-		public static Gen<double> Choose (double min)
-		{
-			return (rnd, size) => (rnd.NextDouble () * size) + min;
 		}
 
 		/// <summary>
@@ -201,7 +211,7 @@ namespace LinqCheck
 		/// </summary>
 		public static Gen<T> OneOf<T> (params Gen<T>[] gens)
 		{
-			return Choose (0, gens.Length - 1).Bind (i => gens[i]);
+			return ChooseInt (0, gens.Length - 1).Bind (i => gens[i]);
 		}
 
 		/// <summary>
@@ -213,7 +223,7 @@ namespace LinqCheck
 			for (int i = 0; i < freqGens.Length; i++)
 				freqGens[i] = Tuple.Create (sum += freqGens[0].Item1, freqGens[i].Item2);
 
-			return Choose (1, sum).Bind (x => freqGens.First (fg => fg.Item1 >= x).Item2);
+			return ChooseInt (1, sum).Bind (x => freqGens.First (fg => fg.Item1 >= x).Item2);
 		}
 	}
 }

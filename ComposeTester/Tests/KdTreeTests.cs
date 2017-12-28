@@ -68,7 +68,7 @@
 				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
 				let cnt = tree.Count
 				where cnt > 0
-				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				from index in Prop.ForAll (Gen.ChooseInt (0, cnt))
 				let pair = tree.Skip (index).First ()
 				let same = !tree.TryAdd (pair.Key, pair.Value)
 				select new { tree, cnt, pair, same };
@@ -85,7 +85,7 @@
 				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
 				let cnt = tree.Count
 				where cnt > 0
-				from index in Prop.ForAll (Gen.Choose (0, cnt))
+				from index in Prop.ForAll (Gen.ChooseInt (0, cnt))
 				let pair = tree.Skip (index).First ()
 				let removed = tree.TryRemove (pair.Key, out value)
 				select new { tree, cnt, index, pair, removed };
@@ -103,8 +103,8 @@
 				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
 				let cnt = tree.Count
 				where cnt > 1
-				from index1 in Prop.ForAll (Gen.Choose (0, cnt))
-				from index2 in Prop.ForAll (Gen.Choose (0, cnt))
+				from index1 in Prop.ForAll (Gen.ChooseInt (0, cnt))
+				from index2 in Prop.ForAll (Gen.ChooseInt (0, cnt))
 				let pos1 = tree.Skip (index1).First ().Key
 				let pos2 = tree.Skip (index2).First ().Key
 				let bbox = new Aabb<V> (pos1, pos2)
@@ -122,7 +122,7 @@
 			var prop =
 				from tree in Prop.ForAll (ArbitraryKdTree<V, T> ())
 				from pos in Prop.ForAll (Arbitrary.Get<V> ())
-				from num in Prop.ForAll (Gen.Choose (1, 4))
+				from num in Prop.ForAll (Gen.ChooseInt (1, 4))
 				let nearest = tree.NearestNeighbours (pos, num, distance).AsPrintable ()
 				let lastBest = nearest.IsEmpty () ?
 					float.PositiveInfinity :

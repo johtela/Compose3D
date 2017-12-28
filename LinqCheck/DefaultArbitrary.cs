@@ -15,19 +15,19 @@
 				ShrinkChar));
 
 			Arbitrary.Register (new Arbitrary<int> (
-				Gen.Choose (0),
+				Gen.ChooseInt (),
 				x => ShrinkInteger (x).Distinct ()));
 
 			Arbitrary.Register (new Arbitrary<long> (
-				Gen.Choose (0).ToLong (), 
+				Gen.ChooseInt ().ToLong (), 
 				x => ShrinkInteger ((int)x).Distinct ().Select (i => (long)i)));
 
 			Arbitrary.Register (new Arbitrary<float> (
-				Gen.Choose (0.0).ToFloat (),
+				Gen.ChooseDouble ().ToFloat (),
 				x => ShrinkDouble (x).Select (d => (float)d)));
 
 			Arbitrary.Register (new Arbitrary<double> (
-				Gen.Choose (0.0),
+				Gen.ChooseDouble (),
 				ShrinkDouble));
 
 			Arbitrary.Register (new Arbitrary<string> (

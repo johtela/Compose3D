@@ -96,7 +96,7 @@
 			var prop = from bt in Prop.ForAll (ArbitraryBoundingTree<B, V, T> ())
 					   let cnt = bt.Count
 					   where cnt > 0
-					   from index in Prop.ForAll (Gen.Choose (0, cnt))
+					   from index in Prop.ForAll (Gen.ChooseInt (0, cnt))
 					   let rem = bt.Skip (index).First ()
 					   let _ = Fun.ToExpression (() => bt.Remove (rem.Key, rem.Value), 0)
 					   select new { bt, cnt, rem };

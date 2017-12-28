@@ -96,7 +96,7 @@
 			var prop =
 				from quat1 in Prop.Choose<Q> ()
 				from quat2 in Prop.Choose<Q> ()
-				from alpha in Prop.ForAll (Gen.Choose (0.0, 1.0).ToFloat ())
+				from alpha in Prop.ForAll (Gen.ChooseDouble (0.0, 1.0).ToFloat ())
 				let lerp = lerpFunc (quat1, quat2, alpha)
 				let len = lerp.Length
 				select new { quat1, quat2, alpha, lerp, len };

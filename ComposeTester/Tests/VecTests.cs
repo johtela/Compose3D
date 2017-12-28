@@ -53,7 +53,7 @@
                        let len = vec.Length
                        let scaled = vec.Multiply (scalar)
                        let len_scaled = scaled.Length
-                       let scalar_x_len = scalar * len
+                       let scalar_x_len = FMath.Abs (scalar * len)
                        select new { vec, scalar, len, scaled, len_scaled, scalar_x_len };
 
             prop.Label ("{0}: | vec * scalar | = scalar * | vec |", typeof(V).Name)
@@ -68,7 +68,7 @@
                        let scaleVec = Vec.FromArray<V, float> (scalar.Repeat (vec.Dimensions))
                        let scaled = vec.Multiply (scaleVec)
                        let len_scaled = scaled.Length
-                       let scalar_x_len = scaleVec[0] * len
+                       let scalar_x_len = FMath.Abs (scaleVec[0] * len)
                        select new { vec, scaleVec, len, scaled, len_scaled, scalar_x_len };
 
             prop.Label ("{0}: | vec * scale | = scale.x * | vec | when scale.xyzw are equal", typeof (V).Name)
@@ -113,12 +113,12 @@
                        select new { vec1, vec2, len_vec1, len_vec2, vec1n, vec2n, 
                            dot_vec1_vec2, dot_vec1n_vec2n, dot_vec1_vec2n, dot_vec2_vec1n };
 
-            prop.Label ("{0}: 0 <= vec1_n . vec2_n <= 1", typeof (V).Name)
-                .Check (p => p.dot_vec1n_vec2n >= 0f && p.dot_vec1n_vec2n <= 1f);
+            prop.Label ("{0}: -1 <= vec1_n . vec2_n <= 1", typeof (V).Name)
+                .Check (p => p.dot_vec1n_vec2n >= -1f && p.dot_vec1n_vec2n <= 1f);
             prop.Label ("{0}: vec1 . vec2 = (vec1 . vec2_n) * | vec2 |", typeof (V).Name)
-                .Check (p => p.dot_vec1_vec2.ApproxEquals (p.dot_vec1_vec2n * p.len_vec2));
+                .Check (p => p.dot_vec1_vec2.ApproxEquals (p.dot_vec1_vec2n * p.len_vec2, 0.001f));
             prop.Label ("{0}: vec1 . vec2 = (vec2 . vec1_n) * | vec1 |", typeof (V).Name)
-                .Check (p => p.dot_vec1_vec2.ApproxEquals (p.dot_vec2_vec1n * p.len_vec1));
+                .Check (p => p.dot_vec1_vec2.ApproxEquals (p.dot_vec2_vec1n * p.len_vec1, 0.001f));
         }
 
         [Test]

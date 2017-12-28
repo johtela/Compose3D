@@ -35,20 +35,23 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayExt.cs" />
-    <Compile Include="BoolExt.cs" />
-    <Compile Include="EnumerableExt.cs" />
-    <Compile Include="Fun.cs" />
-    <Compile Include="NumExt.cs" />
-    <Compile Include="ObjectExt.cs" />
-    <Compile Include="Params.cs" />
-    <Compile Include="PrintableEnumerable.cs" />
-    <Compile Include="StringExt.cs" />
-    <Compile Include="TupleExt.cs" />
-    <Compile Include="TypeExt.cs" />
+    <Compile Include="src\ArrayExt.cs" />
+    <Compile Include="src\BoolExt.cs" />
+    <Compile Include="src\EnumerableExt.cs" />
+    <Compile Include="src\Fun.cs" />
+    <Compile Include="src\NumExt.cs" />
+    <Compile Include="src\ObjectExt.cs" />
+    <Compile Include="src\Params.cs" />
+    <Compile Include="src\PrintableEnumerable.cs" />
+    <Compile Include="src\StringExt.cs" />
+    <Compile Include="src\TupleExt.cs" />
+    <Compile Include="src\TypeExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Index.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -448,7 +448,7 @@
         public static float[][] InverseFA (float[][] matrix)
         {
             int rows = matrix.Length;
-            var result = matrix.Duplicate ();
+            var result = matrix.Copy ();
             var perm_toggle = DecomposeFA (matrix);
             var b = new float[rows];
 

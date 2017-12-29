@@ -1,15 +1,12 @@
 ﻿namespace ComposeTester
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using Compose3D;
-    using Compose3D.Maths;
+	using Compose3D.Maths;
 	using Extensions;
-    using LinqCheck;
+	using LinqCheck;
+	using System;
+	using System.Linq;
 
-    public class MatTests
+	public class MatTests
     {
         static MatTests ()
         {
@@ -26,7 +23,7 @@
             return new Arbitrary<M> ( 
                 from a in arb.Generate.FixedArrayOf (rows * cols)
                 select Mat.FromArray<M, T> (a),
-                m => from a in Mat.ToArray<M, T> (m).Combinations (arb.Shrink)
+                m => from a in Mat.ToArray<M, T> (m).Map (arb.Shrink).Combinations ()
                      select Mat.FromArray<M, T> (a));
         }
 

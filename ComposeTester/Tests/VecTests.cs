@@ -27,7 +27,7 @@
             return new Arbitrary<V> ( 
                 from a in arb.Generate.FixedArrayOf (size)
                 select Vec.FromArray<V, T> (a),
-                v => from a in v.ToArray<V, T> ().Combinations (arb.Shrink)
+                v => from a in v.ToArray<V, T> ().Map (arb.Shrink).Combinations ()
                      select Vec.FromArray<V, T> (a));
         }
 
@@ -65,7 +65,7 @@
             var prop = from vec in Prop.Choose<V> ()
                        from scalar in Prop.Choose<float> ()
                        let len = vec.Length
-                       let scaleVec = Vec.FromArray<V, float> (scalar.Repeat (vec.Dimensions))
+                       let scaleVec = Vec.FromArray<V, float> (scalar.Duplicate (vec.Dimensions))
                        let scaled = vec.Multiply (scaleVec)
                        let len_scaled = scaled.Length
                        let scalar_x_len = FMath.Abs (scaleVec[0] * len)

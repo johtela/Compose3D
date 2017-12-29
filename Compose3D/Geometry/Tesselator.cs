@@ -80,7 +80,7 @@
 
 			while (count > 3)
 			{
-				var curr = tessVerts.Where (v => v.IsEar).MinimumItems (v => v.Angle).First ();
+				var curr = tessVerts.Where (v => v.IsEar).MinItems (v => v.Angle).First ();
 				var prev = curr.Previous;
 				var next = curr.Next;
 				result[resInd++] = prev.Index;

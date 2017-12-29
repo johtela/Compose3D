@@ -40,7 +40,7 @@
 			prop.Label ("Check tree invariants").Check (it => it.CheckInvariants ());
 			prop.Label ("Count is correct").Check (it => it.Count == it.Count ());
 			prop.Label ("At least one overlap").Check (
-				it => (it.Count > 0).Implies (!it.Overlap (0f, 100f).IsEmpty ()));
+				it => (it.Count > 0).Implies (!it.Overlap (0f, 100f).None ()));
 		}
 
 		[Test]
@@ -53,7 +53,7 @@
 				select new { it, midpoints };
 			
 			prop.Label ("Check all present").Check (p => 
-				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).IsEmpty ()));
+				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).None ()));
 		}
 
 		[Test]
@@ -65,7 +65,7 @@
 				select new { it,  low };
 			
 			prop.Label ("No tree overlap => None of the intervals overlap").Check (
-				p => p.it.Overlap (p.low, p.low + 1).IsEmpty ().Implies (
+				p => p.it.Overlap (p.low, p.low + 1).None ().Implies (
 					p.it.All (ival => !ival.Overlap (p.low, p.low + 1))));
 		}
 		
@@ -84,7 +84,7 @@
 			prop.Label ("Count is correct").Check (p => p.cnt + 1 == p.it.Count ());
 			prop.Label ("New range added").Check (p => p.it.Overlap (200f, 300f).Single () == p.ival);
 			prop.Label ("No overlap above or below").Check (
-				p => p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (400f, 500f).IsEmpty ());
+				p => p.it.Overlap (-100f, 0f).None () && p.it.Overlap (400f, 500f).None ());
 			prop.Label ("Visualize").Check (p => 
 			{
 				TestProgram.VConsole.ShowVisual (p.it.ToVisual ());
@@ -125,11 +125,11 @@
 			prop.Label ("Count is correct").Check (p => 
 				p.newCnt == p.cnt - 1 && p.newCnt == p.it.Count ());
 			prop.Label ("No overlap above or below").Check (p => 
-				p.it.Overlap (-100f, 0f).IsEmpty () && p.it.Overlap (200f, 300f).IsEmpty ());
+				p.it.Overlap (-100f, 0f).None () && p.it.Overlap (200f, 300f).None ());
 			prop.Label ("Removed interval not found").Check (p => 				
 				p.it.All (ival => ival != p.rem));
 			prop.Label ("Not removed intervals found").Check (p =>
-				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).IsEmpty ()));
+				p.midpoints.All (low => !p.it.Overlap (low, low + 1f).None ()));
 		}
 		
 		[Test]

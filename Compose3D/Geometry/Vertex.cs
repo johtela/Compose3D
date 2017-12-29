@@ -112,7 +112,7 @@
 			where V : struct, IVertex<D>
 			where D : struct, IVec<D, float>
 		{
-			return vertices.MaximumItems (v => v.position.Dot (direction));
+			return vertices.MaxItems (v => v.position.Dot (direction));
 		}
 		
 		public static IEnumerable<V> Facing<V> (this IEnumerable<V> vertices, Vec3 direction)

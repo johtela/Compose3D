@@ -20,7 +20,7 @@
 		public ColorMap (IEnumerable<Tuple<float, V>> samplePoints)
 			: this ()
 		{
-			if (samplePoints.IsEmpty ())
+			if (samplePoints.None ())
 				throw new ArgumentException ("Need to provide at least one sample point to color map");
 			foreach (var sample in samplePoints)
 				_samplePoints.Add (sample.Item1, sample.Item2);

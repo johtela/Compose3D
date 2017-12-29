@@ -124,7 +124,7 @@
 				from pos in Prop.ForAll (Arbitrary.Get<V> ())
 				from num in Prop.ForAll (Gen.ChooseInt (1, 4))
 				let nearest = tree.NearestNeighbours (pos, num, distance).AsPrintable ()
-				let lastBest = nearest.IsEmpty () ?
+				let lastBest = nearest.None () ?
 					float.PositiveInfinity :
 					distance (nearest.Last ().Key, pos)
 				select new { tree, pos, num, nearest, lastBest };

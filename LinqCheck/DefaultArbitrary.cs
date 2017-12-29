@@ -102,7 +102,7 @@
 
 		private static IEnumerable<IEnumerable<T>> ShrinkOne<T> (IEnumerable<T> e)
 		{
-			if (e.IsEmpty ()) return new IEnumerable<T>[0];
+			if (e.None ()) return new IEnumerable<T>[0];
 			var first = e.First ();
 			var rest = e.Skip (1);
 			return (from x in Arbitrary.Get<T> ().Shrink (first)

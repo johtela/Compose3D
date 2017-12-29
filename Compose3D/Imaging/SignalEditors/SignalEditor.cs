@@ -118,7 +118,7 @@
 			params float[] bandWeights)
 		{
 			var bw = new List<float> (16);
-			bw.AddRange (0f.Repeat (16));
+			bw.AddRange (0f.Duplicate (16));
 			for (int i = firstBand; i <= lastBand; i++)
 				bw [i] = bandWeights [i - firstBand];
 			return new SpectralControlEditor (texture) { 

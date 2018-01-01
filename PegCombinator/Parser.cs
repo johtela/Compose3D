@@ -34,7 +34,7 @@
         /// The monadic return. Lifts a value to the parser monad, i.e. creates
         /// a parser that just returns a value without consuming any input.
         /// </summary>
-        public static Parser<T, S> ToParser<T, S> (this T value)
+        public static Parser<T, S> Lift<T, S> (this T value)
         {
             return input => ParseResult<T>.Succeeded (value, false);
         }
@@ -119,7 +119,7 @@
             return input =>
             {
                 var res = parser (input);
-                if (res)
+                if (!res)
                     return ParseResult<T>.Failed (res.Position, res.Found, 
                         Seq.Cons (expected, res.Expected));
                 return res;
@@ -131,7 +131,7 @@
         /// </summary>
         public static Parser<U, S> Select<T, U, S> (this Parser<T, S> parser, Func<T, U> select)
         {
-            return parser.Bind (x => select (x).ToParser<U, S> ());
+            return parser.Bind (x => select (x).Lift<U, S> ());
         }
 
         /// <summary>
@@ -140,7 +140,7 @@
         public static Parser<V, S> SelectMany<T, U, V, S> (this Parser<T, S> parser,
             Func<T, Parser<U, S>> project, Func<T, U, V> select)
         {
-            return parser.Bind (x => project (x).Bind (y => select (x, y).ToParser<V, S> ()));
+            return parser.Bind (x => project (x).Bind (y => select (x, y).Lift<V, S> ()));
         }
 
         /// <summary>
@@ -152,7 +152,7 @@
             return (from x in parser
                     from xs in parser.ZeroOrMore ()
                     select x | xs)
-                    .Or (ToParser<Seq<T>, S> (null));
+                    .Or (Lift<Seq<T>, S> (null));
         }
 
         /// <summary>
@@ -172,15 +172,15 @@
         public static Parser<T?, S> OptionalVal<T, S> (this Parser<T, S> parser)
             where T: struct
         {
-            return parser.Bind (x => new T? (x).ToParser<T?, S> ())
-                .Or (ToParser<T?, S> (null));
+            return parser.Bind (x => new T? (x).Lift<T?, S> ())
+                .Or (Lift<T?, S> (null));
         }
 
         public static Parser<T, S> OptionalRef<T, S> (this Parser<T, S> parser)
             where T : class
         {
-            return parser.Bind (x => x.ToParser<T, S> ())
-                .Or (ToParser<T, S> (null));
+            return parser.Bind (x => x.Lift<T, S> ())
+                .Or (Lift<T, S> (null));
         }
 
         /// <summary>
@@ -188,7 +188,7 @@
         /// </summary>
         public static Parser<T, S> Optional<T, S> (this Parser<T, S> parser, T defaultValue)
         {
-            return parser.Or (defaultValue.ToParser<T, S> ());
+            return parser.Or (defaultValue.Lift<T, S> ());
         }
 
         public static Parser<T, S> And<T, S> (this Parser<T, S> parser)

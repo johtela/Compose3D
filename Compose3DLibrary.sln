@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compose3D", "Compose3D\Compose3D.csproj", "{515CEF49-ED7F-4EAA-8F64-C62005D8F6D0}"
 EndProject
@@ -27,6 +27,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.Graphics", "ComposeFX.Graphics\ComposeFX.Graphics.csproj", "{C8B4320C-A9A6-4FC0-AD17-F766CC57E070}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComposeFX.TextureSynthesis", "ComposeFX.TextureSynthesis\ComposeFX.TextureSynthesis.csproj", "{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PegCombinator", "PegCombinator\PegCombinator.csproj", "{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -144,6 +146,18 @@ Global
 		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|x86.ActiveCfg = Release|Any CPU
 		{3FC84B28-9E8C-4D8E-8213-FACCC9071E8D}.Release|x86.Build.0 = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Debug|x86.Build.0 = Debug|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|x86.ActiveCfg = Release|Any CPU
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +166,7 @@ Global
 		{09491672-675E-4226-95EF-4F5A5FEE36D4} = {72DFD0B8-6C6A-48DF-9BAC-0527ED28AF34}
 		{DF55A445-8526-489C-AC6B-5C969E8DE42B} = {72DFD0B8-6C6A-48DF-9BAC-0527ED28AF34}
 		{BDEBBC66-4ABF-4AC7-9EFE-CC385B2E9E4A} = {72DFD0B8-6C6A-48DF-9BAC-0527ED28AF34}
+		{4CC0207D-7A28-4D70-AFCE-922F0CB702A7} = {72DFD0B8-6C6A-48DF-9BAC-0527ED28AF34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4C66D93E-D468-484B-8CC2-2E0D013B9997}

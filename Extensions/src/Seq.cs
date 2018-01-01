@@ -1,4 +1,4 @@
-﻿namespace ComposeFX.DataStructures
+﻿namespace Extensions
 {
 	using System;
 	using System.Collections;

@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Maths;
+    using Extensions;
 
 	public class BoundingRectTree<T> : IBoundingTree<Vec2, T>
 	{

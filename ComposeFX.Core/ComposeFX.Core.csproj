@@ -51,7 +51,6 @@
     <Compile Include="DataStructures\IntervalTree.cs" />
     <Compile Include="DataStructures\KdTree.cs" />
     <Compile Include="DataStructures\Octree.cs" />
-    <Compile Include="DataStructures\Seq.cs" />
     <Compile Include="Geometry\Aligning.cs" />
     <Compile Include="Geometry\Circular.cs" />
     <Compile Include="Geometry\Compacted.cs" />

@@ -37,11 +37,13 @@
   <ItemGroup>
     <Compile Include="src\ArrayExt.cs" />
     <Compile Include="src\BoolExt.cs" />
+    <Compile Include="src\Either.cs" />
     <Compile Include="src\EnumerableExt.cs" />
     <Compile Include="src\Fun.cs" />
     <Compile Include="src\NumExt.cs" />
     <Compile Include="src\ObjectExt.cs" />
     <Compile Include="src\Params.cs" />
+    <Compile Include="src\Seq.cs" />
     <Compile Include="src\StringExt.cs" />
     <Compile Include="src\TupleExt.cs" />
     <Compile Include="src\TypeExt.cs" />

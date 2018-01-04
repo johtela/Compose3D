@@ -80,7 +80,7 @@
         /// </summary>
         public static Parser<U, S> Operators<T, U, S> (IEnumerable<Tuple<Parser<T, S>, U>> ops)
         {
-            return ops.Select (op => 
+            return ops.Select (op =>
                 from _ in op.Item1
                 select op.Item2)
                 .Aggregate (Parser.Or);

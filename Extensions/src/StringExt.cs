@@ -1,5 +1,6 @@
 ﻿namespace Extensions
 {
+    using System.Collections.Generic;
 	using System.Text;
 
 	public static class StringExt
@@ -13,5 +14,13 @@
 
 			return sb.ToString ();
 		}
+
+        public static string CharsToString (this IEnumerable<char> chars)
+        {
+            var sb = new StringBuilder ();
+            foreach (var ch in chars)
+                sb.Append (ch);
+            return sb.ToString ();
+        }
 	}
 }

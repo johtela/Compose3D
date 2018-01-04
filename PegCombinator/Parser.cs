@@ -39,6 +39,22 @@
             return input => ParseResult<T>.Succeeded (value, false);
         }
 
+        public static Parser<T, S> Lift<T, S, U> (this U value, Func<U, T> func)
+        {
+            return input =>
+            {
+                try
+                {
+                    return ParseResult<T>.Succeeded (func (value), false);
+                }
+                catch (Exception e)
+                {
+                    return ParseResult<T>.Failed (input.Position, value.ToString (),
+                        Seq.Cons (e.Message));
+                }
+            };
+        }
+
         public static Parser<T, S> Fail<T, S> (string found, string expected)
         {
             return input => ParseResult<T>.Failed (input.Position, found, Seq.Cons (expected));

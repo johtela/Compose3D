@@ -4,6 +4,7 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Text;
 
 	public class Seq<T> : IEnumerable<T>
 	{
@@ -21,12 +22,9 @@
 			First = first;
 		}
 
-        public static Seq<T> operator | (T first, Seq<T> rest)
-        {
-            return Seq.Cons (first, rest);
-        }
+		public static Seq<T> operator |(T first, Seq<T> rest) => Seq.Cons(first, rest);
 
-        public static Seq<T> FromEnumerable (IEnumerable<T> enumerable)
+		public static Seq<T> FromEnumerable (IEnumerable<T> enumerable)
         {
             Seq<T> prev = null, result = null;
             foreach (var item in enumerable)
@@ -47,15 +45,23 @@
 				yield return node.First;
 		}
 
-		IEnumerator IEnumerable.GetEnumerator ()
+		IEnumerator IEnumerable.GetEnumerator () => GetEnumerator();
+
+		public string ToString(string openBracket, string separator, string closeBracket)
 		{
-			return GetEnumerator ();
+			var res = new StringBuilder(openBracket);
+			for (var item = this; item != null; item = item.Rest)
+			{
+				res.Append(item.First);
+				if (item.Rest != null)
+					res.Append(separator);
+			}
+			res.Append(closeBracket);
+			return res.ToString();
 		}
 
-		public override string ToString ()
-		{
-			return "[ " + this.Select (ival => ival.ToString ()).Aggregate ((s1, s2) => s1 + ", " + s2) + " ]";
-		}
+		public override string ToString() =>
+			ToString("[ ", ", ", " ]");
 	}
 
 	public static class Seq

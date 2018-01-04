@@ -48,7 +48,7 @@
         /// Creates a parser that reads one item from input and returns it, if
         /// it satisfies a given predicate; otherwise the parser will fail.
         /// </summary>
-        public static Parser<T, T> Satisfy<T> (Func<T, bool> predicate)
+        public static Parser<T, T> Satisfy<T> (Func<T, bool> predicate, string expected = null)
         {
             return input =>
             {
@@ -58,7 +58,8 @@
                 var item = input.Current;
                 if (predicate (item))
                     return ParseResult<T>.Succeeded (item, true);
-                var res = ParseResult<T>.Failed (input.Position, item.ToString ());
+                var res = ParseResult<T>.Failed (input.Position, item.ToString (), 
+					expected != null ? Seq.Cons (expected) : null);
                 input.Position = pos;
                 return res;
             };

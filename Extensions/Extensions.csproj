@@ -46,7 +46,7 @@
     <Compile Include="src\Seq.cs" />
     <Compile Include="src\StringExt.cs" />
     <Compile Include="src\TupleExt.cs" />
-    <Compile Include="src\TypeExt.cs" />
+    <Compile Include="src\ReflectionExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

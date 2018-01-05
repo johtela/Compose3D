@@ -1,9 +1,23 @@
-﻿namespace Extensions
+﻿/*
+# Functional List
+
+The data structure that is present in practically all functional languages 
+is singly linked list. All operations defined for the list are immutable
+meaning that they don't modify the existing list, but always return a new
+version of it. Structural sharing makes the implementation of these 
+operations quite efficient.
+
+Since this data structure is useful in many algorithms and .NET framework 
+does not provide one out-of-the-box, we define a minimal implementation 
+here. We could use the semi-official Nuget package System.Collections.Immutable, 
+but it brings with it a long chain of dependencies. So, we will roll our own 
+implementation to limit the dependencies to .NET framework only.
+*/
+namespace Extensions
 {
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.Linq;
 	using System.Text;
 
 	public class Seq<T> : IEnumerable<T>

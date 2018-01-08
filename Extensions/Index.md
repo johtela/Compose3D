@@ -9,4 +9,4 @@ with the [Literate Programming](https://johtela.github.io/LiterateProgramming) t
 
 ## Contents
 
-* [ArrayExt](src/ArrayExt.html) class contains methods that make accessing and mutating arrays easier.
+* [ArrayExt](src/ArrayExt.html) class contains methods that help accessing and modifying arrays.

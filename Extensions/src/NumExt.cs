@@ -24,7 +24,7 @@ namespace Extensions
 		public static bool IsBetween (this int number, int floor, int ceil) => 
 			number >= floor && number <= ceil;
 		/*
-		## Approximate Equivalance
+		## Approximate Equivalence
 
 		The `==` operator returns true for two floating point numbers only if
 		they are exactly the same. Usually this is too strict, since floating 
@@ -39,7 +39,7 @@ namespace Extensions
 		be necessary.
 		*/
 		public static bool ApproxEquals (this float x, float y, 
-			float epsilon = 0.000001f)
+			float epsilon = 1e-06f)
 		{
 			if (x == y)
 				return true;
@@ -55,7 +55,7 @@ namespace Extensions
 		}
 
 		public static bool ApproxEquals (this double x, double y,
-			double epsilon = 0.00000000001)
+			double epsilon = 1e-11)
 		{
 			if (x == y)
 				return true;
@@ -77,9 +77,9 @@ namespace Extensions
 			where T : struct, IEquatable<T>
 		{
 			if (typeof (T) == typeof (float))
-				return ApproxEquals ((float)((object)x), (float)((object)y));
+				return ApproxEquals ((float)((object)x), (float)((object)y), 1e-06f);
 			else if (typeof (T) == typeof (double))
-				return ApproxEquals ((double)((object)x), (double)((object)y));
+				return ApproxEquals ((double)((object)x), (double)((object)y), 1e-11);
 			else
 				throw new ArgumentException (
 					"This method is only defined for floats and doubles.");

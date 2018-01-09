@@ -14,63 +14,63 @@ retrieval based on keys is required. In that case dictionary is a better option.
 */
 namespace Extensions
 {
-    using System;
-    using System.Collections.Generic;
+	using System;
+	using System.Collections.Generic;
 
-    public class Params<T, U> : IEnumerable<Tuple<T, U>>
-    {
-        /*
-        ## Internal Storage
+	public class Params<T, U> : IEnumerable<Tuple<T, U>>
+	{
+		/*
+		## Internal Storage
 
-        The parameters are stored in a list of tuples. The list is created in 
-        the default constructor.
-        */
-        private List<Tuple<T, U>> _parameters;
+		The parameters are stored in a list of tuples. The list is created in 
+		the default constructor.
+		*/
+		private List<Tuple<T, U>> _parameters;
 
-        public Params ()
-        {
-            _parameters = new List<Tuple<T, U>> ();
-        }
+		public Params ()
+		{
+			_parameters = new List<Tuple<T, U>> ();
+		}
 
-        /*
-        ## Adding New Parameters
+		/*
+		## Adding New Parameters
 
-        The add method is trivial. The method isn't called explicitly, instead
-        the compiler generates code that calls it when collection initializer
-        is used.
-        */
-        public void Add (T parameter, U value)
-        {
-            _parameters.Add (Tuple.Create (parameter, value));
-        }
-        /*
-        ## Retrieving a Parameter Value
+		The add method is trivial. The method isn't called explicitly, instead
+		the compiler generates code that calls it when collection initializer
+		is used.
+		*/
+		public void Add (T parameter, U value)
+		{
+			_parameters.Add (Tuple.Create (parameter, value));
+		}
+		/*
+		## Retrieving a Parameter Value
 
-        The indexer property can be used to retrieve a paremeter value, if key
-        is given. The implementation linearly searches for a matching parameter,
-        so its time complexity is _O(n)_.
-        */
-        public U this[T parameter]
-        {
-            get
-            {
-                return _parameters.FindLast (p => p.Equals (parameter)).Item2;
-            }
-        }
-        /*
-        ## IEnumerable Implementation
+		The indexer property can be used to retrieve a paremeter value, if key
+		is given. The implementation linearly searches for a matching parameter,
+		so its time complexity is _O(n)_.
+		*/
+		public U this[T parameter]
+		{
+			get
+			{
+				return _parameters.FindLast (p => p.Equals (parameter)).Item2;
+			}
+		}
+		/*
+		## IEnumerable Implementation
 
-        The implementation for IEnumerable is also trivial, it just delegates 
-        everything to the List class.
-        */
-        public IEnumerator<Tuple<T, U>> GetEnumerator ()
-        {
-            return _parameters.GetEnumerator ();
-        }
+		The implementation for IEnumerable is also trivial, it just delegates 
+		everything to the List class.
+		*/
+		public IEnumerator<Tuple<T, U>> GetEnumerator ()
+		{
+			return _parameters.GetEnumerator ();
+		}
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator ()
-        {
-            return GetEnumerator ();
-        }
-    }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator ()
+		{
+			return GetEnumerator ();
+		}
+	}
 }

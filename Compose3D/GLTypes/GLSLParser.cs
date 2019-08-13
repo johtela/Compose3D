@@ -74,7 +74,7 @@
 		private static int GetGLSLVersion ()
 		{
 			var glslVersion = GL.GetString (StringName.ShadingLanguageVersion);
-			var match = new Regex (@"(\d+)\.([^\-]+).*").Match (glslVersion);
+			var match = new Regex (@"(\d+)\.([^\-\s]+).*").Match (glslVersion);
 			if (!match.Success || match.Groups.Count != 3)
 				throw new ParseException ("Invalid GLSL version string: " + glslVersion);
 			return int.Parse (match.Groups[1].Value + match.Groups[2].Value);
